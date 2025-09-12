@@ -162,6 +162,7 @@ test: ## Run all tests
 
 # Include comprehensive linting targets
 -include Makefile.lint
+-include Makefile.design
 
 lint: ## Run basic linters
 	@echo "$(CYAN)Running linters...$(NC)"

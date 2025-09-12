@@ -1,0 +1,194 @@
+# Design Principles Linting Configuration
+
+# Single Responsibility Principle
+srp:
+  max_methods_per_class: 7
+  max_method_groups: 3  # Different responsibility groups
+  max_class_lines: 200
+  max_instance_variables: 7
+  max_dependencies: 5
+  min_cohesion_score: 0.3
+  
+  # Naming patterns that indicate SRP violations
+  violation_patterns:
+    - "and"  # UserManagerAndValidator
+    - "or"   # SaveOrUpdate
+    - "with" # ProcessWithValidation
+  
+  # Method prefixes for responsibility detection
+  responsibility_groups:
+    data_access: [get, fetch, load, read, query, find, search]
+    data_mutation: [set, save, write, update, delete, create, insert, remove]
+    validation: [validate, verify, check, ensure, assert, confirm]
+    transformation: [convert, transform, parse, format, serialize, deserialize]
+    notification: [send, notify, email, alert, publish, broadcast]
+    calculation: [calculate, compute, process, analyze, aggregate]
+    rendering: [render, display, draw, show, print, format]
+    authentication: [login, logout, authenticate, authorize, verify]
+    configuration: [configure, setup, init, register, bootstrap]
+
+# Open/Closed Principle
+ocp:
+  max_modifications_per_month: 2
+  max_conditional_branches: 3
+  max_switch_cases: 5
+  require_abstract_base: true
+  
+  # Patterns that indicate OCP violations
+  violation_patterns:
+    - multiple_isinstance_checks
+    - type_switching
+    - hardcoded_types
+
+# Liskov Substitution Principle
+lsp:
+  enforce_signature_compatibility: true
+  prevent_exception_narrowing: true
+  prevent_precondition_strengthening: true
+  prevent_postcondition_weakening: true
+  
+  violations:
+    - NotImplementedError_in_subclass
+    - different_return_types
+    - incompatible_parameters
+
+# Interface Segregation Principle
+isp:
+  max_interface_methods: 5
+  max_unused_interface_methods: 0
+  require_role_interfaces: true
+  
+  violations:
+    - fat_interface
+    - unused_interface_methods
+    - god_interface
+
+# Dependency Inversion Principle
+dip:
+  allow_direct_instantiation: false
+  require_dependency_injection: true
+  max_concrete_dependencies: 2
+  
+  violations:
+    - direct_instantiation
+    - concrete_imports
+    - missing_abstractions
+
+# General Design Metrics
+metrics:
+  # Coupling metrics
+  max_afferent_coupling: 7  # Classes depending on this
+  max_efferent_coupling: 5  # Classes this depends on
+  max_coupling_between_objects: 4
+  
+  # Cohesion metrics
+  min_cohesion_ratio: 0.7
+  max_lcom: 1  # Lack of Cohesion of Methods
+  
+  # Complexity metrics
+  max_cyclomatic_complexity: 5  # Already enforced by Radon
+  max_cognitive_complexity: 7
+  max_nesting_depth: 3
+  
+  # Size metrics
+  max_file_lines: 250
+  max_class_lines: 200
+  max_method_lines: 50
+  max_parameters: 3
+
+# Code Smell Detection
+code_smells:
+  detect_feature_envy: true
+  detect_data_clumps: true
+  detect_primitive_obsession: true
+  detect_long_parameter_list: true
+  detect_message_chains: true
+  detect_middle_man: true
+  detect_inappropriate_intimacy: true
+  detect_lazy_class: true
+  detect_dead_code: true
+  detect_speculative_generality: true
+
+# Refactoring Suggestions
+suggest_refactoring:
+  extract_class: true
+  extract_method: true
+  extract_interface: true
+  introduce_parameter_object: true
+  replace_conditional_with_polymorphism: true
+  replace_type_code_with_class: true
+
+# Enforcement Levels
+enforcement:
+  # Options: error, warning, info, off
+  srp: error
+  ocp: warning
+  lsp: warning
+  isp: warning
+  dip: warning
+  code_smells: info
+  
+  # Allow overrides with justification
+  allow_overrides: true
+  require_justification: true
+  
+  # Gradual enforcement
+  grace_period_days: 30
+  legacy_code_exempt: false
+
+# Exclusions
+exclude:
+  paths:
+    - "*/tests/*"
+    - "*/test_*.py"
+    - "*_test.py"
+    - "*/migrations/*"
+    - "*/vendor/*"
+    - "*/node_modules/*"
+  
+  classes:
+    - "*Test"
+    - "*TestCase"
+    - "Mock*"
+    - "*Stub"
+  
+  files:
+    - "setup.py"
+    - "conftest.py"
+    - "__init__.py"
+
+# Reporting
+reporting:
+  format: "json"  # Options: json, html, markdown, console
+  output_file: "design-lint-report.json"
+  include_metrics: true
+  include_suggestions: true
+  generate_diagrams: false
+  
+  # Metrics tracking over time
+  track_trends: true
+  trend_file: ".design-metrics-history.json"
+  
+  # Integration with code review
+  post_to_pr: true
+  block_merge_on_error: true
+
+# Custom Rules
+custom_rules:
+  - name: "No God Classes"
+    type: "class"
+    condition: "methods > 20 OR lines > 500"
+    severity: "error"
+    message: "Class is too large and likely has multiple responsibilities"
+  
+  - name: "No Manager Classes"
+    type: "class_name"
+    pattern: ".*Manager$"
+    severity: "warning"
+    message: "Manager classes often violate SRP. Consider more specific naming"
+  
+  - name: "Dependency Injection Required"
+    type: "constructor"
+    condition: "no_parameters AND has_dependencies"
+    severity: "error"
+    message: "Classes with dependencies should use constructor injection"

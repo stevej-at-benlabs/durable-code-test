@@ -1,0 +1,162 @@
+# Design Principles Linting Makefile Extension
+# Detects violations of SOLID principles and design patterns
+
+.PHONY: design-lint srp-check solid-check cohesion-check coupling-check smell-check design-report
+
+# Main design linting target
+design-lint: srp-check solid-check cohesion-check coupling-check smell-check ## Run all design principle checks
+	@echo "$(GREEN)✅ All design principle checks completed!$(NC)"
+
+# Single Responsibility Principle Check
+srp-check: ## Check for SRP violations
+	@echo "$(CYAN)╔════════════════════════════════════════════════════════════╗$(NC)"
+	@echo "$(CYAN)║          Single Responsibility Principle Check            ║$(NC)"
+	@echo "$(CYAN)╚════════════════════════════════════════════════════════════╝$(NC)"
+	@python tools/design-linters/srp_analyzer.py durable-code-app/backend --threshold normal
+	@echo ""
+	@python tools/design-linters/srp_analyzer.py durable-code-app/frontend --threshold normal || true
+	@echo "$(GREEN)✓ SRP analysis complete$(NC)"
+
+# SOLID Principles Check
+solid-check: ## Check all SOLID principles
+	@echo "$(CYAN)╔════════════════════════════════════════════════════════════╗$(NC)"
+	@echo "$(CYAN)║              SOLID Principles Compliance                   ║$(NC)"
+	@echo "$(CYAN)╚════════════════════════════════════════════════════════════╝$(NC)"
+	@echo "$(YELLOW)Checking Open/Closed Principle...$(NC)"
+	@cd durable-code-app/backend && \
+		find . -name "*.py" -exec grep -l "isinstance\|type(" {} \; | \
+		xargs -I {} sh -c 'echo "Potential OCP violation in: {}"' || echo "✓ No obvious OCP violations"
+	@echo ""
+	@echo "$(YELLOW)Checking Dependency Inversion...$(NC)"
+	@cd durable-code-app/backend && \
+		grep -r "= [A-Z][a-zA-Z]*(" --include="*.py" . | grep -v "__init__\|test_" | \
+		head -5 && echo "⚠️  Direct instantiations found (consider dependency injection)" || \
+		echo "✓ No direct instantiations found"
+	@echo ""
+	@echo "$(GREEN)✓ SOLID principles check complete$(NC)"
+
+# Cohesion Analysis
+cohesion-check: ## Analyze class cohesion
+	@echo "$(CYAN)╔════════════════════════════════════════════════════════════╗$(NC)"
+	@echo "$(CYAN)║                    Cohesion Analysis                       ║$(NC)"
+	@echo "$(CYAN)╚════════════════════════════════════════════════════════════╝$(NC)"
+	@cd durable-code-app/backend && \
+		echo "$(YELLOW)Calculating cohesion metrics...$(NC)" && \
+		poetry run radon hal app -s && \
+		echo "" && \
+		echo "$(YELLOW)Raw metrics:$(NC)" && \
+		poetry run radon raw app -s
+	@echo "$(GREEN)✓ Cohesion analysis complete$(NC)"
+
+# Coupling Analysis
+coupling-check: ## Analyze coupling between modules
+	@echo "$(CYAN)╔════════════════════════════════════════════════════════════╗$(NC)"
+	@echo "$(CYAN)║                    Coupling Analysis                       ║$(NC)"
+	@echo "$(CYAN)╚════════════════════════════════════════════════════════════╝$(NC)"
+	@echo "$(YELLOW)Import analysis:$(NC)"
+	@cd durable-code-app/backend && \
+		find . -name "*.py" -exec grep -c "^import\|^from" {} \; | \
+		sort -rn | head -10 | \
+		awk '{sum+=$$1; files[NR]=$$1} END {print "Average imports per file:", sum/NR; \
+		if(sum/NR > 5) print "⚠️  High import count detected"}' || true
+	@echo ""
+	@echo "$(YELLOW)Circular dependency check:$(NC)"
+	@cd durable-code-app/backend && \
+		python -c "import sys; sys.path.insert(0, '.'); \
+		from app import main; print('✓ No circular dependencies in main module')" 2>/dev/null || \
+		echo "⚠️  Potential circular dependency detected"
+	@echo "$(GREEN)✓ Coupling analysis complete$(NC)"
+
+# Code Smell Detection
+smell-check: ## Detect common code smells
+	@echo "$(CYAN)╔════════════════════════════════════════════════════════════╗$(NC)"
+	@echo "$(CYAN)║                  Code Smell Detection                      ║$(NC)"
+	@echo "$(CYAN)╚════════════════════════════════════════════════════════════╝$(NC)"
+	@echo "$(YELLOW)Checking for long parameter lists...$(NC)"
+	@cd durable-code-app/backend && \
+		grep -E "def [a-zA-Z_]+\([^)]{60,}\)" --include="*.py" -r . && \
+		echo "⚠️  Long parameter lists found" || echo "✓ No long parameter lists"
+	@echo ""
+	@echo "$(YELLOW)Checking for feature envy...$(NC)"
+	@cd durable-code-app/backend && \
+		grep -E "(\w+\.){3,}" --include="*.py" -r . | head -3 && \
+		echo "⚠️  Possible feature envy (message chains)" || echo "✓ No obvious feature envy"
+	@echo ""
+	@echo "$(YELLOW)Checking for data clumps...$(NC)"
+	@cd durable-code-app/backend && \
+		grep -E "def.*\((.*,){4,}" --include="*.py" -r . && \
+		echo "⚠️  Methods with many parameters (possible data clumps)" || \
+		echo "✓ No obvious data clumps"
+	@echo "$(GREEN)✓ Code smell detection complete$(NC)"
+
+# Generate Design Metrics Report
+design-report: ## Generate comprehensive design metrics report
+	@echo "$(CYAN)Generating Design Metrics Report...$(NC)"
+	@echo "# Design Metrics Report" > design-report.md
+	@echo "Generated: $$(date)" >> design-report.md
+	@echo "" >> design-report.md
+	@echo "## SRP Compliance" >> design-report.md
+	@python tools/design-linters/srp_analyzer.py durable-code-app --json | \
+		python -m json.tool >> design-report.md 2>/dev/null || echo "No violations" >> design-report.md
+	@echo "" >> design-report.md
+	@echo "## Complexity Metrics" >> design-report.md
+	@cd durable-code-app/backend && poetry run radon cc app -s -j >> ../../../design-report.md
+	@echo "" >> design-report.md
+	@echo "## Maintainability Index" >> design-report.md
+	@cd durable-code-app/backend && poetry run radon mi app -s >> ../../../design-report.md
+	@echo "$(GREEN)✓ Report generated: design-report.md$(NC)"
+
+# Interactive Design Review
+design-review: ## Interactive design review with suggestions
+	@echo "$(CYAN)╔════════════════════════════════════════════════════════════╗$(NC)"
+	@echo "$(CYAN)║             Interactive Design Review                      ║$(NC)"
+	@echo "$(CYAN)╚════════════════════════════════════════════════════════════╝$(NC)"
+	@echo "$(YELLOW)Analyzing codebase for design improvements...$(NC)"
+	@echo ""
+	@echo "$(YELLOW)Classes that might benefit from splitting:$(NC)"
+	@find durable-code-app -name "*.py" -exec wc -l {} \; | \
+		sort -rn | head -5 | \
+		awk '{if($$1 > 100) print "  •", $$2, "(", $$1, "lines)"}'
+	@echo ""
+	@echo "$(YELLOW)Suggested refactorings:$(NC)"
+	@echo "  • Consider Extract Class for classes > 200 lines"
+	@echo "  • Consider Extract Method for methods > 50 lines"
+	@echo "  • Consider Introduce Parameter Object for methods with > 3 parameters"
+	@echo "  • Consider Replace Conditional with Polymorphism for switch statements"
+	@echo ""
+	@echo "$(GREEN)✓ Design review complete$(NC)"
+
+# CI-specific design check (strict mode)
+ci-design-check: ## Design check for CI/CD pipeline
+	@python tools/design-linters/srp_analyzer.py durable-code-app --threshold strict --fail-on-error
+	@echo "$(GREEN)✓ CI design checks passed$(NC)"
+
+# Fix common design issues
+design-fix: ## Suggest fixes for design issues
+	@echo "$(CYAN)Design Issue Fix Suggestions:$(NC)"
+	@echo ""
+	@echo "$(YELLOW)For SRP violations:$(NC)"
+	@echo "  1. Split classes with multiple responsibilities"
+	@echo "  2. Extract methods to separate handler classes"
+	@echo "  3. Use composition instead of inheritance"
+	@echo ""
+	@echo "$(YELLOW)For high coupling:$(NC)"
+	@echo "  1. Introduce interfaces/protocols"
+	@echo "  2. Use dependency injection"
+	@echo "  3. Apply Dependency Inversion Principle"
+	@echo ""
+	@echo "$(YELLOW)For low cohesion:$(NC)"
+	@echo "  1. Group related methods together"
+	@echo "  2. Move unrelated methods to other classes"
+	@echo "  3. Ensure methods work on same data"
+
+# Watch for design degradation
+design-watch: ## Monitor design metrics over time
+	@echo "$(CYAN)Monitoring design metrics...$(NC)"
+	@while true; do \
+		clear; \
+		echo "$(CYAN)Design Metrics Monitor - $$(date)$(NC)"; \
+		echo ""; \
+		python tools/design-linters/srp_analyzer.py durable-code-app --threshold normal; \
+		sleep 10; \
+	done
