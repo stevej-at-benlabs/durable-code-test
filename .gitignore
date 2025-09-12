@@ -1,0 +1,60 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+.hypothesis/
+*.egg-info/
+dist/
+build/
+
+# Node
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+.pnpm-debug.log*
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*.swn
+.DS_Store
+
+# Build outputs
+*.log
+dist/
+build/
+*.local
+
+# Testing
+coverage/
+.nyc_output/
+
+# Backend specific
+durable-code-app/backend/.venv/
+durable-code-app/backend/instance/
+durable-code-app/backend/*.db
+
+# Frontend specific
+durable-code-app/frontend/dist/
+durable-code-app/frontend/dist-ssr/
+durable-code-app/frontend/*.local
