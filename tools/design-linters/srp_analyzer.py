@@ -14,9 +14,27 @@ import os
 import sys
 from collections import defaultdict
 from pathlib import Path
-from typing import Dict, List, Set, Tuple
+from typing import Dict, List, Set, Optional
 import argparse
 import json
+
+try:
+    from . import (
+    DEFAULT_SRP_THRESHOLDS,
+    RESPONSIBILITY_PREFIXES,
+    EXCLUDE_PATTERNS,
+    Severity,
+    SRPThresholds
+)
+except ImportError:
+    # For direct script execution
+    from __init__ import (
+        DEFAULT_SRP_THRESHOLDS,
+        RESPONSIBILITY_PREFIXES,
+        EXCLUDE_PATTERNS,
+        Severity,
+        SRPThresholds
+    )
 
 
 class SRPViolation:
@@ -43,31 +61,12 @@ class SRPViolation:
 class SRPAnalyzer(ast.NodeVisitor):
     """Analyzes Python code for SRP violations."""
     
-    # Thresholds for SRP violation detection
-    MAX_METHODS = 7
-    MAX_METHOD_GROUPS = 3
-    MAX_LINES = 200
-    MAX_DEPENDENCIES = 5
-    MAX_INSTANCE_VARS = 7
-    
-    # Method prefixes that indicate different responsibilities
-    RESPONSIBILITY_PREFIXES = {
-        'data_access': ['get', 'fetch', 'load', 'read', 'query'],
-        'data_mutation': ['set', 'save', 'write', 'update', 'delete', 'create'],
-        'validation': ['validate', 'verify', 'check', 'ensure', 'assert'],
-        'transformation': ['convert', 'transform', 'parse', 'format', 'serialize'],
-        'notification': ['send', 'notify', 'email', 'alert', 'publish'],
-        'calculation': ['calculate', 'compute', 'process', 'analyze'],
-        'rendering': ['render', 'display', 'draw', 'show', 'print'],
-        'authentication': ['login', 'logout', 'authenticate', 'authorize'],
-        'configuration': ['configure', 'setup', 'init', 'register']
-    }
-    
-    def __init__(self, file_path: str):
+    def __init__(self, file_path: str, thresholds: Optional[SRPThresholds] = None):
         self.file_path = file_path
         self.violations: List[SRPViolation] = []
         self.current_class = None
         self.class_metrics = {}
+        self.thresholds = thresholds or DEFAULT_SRP_THRESHOLDS
     
     def visit_ClassDef(self, node: ast.ClassDef) -> None:
         """Analyze a class definition for SRP violations."""
@@ -138,7 +137,7 @@ class SRPAnalyzer(ast.NodeVisitor):
                 continue  # Skip private methods
             
             categorized = False
-            for category, prefixes in self.RESPONSIBILITY_PREFIXES.items():
+            for category, prefixes in RESPONSIBILITY_PREFIXES.items():
                 for prefix in prefixes:
                     if method.name.lower().startswith(prefix):
                         groups[category].append(method.name)
@@ -191,24 +190,24 @@ class SRPAnalyzer(ast.NodeVisitor):
         """Check if metrics indicate SRP violations."""
         violations = []
         
-        if metrics['method_count'] > self.MAX_METHODS:
-            violations.append(f"Too many methods ({metrics['method_count']} > {self.MAX_METHODS})")
+        if metrics['method_count'] > self.thresholds.MAX_METHODS_PER_CLASS:
+            violations.append(f"Too many methods ({metrics['method_count']} > {self.thresholds.MAX_METHODS_PER_CLASS})")
         
-        if metrics['responsibility_group_count'] > self.MAX_METHOD_GROUPS:
+        if metrics['responsibility_group_count'] > self.thresholds.MAX_METHOD_GROUPS:
             groups = ', '.join(metrics['responsibility_groups'].keys())
             violations.append(f"Multiple responsibility groups detected: {groups}")
         
-        if metrics['line_count'] > self.MAX_LINES:
-            violations.append(f"Class too large ({metrics['line_count']} lines > {self.MAX_LINES})")
+        if metrics['line_count'] > self.thresholds.MAX_CLASS_LINES:
+            violations.append(f"Class too large ({metrics['line_count']} lines > {self.thresholds.MAX_CLASS_LINES})")
         
-        if metrics['instance_var_count'] > self.MAX_INSTANCE_VARS:
-            violations.append(f"Too many instance variables ({metrics['instance_var_count']} > {self.MAX_INSTANCE_VARS})")
+        if metrics['instance_var_count'] > self.thresholds.MAX_INSTANCE_VARIABLES:
+            violations.append(f"Too many instance variables ({metrics['instance_var_count']} > {self.thresholds.MAX_INSTANCE_VARIABLES})")
         
-        if metrics['dependency_count'] > self.MAX_DEPENDENCIES:
-            violations.append(f"Too many dependencies ({metrics['dependency_count']} > {self.MAX_DEPENDENCIES})")
+        if metrics['dependency_count'] > self.thresholds.MAX_DEPENDENCIES:
+            violations.append(f"Too many dependencies ({metrics['dependency_count']} > {self.thresholds.MAX_DEPENDENCIES})")
         
-        if metrics['cohesion_score'] < 0.3:
-            violations.append(f"Low cohesion score ({metrics['cohesion_score']:.2f} < 0.3)")
+        if metrics['cohesion_score'] < self.thresholds.MIN_COHESION_SCORE:
+            violations.append(f"Low cohesion score ({metrics['cohesion_score']:.2f} < {self.thresholds.MIN_COHESION_SCORE})")
         
         # Check for "and" in class name (obvious SRP violation)
         if 'and' in metrics['name'].lower():
@@ -220,29 +219,29 @@ class SRPAnalyzer(ast.NodeVisitor):
         """Determine violation severity based on metrics."""
         violation_count = 0
         
-        if metrics['method_count'] > self.MAX_METHODS:
+        if metrics['method_count'] > self.thresholds.MAX_METHODS_PER_CLASS:
             violation_count += 1
-        if metrics['responsibility_group_count'] > self.MAX_METHOD_GROUPS:
+        if metrics['responsibility_group_count'] > self.thresholds.MAX_METHOD_GROUPS:
             violation_count += 2  # This is more serious
-        if metrics['line_count'] > self.MAX_LINES:
+        if metrics['line_count'] > self.thresholds.MAX_CLASS_LINES:
             violation_count += 1
-        if metrics['cohesion_score'] < 0.3:
+        if metrics['cohesion_score'] < self.thresholds.MIN_COHESION_SCORE:
             violation_count += 2
         
-        if violation_count >= 4:
-            return 'error'
-        elif violation_count >= 2:
-            return 'warning'
+        if violation_count >= self.thresholds.ERROR_VIOLATION_COUNT:
+            return Severity.ERROR
+        elif violation_count >= self.thresholds.WARNING_VIOLATION_COUNT:
+            return Severity.WARNING
         else:
-            return 'info'
+            return Severity.INFO
 
 
-def analyze_file(file_path: str) -> List[SRPViolation]:
+def analyze_file(file_path: str, thresholds: Optional[SRPThresholds] = None) -> List[SRPViolation]:
     """Analyze a single Python file for SRP violations."""
     with open(file_path, 'r') as f:
         try:
             tree = ast.parse(f.read())
-            analyzer = SRPAnalyzer(file_path)
+            analyzer = SRPAnalyzer(file_path, thresholds)
             analyzer.visit(tree)
             return analyzer.violations
         except SyntaxError as e:
@@ -250,9 +249,9 @@ def analyze_file(file_path: str) -> List[SRPViolation]:
             return []
 
 
-def analyze_directory(directory: str, exclude_patterns: List[str] = None) -> List[SRPViolation]:
+def analyze_directory(directory: str, exclude_patterns: List[str] = None, thresholds: Optional[SRPThresholds] = None) -> List[SRPViolation]:
     """Analyze all Python files in a directory."""
-    exclude_patterns = exclude_patterns or ['test_', '__pycache__', '.git', 'venv', '.venv']
+    exclude_patterns = exclude_patterns or EXCLUDE_PATTERNS
     violations = []
     
     for path in Path(directory).rglob('*.py'):
@@ -260,7 +259,7 @@ def analyze_directory(directory: str, exclude_patterns: List[str] = None) -> Lis
         if any(pattern in str(path) for pattern in exclude_patterns):
             continue
         
-        file_violations = analyze_file(str(path))
+        file_violations = analyze_file(str(path), thresholds)
         violations.extend(file_violations)
     
     return violations
@@ -279,20 +278,27 @@ def main():
     args = parser.parse_args()
     
     # Adjust thresholds based on strictness
+    thresholds = DEFAULT_SRP_THRESHOLDS
     if args.threshold == 'strict':
-        SRPAnalyzer.MAX_METHODS = 5
-        SRPAnalyzer.MAX_METHOD_GROUPS = 2
-        SRPAnalyzer.MAX_LINES = 150
+        from dataclasses import replace
+        thresholds = replace(thresholds,
+            MAX_METHODS_PER_CLASS=thresholds.STRICT_MAX_METHODS,
+            MAX_METHOD_GROUPS=2,
+            MAX_CLASS_LINES=thresholds.STRICT_MAX_LINES
+        )
     elif args.threshold == 'lenient':
-        SRPAnalyzer.MAX_METHODS = 10
-        SRPAnalyzer.MAX_METHOD_GROUPS = 4
-        SRPAnalyzer.MAX_LINES = 300
+        from dataclasses import replace
+        thresholds = replace(thresholds,
+            MAX_METHODS_PER_CLASS=thresholds.LENIENT_MAX_METHODS,
+            MAX_METHOD_GROUPS=4,
+            MAX_CLASS_LINES=thresholds.LENIENT_MAX_LINES
+        )
     
     # Analyze path
     if os.path.isfile(args.path):
-        violations = analyze_file(args.path)
+        violations = analyze_file(args.path, thresholds)
     else:
-        violations = analyze_directory(args.path)
+        violations = analyze_directory(args.path, thresholds=thresholds)
     
     # Output results
     if args.json:
@@ -303,7 +309,7 @@ def main():
         else:
             print(f"Found {len(violations)} potential SRP violations:\n")
             for v in violations:
-                icon = "❌" if v.severity == 'error' else "⚠️" if v.severity == 'warning' else "ℹ️"
+                icon = "❌" if v.severity == Severity.ERROR else "⚠️" if v.severity == Severity.WARNING else "ℹ️"
                 print(f"{icon} {v.file_path}:{v.line} - {v.class_name}")
                 for reason in v.reasons:
                     print(f"   - {reason}")
@@ -311,7 +317,7 @@ def main():
     
     # Exit code
     if args.fail_on_error:
-        error_count = sum(1 for v in violations if v.severity == 'error')
+        error_count = sum(1 for v in violations if v.severity == Severity.ERROR)
         if error_count > 0:
             sys.exit(1)
 

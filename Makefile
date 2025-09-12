@@ -28,7 +28,7 @@ help: ## Show this help message
 	@echo ""
 	@echo "$(GREEN)Available targets:$(NC)"
 	@echo ""
-	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "  $(YELLOW)%-20s$(NC) %s\n", $$1, $$2}'
+	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sed 's/^[^:]*://' | awk 'BEGIN {FS = ":.*?## "}; {printf "  $(YELLOW)%-20s$(NC) %s\n", $$1, $$2}' | sort
 	@echo ""
 	@echo "$(CYAN)Usage examples:$(NC)"
 	@echo "  make init          # First-time setup"
@@ -167,16 +167,16 @@ test: ## Run all tests
 lint: ## Run basic linters
 	@echo "$(CYAN)Running linters...$(NC)"
 	@echo "$(YELLOW)Backend linting:$(NC)"
-	@docker exec durable-code-backend ruff check . || docker exec durable-code-backend-dev ruff check . || echo "$(YELLOW)Backend container not running$(NC)"
+	@docker exec durable-code-backend-dev /home/appuser/.local/bin/ruff check /app/app --cache-dir /tmp/ruff-cache || echo "$(YELLOW)Backend container not running$(NC)"
 	@echo "$(YELLOW)Frontend linting:$(NC)"
-	@docker exec durable-code-frontend npm run lint || docker exec durable-code-frontend-dev npm run lint || echo "$(YELLOW)Frontend container not running$(NC)"
+	@docker exec durable-code-frontend-dev npm run lint || echo "$(YELLOW)Frontend container not running$(NC)"
 
 format: ## Format code
 	@echo "$(CYAN)Formatting code...$(NC)"
 	@echo "$(YELLOW)Backend formatting:$(NC)"
-	@docker exec durable-code-backend black . || docker exec durable-code-backend-dev black . || echo "$(YELLOW)Backend container not running$(NC)"
+	@docker exec durable-code-backend-dev /home/appuser/.local/bin/black /app/app || echo "$(YELLOW)Backend container not running$(NC)"
 	@echo "$(YELLOW)Frontend formatting:$(NC)"
-	@docker exec durable-code-frontend npm run format || docker exec durable-code-frontend-dev npm run format || echo "$(YELLOW)Frontend container not running$(NC)"
+	@docker exec durable-code-frontend-dev npm run format || echo "$(YELLOW)Frontend container not running$(NC)"
 
 # Dependency management
 check-deps: ## Check for outdated dependencies

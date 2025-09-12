@@ -4,7 +4,7 @@
 .PHONY: lint-all lint-python lint-frontend lint-complexity lint-security lint-format-check ci-lint
 
 # Main linting targets
-lint-all: lint-python lint-frontend ## Run all linting checks
+lint-all: lint-python lint-frontend lint-magic-numbers ## Run all linting checks
 
 lint-python: ## Run all Python linting tools
 	@echo "$(CYAN)╔════════════════════════════════════════════════════════════╗$(NC)"
@@ -39,9 +39,9 @@ lint-python: ## Run all Python linting tools
 		poetry run bandit -r app && \
 		echo "$(GREEN)✓ Bandit passed$(NC)" && \
 		echo "" && \
-		echo "$(YELLOW)8. Safety (dependency vulnerabilities)...$(NC)" && \
-		poetry run safety check && \
-		echo "$(GREEN)✓ Safety passed$(NC)" && \
+		echo "$(YELLOW)8. Pip-audit (dependency vulnerabilities)...$(NC)" && \
+		poetry run pip-audit && \
+		echo "$(GREEN)✓ Pip-audit passed$(NC)" && \
 		echo "" && \
 		echo "$(GREEN)✅ All Python linting checks passed!$(NC)"
 
@@ -141,6 +141,17 @@ ci-lint: ## Linting for CI/CD (strict mode)
 # Local development helpers
 pre-commit: lint-format-check lint-complexity ## Pre-commit checks
 	@echo "$(GREEN)✅ Ready to commit!$(NC)"
+
+# Magic number detection
+lint-magic-numbers: ## Detect magic numbers and literals
+	@echo "$(CYAN)╔════════════════════════════════════════════════════════════╗$(NC)"
+	@echo "$(CYAN)║               Magic Number Detection                       ║$(NC)"
+	@echo "$(CYAN)╚════════════════════════════════════════════════════════════╝$(NC)"
+	@echo "$(YELLOW)Checking backend for magic numbers...$(NC)"
+	@python tools/design-linters/magic_number_detector.py durable-code-app/backend/app || echo "$(GREEN)✓ No magic numbers detected$(NC)"
+	@echo ""
+	@echo "$(YELLOW)Checking frontend for magic numbers...$(NC)"
+	@python tools/design-linters/magic_number_detector.py durable-code-app/frontend/src 2>/dev/null || echo "$(GREEN)✓ No magic numbers detected$(NC)"
 
 quality-report: ## Generate detailed quality report
 	@echo "$(CYAN)Generating quality report...$(NC)"

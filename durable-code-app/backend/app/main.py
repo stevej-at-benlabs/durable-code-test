@@ -19,6 +19,13 @@ ALLOWED_ORIGINS: list[str] = [
     "http://localhost:5173",
 ]
 
+# API Messages and Constants
+WELCOME_MESSAGE = "Welcome to Durable Code API"
+ROOT_ENDPOINT_DESCRIPTION = "Root endpoint returning welcome message."
+HEALTH_ENDPOINT_PATH = "/health"
+HEALTH_ENDPOINT_DESCRIPTION = "Health check endpoint for monitoring."
+HEALTH_STATUS_OK = "healthy"
+
 
 def create_application() -> FastAPI:
     """Create and configure the FastAPI application."""
@@ -45,10 +52,10 @@ app = create_application()
 @app.get("/")
 async def root() -> dict[str, str]:
     """Root endpoint returning welcome message."""
-    return {"message": "Welcome to Durable Code API"}
+    return {"message": WELCOME_MESSAGE}
 
 
-@app.get("/health")
+@app.get(HEALTH_ENDPOINT_PATH)
 async def health_check() -> dict[str, str]:
     """Health check endpoint for monitoring."""
-    return {"status": "healthy"}
+    return {"status": HEALTH_STATUS_OK}
