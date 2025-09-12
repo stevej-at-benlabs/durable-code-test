@@ -1,0 +1,34 @@
+version: '3.8'
+
+services:
+  backend:
+    build:
+      context: ./durable-code-app/backend
+      dockerfile: Dockerfile
+    container_name: durable-code-backend
+    ports:
+      - "8000:8000"
+    environment:
+      - ENV=production
+    volumes:
+      - ./durable-code-app/backend:/app
+    networks:
+      - durable-network
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ./durable-code-app/frontend
+      dockerfile: Dockerfile
+    container_name: durable-code-frontend
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+    networks:
+      - durable-network
+    restart: unless-stopped
+
+networks:
+  durable-network:
+    driver: bridge

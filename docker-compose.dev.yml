@@ -1,0 +1,41 @@
+version: '3.8'
+
+services:
+  backend-dev:
+    build:
+      context: ./durable-code-app/backend
+      dockerfile: Dockerfile
+    container_name: durable-code-backend-dev
+    ports:
+      - "8000:8000"
+    environment:
+      - ENV=development
+    volumes:
+      - ./durable-code-app/backend:/app
+      - /app/__pycache__
+    networks:
+      - durable-network-dev
+    restart: unless-stopped
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+
+  frontend-dev:
+    build:
+      context: ./durable-code-app/frontend
+      dockerfile: Dockerfile.dev
+    container_name: durable-code-frontend-dev
+    ports:
+      - "5173:5173"
+    depends_on:
+      - backend-dev
+    volumes:
+      - ./durable-code-app/frontend:/app
+      - /app/node_modules
+    networks:
+      - durable-network-dev
+    restart: unless-stopped
+    environment:
+      - NODE_ENV=development
+
+networks:
+  durable-network-dev:
+    driver: bridge

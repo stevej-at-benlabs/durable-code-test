@@ -1,20 +1,16 @@
-[project]
+[tool.poetry]
 name = "durable-code-backend"
 version = "0.1.0"
-description = ""
-authors = [
-    {name = "Steve Jackson",email = "steve.jackson@tubebuddy.com"}
-]
+description = "Backend API for Durable Code Test"
+authors = ["Your Name <you@example.com>"]
 readme = "README.md"
-requires-python = ">=3.13"
-dependencies = [
-    "fastapi (>=0.116.1,<0.117.0)",
-    "uvicorn (>=0.35.0,<0.36.0)",
-    "python-dotenv (>=1.1.1,<2.0.0)",
-    "pydantic (>=2.11.7,<3.0.0)"
-]
 
-[tool.poetry]
+[tool.poetry.dependencies]
+python = "^3.11"
+fastapi = "^0.116.1"
+uvicorn = "^0.35.0"
+python-dotenv = "^1.1.1"
+pydantic = "^2.11.7"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.4.2"
@@ -23,5 +19,5 @@ ruff = "^0.13.0"
 mypy = "^1.18.1"
 
 [build-system]
-requires = ["poetry-core>=2.0.0,<3.0.0"]
+requires = ["poetry-core>=1.0.0"]
 build-backend = "poetry.core.masonry.api"
