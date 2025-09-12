@@ -187,7 +187,10 @@ function App() {
                 className={`technique-card ${hoveredTechnique === technique.id ? 'hovered' : ''} ${technique.id === 'set-standards' ? 'clickable' : ''}`}
                 onMouseEnter={() => setHoveredTechnique(technique.id)}
                 onMouseLeave={() => setHoveredTechnique(null)}
-                onClick={() => technique.id === 'set-standards' && (window.location.href = 'set-standards.html')}
+                onClick={() =>
+                  technique.id === 'set-standards' &&
+                  (window.location.href = 'set-standards.html')
+                }
               >
                 <div className="card-header">
                   <span className="card-icon">{technique.icon}</span>

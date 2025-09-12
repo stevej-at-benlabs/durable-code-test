@@ -184,6 +184,140 @@ frontend/
 - Mobile-first responsive design
 - Avoid inline styles
 
+## File Placement and Organization Standards
+
+### 1. Root-Level Files
+**Allowed files only:**
+- Configuration files: `.gitignore`, `.env.example`, `docker-compose.yml`, `Makefile`, `README.md`
+- Project setup files: `pyproject.toml`, `package.json` (for monorepo package managers)
+- CI/CD files: `.pre-commit-config.yaml`, `.github/` directory contents
+- IDE configurations: `.vscode/`, `.idea/` (optional)
+
+**Prohibited at root:**
+- Source code files (`.py`, `.js`, `.ts`, `.tsx`, `.html`, `.css`)
+- Test files (`test_*.py`, `*.test.js`, `*.spec.ts`)
+- Build artifacts (`dist/`, `build/`, compiled files)
+
+### 2. Python Files Placement
+```
+├── durable-code-app/backend/
+│   ├── app/                    # Application source code
+│   │   ├── *.py               # Python modules
+│   │   ├── api/               # API endpoints
+│   │   ├── models/            # Data models
+│   │   ├── services/          # Business logic
+│   │   └── core/              # Core functionality
+│   └── docs/                  # Module-specific documentation
+├── tools/                     # Development and build tools
+│   └── *.py                   # Python utility scripts
+└── test/                      # ALL project tests (unified location)
+    ├── unit_test/             # Unit tests for all components
+    │   ├── tools/             # Tests for tools/ directory
+    │   ├── backend/           # Tests for backend components
+    │   └── frontend/          # Tests for frontend components
+    └── integration_test/      # Integration tests
+```
+
+**Important**: All test files should be in the root `test/` directory, organized by component being tested. This provides a unified testing structure across the entire project.
+
+### 3. Frontend Files Placement
+```
+├── durable-code-app/frontend/
+│   ├── src/                   # Source code
+│   │   ├── *.tsx, *.ts        # TypeScript/React files
+│   │   ├── *.css              # Stylesheets
+│   │   ├── components/        # React components
+│   │   ├── pages/             # Page components
+│   │   ├── hooks/             # Custom hooks
+│   │   ├── services/          # API services
+│   │   ├── types/             # Type definitions
+│   │   └── utils/             # Utility functions
+│   ├── public/                # Static assets
+│   │   ├── *.html             # HTML templates (index.html only)
+│   │   ├── *.svg, *.png       # Static images
+│   │   └── *.ico              # Favicons
+│   ├── tests/                 # Test files
+│   │   ├── *.test.tsx         # Component tests
+│   │   ├── *.spec.ts          # Unit tests
+│   │   └── __tests__/         # Test directories
+│   └── dist/                  # Build output (generated)
+```
+
+### 4. HTML Files Placement Rules
+- **Main Template**: `frontend/index.html` (Vite entry point - required in frontend root)
+- **Static HTML**: `frontend/public/` for additional static pages
+- **Documentation HTML**: `docs/` directory only
+- **Build Output**: `frontend/dist/` (auto-generated)
+- **Component HTML**: Should be React/JSX components in `frontend/src/components/`
+
+**Prohibited locations:**
+- Root directory
+- Backend directories
+- Direct in `src/` without component structure
+
+**Note**: `index.html` must be in the frontend root directory as required by Vite.
+
+### 5. Test Files Organization
+```
+├── test/                      # ALL project tests (unified structure)
+│   ├── unit_test/            # Unit tests organized by component
+│   │   ├── tools/            # Tests for tools/ directory
+│   │   │   ├── test_magic_number_detector.py
+│   │   │   └── test_srp_analyzer.py
+│   │   ├── backend/          # Tests for backend components
+│   │   │   ├── app/          # Tests for backend app
+│   │   │   ├── api/          # API endpoint tests
+│   │   │   └── models/       # Model tests
+│   │   └── frontend/         # Tests for frontend components
+│   │       ├── components/   # Component tests
+│   │       └── utils/        # Utility function tests
+│   ├── integration_test/     # Integration tests
+│   │   ├── backend/          # Backend integration tests
+│   │   └── frontend/         # Frontend integration tests
+│   └── fixtures/             # Test data and fixtures
+└── durable-code-app/frontend/tests/ # Frontend-specific tests (if needed)
+    └── e2e/                  # End-to-end tests only
+```
+
+**Key Principles:**
+- **Unified Structure**: All tests in root `test/` directory
+- **Component Organization**: Tests organized by what they test, not where they run
+- **Clear Separation**: Unit tests, integration tests, and fixtures clearly separated
+- **Frontend Exception**: Only E2E tests can remain in frontend/tests/ if needed for tooling
+
+### 6. Documentation Files
+- **Project docs**: `docs/` directory
+- **Component docs**: Next to source files or in module `docs/` subdirectory
+- **API docs**: Auto-generated in `durable-code-app/backend/docs/`
+- **README files**: Each major directory can have one README.md
+
+### 7. Configuration Files Hierarchy
+```
+├── .env.example               # Global environment template
+├── .pre-commit-config.yaml    # Global pre-commit
+├── durable-code-app/
+│   ├── backend/
+│   │   ├── pyproject.toml     # Python dependencies
+│   │   ├── .flake8           # Python linting config
+│   │   └── .env              # Backend-specific env (gitignored)
+│   └── frontend/
+│       ├── package.json       # Node dependencies
+│       ├── tsconfig.json      # TypeScript config
+│       ├── vite.config.ts     # Build tool config
+│       └── .env              # Frontend-specific env (gitignored)
+```
+
+### 8. File Placement Validation Rules
+The custom file placement linter enforces these rules:
+- **Python files**: Must be in `app/`, `tools/`, or root `test/` directories
+- **HTML files**: Must be in `frontend/`, `frontend/public/`, `frontend/dist/`, or `docs/`
+- **TypeScript/React**: Must be in `frontend/src/` or `frontend/tests/` (E2E only)
+- **CSS files**: Must be in `frontend/src/` or `frontend/public/`
+- **Test files**: Must be in root `test/` directory with proper organization
+- **Config files**: Must be in designated locations based on scope and purpose
+
+**Critical Rule**: All test files must be in the root `test/` directory, organized by component being tested, not by technology stack.
+
 ## General Development Practices
 
 ### 1. Version Control

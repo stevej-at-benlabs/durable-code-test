@@ -117,14 +117,19 @@ disable = [
 ]
 
 [tool.pylint.design]
-max-complexity = 5  # Enforces Radon complexity A
+# Complexity is handled by Radon and Ruff/mccabe
+max-args = 5
+max-locals = 15
+max-returns = 6
+max-branches = 12
+max-statements = 50
 
 [tool.bandit]
 exclude_dirs = ["/tests/", "/test/"]
 skips = ["B101"]  # Skip assert_used test
 
 [tool.pytest.ini_options]
-testpaths = ["tests"]
+testpaths = ["../../test"]  # Use root test directory
 python_files = ["test_*.py", "*_test.py"]
 addopts = "--cov=app --cov-report=term-missing --cov-report=html --cov-fail-under=80"
 

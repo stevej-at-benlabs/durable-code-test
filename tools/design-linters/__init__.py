@@ -106,6 +106,44 @@ class Severity:
     WARNING = 'warning'
     INFO = 'info'
 
+# File placement rules
+FILE_PLACEMENT_RULES = {
+    'python_allowed_dirs': [
+        'durable-code-app/backend/app',
+        'durable-code-app/backend/app/**',
+        'tools',
+        'tools/**',
+        'test',
+        'test/**',
+        'durable-code-app/backend/tests',
+        'durable-code-app/backend/tests/**'
+    ],
+    'html_allowed_dirs': [
+        'durable-code-app/frontend/public',
+        'durable-code-app/frontend/dist',
+        'durable-code-app/frontend/dist/**',
+        'docs'
+    ],
+    'frontend_allowed_dirs': [
+        'durable-code-app/frontend/src',
+        'durable-code-app/frontend/src/**',
+        'durable-code-app/frontend/tests',
+        'durable-code-app/frontend/tests/**'
+    ],
+    'prohibited_root_extensions': ['.py', '.js', '.ts', '.tsx', '.html', '.css'],
+    'excluded_patterns': [
+        '.git',
+        '__pycache__',
+        '.mypy_cache',
+        '.ruff_cache',
+        'node_modules',
+        '.venv',
+        'venv',
+        '.pytest_cache'
+    ]
+}
+
 # Default instances
 DEFAULT_SRP_THRESHOLDS = SRPThresholds()
 DEFAULT_MAGIC_NUMBER_THRESHOLDS = MagicNumberThresholds()
+DEFAULT_FILE_PLACEMENT_RULES = FILE_PLACEMENT_RULES
