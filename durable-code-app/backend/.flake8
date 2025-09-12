@@ -1,7 +1,7 @@
 [flake8]
 max-line-length = 88
-max-complexity = 5  # Enforces Radon complexity A
-extend-ignore = E203, W503, D100, D104
+max-complexity = 5
+extend-ignore = E203, W503, D100, D104, D212
 exclude = 
     .git,
     __pycache__,
