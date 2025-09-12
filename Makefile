@@ -160,7 +160,10 @@ test: ## Run all tests
 	@echo "$(YELLOW)Frontend tests:$(NC)"
 	@docker exec durable-code-frontend npm test || docker exec durable-code-frontend-dev npm test || echo "$(YELLOW)Frontend container not running$(NC)"
 
-lint: ## Run linters
+# Include comprehensive linting targets
+-include Makefile.lint
+
+lint: ## Run basic linters
 	@echo "$(CYAN)Running linters...$(NC)"
 	@echo "$(YELLOW)Backend linting:$(NC)"
 	@docker exec durable-code-backend ruff check . || docker exec durable-code-backend-dev ruff check . || echo "$(YELLOW)Backend container not running$(NC)"
