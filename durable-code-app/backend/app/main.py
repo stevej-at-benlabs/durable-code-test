@@ -5,8 +5,6 @@ This module demonstrates durable code practices with
 strict complexity limits and comprehensive type safety.
 """
 
-from typing import Dict, List
-
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -16,7 +14,7 @@ API_DESCRIPTION = "API demonstrating durable code practices"
 API_VERSION = "1.0.0"
 
 # CORS configuration
-ALLOWED_ORIGINS: List[str] = [
+ALLOWED_ORIGINS: list[str] = [
     "http://localhost:3000",
     "http://localhost:5173",
 ]
@@ -29,7 +27,7 @@ def create_application() -> FastAPI:
         description=API_DESCRIPTION,
         version=API_VERSION,
     )
-    
+
     application.add_middleware(
         CORSMiddleware,
         allow_origins=ALLOWED_ORIGINS,
@@ -37,7 +35,7 @@ def create_application() -> FastAPI:
         allow_methods=["*"],
         allow_headers=["*"],
     )
-    
+
     return application
 
 
@@ -45,12 +43,12 @@ app = create_application()
 
 
 @app.get("/")
-async def root() -> Dict[str, str]:
+async def root() -> dict[str, str]:
     """Root endpoint returning welcome message."""
     return {"message": "Welcome to Durable Code API"}
 
 
 @app.get("/health")
-async def health_check() -> Dict[str, str]:
+async def health_check() -> dict[str, str]:
     """Health check endpoint for monitoring."""
     return {"status": "healthy"}
