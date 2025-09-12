@@ -1,0 +1,153 @@
+# Comprehensive Linting Makefile Extension
+# Include this in the main Makefile or use directly
+
+.PHONY: lint-all lint-python lint-frontend lint-complexity lint-security lint-format-check ci-lint
+
+# Main linting targets
+lint-all: lint-python lint-frontend ## Run all linting checks
+
+lint-python: ## Run all Python linting tools
+	@echo "$(CYAN)╔════════════════════════════════════════════════════════════╗$(NC)"
+	@echo "$(CYAN)║                  Python Linting Suite                     ║$(NC)"
+	@echo "$(CYAN)╚════════════════════════════════════════════════════════════╝$(NC)"
+	@cd durable-code-app/backend && \
+		echo "$(YELLOW)1. Black (formatting check)...$(NC)" && \
+		poetry run black --check . && \
+		echo "$(GREEN)✓ Black passed$(NC)" && \
+		echo "" && \
+		echo "$(YELLOW)2. isort (import sorting)...$(NC)" && \
+		poetry run isort --check-only . && \
+		echo "$(GREEN)✓ isort passed$(NC)" && \
+		echo "" && \
+		echo "$(YELLOW)3. Ruff (fast linting)...$(NC)" && \
+		poetry run ruff check . && \
+		echo "$(GREEN)✓ Ruff passed$(NC)" && \
+		echo "" && \
+		echo "$(YELLOW)4. Flake8 (style guide)...$(NC)" && \
+		poetry run flake8 . && \
+		echo "$(GREEN)✓ Flake8 passed$(NC)" && \
+		echo "" && \
+		echo "$(YELLOW)5. MyPy (type checking)...$(NC)" && \
+		poetry run mypy app && \
+		echo "$(GREEN)✓ MyPy passed$(NC)" && \
+		echo "" && \
+		echo "$(YELLOW)6. Pylint (code analysis)...$(NC)" && \
+		poetry run pylint app && \
+		echo "$(GREEN)✓ Pylint passed$(NC)" && \
+		echo "" && \
+		echo "$(YELLOW)7. Bandit (security)...$(NC)" && \
+		poetry run bandit -r app && \
+		echo "$(GREEN)✓ Bandit passed$(NC)" && \
+		echo "" && \
+		echo "$(YELLOW)8. Safety (dependency vulnerabilities)...$(NC)" && \
+		poetry run safety check && \
+		echo "$(GREEN)✓ Safety passed$(NC)" && \
+		echo "" && \
+		echo "$(GREEN)✅ All Python linting checks passed!$(NC)"
+
+lint-complexity: ## Check code complexity (Radon)
+	@echo "$(CYAN)╔════════════════════════════════════════════════════════════╗$(NC)"
+	@echo "$(CYAN)║                  Complexity Analysis                       ║$(NC)"
+	@echo "$(CYAN)╚════════════════════════════════════════════════════════════╝$(NC)"
+	@cd durable-code-app/backend && \
+		echo "$(YELLOW)Cyclomatic Complexity (must be A):$(NC)" && \
+		poetry run radon cc app -s -n A && \
+		echo "" && \
+		echo "$(YELLOW)Maintainability Index (must be A):$(NC)" && \
+		poetry run radon mi app -s -n A && \
+		echo "" && \
+		echo "$(YELLOW)Halstead Metrics:$(NC)" && \
+		poetry run radon hal app && \
+		echo "" && \
+		echo "$(YELLOW)Raw Metrics:$(NC)" && \
+		poetry run radon raw app && \
+		echo "" && \
+		echo "$(YELLOW)Xenon (complexity monitoring):$(NC)" && \
+		poetry run xenon --max-absolute A --max-modules A --max-average A app && \
+		echo "$(GREEN)✅ All complexity checks passed (Grade A)!$(NC)"
+
+lint-frontend: ## Run all TypeScript/React linting
+	@echo "$(CYAN)╔════════════════════════════════════════════════════════════╗$(NC)"
+	@echo "$(CYAN)║              TypeScript/React Linting Suite               ║$(NC)"
+	@echo "$(CYAN)╚════════════════════════════════════════════════════════════╝$(NC)"
+	@cd durable-code-app/frontend && \
+		echo "$(YELLOW)1. TypeScript compilation...$(NC)" && \
+		npm run typecheck && \
+		echo "$(GREEN)✓ TypeScript passed$(NC)" && \
+		echo "" && \
+		echo "$(YELLOW)2. ESLint (with all plugins)...$(NC)" && \
+		npm run lint && \
+		echo "$(GREEN)✓ ESLint passed$(NC)" && \
+		echo "" && \
+		echo "$(YELLOW)3. Prettier (formatting check)...$(NC)" && \
+		npm run format:check && \
+		echo "$(GREEN)✓ Prettier passed$(NC)" && \
+		echo "" && \
+		echo "$(GREEN)✅ All TypeScript/React linting checks passed!$(NC)"
+
+lint-security: ## Run security-focused linting
+	@echo "$(CYAN)╔════════════════════════════════════════════════════════════╗$(NC)"
+	@echo "$(CYAN)║                   Security Analysis                        ║$(NC)"
+	@echo "$(CYAN)╚════════════════════════════════════════════════════════════╝$(NC)"
+	@cd durable-code-app/backend && \
+		echo "$(YELLOW)Python Security (Bandit):$(NC)" && \
+		poetry run bandit -r app -ll && \
+		echo "" && \
+		echo "$(YELLOW)Dependency Vulnerabilities (Safety):$(NC)" && \
+		poetry run safety check --json && \
+		echo "$(GREEN)✓ Python security checks passed$(NC)"
+	@cd durable-code-app/frontend && \
+		echo "" && \
+		echo "$(YELLOW)JavaScript Security Audit:$(NC)" && \
+		npm audit --audit-level=moderate && \
+		echo "$(GREEN)✓ Frontend security checks passed$(NC)"
+
+lint-format-check: ## Check formatting without fixing
+	@echo "$(CYAN)Checking code formatting...$(NC)"
+	@cd durable-code-app/backend && \
+		poetry run black --check . && \
+		poetry run isort --check-only .
+	@cd durable-code-app/frontend && \
+		npm run format:check
+
+lint-fix: ## Auto-fix linting issues
+	@echo "$(CYAN)Auto-fixing linting issues...$(NC)"
+	@cd durable-code-app/backend && \
+		echo "$(YELLOW)Fixing Python code...$(NC)" && \
+		poetry run black . && \
+		poetry run isort . && \
+		poetry run ruff check --fix .
+	@cd durable-code-app/frontend && \
+		echo "$(YELLOW)Fixing TypeScript/React code...$(NC)" && \
+		npm run lint:fix && \
+		npm run format
+
+# CI-specific target (fails fast, returns error codes)
+ci-lint: ## Linting for CI/CD (strict mode)
+	@cd durable-code-app/backend && \
+		poetry run black --check . && \
+		poetry run isort --check-only . && \
+		poetry run ruff check . && \
+		poetry run flake8 . && \
+		poetry run mypy app && \
+		poetry run bandit -r app && \
+		poetry run radon cc app -n A -s && \
+		poetry run xenon --max-absolute A --max-modules A --max-average A app
+	@cd durable-code-app/frontend && \
+		npm run typecheck && \
+		npm run lint && \
+		npm run format:check
+
+# Local development helpers
+pre-commit: lint-format-check lint-complexity ## Pre-commit checks
+	@echo "$(GREEN)✅ Ready to commit!$(NC)"
+
+quality-report: ## Generate detailed quality report
+	@echo "$(CYAN)Generating quality report...$(NC)"
+	@cd durable-code-app/backend && \
+		echo "# Python Code Quality Report" > quality-report.md && \
+		echo "## Complexity Metrics" >> quality-report.md && \
+		poetry run radon cc app -s --json >> quality-report.md && \
+		echo "## Maintainability Index" >> quality-report.md && \
+		poetry run radon mi app -s --json >> quality-report.md && \
+		echo "$(GREEN)✓ Report generated: backend/quality-report.md$(NC)"
