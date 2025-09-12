@@ -17,6 +17,20 @@ interface Technique {
 
 const techniques: Technique[] = [
   {
+    id: 'set-standards',
+    title: 'Set Standards First',
+    description:
+      'Define comprehensive development standards before AI generates code. Front-load quality requirements, patterns, and constraints.',
+    category: 'Quality',
+    icon: '🎯',
+    benefits: [
+      'Consistent code quality',
+      'Automated enforcement',
+      'Clear expectations',
+      'Reduced refactoring',
+    ],
+  },
+  {
     id: 'tdd',
     title: 'Test-Driven Development with AI',
     description:
@@ -123,6 +137,11 @@ function App() {
             Master the art of creating maintainable, scalable, and robust software
             through AI-assisted development techniques
           </p>
+          <div className="hero-actions">
+            <a href="set-standards.html" className="hero-cta">
+              🎯 Set Standards First
+            </a>
+          </div>
           <div className="hero-stats">
             <div className="stat">
               <span className="stat-number">6</span>
@@ -165,9 +184,10 @@ function App() {
             {filteredTechniques.map((technique) => (
               <div
                 key={technique.id}
-                className={`technique-card ${hoveredTechnique === technique.id ? 'hovered' : ''}`}
+                className={`technique-card ${hoveredTechnique === technique.id ? 'hovered' : ''} ${technique.id === 'set-standards' ? 'clickable' : ''}`}
                 onMouseEnter={() => setHoveredTechnique(technique.id)}
                 onMouseLeave={() => setHoveredTechnique(null)}
+                onClick={() => technique.id === 'set-standards' && (window.location.href = 'set-standards.html')}
               >
                 <div className="card-header">
                   <span className="card-icon">{technique.icon}</span>
