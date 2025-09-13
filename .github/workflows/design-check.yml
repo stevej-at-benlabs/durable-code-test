@@ -33,7 +33,7 @@ jobs:
           
       - name: Upload SRP Report
         if: always()
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: srp-analysis
           path: srp-report.json
@@ -64,7 +64,7 @@ jobs:
         run: |
           echo "## 📈 Cohesion Metrics" >> $GITHUB_STEP_SUMMARY
           echo '```' >> $GITHUB_STEP_SUMMARY
-          poetry run radon hal app -s >> $GITHUB_STEP_SUMMARY
+          poetry run radon hal app >> $GITHUB_STEP_SUMMARY
           echo '```' >> $GITHUB_STEP_SUMMARY
       
       - name: Analyze Coupling

@@ -15,6 +15,11 @@ import re
 import sys
 from pathlib import Path
 from typing import Dict, List, NamedTuple, Optional, Set
+from loguru import logger
+
+# Configure logger for CLI output
+logger.remove()  # Remove default handler
+logger.add(sys.stderr, format="{message}", level="INFO")
 
 
 class PrintViolation(NamedTuple):
@@ -82,7 +87,8 @@ class PrintStatementLinter:
     # Directories to skip (excluding test directories - they should also use logging)
     SKIP_DIRS = {
         'node_modules', '__pycache__', '.git', '.venv', 'venv',
-        'dist', 'build', 'coverage', '.pytest_cache', '.tox'
+        'dist', 'build', 'coverage', '.pytest_cache', '.tox',
+        'design-linters'  # Skip linter tools themselves (meta-tools exception)
     }
     
     # File patterns to skip (excluding test files - they should also use logging)
@@ -381,6 +387,8 @@ class PrintStatementLinter:
 
 def main():
     """Main entry point."""
+    import sys
+    
     parser = argparse.ArgumentParser(
         description="Detect print statements in production code",
         formatter_class=argparse.RawDescriptionHelpFormatter,
@@ -440,8 +448,12 @@ Examples:
     else:
         violations = linter.lint_directory(args.path, recursive=args.recursive)
     
-    # Generate report
-    print(linter.generate_report(format=args.format))
+    # Generate report - using logger for structured output
+    report = linter.generate_report(format=args.format)
+    # For CLI tools, the report itself is the output, not a log message
+    # We write directly to stdout for piping/redirection compatibility
+    sys.stdout.write(report + '\n')
+    sys.stdout.flush()
     
     # Exit code
     if violations:
