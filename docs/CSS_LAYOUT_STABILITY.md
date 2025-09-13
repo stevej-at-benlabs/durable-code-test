@@ -1,5 +1,14 @@
 # CSS Layout Stability Guide
 
+**Purpose**: Guide for preventing jarring page width changes and maintaining stable layouts in dynamic UIs  
+**Scope**: CSS layout patterns, React components with dynamic content, responsive design  
+**Created**: 2024-11-20  
+**Updated**: 2025-09-12  
+**Author**: Frontend Team  
+**Version**: 1.2  
+
+---
+
 ## Problem: Dynamic Page Width Changes
 
 ### Issue Description

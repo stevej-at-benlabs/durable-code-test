@@ -1,0 +1,138 @@
+name: Frontend Tests & Link Validation
+
+on:
+  pull_request:
+    branches: [main, develop]
+    paths:
+      - 'durable-code-app/frontend/**'
+      - '.github/workflows/frontend-tests.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'durable-code-app/frontend/**'
+
+jobs:
+  test:
+    name: Frontend Unit Tests
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./durable-code-app/frontend
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: 'durable-code-app/frontend/package-lock.json'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run TypeScript type check
+        run: npm run typecheck
+
+      - name: Run linting
+        run: npm run lint
+
+      - name: Run tests
+        run: npm run test:run
+
+      - name: Generate test coverage
+        run: npm run test:coverage
+
+      - name: Upload coverage to codecov
+        if: github.event_name == 'pull_request'
+        uses: codecov/codecov-action@v4
+        with:
+          file: ./durable-code-app/frontend/coverage/lcov.info
+          flags: frontend
+          name: frontend-coverage
+
+  link-validation:
+    name: Validate Links
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./durable-code-app/frontend
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: 'durable-code-app/frontend/package-lock.json'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build application
+        run: npm run build
+
+      - name: Start development server
+        run: |
+          npm run dev &
+          sleep 10  # Wait for dev server to start
+        
+      - name: Run link validation tests
+        run: npm run test:links
+
+      - name: Check public files exist
+        run: |
+          if [ ! -f "public/set-standards.html" ]; then
+            echo "❌ Missing required file: public/set-standards.html"
+            exit 1
+          fi
+          echo "✅ All required public files exist"
+
+  build:
+    name: Build & Deploy Check  
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./durable-code-app/frontend
+        
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'  
+          cache-dependency-path: 'durable-code-app/frontend/package-lock.json'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build for production
+        run: npm run build
+
+      - name: Check build artifacts
+        run: |
+          if [ ! -d "dist" ]; then
+            echo "❌ Build failed - dist directory not created"
+            exit 1
+          fi
+          if [ ! -f "dist/index.html" ]; then
+            echo "❌ Build failed - index.html not found in dist"
+            exit 1
+          fi
+          echo "✅ Build successful"
+
+      - name: Upload build artifacts
+        if: github.event_name == 'pull_request'
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-build
+          path: durable-code-app/frontend/dist/
+          retention-days: 7

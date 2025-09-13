@@ -1,5 +1,14 @@
 # Design Principles Linting Strategy
 
+**Purpose**: Define automated strategies for detecting violations of SOLID principles and design patterns in code  
+**Scope**: Python and TypeScript code analysis, SOLID principles enforcement, design smell detection  
+**Created**: 2024-12-10  
+**Updated**: 2025-09-12  
+**Author**: Architecture Team  
+**Version**: 1.3  
+
+---
+
 ## Overview
 This document outlines strategies for automatically detecting violations of SOLID principles and other design patterns that are traditionally considered "subjective" but are crucial for durable code.
 

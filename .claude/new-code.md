@@ -7,8 +7,13 @@ This command ensures all new code adheres to the established development standar
 
 Before writing any new code, I will:
 
-### 1. Review Standards Document
-- Read the complete STANDARDS.md file at `/docs/STANDARDS.md`
+### 1. Review Documentation
+- Read all documents in the `/docs/` folder to understand:
+  - Development standards and best practices (`STANDARDS.md`)
+  - Design principles and linting requirements (`DESIGN_PRINCIPLES_LINTING.md`)  
+  - File header standards (`FILE_HEADER_STANDARDS.md`)
+  - CSS layout guidelines (`CSS_LAYOUT_STABILITY.md`)
+  - Branch protection requirements (`BRANCH_PROTECTION.md`)
 - Identify relevant sections for the current task
 - Note specific requirements for the language/framework being used
 
@@ -116,9 +121,10 @@ After writing code, verify:
 
 When this command is invoked, I will:
 
-1. **First Step - Standards Review**
+1. **First Step - Documentation Review**
    ```
-   Read /docs/STANDARDS.md
+   Read all files in /docs/ folder
+   Focus on standards, principles, and requirements relevant to task
    ```
 
 2. **Second Step - Context Analysis**
@@ -170,7 +176,7 @@ After each use:
 User: Create a new API endpoint for user authentication
 
 Claude will:
-1. Read STANDARDS.md
+1. Read all docs (standards, design principles, file headers, etc.)
 2. Check existing auth code patterns
 3. Create endpoint with:
    - Proper file structure

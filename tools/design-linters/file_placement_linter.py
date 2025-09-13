@@ -150,7 +150,7 @@ class FilePlacementLinter:
                 ],
                 description="TypeScript/React files must be in frontend/src/ or frontend/tests/",
                 violation_type=ViolationType.FRONTEND_MISPLACED,
-                exceptions=["vite.config.ts", "tsconfig*.json"]
+                exceptions=["vite.config.ts", "vitest.config.ts", "tsconfig*.json"]
             ),
             
             # CSS files
@@ -174,14 +174,12 @@ class FilePlacementLinter:
                 violation_type=ViolationType.FRONTEND_MISPLACED
             ),
             
-            # Test files
+            # Test files - Python tests in root test/, Frontend tests can be co-located or in tests/
             PlacementRule(
-                file_patterns=["test_*.py", "*_test.py", "*.test.js", "*.test.ts", "*.test.tsx", "*.spec.js", "*.spec.ts", "*.spec.tsx"],
+                file_patterns=["test_*.py", "*_test.py"],  # Python test files only
                 allowed_directories=[
                     "test",
-                    "test/**",
-                    "durable-code-app/frontend/tests/e2e",  # Only E2E tests allowed in frontend
-                    "durable-code-app/frontend/tests/e2e/**"
+                    "test/**"
                 ],
                 prohibited_directories=[
                     ".",  # Root directory
@@ -189,11 +187,32 @@ class FilePlacementLinter:
                     "tools",
                     "durable-code-app/backend/tests",  # Backend-specific tests prohibited
                     "durable-code-app/backend/tests/**",
-                    "durable-code-app/frontend/tests",  # General frontend tests prohibited (except E2E)
-                    "durable-code-app/frontend/tests/unit",
-                    "durable-code-app/frontend/tests/integration"
+                    "durable-code-app/frontend",
+                    "durable-code-app/frontend/**"
                 ],
-                description="Test files must be in root test/ directory (or frontend/tests/e2e/ for E2E tests only)",
+                description="Python test files must be in root test/ directory",
+                violation_type=ViolationType.TEST_MISPLACED
+            ),
+            
+            # Frontend test files - allow co-location with source or in tests/ directory
+            PlacementRule(
+                file_patterns=["*.test.js", "*.test.ts", "*.test.tsx", "*.spec.js", "*.spec.ts", "*.spec.tsx"],
+                allowed_directories=[
+                    "durable-code-app/frontend/src",      # Co-located with source
+                    "durable-code-app/frontend/src/**",   # Co-located with source in subdirs
+                    "durable-code-app/frontend/tests",    # Centralized test directory
+                    "durable-code-app/frontend/tests/**"  # All subdirs in tests
+                ],
+                prohibited_directories=[
+                    ".",  # Root directory
+                    "docs",
+                    "tools",
+                    "durable-code-app/backend",
+                    "durable-code-app/backend/**",
+                    "test",  # Root test/ is for Python tests only
+                    "test/**"
+                ],
+                description="Frontend test files can be co-located with source files or in frontend/tests/",
                 violation_type=ViolationType.TEST_MISPLACED
             ),
             
