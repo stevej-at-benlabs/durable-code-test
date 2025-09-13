@@ -15,11 +15,6 @@ import re
 import sys
 from pathlib import Path
 from typing import Dict, List, NamedTuple, Optional, Set
-from loguru import logger
-
-# Configure logger for CLI output
-logger.remove()  # Remove default handler
-logger.add(sys.stderr, format="{message}", level="INFO")
 
 
 class PrintViolation(NamedTuple):
@@ -387,8 +382,6 @@ class PrintStatementLinter:
 
 def main():
     """Main entry point."""
-    import sys
-    
     parser = argparse.ArgumentParser(
         description="Detect print statements in production code",
         formatter_class=argparse.RawDescriptionHelpFormatter,

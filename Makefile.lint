@@ -1,10 +1,10 @@
 # Comprehensive Linting Makefile Extension
 # Include this in the main Makefile or use directly
 
-.PHONY: lint-all lint-python lint-frontend lint-complexity lint-security lint-format-check ci-lint lint-file-placement
+.PHONY: lint-all lint-python lint-frontend lint-complexity lint-security lint-format-check ci-lint lint-file-placement lint-print-statements
 
 # Main linting targets
-lint-all: lint-python lint-frontend lint-magic-numbers lint-file-placement ## Run all linting checks
+lint-all: lint-python lint-frontend lint-magic-numbers lint-file-placement lint-print-statements ## Run all linting checks
 
 lint-python: ## Run all Python linting tools
 	@echo "$(CYAN)╔════════════════════════════════════════════════════════════╗$(NC)"
@@ -161,6 +161,14 @@ lint-file-placement: ## Check file placement according to project standards
 	@echo "$(YELLOW)Checking file placement standards...$(NC)"
 	@python tools/design-linters/file_placement_linter.py . --fail-on-violation || (echo "$(RED)❌ File placement violations found!$(NC)" && exit 1)
 	@echo "$(GREEN)✅ All files are properly placed!$(NC)"
+
+lint-print-statements: ## Check for print statements in code (including tests)
+	@echo "$(CYAN)╔════════════════════════════════════════════════════════════╗$(NC)"
+	@echo "$(CYAN)║              Print Statement Detection                    ║$(NC)"
+	@echo "$(CYAN)╚════════════════════════════════════════════════════════════╝$(NC)"
+	@echo "$(YELLOW)Checking for print statements in all code (including tests)...$(NC)"
+	@python tools/design-linters/print_statement_linter.py --path . --recursive --no-skip-tests --format text || (echo "$(RED)❌ Print statements detected! Use loguru for Python or proper logging libraries for JS/TS$(NC)" && exit 1)
+	@echo "$(GREEN)✅ No print statements found!$(NC)"
 
 quality-report: ## Generate detailed quality report
 	@echo "$(CYAN)Generating quality report...$(NC)"
