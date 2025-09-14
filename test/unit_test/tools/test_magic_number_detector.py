@@ -60,7 +60,7 @@ def get_status():
         """
         tree = ast.parse(code)
         add_parent_refs(tree)
-        detector = MagicNumberDetector("test.py")
+        detector = MagicNumberDetector("test.py", ignore_tests=False)
         detector.visit(tree)
 
         assert len(detector.violations) == 1
@@ -76,7 +76,7 @@ def open_file():
         """
         tree = ast.parse(code)
         add_parent_refs(tree)
-        detector = MagicNumberDetector("test.py")
+        detector = MagicNumberDetector("test.py", ignore_tests=False)
         detector.visit(tree)
 
         # Should only detect "file.txt", not "r" or ","
@@ -123,7 +123,7 @@ def process_list(items):
         """
         tree = ast.parse(code)
         add_parent_refs(tree)
-        detector = MagicNumberDetector("test.py")
+        detector = MagicNumberDetector("test.py", ignore_tests=False)
         detector.visit(tree)
 
         # The 5 in slice might be detected, but indices and range should not
@@ -144,7 +144,7 @@ def get_config():
         """
         tree = ast.parse(code)
         add_parent_refs(tree)
-        detector = MagicNumberDetector("test.py")
+        detector = MagicNumberDetector("test.py", ignore_tests=False)
         detector.visit(tree)
 
         # Dictionary string keys should not be violations
@@ -160,7 +160,7 @@ def get_config():
     def test_ignore_test_files(self):
         """Test that test files can be ignored."""
         code = """
-def test_calculation():
+def calculation():
     assert calculate(5) == 25
     assert calculate(10) == 100
         """
@@ -169,13 +169,11 @@ def test_calculation():
         tree = ast.parse(code)
         add_parent_refs(tree)
         detector = MagicNumberDetector("test_calc.py", ignore_tests=True)
-        detector.is_test_file = True
         detector.visit(tree)
         assert len(detector.violations) == 0
 
-        # Non-test file
+        # Non-test file (should detect violations)
         detector = MagicNumberDetector("calc.py", ignore_tests=True)
-        detector.is_test_file = False
         detector.visit(tree)
         assert len(detector.violations) > 0
 

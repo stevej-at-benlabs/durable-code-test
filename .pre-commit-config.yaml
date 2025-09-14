@@ -81,3 +81,19 @@ repos:
         language: system
         pass_filenames: false
         files: ^durable-code-app/backend/.*\.py$
+
+      - id: header-check
+        name: Check file headers
+        entry: python tools/design-linters/header_linter.py --path
+        language: system
+        args: ['.', '--recursive']
+        files: \.(md|py|ts|tsx|js|jsx|html|yml|yaml)$
+        exclude: ^(node_modules|\.git|\.venv|venv|__pycache__|build|dist)/
+
+      - id: print-statement-check
+        name: Check for print statements
+        entry: python tools/design-linters/print_statement_linter.py --path
+        language: system
+        args: ['.', '--recursive', '--format', 'text', '--no-skip-tests']
+        files: \.(py|js|jsx|ts|tsx|mjs|cjs)$
+        exclude: ^(node_modules|\.git|\.venv|venv|__pycache__|build|dist)/

@@ -10,7 +10,7 @@
 DOCKER_COMPOSE = docker-compose
 DOCKER_COMPOSE_DEV = docker-compose -f docker-compose.dev.yml
 FRONTEND_URL = http://localhost:3000
-FRONTEND_DEV_URL = http://localhost:5173
+FRONTEND_DEV_URL = http://localhost:5174
 BACKEND_URL = http://localhost:8000
 
 # Colors for output
@@ -63,19 +63,7 @@ stop: ## Stop all running containers
 
 restart: stop start ## Restart all containers
 
-launch: start ## Start containers and open the web application
-	@echo "$(CYAN)Launching application...$(NC)"
-	@sleep 3 # Wait for services to be ready
-	@echo "$(GREEN)Opening browser at $(FRONTEND_URL)...$(NC)"
-	@if command -v xdg-open > /dev/null; then \
-		xdg-open $(FRONTEND_URL); \
-	elif command -v open > /dev/null; then \
-		open $(FRONTEND_URL); \
-	elif command -v start > /dev/null; then \
-		start $(FRONTEND_URL); \
-	else \
-		echo "$(YELLOW)Please open your browser and navigate to $(FRONTEND_URL)$(NC)"; \
-	fi
+launch: dev-launch ## Launch development environment (alias for dev-launch)
 
 logs: ## Show logs from all containers
 	@$(DOCKER_COMPOSE) logs -f
@@ -156,9 +144,25 @@ shell-frontend: ## Open shell in frontend container
 test: ## Run all tests
 	@echo "$(CYAN)Running tests...$(NC)"
 	@echo "$(YELLOW)Backend tests:$(NC)"
-	@docker exec durable-code-backend pytest || docker exec durable-code-backend-dev pytest || echo "$(YELLOW)Backend container not running$(NC)"
+	@docker exec durable-code-backend-dev bash -c "cd /app && PYTHONPATH=/app/tools/design-linters:/app/tools pytest" || docker exec durable-code-backend pytest || echo "$(YELLOW)Backend container not running$(NC)"
 	@echo "$(YELLOW)Frontend tests:$(NC)"
-	@docker exec durable-code-frontend npm test || docker exec durable-code-frontend-dev npm test || echo "$(YELLOW)Frontend container not running$(NC)"
+	@cd durable-code-app/frontend && npm run test:run || echo "$(YELLOW)Frontend tests failed or not available$(NC)"
+
+test-frontend: ## Run frontend tests only
+	@echo "$(CYAN)Running frontend tests...$(NC)"
+	@cd durable-code-app/frontend && npm run test:run
+
+test-frontend-coverage: ## Run frontend tests with coverage
+	@echo "$(CYAN)Running frontend tests with coverage...$(NC)"
+	@cd durable-code-app/frontend && npm run test:coverage
+
+test-frontend-watch: ## Run frontend tests in watch mode
+	@echo "$(CYAN)Running frontend tests in watch mode...$(NC)"
+	@cd durable-code-app/frontend && npm run test:watch
+
+test-links: ## Run link validation tests
+	@echo "$(CYAN)Running link validation tests...$(NC)"
+	@cd durable-code-app/frontend && npm run test:links
 
 # Include comprehensive linting targets
 -include Makefile.lint
@@ -170,6 +174,8 @@ lint: ## Run basic linters
 	@docker exec durable-code-backend-dev /home/appuser/.local/bin/ruff check /app/app --cache-dir /tmp/ruff-cache || echo "$(YELLOW)Backend container not running$(NC)"
 	@echo "$(YELLOW)Frontend linting:$(NC)"
 	@docker exec durable-code-frontend-dev npm run lint || echo "$(YELLOW)Frontend container not running$(NC)"
+	@echo "$(YELLOW)Print statement check (including tests):$(NC)"
+	@python tools/design-linters/print_statement_linter.py --path . --recursive --no-skip-tests || echo "$(GREEN)✓ No print statements found$(NC)"
 
 format: ## Format code
 	@echo "$(CYAN)Formatting code...$(NC)"

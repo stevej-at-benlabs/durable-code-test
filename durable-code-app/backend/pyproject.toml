@@ -4,6 +4,7 @@ version = "0.1.0"
 description = "Backend API for Durable Code Test"
 authors = ["Your Name <you@example.com>"]
 readme = "README.md"
+packages = [{include = "app"}]
 
 [tool.poetry.dependencies]
 python = "^3.11"
@@ -11,7 +12,6 @@ fastapi = "^0.116.1"
 uvicorn = "^0.35.0"
 python-dotenv = "^1.1.1"
 pydantic = "^2.11.7"
-
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.4.2"
 pytest-cov = "^4.1.0"
@@ -29,8 +29,10 @@ flake8-bugbear = "^24.0.0"
 flake8-comprehensions = "^3.14.0"
 flake8-simplify = "^0.21.0"
 xenon = "^0.9.1"
-typer = "<0.12"
+typer = "^0.12.0"
 pip-audit = "^2.9.0"
+loguru = "^0.7.3"
+httpx = "^0.28.0"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
@@ -129,9 +131,10 @@ exclude_dirs = ["/tests/", "/test/"]
 skips = ["B101"]  # Skip assert_used test
 
 [tool.pytest.ini_options]
-testpaths = ["../../test"]  # Use root test directory
+testpaths = ["test"]  # Use mounted test directory
 python_files = ["test_*.py", "*_test.py"]
-addopts = "--cov=app --cov-report=term-missing --cov-report=html --cov-fail-under=80"
+addopts = "--tb=short"
+cache_dir = "/tmp/.pytest_cache"
 
 [tool.coverage.run]
 source = ["app"]

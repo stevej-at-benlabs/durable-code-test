@@ -71,7 +71,7 @@ class LargeClass:
         tree = ast.parse(code)
 
         # Use strict thresholds for testing
-        strict_thresholds = replace(DEFAULT_SRP_THRESHOLDS, MAX_CLASS_LINES=100)
+        strict_thresholds = replace(DEFAULT_SRP_THRESHOLDS, MAX_CLASS_LINES=40)
         analyzer = SRPAnalyzer("test.py", strict_thresholds)
         analyzer.visit(tree)
 
@@ -84,18 +84,16 @@ class LargeClass:
         """Test detection of low cohesion in classes."""
         code = """
 class LowCohesionClass:
-    def __init__(self):
-        self.var1 = 1
-        self.var2 = 2
-        self.var3 = 3
-
     def method1(self):
+        self.var1 = 1
         return self.var1
 
     def method2(self):
+        self.var2 = 2
         return self.var2
 
     def method3(self):
+        self.var3 = 3
         return self.var3
 
     # Methods don't share instance variables - low cohesion

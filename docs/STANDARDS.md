@@ -1,5 +1,14 @@
 # Development Standards and Best Practices
 
+**Purpose**: Define comprehensive development standards for Python backend and React frontend applications  
+**Scope**: All development practices, code quality requirements, and project structure standards  
+**Created**: 2024-12-15  
+**Updated**: 2025-09-12  
+**Author**: Development Team  
+**Version**: 2.0  
+
+---
+
 ## Python Backend Standards
 
 ### 1. Project Structure
@@ -78,7 +87,57 @@ backend/
   }
   ```
 
-### 7. Dependency Management
+### 7. Logging Standards - NO PRINT STATEMENTS
+- **PROHIBITED**: `print()` statements are strictly forbidden in production code
+- **Required Logger**: Use `loguru` for all logging needs
+- **Installation**: `poetry add loguru` or `pip install loguru`
+- **Import**: `from loguru import logger`
+- **Usage Examples**:
+  ```python
+  from loguru import logger
+  
+  # Instead of print("Debug info")
+  logger.debug("Debug information")
+  
+  # Instead of print(f"Processing {item}")
+  logger.info(f"Processing {item}")
+  
+  # Instead of print(f"Warning: {message}")
+  logger.warning(f"Warning: {message}")
+  
+  # Instead of print(f"Error: {error}")
+  logger.error(f"Error occurred: {error}")
+  ```
+- **Log Levels**:
+  - `logger.trace()`: Detailed diagnostic info
+  - `logger.debug()`: Debug information
+  - `logger.info()`: General informational messages
+  - `logger.success()`: Success messages
+  - `logger.warning()`: Warning messages
+  - `logger.error()`: Error messages
+  - `logger.critical()`: Critical failure messages
+- **Configuration**:
+  ```python
+  # Configure in main.py or config.py
+  from loguru import logger
+  
+  logger.add(
+      "logs/app_{time}.log",
+      rotation="500 MB",
+      retention="10 days",
+      level="INFO"
+  )
+  ```
+- **Benefits of Loguru**:
+  - Structured logging with automatic formatting
+  - Built-in rotation and retention
+  - Better performance than print statements
+  - Thread-safe and async-safe
+  - Contextual information (file, function, line)
+  - Easy filtering and formatting
+- **Enforcement**: The `print_statement_linter.py` tool automatically detects and reports any print statements
+
+### 8. Dependency Management
 - Use Poetry for dependency management
 - Pin exact versions in pyproject.toml
 - Separate dev dependencies
@@ -164,20 +223,63 @@ frontend/
 - Optimize bundle size with code splitting
 - Minimize re-renders
 
-### 8. Testing Requirements
+### 8. Logging Standards - NO CONSOLE STATEMENTS
+- **PROHIBITED**: `console.log()`, `console.debug()`, `alert()`, and `debugger` statements are strictly forbidden in production code
+- **Allowed in Development Only**: Console statements must be removed before committing
+- **Recommended Loggers**: 
+  - **Winston**: For Node.js/backend logging
+  - **Pino**: Lightweight alternative for Node.js
+  - **Debug**: For development debugging (`DEBUG=app:* npm start`)
+- **For Frontend React/TypeScript**:
+  ```typescript
+  // Use a logging service/utility
+  import { logger } from '@/utils/logger';
+  
+  // Instead of console.log("User logged in")
+  logger.info('User logged in', { userId: user.id });
+  
+  // Instead of console.error("API failed")
+  logger.error('API request failed', { error, endpoint });
+  ```
+- **Example Logger Setup** (utils/logger.ts):
+  ```typescript
+  const isDevelopment = process.env.NODE_ENV === 'development';
+  
+  export const logger = {
+    debug: (...args: any[]) => isDevelopment && console.debug(...args),
+    info: (...args: any[]) => isDevelopment && console.info(...args),
+    warn: (...args: any[]) => console.warn(...args), // Keep warnings
+    error: (...args: any[]) => console.error(...args), // Keep errors
+  };
+  ```
+- **Benefits**:
+  - Can be toggled off in production builds
+  - Prevents sensitive data leakage
+  - Improves performance (no console overhead)
+  - Enables proper log aggregation
+- **Build-time Removal**: Configure webpack/vite to strip console statements:
+  ```javascript
+  // vite.config.ts
+  esbuild: {
+    drop: ['console', 'debugger'],
+  }
+  ```
+- **Enforcement**: The `print_statement_linter.py` tool detects console.log, alert, and debugger statements
+
+### 9. Testing Requirements
 - Unit tests for utilities and hooks
 - Component testing with React Testing Library
 - Integration tests for critical user flows
 - Maintain 70% code coverage minimum
 
-### 9. Accessibility Standards
+### 10. Accessibility Standards
 - Use semantic HTML elements
 - Provide proper ARIA labels
 - Ensure keyboard navigation
 - Maintain proper heading hierarchy
 - Test with screen readers
 
-### 10. CSS Guidelines
+### 11. CSS Guidelines
 - Use CSS Modules or styled-components
 - Follow BEM naming for class names
 - Use CSS variables for theming

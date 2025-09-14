@@ -4,7 +4,7 @@ services:
   backend-dev:
     build:
       context: ./durable-code-app/backend
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile.dev
     container_name: durable-code-backend-dev
     ports:
       - "8000:8000"
@@ -12,6 +12,8 @@ services:
       - ENV=development
     volumes:
       - ./durable-code-app/backend:/app
+      - ./test:/app/test
+      - ./tools:/app/tools
       - /app/__pycache__
     networks:
       - durable-network-dev
