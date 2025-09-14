@@ -13,6 +13,7 @@ interface Technique {
   category: 'Testing' | 'Architecture' | 'Documentation' | 'Quality' | 'Collaboration';
   icon: string;
   benefits: string[];
+  links?: { label: string; url: string }[];
 }
 
 const techniques: Technique[] = [
@@ -71,6 +72,9 @@ const techniques: Technique[] = [
       'Easier onboarding',
       'Reduced ambiguity',
     ],
+    links: [
+      { label: '📊 View CI/CD Pipeline Diagram', url: 'ci-cd-pipeline.html' },
+    ],
   },
   {
     id: 'code-review',
@@ -84,6 +88,9 @@ const techniques: Technique[] = [
       'Consistent standards',
       'Learning opportunities',
       'Issue prevention',
+    ],
+    links: [
+      { label: '🚀 CI/CD Pipeline & Checks', url: 'ci-cd-pipeline.html' },
     ],
   },
   {
@@ -206,6 +213,23 @@ function App() {
                     ))}
                   </ul>
                 </div>
+                {technique.links && (
+                  <div className="card-links">
+                    {technique.links.map((link, index) => (
+                      <a
+                        key={index}
+                        href={link.url}
+                        className="card-link"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          window.location.href = link.url;
+                        }}
+                      >
+                        {link.label}
+                      </a>
+                    ))}
+                  </div>
+                )}
               </div>
             ))}
           </div>
