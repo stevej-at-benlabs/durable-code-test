@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# print-linter: disable
 """
 Purpose: Unit tests for the print statement linter
 Scope: Testing print statement detection across Python, JavaScript, TypeScript

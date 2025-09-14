@@ -149,14 +149,23 @@ class PrintStatementLinter:
     def lint_python_file(self, file_path: Path, content: str) -> List[PrintViolation]:
         """Lint a Python file using AST parsing."""
         violations = []
-        
+
+        # Check for file-level disable
+        if self._is_file_disabled(content, 'python'):
+            return []
+
         try:
             tree = ast.parse(content, filename=str(file_path))
-            
+            lines = content.split('\n')
+
             for node in ast.walk(tree):
                 # Check for print function calls
                 if isinstance(node, ast.Call):
                     if isinstance(node.func, ast.Name) and node.func.id in ('print', 'pprint'):
+                        # Check if this line is disabled
+                        if self._is_line_disabled(lines, node.lineno, 'python'):
+                            continue
+
                         violations.append(PrintViolation(
                             file_path=file_path,
                             line_number=node.lineno,
@@ -166,9 +175,13 @@ class PrintStatementLinter:
                             language='python',
                             severity='error'
                         ))
-                    
+
                     # Check for pp (pprint alias)
                     elif isinstance(node.func, ast.Name) and node.func.id == 'pp':
+                        # Check if this line is disabled
+                        if self._is_line_disabled(lines, node.lineno, 'python'):
+                            continue
+
                         violations.append(PrintViolation(
                             file_path=file_path,
                             line_number=node.lineno,
@@ -178,21 +191,21 @@ class PrintStatementLinter:
                             language='python',
                             severity='warning'
                         ))
-        
+
         except SyntaxError:
             # Fall back to regex if AST parsing fails
             violations.extend(self.lint_with_regex(file_path, content, 'python'))
-        
+
         # Also check custom patterns with regex (if any)
         if 'python' in self.custom_patterns:
             custom_violations = self.lint_with_regex(file_path, content, 'python', custom_only=True)
             violations.extend(custom_violations)
-        
+
         return violations
     
     def lint_with_regex(self, file_path: Path, content: str, language: str, custom_only: bool = False) -> List[PrintViolation]:
         """Lint a file using regex patterns.
-        
+
         Args:
             file_path: Path to the file
             content: File content
@@ -200,7 +213,11 @@ class PrintStatementLinter:
             custom_only: If True, only check custom patterns
         """
         violations = []
-        
+
+        # Check for file-level disable
+        if self._is_file_disabled(content, language):
+            return []
+
         if custom_only:
             # Only use custom patterns
             patterns = self.custom_patterns.get(language, [])
@@ -210,20 +227,24 @@ class PrintStatementLinter:
             # Add custom patterns
             if language in self.custom_patterns:
                 patterns.extend(self.custom_patterns[language])
-        
+
         lines = content.split('\n')
-        
+
         for line_num, line in enumerate(lines, 1):
             # Skip comments
             if self._is_comment(line, language):
                 continue
-            
+
+            # Check if this line is disabled
+            if self._is_line_disabled(lines, line_num, language):
+                continue
+
             for pattern, statement_type in patterns:
                 if re.search(pattern, line):
                     # Check if it's a logging statement we allow
                     if self.allow_logging and self._is_allowed_logging(line, language):
                         continue
-                    
+
                     violations.append(PrintViolation(
                         file_path=file_path,
                         line_number=line_num,
@@ -233,28 +254,34 @@ class PrintStatementLinter:
                         language=language,
                         severity='error' if 'debugger' in statement_type else 'warning'
                     ))
-        
+
         return violations
     
     def lint_file(self, file_path: Path) -> List[PrintViolation]:
         """Lint a single file."""
         if self.should_skip_file(file_path):
+            self.violations = []
             return []
-        
+
         language = self.detect_language(file_path)
         if not language:
+            self.violations = []
             return []
-        
+
         try:
             content = file_path.read_text(encoding='utf-8')
         except (UnicodeDecodeError, FileNotFoundError):
+            self.violations = []
             return []
-        
+
         # Use AST for Python, regex for others
         if language == 'python':
-            return self.lint_python_file(file_path, content)
+            violations = self.lint_python_file(file_path, content)
         else:
-            return self.lint_with_regex(file_path, content, language)
+            violations = self.lint_with_regex(file_path, content, language)
+
+        self.violations = violations
+        return violations
     
     def lint_directory(self, directory: Path, recursive: bool = True) -> List[PrintViolation]:
         """Lint all files in a directory."""
@@ -294,18 +321,92 @@ class PrintStatementLinter:
         """Check if a line contains allowed logging statements."""
         if not self.allow_logging:
             return False
-        
+
         allowed_patterns = {
             'javascript': [r'console\s*\.\s*(warn|error)\s*\('],
             'typescript': [r'console\s*\.\s*(warn|error)\s*\('],
             'python': [r'logging\.(debug|info|warning|error|critical)\s*\(']
         }
-        
+
         patterns = allowed_patterns.get(language, [])
         for pattern in patterns:
             if re.search(pattern, line):
                 return True
-        
+
+        return False
+
+    def _is_file_disabled(self, content: str, language: str) -> bool:
+        """Check if the entire file has print linting disabled."""
+        # Check first few lines for file-level disable comments
+        lines = content.split('\n')[:10]  # Check first 10 lines
+
+        for line in lines:
+            if language == 'python':
+                # Python disable comments
+                if re.search(r'#\s*print-linter:\s*disable', line, re.IGNORECASE):
+                    return True
+                if re.search(r'#\s*noqa:\s*print', line, re.IGNORECASE):
+                    return True
+                if re.search(r'#\s*type:\s*ignore\[print\]', line):
+                    return True
+            elif language in ('javascript', 'typescript'):
+                # JavaScript/TypeScript disable comments
+                if re.search(r'//\s*print-linter:\s*disable', line, re.IGNORECASE):
+                    return True
+                if re.search(r'/\*\s*print-linter:\s*disable\s*\*/', line, re.IGNORECASE):
+                    return True
+                if re.search(r'//\s*eslint-disable.*console', line):
+                    return True
+                if re.search(r'/\*\s*eslint-disable.*console\s*\*/', line):
+                    return True
+
+        return False
+
+    def _is_line_disabled(self, lines: List[str], line_num: int, language: str) -> bool:
+        """Check if a specific line has print linting disabled."""
+        if line_num < 1 or line_num > len(lines):
+            return False
+
+        line = lines[line_num - 1]
+
+        # Check for inline disable comments
+        if language == 'python':
+            # Python inline disable comments
+            if re.search(r'#\s*noqa(?:\s|:|$)', line):
+                return True
+            if re.search(r'#\s*type:\s*ignore', line):
+                return True
+            if re.search(r'#\s*pylint:\s*disable', line):
+                return True
+            if re.search(r'#\s*print-linter:\s*ignore', line, re.IGNORECASE):
+                return True
+        elif language in ('javascript', 'typescript'):
+            # JavaScript/TypeScript inline disable comments
+            if re.search(r'//\s*eslint-disable-line', line):
+                return True
+            if re.search(r'//\s*print-linter:\s*ignore', line, re.IGNORECASE):
+                return True
+            if re.search(r'/\*\s*eslint-disable-line\s*\*/', line):
+                return True
+
+        # Check previous line for next-line disable comments
+        if line_num > 1:
+            prev_line = lines[line_num - 2]
+            if language == 'python':
+                if re.search(r'#\s*noqa:\s*next', prev_line, re.IGNORECASE):
+                    return True
+                if re.search(r'#\s*pylint:\s*disable-next', prev_line):
+                    return True
+                if re.search(r'#\s*print-linter:\s*ignore-next', prev_line, re.IGNORECASE):
+                    return True
+            elif language in ('javascript', 'typescript'):
+                if re.search(r'//\s*eslint-disable-next-line', prev_line):
+                    return True
+                if re.search(r'//\s*print-linter:\s*ignore-next', prev_line, re.IGNORECASE):
+                    return True
+                if re.search(r'/\*\s*eslint-disable-next-line\s*\*/', prev_line):
+                    return True
+
         return False
     
     def generate_report(self, format: str = 'text') -> str:
