@@ -220,7 +220,22 @@ If no violations are found, return an empty array: []""",
                 return []
 
         except Exception as e:
-            logger.error(f"Error calling Claude API: {e}")
+            error_msg = str(e)
+            logger.error(f"Error calling Claude API: {error_msg}")
+
+            # Check for specific error types
+            if "credit balance" in error_msg.lower() or "billing" in error_msg.lower():
+                # Create a special violation to notify about API credit issue
+                return [OCPViolation(
+                    file="API Configuration",
+                    line_range="N/A",
+                    severity="high",
+                    description="Claude API call failed due to insufficient credits",
+                    suggestion="Please add credits to your Claude API account at https://console.anthropic.com/settings/billing",
+                    code_snippet=f"Error: {error_msg}"
+                )]
+
+            # For other errors, return empty list (fail gracefully)
             return []
 
     def _create_analysis_prompt(self, file_diffs: Dict[str, str], file_contents: Dict[str, Dict[str, str]]) -> str:
