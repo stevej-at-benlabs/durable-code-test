@@ -10,7 +10,7 @@
 DOCKER_COMPOSE = docker-compose
 DOCKER_COMPOSE_DEV = docker-compose -f docker-compose.dev.yml
 FRONTEND_URL = http://localhost:3000
-FRONTEND_DEV_URL = http://localhost:5174
+FRONTEND_DEV_URL = http://localhost:5173
 BACKEND_URL = http://localhost:8000
 
 # Colors for output
