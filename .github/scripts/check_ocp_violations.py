@@ -100,6 +100,16 @@ class OCPAnalyzer:
         code_extensions = {'.py', '.js', '.ts', '.java', '.cs', '.go', '.rb', '.php', '.cpp', '.c', '.h', '.hpp'}
         code_files = [f for f in changed_files if Path(f).suffix in code_extensions]
 
+        # Prioritize test files with "ocp" in the name for demonstration
+        ocp_test_files = [f for f in code_files if 'ocp' in f.lower()]
+        other_files = [f for f in code_files if 'ocp' not in f.lower()]
+        code_files = ocp_test_files + other_files
+
+        # Limit to 10 files to avoid rate limits
+        if len(code_files) > 10:
+            logger.warning(f"Too many files ({len(code_files)}). Analyzing only first 10 to avoid rate limits.")
+            code_files = code_files[:10]
+
         if not code_files:
             logger.info("No code files to analyze")
             return AnalysisResult(
@@ -232,6 +242,16 @@ If no violations are found, return an empty array: []""",
                     severity="high",
                     description="Claude API call failed due to insufficient credits",
                     suggestion="Please add credits to your Claude API account at https://console.anthropic.com/settings/billing",
+                    code_snippet=f"Error: {error_msg}"
+                )]
+            elif "rate_limit" in error_msg.lower() or "rate limit" in error_msg.lower():
+                # Create a special violation to notify about rate limit
+                return [OCPViolation(
+                    file="API Configuration",
+                    line_range="N/A",
+                    severity="medium",
+                    description="Claude API rate limit exceeded - too many files to analyze",
+                    suggestion="The PR has too many changed files. Consider breaking it into smaller PRs or increase rate limits.",
                     code_snippet=f"Error: {error_msg}"
                 )]
 
