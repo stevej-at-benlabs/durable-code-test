@@ -23,7 +23,7 @@ Object.defineProperty(window, 'location', {
 
 // Global test utilities
 export const mockFetch = (response: unknown) => {
-  global.fetch = vi.fn(() =>
+  globalThis.fetch = vi.fn(() =>
     Promise.resolve({
       ok: true,
       status: 200,
@@ -34,7 +34,7 @@ export const mockFetch = (response: unknown) => {
 };
 
 export const mockFailedFetch = (status = 404) => {
-  global.fetch = vi.fn(() =>
+  globalThis.fetch = vi.fn(() =>
     Promise.resolve({
       ok: false,
       status,
