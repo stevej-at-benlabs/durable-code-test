@@ -8,6 +8,7 @@
  */
 
 declare global {
+  var global: typeof globalThis;
   var fetch: typeof globalThis.fetch;
 }
 
