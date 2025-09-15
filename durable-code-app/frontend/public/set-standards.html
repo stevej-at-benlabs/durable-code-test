@@ -12,7 +12,6 @@ Version: 1.4
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Set Standards - AI Development Guidelines</title>
-    <script src="breadcrumb-navigation.js" defer></script>
     <style>
         * {
             margin: 0;
@@ -41,17 +40,11 @@ Version: 1.4
         }
 
         /* Navigation and Breadcrumbs */
-        .nav-header {
+        .breadcrumb {
             background: rgba(255, 255, 255, 0.95);
             backdrop-filter: blur(10px);
             padding: 1rem 3rem;
-            position: sticky;
-            top: 0;
-            z-index: 100;
             margin-bottom: 2rem;
-        }
-
-        .breadcrumb {
             display: flex;
             align-items: center;
             gap: 0.5rem;
@@ -70,11 +63,11 @@ Version: 1.4
             text-decoration: underline;
         }
 
-        .breadcrumb .separator {
+        .breadcrumb-separator {
             color: #999;
         }
 
-        .breadcrumb .current {
+        .breadcrumb-current {
             color: #333;
             font-weight: 600;
         }
@@ -237,10 +230,12 @@ Version: 1.4
     </style>
 </head>
 <body>
-    <nav class="nav-header">
-        <div class="breadcrumb">
-            <!-- Dynamic breadcrumbs will be injected here -->
-        </div>
+    <nav class="breadcrumb" aria-label="Breadcrumb navigation">
+        <a href="/">🏠 Home</a>
+        <span class="breadcrumb-separator">›</span>
+        <a href="/#set-standards">Quality</a>
+        <span class="breadcrumb-separator">›</span>
+        <span class="breadcrumb-current">Standards Guide</span>
     </nav>
     <div class="container">
         <header class="header">

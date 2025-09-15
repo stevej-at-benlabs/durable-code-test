@@ -99,3 +99,11 @@ repos:
       #   args: ['--path', '.', '--recursive', '--format', 'text', '--no-skip-tests']
       #   files: \.(py|js|jsx|ts|tsx|mjs|cjs)$
       #   exclude: ^(node_modules|\.git|\.venv|venv|__pycache__|build|dist)/
+
+      - id: breadcrumb-check
+        name: Check HTML documentation for breadcrumbs
+        entry: python tools/design-linters/breadcrumb_linter.py
+        language: system
+        pass_filenames: false
+        files: \.html$
+        exclude: ^(node_modules|\.git|\.venv|venv|__pycache__|build|dist|test|mock|template)/

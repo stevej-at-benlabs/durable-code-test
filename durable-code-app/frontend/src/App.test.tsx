@@ -85,11 +85,11 @@ describe('App Component', () => {
     it('shows all techniques by default', () => {
       render(<App />);
 
-      // Should show all 7 technique cards
+      // Should show all 8 technique cards (including diagram-driven design)
       const cards = screen
         .getAllByRole('generic')
         .filter((el) => el.className.includes('technique-card'));
-      expect(cards).toHaveLength(7);
+      expect(cards).toHaveLength(8);
     });
 
     it('filters techniques by category', async () => {

@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CI/CD Pipeline & Code Quality Checks</title>
     <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
-    <script src="breadcrumb-navigation.js" defer></script>
     <style>
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -31,18 +30,12 @@
         }
 
         /* Navigation and Breadcrumbs */
-        .nav-header {
+        .breadcrumb {
             background: rgba(255, 255, 255, 0.95);
             backdrop-filter: blur(10px);
             padding: 1rem 3rem;
             border-bottom: 1px solid rgba(102, 126, 234, 0.2);
-            position: sticky;
-            top: 0;
-            z-index: 100;
             margin-bottom: 2rem;
-        }
-
-        .breadcrumb {
             display: flex;
             align-items: center;
             gap: 0.5rem;
@@ -61,11 +54,11 @@
             text-decoration: underline;
         }
 
-        .breadcrumb .separator {
+        .breadcrumb-separator {
             color: #999;
         }
 
-        .breadcrumb .current {
+        .breadcrumb-current {
             color: #333;
             font-weight: 600;
         }
@@ -175,10 +168,12 @@
     </style>
 </head>
 <body>
-    <nav class="nav-header">
-        <div class="breadcrumb">
-            <!-- Dynamic breadcrumbs will be injected here -->
-        </div>
+    <nav class="breadcrumb" aria-label="Breadcrumb navigation">
+        <a href="/">🏠 Home</a>
+        <span class="breadcrumb-separator">›</span>
+        <a href="/#doc-driven">Documentation</a>
+        <span class="breadcrumb-separator">›</span>
+        <span class="breadcrumb-current">CI/CD Pipeline</span>
     </nav>
     <div class="container">
         <h1>🚀 CI/CD Pipeline & Code Quality Checks</h1>
