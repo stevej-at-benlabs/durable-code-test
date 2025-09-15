@@ -304,6 +304,7 @@ class FilePlacementLinter:
             'venv',
             '.pytest_cache',
             '.coverage',
+            'htmlcov',  # Coverage HTML reports
             '*.pyc',
             '*.pyo',
             '*.egg-info',

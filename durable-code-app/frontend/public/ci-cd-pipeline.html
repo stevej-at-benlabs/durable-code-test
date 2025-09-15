@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CI/CD Pipeline & Code Quality Checks</title>
     <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+    <script src="breadcrumb-navigation.js" defer></script>
     <style>
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -176,9 +177,7 @@
 <body>
     <nav class="nav-header">
         <div class="breadcrumb">
-            <a href="/">🏠 Home</a>
-            <span class="separator">›</span>
-            <span class="current">CI/CD Pipeline</span>
+            <!-- Dynamic breadcrumbs will be injected here -->
         </div>
     </nav>
     <div class="container">
@@ -188,10 +187,10 @@
         <div class="tab-navigation">
             <button class="tab-button active" onclick="showTab('overview', this)">📊 Overview</button>
             <button class="tab-button" onclick="showTab('precommit', this)">🎣 Pre-commit Hooks</button>
-            <button class="tab-button" onclick="showTab('github-linting', this)">✨ GitHub Linting</button>
-            <button class="tab-button" onclick="showTab('github-testing', this)">🧪 GitHub Testing</button>
-            <button class="tab-button" onclick="showTab('github-design', this)">🏗️ Design Checks</button>
-            <button class="tab-button" onclick="showTab('quality-gates', this)">🎯 Quality Gates</button>
+            <button class="tab-button" onclick="showTab('linting', this)">✨ Linting</button>
+            <button class="tab-button" onclick="showTab('testing', this)">🧪 Testing</button>
+            <button class="tab-button" onclick="showTab('quality', this)">💎 Subjective Quality Checks</button>
+            <button class="tab-button" onclick="showTab('security', this)">🔒 Security</button>
         </div>
 
         <!-- Overview Tab -->
@@ -204,27 +203,25 @@ graph LR
     B -->|Pass| C[Git Push]
     B -->|Fail| A
     C --> D[GitHub Actions]
-    D --> E[5 Workflows]
-    E --> F[Linting]
-    E --> G[Testing]
-    E --> H[Design]
-    E --> I[OCP Check]
-    E --> J[Coverage]
-    F --> K[Quality Gate]
-    G --> K
-    H --> K
-    I --> K
-    J --> K
-    K -->|Pass| L[Ready to Merge]
-    K -->|Fail| M[Fix Required]
-    M --> A
+    D --> E[4 Workflow Checks]
+    E --> F[1. Linting]
+    E --> G[2. Testing]
+    E --> H[3. Subjective Quality]
+    E --> I[4. Security]
+    F --> J[Quality Gate]
+    G --> J
+    H --> J
+    I --> J
+    J -->|Pass| K[Ready to Merge]
+    J -->|Fail| L[Fix Required]
+    L --> A
 
     style A fill:#e1f5fe
     style B fill:#fff3e0
     style D fill:#f3e5f5
-    style K fill:#fff9c4
-    style L fill:#c8e6c9
-    style M fill:#ffcdd2
+    style J fill:#fff9c4
+    style K fill:#c8e6c9
+    style L fill:#ffcdd2
                 </pre>
             </div>
             <div class="flow-indicator">
@@ -287,30 +284,30 @@ graph LR
             </div>
         </div>
 
-        <!-- GitHub Linting Tab -->
-        <div id="github-linting" class="tab-content">
-            <h2 class="section-title">GitHub Actions: Linting Workflow</h2>
+        <!-- Linting Tab -->
+        <div id="linting" class="tab-content">
+            <h2 class="section-title">Workflow Check 1: Linting</h2>
             <div class="diagram-container">
                 <pre class="mermaid">
 graph LR
-    A[Pull Request] --> B[Linting]
+    A[Pull Request] --> B[Linting Check]
     B --> C[Python]
     B --> D[TypeScript]
-    C --> C1[Black]
-    C --> C2[Ruff]
-    C --> C3[MyPy]
-    C --> C4[Bandit]
-    D --> D1[TSC]
+    C --> C1[Black Formatting]
+    C --> C2[Ruff Linting]
+    C --> C3[MyPy Type Check]
+    C --> C4[isort Imports]
+    D --> D1[TSC Compilation]
     D --> D2[ESLint]
     D --> D3[Prettier]
-    C1 --> E[Gate]
+    C1 --> E[Validation]
     C2 --> E
     C3 --> E
     C4 --> E
     D1 --> E
     D2 --> E
     D3 --> E
-    E --> F[Result]
+    E --> F[Linting Result]
 
     style A fill:#f3e5f5
     style E fill:#fff9c4
@@ -319,44 +316,49 @@ graph LR
             </div>
             <div class="info-grid">
                 <div class="info-card">
-                    <h3>🐍 Python Standards</h3>
+                    <h3>🐍 Python Linting</h3>
                     <ul>
-                        <li>Complexity: Radon Grade A required</li>
-                        <li>Security: Bandit with no high issues</li>
-                        <li>Type coverage: MyPy strict mode</li>
-                        <li>Style: PEP 8 compliance</li>
+                        <li>Black: Code formatting</li>
+                        <li>Ruff: Fast Python linter</li>
+                        <li>MyPy: Static type checking</li>
+                        <li>isort: Import sorting</li>
+                        <li>PEP 8 compliance</li>
                     </ul>
                 </div>
                 <div class="info-card">
-                    <h3>📘 TypeScript Standards</h3>
+                    <h3>📘 TypeScript Linting</h3>
                     <ul>
-                        <li>Strict TypeScript compilation</li>
-                        <li>ESLint with custom rules</li>
-                        <li>Prettier formatting enforced</li>
-                        <li>Security vulnerability scanning</li>
+                        <li>TSC: Strict compilation</li>
+                        <li>ESLint: Code quality rules</li>
+                        <li>Prettier: Code formatting</li>
+                        <li>Import validation</li>
                     </ul>
                 </div>
             </div>
         </div>
 
-        <!-- GitHub Testing Tab -->
-        <div id="github-testing" class="tab-content">
-            <h2 class="section-title">GitHub Actions: Testing Workflows</h2>
+        <!-- Testing Tab -->
+        <div id="testing" class="tab-content">
+            <h2 class="section-title">Workflow Check 2: Testing</h2>
             <div class="diagram-container">
                 <pre class="mermaid">
 graph LR
-    A[PR] --> B[Tests]
-    B --> C[Backend]
-    B --> D[Frontend]
-    C --> C1[Unit]
-    C --> C2[Coverage]
-    C --> C3[Integration]
-    D --> D1[Unit]
-    D --> D2[Links]
-    D --> D3[Build]
-    C3 --> E[Results]
+    A[PR] --> B[Testing Check]
+    B --> C[Backend Tests]
+    B --> D[Frontend Tests]
+    C --> C1[Unit Tests]
+    C --> C2[Integration Tests]
+    C --> C3[Coverage Analysis]
+    D --> D1[Unit Tests]
+    D --> D2[Component Tests]
+    D --> D3[E2E Tests]
+    C1 --> E[Test Results]
+    C2 --> E
+    C3 --> E
+    D1 --> E
+    D2 --> E
     D3 --> E
-    E --> F[Status]
+    E --> F[Testing Status]
 
     style A fill:#f3e5f5
     style E fill:#fff9c4
@@ -386,23 +388,23 @@ graph LR
             </div>
         </div>
 
-        <!-- GitHub Design Tab -->
-        <div id="github-design" class="tab-content">
-            <h2 class="section-title">GitHub Actions: Design & Architecture Checks</h2>
+        <!-- Subjective Quality Checks Tab -->
+        <div id="quality" class="tab-content">
+            <h2 class="section-title">Workflow Check 3: Subjective Quality Checks</h2>
             <div class="diagram-container">
                 <pre class="mermaid">
 graph LR
-    A[PR] --> B[Design]
-    B --> C[SRP]
-    B --> D[Cohesion]
-    B --> E[Smells]
-    B --> F[AI]
+    A[PR] --> B[Quality Analysis]
+    B --> C[Code Complexity]
+    B --> D[Design Patterns]
+    B --> E[Code Smells]
+    B --> F[AI Review]
     C --> G[Metrics]
     D --> G
     E --> G
     F --> G
-    G --> H[Gate]
-    H --> I[Result]
+    G --> H[Quality Gate]
+    H --> I[Quality Result]
 
     style A fill:#f3e5f5
     style F fill:#fce4ec
@@ -412,13 +414,13 @@ graph LR
             </div>
             <div class="info-grid">
                 <div class="info-card">
-                    <h3>🎯 SOLID Principles</h3>
+                    <h3>🎯 Quality Metrics</h3>
                     <ul>
-                        <li><strong>S</strong>ingle Responsibility</li>
-                        <li><strong>O</strong>pen-Closed (AI-powered)</li>
-                        <li><strong>L</strong>iskov Substitution</li>
-                        <li><strong>I</strong>nterface Segregation</li>
-                        <li><strong>D</strong>ependency Inversion</li>
+                        <li>Code Complexity (Cyclomatic)</li>
+                        <li>SOLID Principles adherence</li>
+                        <li>Design pattern compliance</li>
+                        <li>Code duplication detection</li>
+                        <li>Maintainability index</li>
                     </ul>
                 </div>
                 <div class="info-card">
@@ -431,74 +433,78 @@ graph LR
                     </ul>
                 </div>
                 <div class="info-card">
-                    <h3>📏 Metrics Tracked</h3>
+                    <h3>📏 Code Quality Metrics</h3>
                     <ul>
-                        <li>Class count & size</li>
-                        <li>Method complexity</li>
-                        <li>Coupling between modules</li>
-                        <li>Cohesion within classes</li>
+                        <li>Lines of code per function</li>
+                        <li>Cyclomatic complexity</li>
+                        <li>Cognitive complexity</li>
+                        <li>Test coverage percentage</li>
+                        <li>Documentation coverage</li>
                     </ul>
                 </div>
             </div>
         </div>
 
-        <!-- Quality Gates Tab -->
-        <div id="quality-gates" class="tab-content">
-            <h2 class="section-title">Quality Gates & Merge Requirements</h2>
+        <!-- Security Tab -->
+        <div id="security" class="tab-content">
+            <h2 class="section-title">Workflow Check 4: Security</h2>
             <div class="diagram-container">
                 <pre class="mermaid">
 graph LR
-    A[Complete] --> B[Gate]
-    B --> C[Lint]
-    B --> D[Test]
-    B --> E[Coverage]
-    B --> F[Design]
-    C --> G[Decision]
-    D --> G
-    E --> G
-    F --> G
-    G --> H[Approve]
-    G --> I[Block]
-    G --> J[Review]
+    A[PR] --> B[Security Scan]
+    B --> C[Dependencies]
+    B --> D[Code Analysis]
+    B --> E[Secrets Detection]
+    B --> F[SAST]
+    C --> C1[npm audit]
+    C --> C2[Safety check]
+    D --> D1[Bandit]
+    D --> D2[Semgrep]
+    E --> E1[Git secrets]
+    F --> F1[Static Analysis]
+    C1 --> G[Security Gate]
+    C2 --> G
+    D1 --> G
+    D2 --> G
+    E1 --> G
+    F1 --> G
+    G --> H[Security Result]
 
     style A fill:#f3e5f5
-    style B fill:#fff9c4
+    style B fill:#ffcdd2
     style G fill:#fff9c4
     style H fill:#c8e6c9
-    style I fill:#ffcdd2
-    style J fill:#fff3e0
                 </pre>
             </div>
             <div class="info-grid">
                 <div class="info-card">
-                    <h3>✅ Must Pass</h3>
+                    <h3>🔐 Dependency Scanning</h3>
                     <ul>
-                        <li>All Python linting checks</li>
-                        <li>All TypeScript checks</li>
-                        <li>Unit tests (backend & frontend)</li>
-                        <li>Coverage threshold (75%)</li>
-                        <li>Build verification</li>
-                        <li>Radon complexity Grade A</li>
+                        <li>npm audit for JavaScript</li>
+                        <li>Safety for Python packages</li>
+                        <li>License compliance check</li>
+                        <li>Outdated dependency detection</li>
+                        <li>Known vulnerability database</li>
                     </ul>
                 </div>
                 <div class="info-card">
-                    <h3>⚠️ Warnings (Non-blocking)</h3>
+                    <h3>🛡️ Code Security Analysis</h3>
                     <ul>
-                        <li>Pylint warnings</li>
-                        <li>npm audit moderate issues</li>
-                        <li>Safety dependency warnings</li>
-                        <li>Code smell detection</li>
-                        <li>Design suggestions</li>
+                        <li>Bandit for Python security</li>
+                        <li>Semgrep pattern matching</li>
+                        <li>SQL injection detection</li>
+                        <li>XSS vulnerability scanning</li>
+                        <li>Authentication bypass checks</li>
                     </ul>
                 </div>
                 <div class="info-card">
-                    <h3>📋 Merge Checklist</h3>
+                    <h3>🔑 Secrets Detection</h3>
                     <ul>
-                        <li>All required checks passed</li>
-                        <li>PR approved by reviewer</li>
-                        <li>No merge conflicts</li>
-                        <li>Documentation updated</li>
-                        <li>Tests added for new features</li>
+                        <li>API key detection</li>
+                        <li>Password scanning</li>
+                        <li>Private key detection</li>
+                        <li>Token identification</li>
+                        <li>Credential leak prevention</li>
                     </ul>
                 </div>
             </div>

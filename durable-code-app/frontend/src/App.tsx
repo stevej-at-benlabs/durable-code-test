@@ -19,7 +19,7 @@ interface Technique {
 const techniques: Technique[] = [
   {
     id: 'set-standards',
-    title: 'Set Standards First',
+    title: 'Standards Driven Design',
     description:
       'Define comprehensive development standards before AI generates code. Front-load quality requirements, patterns, and constraints.',
     category: 'Quality',
@@ -77,18 +77,33 @@ const techniques: Technique[] = [
   },
   {
     id: 'code-review',
-    title: 'AI-Enhanced Code Reviews',
+    title: 'AI Subjective Code Reviews',
     description:
-      'Use AI to catch issues, suggest improvements, and ensure adherence to standards.',
+      'Leverage AI to perform subjective analysis previously only possible by humans - SOLID principles, design patterns, and architectural decisions.',
     category: 'Quality',
-    icon: '🔍',
+    icon: '🤖',
     benefits: [
-      'Faster reviews',
-      'Consistent standards',
-      'Learning opportunities',
-      'Issue prevention',
+      'SOLID principle validation',
+      'Design pattern detection',
+      'Architecture analysis',
+      'Subjective quality checks',
     ],
-    links: [{ label: '🚀 CI/CD Pipeline & Checks', url: 'ci-cd-pipeline.html' }],
+    links: [{ label: '🚀 View GitHub Actions for SOLID', url: 'ci-cd-pipeline.html' }],
+  },
+  {
+    id: 'custom-linting',
+    title: 'Advanced Custom Linting',
+    description:
+      'Create custom linters to enforce your specific standards - magic numbers, file locations, print statements, and more.',
+    category: 'Quality',
+    icon: '🎯',
+    benefits: [
+      'Magic number detection',
+      'File placement validation',
+      'Print statement blocking',
+      'Custom rule enforcement',
+    ],
+    links: [{ label: '📊 See Our Custom Linters', url: 'custom-linters.html' }],
   },
   {
     id: 'pair-programming',
@@ -128,13 +143,13 @@ function App() {
             through AI-assisted development techniques
           </p>
           <div className="hero-actions">
-            <a href="set-standards.html" className="hero-cta">
-              🎯 Set Standards First
+            <a href="ci-cd-pipeline.html" className="hero-cta">
+              🚀 Explore Our Process
             </a>
           </div>
           <div className="hero-stats">
             <div className="stat">
-              <span className="stat-number">6</span>
+              <span className="stat-number">7</span>
               <span className="stat-label">Core Techniques</span>
             </div>
             <div className="stat">

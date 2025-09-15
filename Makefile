@@ -49,12 +49,8 @@ build: ## Build Docker images
 	@$(DOCKER_COMPOSE) build
 	@echo "$(GREEN)✓ Build complete!$(NC)"
 
-start: ## Start all containers in production mode
-	@echo "$(CYAN)Starting containers...$(NC)"
-	@$(DOCKER_COMPOSE) up -d
-	@echo "$(GREEN)✓ Containers started!$(NC)"
-	@echo "$(YELLOW)Frontend: $(FRONTEND_URL)$(NC)"
-	@echo "$(YELLOW)Backend: $(BACKEND_URL)$(NC)"
+start: dev-start ## Start all containers (alias for dev-start)
+	@echo "$(GREEN)✓ Development containers started!$(NC)"
 
 stop: ## Stop all running containers
 	@echo "$(CYAN)Stopping containers...$(NC)"
@@ -141,10 +137,17 @@ shell-frontend: ## Open shell in frontend container
 	@docker exec -it durable-code-frontend /bin/sh || docker exec -it durable-code-frontend-dev /bin/sh
 
 # Testing and quality targets
-test: ## Run all tests
-	@echo "$(CYAN)Running tests...$(NC)"
+test: dev-start ## Run all tests with coverage (starts dev containers if needed)
+	@echo "$(CYAN)Running tests with coverage...$(NC)"
+	@echo "$(YELLOW)Backend tests with coverage:$(NC)"
+	@docker exec -u appuser durable-code-backend-dev bash -c "cd /tmp && PYTHONPATH=/app/tools/design-linters:/app/tools pytest /app/test --cov=app --cov-report=term --cov-report=term:skip-covered --tb=short" || echo "$(YELLOW)Backend tests failed$(NC)"
+	@echo "$(YELLOW)Frontend tests with coverage:$(NC)"
+	@cd durable-code-app/frontend && npm run test:coverage || echo "$(YELLOW)Frontend tests failed or not available$(NC)"
+
+test-quick: dev-start ## Run all tests without coverage (faster)
+	@echo "$(CYAN)Running tests (no coverage)...$(NC)"
 	@echo "$(YELLOW)Backend tests:$(NC)"
-	@docker exec durable-code-backend-dev bash -c "cd /app && PYTHONPATH=/app/tools/design-linters:/app/tools pytest" || docker exec durable-code-backend pytest || echo "$(YELLOW)Backend container not running$(NC)"
+	@docker exec durable-code-backend-dev bash -c "cd /app && PYTHONPATH=/app/tools/design-linters:/app/tools pytest" || echo "$(YELLOW)Backend tests failed$(NC)"
 	@echo "$(YELLOW)Frontend tests:$(NC)"
 	@cd durable-code-app/frontend && npm run test:run || echo "$(YELLOW)Frontend tests failed or not available$(NC)"
 
