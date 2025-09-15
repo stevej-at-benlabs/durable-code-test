@@ -177,7 +177,9 @@ function App() {
             {categories.map((category) => (
               <button
                 key={category}
-                className={`filter-btn ${selectedCategory === category ? 'active' : ''}`}
+                className={`filter-btn ${
+                  selectedCategory === category ? 'active' : ''
+                }`}
                 onClick={() => setSelectedCategory(category)}
               >
                 {category}
@@ -189,7 +191,9 @@ function App() {
             {filteredTechniques.map((technique) => (
               <div
                 key={technique.id}
-                className={`technique-card ${hoveredTechnique === technique.id ? 'hovered' : ''}`}
+                className={`technique-card ${
+                  hoveredTechnique === technique.id ? 'hovered' : ''
+                }`}
                 onMouseEnter={() => setHoveredTechnique(technique.id)}
                 onMouseLeave={() => setHoveredTechnique(null)}
               >

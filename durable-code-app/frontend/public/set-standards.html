@@ -618,7 +618,7 @@ mypy.....................................................................Passed
 bandit...................................................................Passed
 radon-complexity..................................................... [WARNING]
   - src/user_service.py: Complexity B (should be A)
-  
+
 ❌ Commit failed - fix complexity issues before committing</pre>
                 </div>
             </div>
@@ -651,7 +651,7 @@ jobs:
         id: changed-files
         run: |
           git diff --name-only ${{ github.event.pull_request.base.sha }} ${{ github.sha }} > changed_files.txt
-          
+
       - name: Run Claude Security Analysis
         env:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
@@ -660,57 +660,57 @@ jobs:
           cat > security_check.py << 'EOF'
           import os
           import anthropic
-          
+
           client = anthropic.Client(api_key=os.environ['ANTHROPIC_API_KEY'])
-          
+
           # Read changed files
           with open('changed_files.txt', 'r') as f:
               changed_files = f.read().splitlines()
-          
+
           security_issues = []
-          
+
           for file_path in changed_files:
               if file_path.endswith(('.py', '.js', '.ts', '.jsx', '.tsx')):
                   try:
                       with open(file_path, 'r') as f:
                           file_content = f.read()
-                      
+
                       response = client.messages.create(
                           model="claude-3-sonnet-20240229",
                           max_tokens=1000,
                           messages=[{
-                              "role": "user", 
+                              "role": "user",
                               "content": f"""
                               Analyze this code for security vulnerabilities:
-                              
+
                               File: {file_path}
                               ```
                               {file_content}
                               ```
-                              
+
                               Look for:
                               - SQL injection vulnerabilities
-                              - XSS vulnerabilities  
+                              - XSS vulnerabilities
                               - Authentication/authorization issues
                               - Input validation problems
                               - Secrets or credentials in code
                               - Unsafe deserialization
-                              
+
                               Return ONLY a JSON object with:
                               {{"issues": [list of security issues], "severity": "high|medium|low|none"}}
                               """
                           }]
                       )
-                      
+
                       # Process Claude's response (would need proper JSON parsing)
                       print(f"Security analysis for {file_path}: {response.content}")
-                      
+
                   except Exception as e:
                       print(f"Error analyzing {file_path}: {e}")
           EOF
-          
+
           python security_check.py > security_report.txt
-          
+
       - name: Comment on PR
         if: always()
         uses: actions/github-script@v7
@@ -718,7 +718,7 @@ jobs:
           script: |
             const fs = require('fs');
             const report = fs.readFileSync('security_report.txt', 'utf8');
-            
+
             github.rest.issues.createComment({
               issue_number: context.issue.number,
               owner: context.repo.owner,

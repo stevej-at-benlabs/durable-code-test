@@ -46,7 +46,7 @@ class PlacementRule:
 
 class FilePlacementViolation:
     """Represents a file placement violation."""
-    
+
     def __init__(
         self,
         file_path: str,
@@ -62,7 +62,7 @@ class FilePlacementViolation:
         self.expected_locations = expected_locations
         self.description = description
         self.severity = severity
-    
+
     def to_dict(self) -> dict:
         """Convert to dictionary for JSON output."""
         return {
@@ -77,12 +77,12 @@ class FilePlacementViolation:
 
 class FilePlacementLinter:
     """Analyzes project structure for file placement violations."""
-    
+
     def __init__(self, project_root: str):
         self.project_root = Path(project_root).resolve()
         self.violations: List[FilePlacementViolation] = []
         self.rules = self._init_placement_rules()
-    
+
     def _init_placement_rules(self) -> List[PlacementRule]:
         """Initialize file placement rules based on project standards."""
         return [
@@ -109,7 +109,7 @@ class FilePlacementLinter:
                 violation_type=ViolationType.PYTHON_MISPLACED,
                 exceptions=["__init__.py", "setup.py", "conftest.py"]
             ),
-            
+
             # HTML files
             PlacementRule(
                 file_patterns=["*.html"],
@@ -131,7 +131,7 @@ class FilePlacementLinter:
                 violation_type=ViolationType.HTML_MISPLACED,
                 exceptions=["index.html"]  # index.html can be in frontend root for Vite
             ),
-            
+
             # TypeScript/React files
             PlacementRule(
                 file_patterns=["*.ts", "*.tsx"],
@@ -152,7 +152,7 @@ class FilePlacementLinter:
                 violation_type=ViolationType.FRONTEND_MISPLACED,
                 exceptions=["vite.config.ts", "vitest.config.ts", "tsconfig*.json"]
             ),
-            
+
             # CSS files
             PlacementRule(
                 file_patterns=["*.css"],
@@ -173,7 +173,7 @@ class FilePlacementLinter:
                 description="CSS files must be in frontend/src/ or frontend/public/",
                 violation_type=ViolationType.FRONTEND_MISPLACED
             ),
-            
+
             # Test files - Python tests in root test/, Frontend tests can be co-located or in tests/
             PlacementRule(
                 file_patterns=["test_*.py", "*_test.py"],  # Python test files only
@@ -193,7 +193,7 @@ class FilePlacementLinter:
                 description="Python test files must be in root test/ directory",
                 violation_type=ViolationType.TEST_MISPLACED
             ),
-            
+
             # Frontend test files - allow co-location with source or in tests/ directory
             PlacementRule(
                 file_patterns=["*.test.js", "*.test.ts", "*.test.tsx", "*.spec.js", "*.spec.ts", "*.spec.tsx"],
@@ -215,7 +215,7 @@ class FilePlacementLinter:
                 description="Frontend test files can be co-located with source files or in frontend/tests/",
                 violation_type=ViolationType.TEST_MISPLACED
             ),
-            
+
             # Build artifacts that shouldn't be in root
             PlacementRule(
                 file_patterns=["*.js", "*.css", "*.map"],
@@ -235,17 +235,17 @@ class FilePlacementLinter:
                 exceptions=["eslint.config.js", "vite.config.js"]
             )
         ]
-    
+
     def _matches_pattern(self, file_path: Path, pattern: str) -> bool:
         """Check if file matches a glob pattern."""
         import fnmatch
         return fnmatch.fnmatch(file_path.name, pattern)
-    
+
     def _is_in_allowed_directory(self, file_path: Path, allowed_dirs: List[str]) -> bool:
         """Check if file is in an allowed directory."""
         relative_path = file_path.relative_to(self.project_root)
         parent_dir = str(relative_path.parent)
-        
+
         for allowed in allowed_dirs:
             if allowed == ".":
                 # Allow root directory
@@ -260,14 +260,14 @@ class FilePlacementLinter:
                 # Exact directory match
                 if parent_dir == allowed:
                     return True
-        
+
         return False
-    
+
     def _is_in_prohibited_directory(self, file_path: Path, prohibited_dirs: List[str]) -> bool:
         """Check if file is in a prohibited directory."""
         relative_path = file_path.relative_to(self.project_root)
         parent_dir = str(relative_path.parent)
-        
+
         for prohibited in prohibited_dirs:
             if prohibited == ".":
                 # Prohibit root directory
@@ -282,16 +282,16 @@ class FilePlacementLinter:
                 # Exact directory match
                 if parent_dir == prohibited:
                     return True
-        
+
         return False
-    
+
     def _is_exception(self, file_path: Path, exceptions: List[str]) -> bool:
         """Check if file is in the exceptions list."""
         for exception in exceptions:
             if self._matches_pattern(file_path, exception):
                 return True
         return False
-    
+
     def _get_excluded_patterns(self) -> List[str]:
         """Get patterns for files/directories to exclude from analysis."""
         return [
@@ -311,34 +311,34 @@ class FilePlacementLinter:
             '.DS_Store',
             'Thumbs.db'
         ]
-    
+
     def _should_exclude_file(self, file_path: Path) -> bool:
         """Check if file should be excluded from analysis."""
         excluded_patterns = self._get_excluded_patterns()
         relative_path = str(file_path.relative_to(self.project_root))
-        
+
         for pattern in excluded_patterns:
             if pattern in relative_path:
                 return True
-            
+
             import fnmatch
             if fnmatch.fnmatch(relative_path, pattern):
                 return True
-        
+
         return False
-    
+
     def analyze_project(self) -> List[FilePlacementViolation]:
         """Analyze the entire project for file placement violations."""
         self.violations = []
-        
+
         # Walk through all files in the project
         for file_path in self.project_root.rglob('*'):
             if not file_path.is_file():
                 continue
-            
+
             if self._should_exclude_file(file_path):
                 continue
-            
+
             # Check each rule
             for rule in self.rules:
                 # Check if file matches any pattern in this rule
@@ -347,14 +347,14 @@ class FilePlacementLinter:
                     if self._matches_pattern(file_path, pattern):
                         matches_pattern = True
                         break
-                
+
                 if not matches_pattern:
                     continue
-                
+
                 # Check if file is an exception
                 if self._is_exception(file_path, rule.exceptions):
                     continue
-                
+
                 # Check if file is in prohibited directory
                 if self._is_in_prohibited_directory(file_path, rule.prohibited_directories):
                     relative_path = str(file_path.relative_to(self.project_root))
@@ -367,7 +367,7 @@ class FilePlacementLinter:
                         severity="error"
                     )
                     self.violations.append(violation)
-                
+
                 # Check if file is not in any allowed directory
                 elif not self._is_in_allowed_directory(file_path, rule.allowed_directories):
                     relative_path = str(file_path.relative_to(self.project_root))
@@ -380,7 +380,7 @@ class FilePlacementLinter:
                         severity="warning"
                     )
                     self.violations.append(violation)
-        
+
         return self.violations
 
 
@@ -390,18 +390,18 @@ def main():
         description='Lint file placement according to project standards'
     )
     parser.add_argument(
-        'path', 
-        nargs='?', 
-        default='.', 
+        'path',
+        nargs='?',
+        default='.',
         help='Project root directory to analyze (default: current directory)'
     )
     parser.add_argument(
-        '--json', 
-        action='store_true', 
+        '--json',
+        action='store_true',
         help='Output results in JSON format'
     )
     parser.add_argument(
-        '--fail-on-violation', 
+        '--fail-on-violation',
         action='store_true',
         help='Exit with non-zero code if violations found'
     )
@@ -411,23 +411,23 @@ def main():
         default='all',
         help='Minimum severity level to report (default: all)'
     )
-    
+
     args = parser.parse_args()
-    
+
     # Validate project directory
     project_path = Path(args.path).resolve()
     if not project_path.exists() or not project_path.is_dir():
         print(f"Error: {args.path} is not a valid directory", file=sys.stderr)
         sys.exit(1)
-    
+
     # Run analysis
     linter = FilePlacementLinter(str(project_path))
     violations = linter.analyze_project()
-    
+
     # Filter by severity
     if args.severity != 'all':
         violations = [v for v in violations if v.severity == args.severity]
-    
+
     # Output results
     if args.json:
         result = {
@@ -441,14 +441,14 @@ def main():
             print("✅ All files are properly placed!")
         else:
             print(f"Found {len(violations)} file placement violations:\n")
-            
+
             # Group violations by type
             violation_groups: Dict[ViolationType, List[FilePlacementViolation]] = {}
             for violation in violations:
                 if violation.violation_type not in violation_groups:
                     violation_groups[violation.violation_type] = []
                 violation_groups[violation.violation_type].append(violation)
-            
+
             # Display violations by group
             for violation_type, group_violations in violation_groups.items():
                 print(f"📁 {violation_type.value.replace('_', ' ').title()} ({len(group_violations)} files):")
@@ -459,7 +459,7 @@ def main():
                     print(f"     Expected: {', '.join(violation.expected_locations)}")
                     print(f"     {violation.description}")
                 print()
-    
+
     # Exit code
     if args.fail_on_violation and violations:
         error_count = sum(1 for v in violations if v.severity == "error")

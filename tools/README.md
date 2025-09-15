@@ -1,11 +1,11 @@
 # Development Tools
 
-**Purpose**: Documentation for development and linting tools used in the project  
-**Scope**: Custom tools, scripts, and utilities for code quality enforcement  
-**Created**: 2025-09-12  
-**Updated**: 2025-09-12  
-**Author**: Development Team  
-**Version**: 1.0  
+**Purpose**: Documentation for development and linting tools used in the project
+**Scope**: Custom tools, scripts, and utilities for code quality enforcement
+**Created**: 2025-09-12
+**Updated**: 2025-09-12
+**Author**: Development Team
+**Version**: 1.0
 
 ---
 
@@ -78,12 +78,12 @@ All files must include:
 ```markdown
 # Document Title
 
-**Purpose**: Brief description of what this document covers  
-**Scope**: What areas/components this document applies to  
-**Created**: 2025-09-12  
-**Updated**: 2025-09-12  
-**Author**: Development Team  
-**Version**: 1.0  
+**Purpose**: Brief description of what this document covers
+**Scope**: What areas/components this document applies to
+**Created**: 2025-09-12
+**Updated**: 2025-09-12
+**Author**: Development Team
+**Version**: 1.0
 
 ---
 

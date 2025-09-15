@@ -10,7 +10,7 @@ Before writing any new code, I will:
 ### 1. Review Documentation
 - Read all documents in the `/docs/` folder to understand:
   - Development standards and best practices (`STANDARDS.md`)
-  - Design principles and linting requirements (`DESIGN_PRINCIPLES_LINTING.md`)  
+  - Design principles and linting requirements (`DESIGN_PRINCIPLES_LINTING.md`)
   - File header standards (`FILE_HEADER_STANDARDS.md`)
   - CSS layout guidelines (`CSS_LAYOUT_STABILITY.md`)
   - Branch protection requirements (`BRANCH_PROTECTION.md`)

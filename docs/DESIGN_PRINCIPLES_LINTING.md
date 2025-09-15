@@ -1,11 +1,11 @@
 # Design Principles Linting Strategy
 
-**Purpose**: Define automated strategies for detecting violations of SOLID principles and design patterns in code  
-**Scope**: Python and TypeScript code analysis, SOLID principles enforcement, design smell detection  
-**Created**: 2024-12-10  
-**Updated**: 2025-09-12  
-**Author**: Architecture Team  
-**Version**: 1.3  
+**Purpose**: Define automated strategies for detecting violations of SOLID principles and design patterns in code
+**Scope**: Python and TypeScript code analysis, SOLID principles enforcement, design smell detection
+**Created**: 2024-12-10
+**Updated**: 2025-09-12
+**Author**: Architecture Team
+**Version**: 1.3
 
 ---
 
@@ -122,11 +122,11 @@ from typing import List, Dict
 
 class SRPAnalyzer(ast.NodeVisitor):
     """Detects potential SRP violations."""
-    
+
     def __init__(self):
         self.violations = []
         self.class_metrics = {}
-    
+
     def visit_ClassDef(self, node):
         metrics = self.analyze_class(node)
         if self.violates_srp(metrics):
@@ -135,7 +135,7 @@ class SRPAnalyzer(ast.NodeVisitor):
                 'line': node.lineno,
                 'reasons': self.get_violation_reasons(metrics)
             })
-    
+
     def analyze_class(self, node):
         return {
             'method_count': len([n for n in node.body if isinstance(n, ast.FunctionDef)]),
@@ -143,7 +143,7 @@ class SRPAnalyzer(ast.NodeVisitor):
             'dependencies': self.get_dependencies(node),
             'lines': node.end_lineno - node.lineno
         }
-    
+
     def violates_srp(self, metrics):
         # Multiple indicators of SRP violation
         if metrics['method_count'] > 7:
@@ -171,7 +171,7 @@ class SRPAnalyzer {
     // Analyze method names for responsibility patterns
     const methods = node.members.filter(ts.isMethodDeclaration);
     const responsibilityGroups = this.groupMethodsByResponsibility(methods);
-    
+
     return {
       methodCount: methods.length,
       responsibilityGroups: Array.from(responsibilityGroups),
@@ -179,7 +179,7 @@ class SRPAnalyzer {
       complexity: this.calculateComplexity(node)
     };
   }
-  
+
   private groupMethodsByResponsibility(methods: ts.MethodDeclaration[]): Set<string> {
     const groups = new Set<string>();
     methods.forEach(method => {
@@ -206,7 +206,7 @@ review_prompts:
     - Are all methods cohesive around a single responsibility?
     - Could this be split into multiple classes?
     Rate: PASS/WARN/FAIL with explanation
-    
+
   design_smell: |
     Check for design smells:
     - Feature envy (using another class's data excessively)
@@ -231,15 +231,15 @@ srp:
 ocp:
   max_modifications_per_month: 2
   max_conditional_branches: 3
-  
+
 dip:
   allow_direct_instantiation: false
   require_dependency_injection: true
-  
+
 coupling:
   max_afferent_coupling: 7
   max_efferent_coupling: 5
-  
+
 cohesion:
   min_cohesion_ratio: 0.7
 ```
@@ -260,16 +260,16 @@ jobs:
       - name: Run SRP Analysis
         run: |
           python tools/srp_analyzer.py --threshold strict
-          
+
       - name: Check SOLID Violations
         run: |
           python tools/solid_checker.py
-          
+
       - name: Cohesion Metrics
         run: |
           radon hal . --min B  # Halstead complexity
           radon mi . --min B   # Maintainability index
-          
+
       - name: Architecture Conformance
         run: |
           python tools/arch_checker.py --rules .architecture.yml
@@ -307,10 +307,10 @@ class UserManager:
 # GOOD: Single responsibility
 class UserRepository:
     def create_user(self): ...
-    
+
 class EmailValidator:
     def validate(self): ...
-    
+
 class NotificationService:
     def send(self): ...
 ```

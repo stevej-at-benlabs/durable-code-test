@@ -36,13 +36,13 @@ class FileHeaderLinter:
 
     # Required fields for all files
     REQUIRED_FIELDS = {'purpose', 'created', 'author'}
-    
+
     # Recommended fields (generate warnings if missing)
     RECOMMENDED_FIELDS = {'scope', 'updated', 'version'}
-    
+
     # Valid date format pattern
     DATE_PATTERN = re.compile(r'^\d{4}-\d{2}-\d{2}$')
-    
+
     # File type configurations
     FILE_CONFIGS = {
         '.md': {
@@ -130,7 +130,7 @@ class FileHeaderLinter:
 
     def __init__(self, strict_mode: bool = False):
         """Initialize the linter.
-        
+
         Args:
             strict_mode: If True, treat warnings as errors
         """
@@ -138,10 +138,10 @@ class FileHeaderLinter:
 
     def lint_file(self, file_path: Path) -> ValidationResult:
         """Lint a single file's header.
-        
+
         Args:
             file_path: Path to the file to lint
-            
+
         Returns:
             ValidationResult with pass/fail status and details
         """
@@ -177,19 +177,19 @@ class FileHeaderLinter:
 
     def _validate_header(self, file_path: Path, content: str, suffix: str) -> ValidationResult:
         """Validate the header in file content.
-        
+
         Args:
             file_path: Path to the file being validated
             content: File content as string
             suffix: File extension
-            
+
         Returns:
             ValidationResult with validation details
         """
         config = self.FILE_CONFIGS[suffix]
         errors = []
         warnings = []
-        
+
         # Find header section
         header_match = config['header_pattern'].search(content)
         if not header_match:
@@ -203,10 +203,10 @@ class FileHeaderLinter:
 
         header_content = header_match.group(0)
         header_fields = self._extract_header_fields(header_content, config)
-        
+
         # Check for required fields
         field_names = {field.name.lower() for field in header_fields}
-        
+
         for required_field in self.REQUIRED_FIELDS:
             if required_field not in field_names:
                 errors.append(f"Missing required field: {required_field}")
@@ -218,7 +218,7 @@ class FileHeaderLinter:
 
         # Validate field content
         self._validate_field_content(header_fields, errors, warnings)
-        
+
         # Determine pass/fail
         passed = len(errors) == 0
         if self.strict_mode and warnings:
@@ -235,17 +235,17 @@ class FileHeaderLinter:
 
     def _extract_header_fields(self, header_content: str, config: Dict) -> List[HeaderField]:
         """Extract header fields from header content.
-        
+
         Args:
             header_content: The header section content
             config: File type configuration
-            
+
         Returns:
             List of HeaderField objects
         """
         fields = []
         lines = header_content.split('\n')
-        
+
         for line_num, line in enumerate(lines, 1):
             match = config['field_pattern'].search(line.strip())
             if match:
@@ -256,19 +256,19 @@ class FileHeaderLinter:
                     value=field_value,
                     line_number=line_num
                 ))
-        
+
         return fields
 
     def _validate_field_content(self, fields: List[HeaderField], errors: List[str], warnings: List[str]) -> None:
         """Validate the content of header fields.
-        
+
         Args:
             fields: List of header fields to validate
             errors: List to append errors to
             warnings: List to append warnings to
         """
         field_dict = {field.name: field.value for field in fields}
-        
+
         # Validate date fields
         for date_field in ['created', 'updated']:
             if date_field in field_dict:
@@ -300,16 +300,16 @@ class FileHeaderLinter:
 
     def lint_directory(self, directory: Path, recursive: bool = True) -> Dict[Path, ValidationResult]:
         """Lint all supported files in a directory.
-        
+
         Args:
             directory: Directory to scan
             recursive: Whether to scan subdirectories
-            
+
         Returns:
             Dictionary mapping file paths to validation results
         """
         results = {}
-        
+
         if not directory.exists() or not directory.is_dir():
             return results
 
@@ -322,17 +322,17 @@ class FileHeaderLinter:
 
     def generate_report(self, results: Dict[Path, ValidationResult]) -> str:
         """Generate a formatted report from validation results.
-        
+
         Args:
             results: Dictionary of file paths to validation results
-            
+
         Returns:
             Formatted report string
         """
         total_files = len(results)
         passed_files = sum(1 for r in results.values() if r.passed)
         failed_files = total_files - passed_files
-        
+
         report = []
         report.append("=" * 60)
         report.append("FILE HEADER LINTING REPORT")
@@ -356,7 +356,7 @@ class FileHeaderLinter:
 
         # Files with warnings
         warning_files = [
-            (fp, r) for fp, r in results.items() 
+            (fp, r) for fp, r in results.items()
             if r.passed and r.warnings
         ]
         if warning_files:
@@ -383,31 +383,31 @@ Examples:
   python header_linter.py --file README.md
         """
     )
-    
+
     group = parser.add_mutually_exclusive_group(required=True)
     group.add_argument(
-        '--path', 
+        '--path',
         type=Path,
         help='Directory path to lint'
     )
     group.add_argument(
         '--file',
-        type=Path, 
+        type=Path,
         help='Single file to lint'
     )
-    
+
     parser.add_argument(
         '--recursive',
         action='store_true',
         help='Recursively scan subdirectories (default: True for --path)'
     )
-    
+
     parser.add_argument(
         '--strict',
         action='store_true',
         help='Treat warnings as errors'
     )
-    
+
     parser.add_argument(
         '--quiet',
         action='store_true',
@@ -417,7 +417,7 @@ Examples:
     args = parser.parse_args()
 
     linter = FileHeaderLinter(strict_mode=args.strict)
-    
+
     if args.file:
         # Lint single file
         result = linter.lint_file(args.file)
@@ -437,7 +437,7 @@ Examples:
 
     # Determine exit code
     failed_files = sum(1 for r in results.values() if not r.passed)
-    
+
     if failed_files > 0:
         if args.quiet:
             for file_path, result in results.items():
