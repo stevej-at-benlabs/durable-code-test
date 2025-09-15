@@ -111,7 +111,10 @@ const techniques: Technique[] = [
       'Architecture analysis',
       'Subjective quality checks',
     ],
-    links: [{ label: '🚀 View GitHub Actions for SOLID', url: 'ci-cd-pipeline.html' }],
+    links: [
+      { label: '🚀 View GitHub Actions for SOLID', url: 'ci-cd-pipeline.html' },
+      { label: '🔍 OCP Violation Case Study', url: 'ocp-case-study.html' },
+    ],
   },
   {
     id: 'custom-linting',
@@ -126,7 +129,13 @@ const techniques: Technique[] = [
       'Print statement blocking',
       'Custom rule enforcement',
     ],
-    links: [{ label: '📊 See Our Custom Linters', url: 'custom-linters.html' }],
+    links: [
+      { label: '📊 See Our Custom Linters', url: 'custom-linters.html' },
+      {
+        label: '🚨 Real Violations Case Study',
+        url: 'linter-violations-case-study.html',
+      },
+    ],
   },
   {
     id: 'pair-programming',

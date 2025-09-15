@@ -330,30 +330,30 @@ Developer->Git: git commit
 
 Note right of Git: Pre-commit hook triggered
 
-Git->Pre-commit: Run Local Checks
-Pre-commit->Custom Linters: Check Magic Numbers
-Pre-commit->Custom Linters: Check File Placement
-Pre-commit->Custom Linters: Check Print Statements
-Pre-commit->Custom Linters: Check Logging Standards
+Git->Precommit: Run Local Checks
+Precommit->CustomLinters: Check Magic Numbers
+Precommit->CustomLinters: Check File Placement
+Precommit->CustomLinters: Check Print Statements
+Precommit->CustomLinters: Check Logging Standards
 
-Custom Linters-->Pre-commit: Local Results
+CustomLinters-->Precommit: Local Results
 
-Note left of Pre-commit: If violations
+Note left of Precommit: If violations
 
-Pre-commit-->Git: ❌ Block Commit
+Precommit-->Git: Block Commit
 Git-->Developer: Show Violations
 Developer->IDE: Fix Issues
 Developer->Git: git commit (retry)
 
-Note left of Pre-commit: If clean
+Note left of Precommit: If clean
 
-Pre-commit-->Git: ✅ Allow Commit
+Precommit-->Git: Allow Commit
 Git->GitHub: git push
 
-GitHub->GitHub Actions: Run CI Linters
-GitHub Actions->Custom Linters: Re-run All Checks
-Custom Linters-->GitHub Actions: CI Results
-GitHub Actions->GitHub: Update Status
+GitHub->GitHubActions: Run CI Linters
+GitHubActions->CustomLinters: Re-run All Checks
+CustomLinters-->GitHubActions: CI Results
+GitHubActions->GitHub: Update Status
 
 Note right of GitHub: Double validation ensures consistency
             `
