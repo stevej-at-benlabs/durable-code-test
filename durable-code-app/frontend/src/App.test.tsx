@@ -208,7 +208,9 @@ describe('App Component', () => {
       const user = userEvent.setup();
       render(<App />);
 
-      const card = screen.getByText('Standards Driven Design').closest('.technique-card');
+      const card = screen
+        .getByText('Standards Driven Design')
+        .closest('.technique-card');
 
       await user.hover(card!);
       expect(card).toHaveClass('hovered');
