@@ -30,9 +30,7 @@ const techniques: Technique[] = [
       'Clear expectations',
       'Reduced refactoring',
     ],
-    links: [
-      { label: '📖 View Standards Guide', url: 'set-standards.html' },
-    ],
+    links: [{ label: '📖 View Standards Guide', url: 'set-standards.html' }],
   },
   {
     id: 'tdd',
@@ -75,9 +73,7 @@ const techniques: Technique[] = [
       'Easier onboarding',
       'Reduced ambiguity',
     ],
-    links: [
-      { label: '📊 View CI/CD Pipeline Diagram', url: 'ci-cd-pipeline.html' },
-    ],
+    links: [{ label: '📊 View CI/CD Pipeline Diagram', url: 'ci-cd-pipeline.html' }],
   },
   {
     id: 'code-review',
@@ -92,9 +88,7 @@ const techniques: Technique[] = [
       'Learning opportunities',
       'Issue prevention',
     ],
-    links: [
-      { label: '🚀 CI/CD Pipeline & Checks', url: 'ci-cd-pipeline.html' },
-    ],
+    links: [{ label: '🚀 CI/CD Pipeline & Checks', url: 'ci-cd-pipeline.html' }],
   },
   {
     id: 'pair-programming',
