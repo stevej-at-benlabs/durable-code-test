@@ -13,6 +13,7 @@ interface Technique {
   category: 'Testing' | 'Architecture' | 'Documentation' | 'Quality' | 'Collaboration';
   icon: string;
   benefits: string[];
+  links?: { label: string; url: string }[];
 }
 
 const techniques: Technique[] = [
@@ -29,6 +30,7 @@ const techniques: Technique[] = [
       'Clear expectations',
       'Reduced refactoring',
     ],
+    links: [{ label: '📖 View Standards Guide', url: 'set-standards.html' }],
   },
   {
     id: 'tdd',
@@ -71,6 +73,7 @@ const techniques: Technique[] = [
       'Easier onboarding',
       'Reduced ambiguity',
     ],
+    links: [{ label: '📊 View CI/CD Pipeline Diagram', url: 'ci-cd-pipeline.html' }],
   },
   {
     id: 'code-review',
@@ -85,6 +88,7 @@ const techniques: Technique[] = [
       'Learning opportunities',
       'Issue prevention',
     ],
+    links: [{ label: '🚀 CI/CD Pipeline & Checks', url: 'ci-cd-pipeline.html' }],
   },
   {
     id: 'pair-programming',
@@ -98,20 +102,6 @@ const techniques: Technique[] = [
       'Knowledge sharing',
       'Reduced bugs',
       'Faster development',
-    ],
-  },
-  {
-    id: 'refactoring',
-    title: 'Intelligent Refactoring',
-    description:
-      'Use AI to safely refactor code while preserving functionality and improving design.',
-    category: 'Quality',
-    icon: '🔧',
-    benefits: [
-      'Risk reduction',
-      'Code modernization',
-      'Performance gains',
-      'Maintainability',
     ],
   },
 ];
@@ -184,13 +174,9 @@ function App() {
             {filteredTechniques.map((technique) => (
               <div
                 key={technique.id}
-                className={`technique-card ${hoveredTechnique === technique.id ? 'hovered' : ''} ${technique.id === 'set-standards' ? 'clickable' : ''}`}
+                className={`technique-card ${hoveredTechnique === technique.id ? 'hovered' : ''}`}
                 onMouseEnter={() => setHoveredTechnique(technique.id)}
                 onMouseLeave={() => setHoveredTechnique(null)}
-                onClick={() =>
-                  technique.id === 'set-standards' &&
-                  (window.location.href = 'set-standards.html')
-                }
               >
                 <div className="card-header">
                   <span className="card-icon">{technique.icon}</span>
@@ -206,6 +192,23 @@ function App() {
                     ))}
                   </ul>
                 </div>
+                {technique.links && (
+                  <div className="card-links">
+                    {technique.links.map((link, index) => (
+                      <a
+                        key={index}
+                        href={link.url}
+                        className="card-link"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          window.location.href = link.url;
+                        }}
+                      >
+                        {link.label}
+                      </a>
+                    ))}
+                  </div>
+                )}
               </div>
             ))}
           </div>
