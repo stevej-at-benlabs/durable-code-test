@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Custom Linters - Enforce Your Standards</title>
-    <script src="breadcrumb-navigation.js" defer></script>
     <style>
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -30,18 +29,12 @@
         }
 
         /* Navigation and Breadcrumbs */
-        .nav-header {
+        .breadcrumb {
             background: rgba(255, 255, 255, 0.95);
             backdrop-filter: blur(10px);
             padding: 1rem 3rem;
             border-bottom: 1px solid rgba(102, 126, 234, 0.2);
-            position: sticky;
-            top: 0;
-            z-index: 100;
             margin-bottom: 2rem;
-        }
-
-        .breadcrumb {
             display: flex;
             align-items: center;
             gap: 0.5rem;
@@ -60,11 +53,11 @@
             text-decoration: underline;
         }
 
-        .breadcrumb .separator {
+        .breadcrumb-separator {
             color: #999;
         }
 
-        .breadcrumb .current {
+        .breadcrumb-current {
             color: #333;
             font-weight: 600;
         }
@@ -239,10 +232,12 @@
     </style>
 </head>
 <body>
-    <nav class="nav-header">
-        <div class="breadcrumb">
-            <!-- Dynamic breadcrumbs will be injected here -->
-        </div>
+    <nav class="breadcrumb" aria-label="Breadcrumb navigation">
+        <a href="/">🏠 Home</a>
+        <span class="breadcrumb-separator">›</span>
+        <a href="/#custom-linting">Quality</a>
+        <span class="breadcrumb-separator">›</span>
+        <span class="breadcrumb-current">Custom Linters</span>
     </nav>
     <div class="container">
         <h1>🎯 Custom Linters</h1>
@@ -402,6 +397,65 @@ def process_payment(amount):
 
             <div class="command-box">
                 <code>python tools/design-linters/print_statement_linter.py --severity error</code>
+            </div>
+        </div>
+
+        <!-- Breadcrumb Navigation Linter -->
+        <div class="linter-card">
+            <div class="linter-header">
+                <span class="linter-icon">🧭</span>
+                <h2 class="linter-title">Breadcrumb Navigation Linter</h2>
+                <span class="status-badge status-active">Active in CI/CD</span>
+            </div>
+            <p class="linter-description">
+                Ensures all HTML documentation files have proper breadcrumb navigation for better user experience and accessibility.
+                This linter validates navigation structure, ARIA labels, and home page links in all HTML documentation.
+            </p>
+
+            <div class="feature-grid">
+                <div class="feature-item">
+                    <h4>✅ Validation Rules</h4>
+                    <ul>
+                        <li>Presence of nav element with breadcrumb class</li>
+                        <li>ARIA label for accessibility</li>
+                        <li>Link back to home page</li>
+                        <li>Non-empty breadcrumb content</li>
+                    </ul>
+                </div>
+                <div class="feature-item">
+                    <h4>🎯 Benefits</h4>
+                    <ul>
+                        <li>Improved user navigation</li>
+                        <li>Better accessibility compliance</li>
+                        <li>Consistent documentation structure</li>
+                        <li>Enhanced user experience</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="code-example">
+                <div class="code-header">Required Breadcrumb Structure:</div>
+                <pre>&lt;nav class="breadcrumb" aria-label="Breadcrumb navigation"&gt;
+    &lt;a href="/"&gt;🏠 Home&lt;/a&gt;
+    &lt;span class="breadcrumb-separator"&gt;›&lt;/span&gt;
+    &lt;a href="/parent"&gt;Parent Section&lt;/a&gt;
+    &lt;span class="breadcrumb-separator"&gt;›&lt;/span&gt;
+    &lt;span class="breadcrumb-current"&gt;Current Page&lt;/span&gt;
+&lt;/nav&gt;</pre>
+            </div>
+
+            <div class="code-example">
+                <div class="code-header">Example Violation Detection:</div>
+                <pre>❌ Breadcrumb navigation violations found in 3 file(s):
+
+  📄 public/documentation.html
+     ⚠️  Missing breadcrumb navigation element
+     ⚠️  Missing ARIA label for accessibility
+     ⚠️  Missing link back to home page</pre>
+            </div>
+
+            <div class="command-box">
+                <code>python tools/design-linters/breadcrumb_linter.py</code>
             </div>
         </div>
 

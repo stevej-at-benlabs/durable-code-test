@@ -18,6 +18,25 @@ interface Technique {
 
 const techniques: Technique[] = [
   {
+    id: 'diagram-driven',
+    title: 'Diagram-Driven Design',
+    description:
+      'Start with visual diagrams to plan architecture, workflows, and implementation strategies before writing code. Use flow charts, sequence diagrams, and Gantt charts.',
+    category: 'Architecture',
+    icon: '📊',
+    benefits: [
+      'Clear visual planning',
+      'Better communication',
+      'Reduced misunderstandings',
+      'Easier onboarding',
+    ],
+    links: [
+      { label: '🔄 Development Flow Diagram', url: 'diagrams/durable-code-flow.html' },
+      { label: '📋 AI Review Sequence', url: 'diagrams/ai-review-sequence.html' },
+      { label: '📅 Implementation Plan', url: 'diagrams/implementation-plan.html' },
+    ],
+  },
+  {
     id: 'set-standards',
     title: 'Standards Driven Design',
     description:
@@ -73,7 +92,11 @@ const techniques: Technique[] = [
       'Easier onboarding',
       'Reduced ambiguity',
     ],
-    links: [{ label: '📊 View CI/CD Pipeline Diagram', url: 'ci-cd-pipeline.html' }],
+    links: [
+      { label: '🔄 Development Flow Diagram', url: 'diagrams/durable-code-flow.html' },
+      { label: '📋 AI Review Sequence', url: 'diagrams/ai-review-sequence.html' },
+      { label: '📅 Implementation Plan', url: 'diagrams/implementation-plan.html' },
+    ],
   },
   {
     id: 'code-review',
@@ -149,7 +172,7 @@ function App() {
           </div>
           <div className="hero-stats">
             <div className="stat">
-              <span className="stat-number">7</span>
+              <span className="stat-number">8</span>
               <span className="stat-label">Core Techniques</span>
             </div>
             <div className="stat">

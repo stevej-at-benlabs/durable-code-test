@@ -192,3 +192,21 @@ custom_rules:
     condition: "no_parameters AND has_dependencies"
     severity: "error"
     message: "Classes with dependencies should use constructor injection"
+
+# Documentation Standards
+documentation:
+  # Breadcrumb Navigation Requirements
+  breadcrumbs:
+    enabled: true
+    enforce_on_html: true
+    require_aria_labels: true
+    require_home_link: true
+    severity: "error"
+
+    exclude_patterns:
+      - "*/test/*"
+      - "*/template/*"
+      - "*/mock/*"
+      - "index.html"
+
+    message: "All HTML documentation must include breadcrumb navigation for better user experience"
