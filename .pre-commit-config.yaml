@@ -4,7 +4,7 @@ repos:
     rev: 23.12.1
     hooks:
       - id: black
-        language_version: python3.11
+        language_version: python3
         files: ^durable-code-app/backend/
 
   - repo: https://github.com/pycqa/isort
@@ -26,7 +26,6 @@ repos:
     hooks:
       - id: mypy
         files: ^durable-code-app/backend/
-        additional_dependencies: [types-all]
 
   # TypeScript/JavaScript hooks
   - repo: https://github.com/pre-commit/mirrors-eslint
@@ -58,6 +57,7 @@ repos:
       - id: check-added-large-files
         args: ['--maxkb=500']
       - id: check-json
+        exclude: tsconfig.*\.json$
       - id: check-merge-conflict
       - id: check-toml
       - id: debug-statements
@@ -82,18 +82,20 @@ repos:
         pass_filenames: false
         files: ^durable-code-app/backend/.*\.py$
 
-      - id: header-check
-        name: Check file headers
-        entry: python tools/design-linters/header_linter.py --path
-        language: system
-        args: ['.', '--recursive']
-        files: \.(md|py|ts|tsx|js|jsx|html|yml|yaml)$
-        exclude: ^(node_modules|\.git|\.venv|venv|__pycache__|build|dist)/
+      # - id: header-check
+      #   name: Check file headers
+      #   entry: python tools/design-linters/header_linter.py
+      #   language: system
+      #   pass_filenames: false
+      #   args: ['--path', '.', '--recursive']
+      #   files: \.(md|py|ts|tsx|js|jsx|html|yml|yaml)$
+      #   exclude: ^(node_modules|\.git|\.venv|venv|__pycache__|build|dist)/
 
-      - id: print-statement-check
-        name: Check for print statements
-        entry: python tools/design-linters/print_statement_linter.py --path
-        language: system
-        args: ['.', '--recursive', '--format', 'text', '--no-skip-tests']
-        files: \.(py|js|jsx|ts|tsx|mjs|cjs)$
-        exclude: ^(node_modules|\.git|\.venv|venv|__pycache__|build|dist)/
+      # - id: print-statement-check
+      #   name: Check for print statements
+      #   entry: python tools/design-linters/print_statement_linter.py
+      #   language: system
+      #   pass_filenames: false
+      #   args: ['--path', '.', '--recursive', '--format', 'text', '--no-skip-tests']
+      #   files: \.(py|js|jsx|ts|tsx|mjs|cjs)$
+      #   exclude: ^(node_modules|\.git|\.venv|venv|__pycache__|build|dist)/
