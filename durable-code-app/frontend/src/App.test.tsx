@@ -49,11 +49,12 @@ describe('App Component', () => {
     it('renders all technique cards', () => {
       render(<App />);
 
-      expect(screen.getByText('Set Standards First')).toBeInTheDocument();
+      expect(screen.getByText('Standards Driven Design')).toBeInTheDocument();
       expect(screen.getByText('Test-Driven Development with AI')).toBeInTheDocument();
       expect(screen.getByText('AI-Assisted Design Patterns')).toBeInTheDocument();
       expect(screen.getByText('Documentation-First Development')).toBeInTheDocument();
-      expect(screen.getByText('AI-Enhanced Code Reviews')).toBeInTheDocument();
+      expect(screen.getByText('AI Subjective Code Reviews')).toBeInTheDocument();
+      expect(screen.getByText('Advanced Custom Linting')).toBeInTheDocument();
       expect(screen.getByText('AI Pair Programming')).toBeInTheDocument();
     });
 
@@ -88,7 +89,7 @@ describe('App Component', () => {
       const cards = screen
         .getAllByRole('generic')
         .filter((el) => el.className.includes('technique-card'));
-      expect(cards).toHaveLength(6);
+      expect(cards).toHaveLength(7);
     });
 
     it('filters techniques by category', async () => {
@@ -140,16 +141,16 @@ describe('App Component', () => {
     it('has a working hero CTA link to set-standards.html', () => {
       render(<App />);
 
-      const ctaLink = screen.getByRole('link', { name: /Set Standards First/ });
+      const ctaLink = screen.getByRole('link', { name: /Explore Our Process/ });
       expect(ctaLink).toBeInTheDocument();
-      expect(ctaLink).toHaveAttribute('href', 'set-standards.html');
+      expect(ctaLink).toHaveAttribute('href', 'ci-cd-pipeline.html');
     });
 
     it('has a button link in set-standards card', () => {
       render(<App />);
 
       const setStandardsCard = screen
-        .getByText('Set Standards First')
+        .getByText('Standards Driven Design')
         .closest('.technique-card');
 
       // Card should have a button link instead of being clickable
@@ -184,7 +185,7 @@ describe('App Component', () => {
       render(<App />);
 
       const setStandardsCard = screen
-        .getByText('Set Standards First')
+        .getByText('Standards Driven Design')
         .closest('.technique-card');
       const tddCard = screen
         .getByText('Test-Driven Development with AI')
@@ -207,7 +208,7 @@ describe('App Component', () => {
       const user = userEvent.setup();
       render(<App />);
 
-      const card = screen.getByText('Set Standards First').closest('.technique-card');
+      const card = screen.getByText('Standards Driven Design').closest('.technique-card');
 
       await user.hover(card!);
       expect(card).toHaveClass('hovered');
@@ -238,7 +239,7 @@ describe('App Component', () => {
     it('has proper link for CTA button', () => {
       render(<App />);
 
-      const ctaLink = screen.getByRole('link', { name: /Set Standards First/ });
+      const ctaLink = screen.getByRole('link', { name: /Explore Our Process/ });
       expect(ctaLink).toHaveAttribute('href');
     });
 
@@ -305,7 +306,7 @@ describe('App Component', () => {
       render(<App />);
 
       const setStandardsCard = screen
-        .getByText('Set Standards First')
+        .getByText('Standards Driven Design')
         .closest('.technique-card');
 
       // Click the link button inside the card

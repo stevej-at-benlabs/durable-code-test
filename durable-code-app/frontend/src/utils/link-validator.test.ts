@@ -328,7 +328,7 @@ describe('Link Validator Utilities', () => {
       // This would be used in the actual App component tests
       const appElement = document.createElement('div');
       appElement.innerHTML = `
-        <a href="set-standards.html" class="hero-cta">Set Standards First</a>
+        <a href="set-standards.html" class="hero-cta">Standards Driven Design</a>
       `;
 
       const links = extractLinksFromElement(appElement);
