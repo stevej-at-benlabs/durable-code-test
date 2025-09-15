@@ -1,11 +1,11 @@
 # CSS Layout Stability Guide
 
-**Purpose**: Guide for preventing jarring page width changes and maintaining stable layouts in dynamic UIs  
-**Scope**: CSS layout patterns, React components with dynamic content, responsive design  
-**Created**: 2024-11-20  
-**Updated**: 2025-09-12  
-**Author**: Frontend Team  
-**Version**: 1.2  
+**Purpose**: Guide for preventing jarring page width changes and maintaining stable layouts in dynamic UIs
+**Scope**: CSS layout patterns, React components with dynamic content, responsive design
+**Created**: 2024-11-20
+**Updated**: 2025-09-12
+**Author**: Frontend Team
+**Version**: 1.2
 
 ---
 
@@ -88,7 +88,7 @@ grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
   .techniques-grid {
     grid-template-columns: repeat(2, 1fr);  /* Always 2 on tablet */
   }
-  
+
   .filter-bar {
     grid-template-columns: repeat(3, 1fr);  /* 3 button rows */
   }
@@ -105,12 +105,12 @@ grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
 
 ### Phase 1: Identify the Real Culprit
 1. **Not just button widths** - Often the entire layout is responding to content
-2. **Check container constraints** - Missing max-width on root containers  
+2. **Check container constraints** - Missing max-width on root containers
 3. **Examine grid behavior** - Auto-fit vs fixed column counts
 
 ### Phase 2: Apply Container-Level Fixes
 1. **Root container constraints first**
-2. **Fixed grid structures second**  
+2. **Fixed grid structures second**
 3. **Button/component fixes last**
 
 ### Phase 3: Test All States
@@ -170,7 +170,7 @@ grid-template-columns: repeat(3, 1fr);
 
 ### Inspect Layout Shifts
 1. Open Chrome DevTools → Rendering tab
-2. Enable "Layout Shift Regions" 
+2. Enable "Layout Shift Regions"
 3. Click through filters to identify shifting elements
 4. Focus on container-level constraints first
 

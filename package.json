@@ -1,0 +1,5 @@
+{
+  "devDependencies": {
+    "eslint-plugin-sonarjs": "^0.25.1"
+  }
+}

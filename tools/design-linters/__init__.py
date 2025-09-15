@@ -11,23 +11,23 @@ from typing import Dict, List
 @dataclass(frozen=True)
 class SRPThresholds:
     """Single Responsibility Principle thresholds."""
-    
+
     # Method and size limits
     MAX_METHODS_PER_CLASS: int = 7
     MAX_METHOD_GROUPS: int = 3
     MAX_CLASS_LINES: int = 200
     MAX_INSTANCE_VARIABLES: int = 7
     MAX_DEPENDENCIES: int = 5
-    
+
     # Cohesion thresholds
     MIN_COHESION_SCORE: float = 0.3
     WARNING_COHESION_SCORE: float = 0.5
     GOOD_COHESION_SCORE: float = 0.7
-    
+
     # Severity thresholds
     ERROR_VIOLATION_COUNT: int = 4
     WARNING_VIOLATION_COUNT: int = 2
-    
+
     # Line counts for different severity levels
     STRICT_MAX_METHODS: int = 5
     STRICT_MAX_LINES: int = 150
@@ -38,7 +38,7 @@ class SRPThresholds:
 @dataclass(frozen=True)
 class MagicNumberThresholds:
     """Magic number detection thresholds."""
-    
+
     # Acceptable numeric literals
     ALLOWED_NUMBERS = frozenset({
         -1,  # Common index/flag
@@ -50,7 +50,7 @@ class MagicNumberThresholds:
         1000, # Kilo multiplier
         1024, # Binary kilo
     })
-    
+
     # Acceptable string literals
     ALLOWED_STRING_PATTERNS = frozenset({
         '',      # Empty string

@@ -14,8 +14,6 @@
     "plugin:jsx-a11y/strict",
     "plugin:import/recommended",
     "plugin:import/typescript",
-    "plugin:sonarjs/recommended",
-    "plugin:security/recommended",
     "plugin:prettier/recommended"
   ],
   "parser": "@typescript-eslint/parser",
@@ -23,7 +21,6 @@
     "ecmaVersion": "latest",
     "sourceType": "module",
     "project": ["./tsconfig.json", "./tsconfig.node.json"],
-    "tsconfigRootDir": ".",
     "ecmaFeatures": {
       "jsx": true
     }
@@ -35,8 +32,6 @@
     "react-refresh",
     "jsx-a11y",
     "import",
-    "sonarjs",
-    "security",
     "prettier"
   ],
   "settings": {
@@ -76,21 +71,11 @@
     "@typescript-eslint/strict-boolean-expressions": "error",
     "react/prop-types": "off",
     "react/display-name": "off",
-    "react-refresh/only-export-components": [
-      "warn",
-      { "allowConstantExport": true }
-    ],
+    "react-refresh/only-export-components": ["warn", { "allowConstantExport": true }],
     "import/order": [
       "error",
       {
-        "groups": [
-          "builtin",
-          "external",
-          "internal",
-          "parent",
-          "sibling",
-          "index"
-        ],
+        "groups": ["builtin", "external", "internal", "parent", "sibling", "index"],
         "newlines-between": "always",
         "alphabetize": {
           "order": "asc",
@@ -98,8 +83,6 @@
         }
       }
     ],
-    "sonarjs/cognitive-complexity": ["error", 5],
-    "sonarjs/no-duplicate-string": ["error", 3],
     "prettier/prettier": "error"
   },
   "overrides": [

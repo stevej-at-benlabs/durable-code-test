@@ -1,11 +1,11 @@
 # Development Standards and Best Practices
 
-**Purpose**: Define comprehensive development standards for Python backend and React frontend applications  
-**Scope**: All development practices, code quality requirements, and project structure standards  
-**Created**: 2024-12-15  
-**Updated**: 2025-09-12  
-**Author**: Development Team  
-**Version**: 2.0  
+**Purpose**: Define comprehensive development standards for Python backend and React frontend applications
+**Scope**: All development practices, code quality requirements, and project structure standards
+**Created**: 2024-12-15
+**Updated**: 2025-09-12
+**Author**: Development Team
+**Version**: 2.0
 
 ---
 
@@ -95,16 +95,16 @@ backend/
 - **Usage Examples**:
   ```python
   from loguru import logger
-  
+
   # Instead of print("Debug info")
   logger.debug("Debug information")
-  
+
   # Instead of print(f"Processing {item}")
   logger.info(f"Processing {item}")
-  
+
   # Instead of print(f"Warning: {message}")
   logger.warning(f"Warning: {message}")
-  
+
   # Instead of print(f"Error: {error}")
   logger.error(f"Error occurred: {error}")
   ```
@@ -120,7 +120,7 @@ backend/
   ```python
   # Configure in main.py or config.py
   from loguru import logger
-  
+
   logger.add(
       "logs/app_{time}.log",
       rotation="500 MB",
@@ -226,7 +226,7 @@ frontend/
 ### 8. Logging Standards - NO CONSOLE STATEMENTS
 - **PROHIBITED**: `console.log()`, `console.debug()`, `alert()`, and `debugger` statements are strictly forbidden in production code
 - **Allowed in Development Only**: Console statements must be removed before committing
-- **Recommended Loggers**: 
+- **Recommended Loggers**:
   - **Winston**: For Node.js/backend logging
   - **Pino**: Lightweight alternative for Node.js
   - **Debug**: For development debugging (`DEBUG=app:* npm start`)
@@ -234,17 +234,17 @@ frontend/
   ```typescript
   // Use a logging service/utility
   import { logger } from '@/utils/logger';
-  
+
   // Instead of console.log("User logged in")
   logger.info('User logged in', { userId: user.id });
-  
+
   // Instead of console.error("API failed")
   logger.error('API request failed', { error, endpoint });
   ```
 - **Example Logger Setup** (utils/logger.ts):
   ```typescript
   const isDevelopment = process.env.NODE_ENV === 'development';
-  
+
   export const logger = {
     debug: (...args: any[]) => isDevelopment && console.debug(...args),
     info: (...args: any[]) => isDevelopment && console.info(...args),

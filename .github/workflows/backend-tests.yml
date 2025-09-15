@@ -22,7 +22,7 @@ jobs:
     defaults:
       run:
         working-directory: ./durable-code-app/backend
-    
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -91,7 +91,7 @@ jobs:
     name: Backend Integration Tests
     runs-on: ubuntu-latest
     if: github.event_name == 'pull_request'
-    
+
     services:
       postgres:
         image: postgres:15

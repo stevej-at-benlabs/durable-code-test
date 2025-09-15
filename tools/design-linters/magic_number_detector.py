@@ -17,7 +17,7 @@ import json
 
 class MagicNumberViolation:
     """Represents a magic number/literal violation."""
-    
+
     def __init__(self, file_path: str, line: int, column: int, value: Union[int, float, str], context: str):
         self.file_path = file_path
         self.line = line
@@ -25,7 +25,7 @@ class MagicNumberViolation:
         self.value = value
         self.context = context
         self.suggestion = self._generate_suggestion()
-    
+
     def _generate_suggestion(self) -> str:
         """Generate a constant name suggestion."""
         if isinstance(self.value, (int, float)):
@@ -45,7 +45,7 @@ class MagicNumberViolation:
         else:
             # For strings, convert to constant format
             return self.value.upper().replace(' ', '_').replace('-', '_')[:30] + "_CONSTANT"
-    
+
     def to_dict(self) -> dict:
         """Convert to dictionary for JSON output."""
         return {
@@ -61,7 +61,7 @@ class MagicNumberViolation:
 
 class MagicNumberDetector(ast.NodeVisitor):
     """AST visitor that detects magic numbers and literals."""
-    
+
     # Values that are generally acceptable as literals
     ALLOWED_NUMBERS = {
         -1,  # Common index/flag
@@ -74,7 +74,7 @@ class MagicNumberDetector(ast.NodeVisitor):
         1000, # Kilo multiplier
         1024, # Binary kilo
     }
-    
+
     # String patterns that are acceptable as literals
     ALLOWED_STRING_PATTERNS = {
         '',      # Empty string
@@ -93,7 +93,7 @@ class MagicNumberDetector(ast.NodeVisitor):
         'rb',    # Read binary
         'wb',    # Write binary
     }
-    
+
     def __init__(self, file_path: str, ignore_tests: bool = True):
         self.file_path = file_path
         self.violations: List[MagicNumberViolation] = []
@@ -101,41 +101,41 @@ class MagicNumberDetector(ast.NodeVisitor):
         self.in_constant_definition = False
         self.ignore_tests = ignore_tests
         self.is_test_file = 'test' in file_path.lower()
-    
+
     def visit_FunctionDef(self, node: ast.FunctionDef) -> None:
         """Track current function for context."""
         old_function = self.current_function
         self.current_function = node.name
-        
+
         # Skip test functions if configured
         if self.ignore_tests and node.name.startswith('test_'):
             return
-        
+
         self.generic_visit(node)
         self.current_function = old_function
-    
+
     def visit_AsyncFunctionDef(self, node: ast.AsyncFunctionDef) -> None:
         """Track current async function for context."""
         old_function = self.current_function
         self.current_function = node.name
-        
+
         # Skip test functions if configured
         if self.ignore_tests and node.name.startswith('test_'):
             return
-        
+
         self.generic_visit(node)
         self.current_function = old_function
-    
+
     def visit_AnnAssign(self, node: ast.AnnAssign) -> None:
         """Check annotated assignments (might be constants)."""
         if isinstance(node.target, ast.Name):
             if node.target.id.isupper():
                 # This is likely a constant definition
                 self.in_constant_definition = True
-        
+
         self.generic_visit(node)
         self.in_constant_definition = False
-    
+
     def visit_Assign(self, node: ast.Assign) -> None:
         """Check assignments for constant definitions."""
         for target in node.targets:
@@ -144,25 +144,25 @@ class MagicNumberDetector(ast.NodeVisitor):
                     # This is likely a constant definition
                     self.in_constant_definition = True
                     break
-        
+
         self.generic_visit(node)
         self.in_constant_definition = False
-    
+
     def visit_Constant(self, node: ast.Constant) -> None:
         """Check for magic numbers and strings."""
         # Skip if in test file and ignoring tests
         if self.ignore_tests and self.is_test_file:
             return
-        
+
         # Skip if this is a constant definition
         if self.in_constant_definition:
             return
-        
+
         # Skip docstrings
         if isinstance(node.value, str):
             if self._is_docstring(node):
                 return
-        
+
         # Check for magic numbers
         if isinstance(node.value, (int, float)):
             if node.value not in self.ALLOWED_NUMBERS:
@@ -177,13 +177,13 @@ class MagicNumberDetector(ast.NodeVisitor):
                         context
                     )
                     self.violations.append(violation)
-        
+
         # Check for magic strings
         elif isinstance(node.value, str):
-            if (len(node.value) > 1 and 
+            if (len(node.value) > 1 and
                 node.value not in self.ALLOWED_STRING_PATTERNS and
                 not node.value.startswith(('test', '__'))):
-                
+
                 # Skip if it looks like a dict key or similar
                 if not self._is_string_key(node) and not self._is_docstring(node):
                     context = f"in {self.current_function}" if self.current_function else "at module level"
@@ -195,7 +195,7 @@ class MagicNumberDetector(ast.NodeVisitor):
                         context
                     )
                     self.violations.append(violation)
-    
+
     def _is_acceptable_context(self, node: ast.Constant) -> bool:
         """Check if the context makes the literal acceptable."""
         # Array/list indices are generally OK
@@ -210,9 +210,9 @@ class MagicNumberDetector(ast.NodeVisitor):
             # Slice values are OK
             if isinstance(parent, ast.Slice):
                 return True
-        
+
         return False
-    
+
     def _is_string_key(self, node: ast.Constant) -> bool:
         """Check if string is used as a dictionary key or similar."""
         parent = getattr(node, 'parent', None)
@@ -231,9 +231,9 @@ class MagicNumberDetector(ast.NodeVisitor):
             # Attribute access strings are OK
             if isinstance(parent, ast.Attribute):
                 return True
-        
+
         return False
-    
+
     def _is_docstring(self, node: ast.Constant) -> bool:
         """Check if string is a docstring."""
         parent = getattr(node, 'parent', None)
@@ -286,15 +286,15 @@ def analyze_directory(directory: str, exclude_patterns: List[str] = None, ignore
     """Analyze all Python files in a directory."""
     exclude_patterns = exclude_patterns or ['__pycache__', '.git', 'venv', '.venv', 'migrations']
     violations = []
-    
+
     for path in Path(directory).rglob('*.py'):
         # Skip excluded patterns
         if any(pattern in str(path) for pattern in exclude_patterns):
             continue
-        
+
         file_violations = analyze_file(str(path), ignore_tests)
         violations.extend(file_violations)
-    
+
     return violations
 
 
@@ -304,17 +304,17 @@ def main():
     parser.add_argument('path', help='File or directory to analyze')
     parser.add_argument('--json', action='store_true', help='Output as JSON')
     parser.add_argument('--include-tests', action='store_true', help='Include test files in analysis')
-    parser.add_argument('--fail-on-violation', action='store_true', 
+    parser.add_argument('--fail-on-violation', action='store_true',
                        help='Exit with non-zero code if violations found')
-    
+
     args = parser.parse_args()
-    
+
     # Analyze path
     if os.path.isfile(args.path):
         violations = analyze_file(args.path, ignore_tests=not args.include_tests)
     else:
         violations = analyze_directory(args.path, ignore_tests=not args.include_tests)
-    
+
     # Output results
     if args.json:
         print(json.dumps([v.to_dict() for v in violations], indent=2))
@@ -330,7 +330,7 @@ def main():
                 print(f"   Context: {v.context}")
                 print(f"   Suggestion: Define as constant '{v.suggestion}'")
                 print()
-    
+
     # Exit code
     if args.fail_on_violation and violations:
         sys.exit(1)
