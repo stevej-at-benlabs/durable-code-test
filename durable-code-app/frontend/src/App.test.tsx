@@ -8,7 +8,7 @@
  */
 
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { render, screen, waitFor, within } from '@testing-library/react';
+import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import App from './App';
 import { mockFetch, mockFailedFetch } from './test-setup';
@@ -153,7 +153,7 @@ describe('App Component', () => {
         .closest('.technique-card');
 
       // Card should have a button link instead of being clickable
-      const link = within(setStandardsCard!).getByRole('link', { name: /View Standards Guide/i });
+      const link = within(setStandardsCard as HTMLElement).getByRole('link', { name: /View Standards Guide/i });
       expect(link).toBeInTheDocument();
       expect(link).toHaveAttribute('href', 'set-standards.html');
     });
@@ -189,11 +189,11 @@ describe('App Component', () => {
         .closest('.technique-card');
 
       // Set Standards card should have a link button
-      const setStandardsLink = within(setStandardsCard!).queryByRole('link');
+      const setStandardsLink = within(setStandardsCard as HTMLElement).queryByRole('link');
       expect(setStandardsLink).toBeInTheDocument();
 
       // TDD card should not have a link button
-      const tddLink = within(tddCard!).queryByRole('link');
+      const tddLink = within(tddCard as HTMLElement).queryByRole('link');
       expect(tddLink).not.toBeInTheDocument();
     });
   });
@@ -305,7 +305,7 @@ describe('App Component', () => {
         .closest('.technique-card');
 
       // Click the link button inside the card
-      const link = within(setStandardsCard!).getByRole('link', { name: /View Standards Guide/i });
+      const link = within(setStandardsCard as HTMLElement).getByRole('link', { name: /View Standards Guide/i });
 
       // This should not throw an error
       await user.click(link);
