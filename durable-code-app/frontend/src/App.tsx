@@ -30,6 +30,9 @@ const techniques: Technique[] = [
       'Clear expectations',
       'Reduced refactoring',
     ],
+    links: [
+      { label: '📖 View Standards Guide', url: 'set-standards.html' },
+    ],
   },
   {
     id: 'tdd',
@@ -107,20 +110,6 @@ const techniques: Technique[] = [
       'Faster development',
     ],
   },
-  {
-    id: 'refactoring',
-    title: 'Intelligent Refactoring',
-    description:
-      'Use AI to safely refactor code while preserving functionality and improving design.',
-    category: 'Quality',
-    icon: '🔧',
-    benefits: [
-      'Risk reduction',
-      'Code modernization',
-      'Performance gains',
-      'Maintainability',
-    ],
-  },
 ];
 
 function App() {
@@ -191,13 +180,9 @@ function App() {
             {filteredTechniques.map((technique) => (
               <div
                 key={technique.id}
-                className={`technique-card ${hoveredTechnique === technique.id ? 'hovered' : ''} ${technique.id === 'set-standards' ? 'clickable' : ''}`}
+                className={`technique-card ${hoveredTechnique === technique.id ? 'hovered' : ''}`}
                 onMouseEnter={() => setHoveredTechnique(technique.id)}
                 onMouseLeave={() => setHoveredTechnique(null)}
-                onClick={() =>
-                  technique.id === 'set-standards' &&
-                  (window.location.href = 'set-standards.html')
-                }
               >
                 <div className="card-header">
                   <span className="card-icon">{technique.icon}</span>

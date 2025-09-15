@@ -8,7 +8,7 @@
  */
 
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import App from './App';
 import { mockFetch, mockFailedFetch } from './test-setup';
@@ -55,7 +55,6 @@ describe('App Component', () => {
       expect(screen.getByText('Documentation-First Development')).toBeInTheDocument();
       expect(screen.getByText('AI-Enhanced Code Reviews')).toBeInTheDocument();
       expect(screen.getByText('AI Pair Programming')).toBeInTheDocument();
-      expect(screen.getByText('Intelligent Refactoring')).toBeInTheDocument();
     });
 
     it('renders all filter buttons', () => {
@@ -89,7 +88,7 @@ describe('App Component', () => {
       const cards = screen
         .getAllByRole('generic')
         .filter((el) => el.className.includes('technique-card'));
-      expect(cards).toHaveLength(7);
+      expect(cards).toHaveLength(6);
     });
 
     it('filters techniques by category', async () => {
@@ -146,21 +145,17 @@ describe('App Component', () => {
       expect(ctaLink).toHaveAttribute('href', 'set-standards.html');
     });
 
-    it('makes set-standards card clickable', async () => {
-      const user = userEvent.setup();
+    it('has a button link in set-standards card', () => {
       render(<App />);
 
       const setStandardsCard = screen
         .getByText('Set Standards First')
         .closest('.technique-card');
-      expect(setStandardsCard).toHaveClass('clickable');
 
-      await user.click(setStandardsCard!);
-
-      // Should navigate to set-standards.html
-      await waitFor(() => {
-        expect(window.location.href).toBe('set-standards.html');
-      });
+      // Card should have a button link instead of being clickable
+      const link = within(setStandardsCard!).getByRole('link', { name: /View Standards Guide/i });
+      expect(link).toBeInTheDocument();
+      expect(link).toHaveAttribute('href', 'set-standards.html');
     });
 
     it('validates that set-standards.html exists', async () => {
@@ -183,7 +178,7 @@ describe('App Component', () => {
       expect(response.status).toBe(404);
     });
 
-    it('only set-standards card should be clickable', () => {
+    it('only some cards have action buttons', () => {
       render(<App />);
 
       const setStandardsCard = screen
@@ -193,8 +188,13 @@ describe('App Component', () => {
         .getByText('Test-Driven Development with AI')
         .closest('.technique-card');
 
-      expect(setStandardsCard).toHaveClass('clickable');
-      expect(tddCard).not.toHaveClass('clickable');
+      // Set Standards card should have a link button
+      const setStandardsLink = within(setStandardsCard!).queryByRole('link');
+      expect(setStandardsLink).toBeInTheDocument();
+
+      // TDD card should not have a link button
+      const tddLink = within(tddCard!).queryByRole('link');
+      expect(tddLink).not.toBeInTheDocument();
     });
   });
 
@@ -304,8 +304,11 @@ describe('App Component', () => {
         .getByText('Set Standards First')
         .closest('.technique-card');
 
+      // Click the link button inside the card
+      const link = within(setStandardsCard!).getByRole('link', { name: /View Standards Guide/i });
+
       // This should not throw an error
-      await user.click(setStandardsCard!);
+      await user.click(link);
 
       // Clean up
       consoleSpy.mockRestore();

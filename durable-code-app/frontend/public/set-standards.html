@@ -28,9 +28,54 @@ Version: 1.4
         }
 
         .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 2rem;
+            width: 100%;
+            max-width: 100%;
+            padding: 2rem 3rem;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 1rem;
+            }
+        }
+
+        /* Navigation and Breadcrumbs */
+        .nav-header {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 1rem 3rem;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            margin-bottom: 2rem;
+        }
+
+        .breadcrumb {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.95rem;
+        }
+
+        .breadcrumb a {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.3s ease;
+        }
+
+        .breadcrumb a:hover {
+            color: #764ba2;
+            text-decoration: underline;
+        }
+
+        .breadcrumb .separator {
+            color: #999;
+        }
+
+        .breadcrumb .current {
+            color: #333;
+            font-weight: 600;
         }
 
         .header {
@@ -191,18 +236,18 @@ Version: 1.4
     </style>
 </head>
 <body>
+    <nav class="nav-header">
+        <div class="breadcrumb">
+            <a href="/">🏠 Home</a>
+            <span class="separator">›</span>
+            <span class="current">Set Standards</span>
+        </div>
+    </nav>
     <div class="container">
         <header class="header">
             <h1>🎯 Set Standards</h1>
             <p>Define and enforce development standards for AI-assisted programming</p>
         </header>
-
-        <nav class="nav-menu">
-            <a href="#" class="active">Set-Standards</a>
-            <a href="index.html">Durable Code Techniques</a>
-            <a href="#validation">Validation</a>
-            <a href="#examples">Examples</a>
-        </nav>
 
         <div class="content-card">
             <h2 class="section-title">Why Standards Matter for AI Development</h2>
@@ -237,23 +282,39 @@ srp:
   max_instance_variables: 7
   max_dependencies: 5
   min_cohesion_score: 0.3
-  
+
   # Patterns that indicate SRP violations
   violation_patterns:
     - "and"  # UserManagerAndValidator
     - "or"   # SaveOrUpdate
     - "with" # ProcessWithValidation
-  
+
   # Method prefixes for responsibility detection
   responsibility_groups:
     data_access: [get, fetch, load, read, query, find, search]
     data_mutation: [set, save, write, update, delete, create, insert, remove]
     validation: [validate, verify, check, ensure, assert, confirm]
-    transformation: [convert, transform, parse, format, serialize, deserialize]</pre>
+    transformation: [convert, transform, parse, format, serialize, deserialize]
+    notification: [send, notify, email, alert, publish, broadcast]
+    calculation: [calculate, compute, process, analyze, aggregate]</pre>
                 </div>
             </div>
 
-            <h3 class="subsection-title">2. Code Quality Standards</h3>
+            <h3 class="subsection-title">2. Custom Linting Tools</h3>
+            <p>This project includes several custom linters that enforce our standards:</p>
+
+            <div class="real-example">
+                <h5>🔧 Available Custom Linters in tools/design-linters/</h5>
+                <ul>
+                    <li><strong>srp_analyzer.py:</strong> Analyzes classes for Single Responsibility Principle violations</li>
+                    <li><strong>header_linter.py:</strong> Ensures all files have proper headers with purpose, scope, and metadata</li>
+                    <li><strong>print_statement_linter.py:</strong> Detects and flags print statements (should use logging instead)</li>
+                    <li><strong>magic_number_detector.py:</strong> Finds hardcoded values that should be constants</li>
+                    <li><strong>file_placement_linter.py:</strong> Validates files are in correct directories per architecture</li>
+                </ul>
+            </div>
+
+            <h3 class="subsection-title">3. Code Quality Standards</h3>
             <p>We enforce Grade A complexity using Radon and multiple linting tools:</p>
 
             <div class="real-example">
@@ -279,7 +340,7 @@ srp:
                 </div>
             </div>
 
-            <h3 class="subsection-title">3. React Component Standards</h3>
+            <h3 class="subsection-title">4. React Component Standards</h3>
             <p>From our existing App.tsx, we can see clear patterns for AI to follow:</p>
 
             <div class="real-example">
@@ -305,6 +366,29 @@ interface Technique {
 const techniques: Technique[] = [
   // Data structure with clear typing
 ];</pre>
+                </div>
+            </div>
+
+            <h3 class="subsection-title">5. Project-Specific CI/CD Standards</h3>
+            <p>Our GitHub Actions enforce multiple layers of quality checks:</p>
+
+            <div class="real-example">
+                <h5>🚀 Real Example: Multi-Language Quality Gates</h5>
+                <div class="code-block bash-highlight">
+<pre># Python Backend Standards (from our Makefile)
+backend-lint:
+  cd durable-code-app/backend && poetry run black --check app
+  cd durable-code-app/backend && poetry run isort --check app
+  cd durable-code-app/backend && poetry run ruff check app
+  cd durable-code-app/backend && poetry run mypy app
+  cd durable-code-app/backend && poetry run pylint app
+  cd durable-code-app/backend && poetry run bandit -r app
+  cd durable-code-app/backend && poetry run radon cc app -n A
+
+# Frontend Standards
+frontend-lint:
+  cd durable-code-app/frontend && npm run lint
+  cd durable-code-app/frontend && npm run type-check</pre>
                 </div>
             </div>
         </div>
@@ -334,6 +418,37 @@ const techniques: Technique[] = [
 
             <div class="highlight-box">
                 <strong>💡 Pro Tip:</strong> Create a CLAUDE.md file in your repository with your standards and preferences. AI assistants can reference this automatically.
+            </div>
+
+            <div class="real-example">
+                <h5>📝 Real Example: CLAUDE.md for AI Instructions</h5>
+                <div class="code-block yaml-highlight">
+<pre># CLAUDE.md - AI Assistant Instructions
+
+## Code Standards
+- All Python code must achieve Radon Grade A complexity
+- Use type hints for all function parameters and returns
+- Follow PEP 8 and use Black formatting
+- No print statements - use logging instead
+
+## Architecture Standards
+- Follow SOLID principles (enforced by .design-lint.yml)
+- Maximum 7 methods per class
+- Maximum 3 responsibility groups per class
+- Dependency injection required for all services
+
+## Testing Standards
+- Minimum 80% code coverage
+- All new features must have unit tests
+- Integration tests for API endpoints
+- Use pytest for Python, Jest for JavaScript
+
+## Documentation Standards
+- All files must have header comments with purpose and scope
+- Functions need docstrings with parameter descriptions
+- Complex logic requires inline comments
+- Update README when adding new features</pre>
+                </div>
             </div>
 
             <h3 class="subsection-title">2. Effective Prompting Strategies</h3>
@@ -387,29 +502,58 @@ jobs:
             <p>We have specialized workflows that check adherence to SOLID principles:</p>
 
             <div class="real-example">
-                <h5>🎯 Real Example: Design Principles CI Check</h5>
+                <h5>🎯 Real Example: Open-Closed Principle Check (.github/workflows/ocp-check.yml)</h5>
                 <div class="code-block yaml-highlight">
-<pre>  srp-analysis:
+<pre># Open-Closed Principle Violation Check
+# This workflow uses Claude AI to analyze code changes for violations of the SOLID Open-Closed Principle
+# It runs on pull requests and provides feedback on potential OCP violations
+
+name: OCP Violation Check
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+    paths:
+      - '**.py'
+      - '**.js'
+      - '**.ts'
+      - '**.java'
+
+jobs:
+  check-ocp:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Fetch all history for proper diff analysis
+
+      - name: Analyze for OCP Violations
+        # AI analyzes code changes for patterns that violate Open-Closed Principle
+        # Examples: excessive conditionals, type checking, switch statements</pre>
+                </div>
+            </div>
+
+            <div class="real-example">
+                <h5>📊 Real Example: SRP Analysis in CI/CD</h5>
+                <div class="code-block yaml-highlight">
+<pre>srp-analysis:
     name: Single Responsibility Principle Analysis
     runs-on: ubuntu-latest
     steps:
       - name: Run SRP Analyzer
         run: |
           python tools/design-linters/srp_analyzer.py durable-code-app --threshold normal --json > srp-report.json
-          
+
       - name: Generate SRP Report
         if: always()
         run: |
           echo "## 📊 SRP Analysis Report" >> $GITHUB_STEP_SUMMARY
-          cat srp-report.json >> $GITHUB_STEP_SUMMARY
-
-  code-smell-detection:
-    name: Code Smell Detection
-    runs-on: ubuntu-latest
-    steps:
-      - name: Detect Long Methods
-        run: |
-          find durable-code-app -name "*.py" -exec awk "/^def / {start=NR} /^def /,/^[^ ]/ {if (NR-start > 50) print FILENAME":"start" Method too long ("NR-start" lines)"}' {} \;</pre>
+          cat srp-report.json >> $GITHUB_STEP_SUMMARY</pre>
                 </div>
             </div>
         </div>
@@ -659,8 +803,56 @@ quality-gate:
         </div>
 
         <div class="content-card">
+            <h2 class="section-title">Standards Enforcement in This Project</h2>
+
+            <h3 class="subsection-title">🔍 How We Enforce Standards</h3>
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <h4>📂 Project Structure</h4>
+                    <ul>
+                        <li><code>.design-lint.yml</code> - SOLID principles config</li>
+                        <li><code>.pre-commit-config.yaml</code> - Pre-commit hooks</li>
+                        <li><code>tools/design-linters/</code> - Custom linters</li>
+                        <li><code>.github/workflows/</code> - CI/CD checks</li>
+                    </ul>
+                </div>
+                <div class="feature-card">
+                    <h4>🔧 Enforcement Points</h4>
+                    <ul>
+                        <li>Pre-commit hooks block bad code</li>
+                        <li>CI/CD validates on every PR</li>
+                        <li>Grade A complexity required</li>
+                        <li>Security scans mandatory</li>
+                    </ul>
+                </div>
+                <div class="feature-card">
+                    <h4>📊 Metrics Tracked</h4>
+                    <ul>
+                        <li>Cyclomatic complexity (max 5)</li>
+                        <li>Methods per class (max 7)</li>
+                        <li>File size (max 250 lines)</li>
+                        <li>Test coverage (min 80%)</li>
+                    </ul>
+                </div>
+                <div class="feature-card">
+                    <h4>🤖 AI Integration</h4>
+                    <ul>
+                        <li>Claude analyzes PRs for OCP violations</li>
+                        <li>CLAUDE.md provides AI context</li>
+                        <li>Automated security reviews</li>
+                        <li>Design pattern validation</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="success-box">
+                <strong>✨ Result:</strong> This approach ensures that whether code is written by humans or AI, it meets the same high standards. The standards are enforced automatically, reducing manual review burden while maintaining quality.
+            </div>
+        </div>
+
+        <div class="content-card">
             <h2 class="section-title">Implementation Checklist</h2>
-            
+
             <h3 class="subsection-title">✅ Getting Started</h3>
             <ol>
                 <li><strong>Document Standards:</strong> Create comprehensive style guides and architecture docs</li>
