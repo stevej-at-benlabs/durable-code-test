@@ -1,51 +1,80 @@
 /**
  * Dynamic Breadcrumb Navigation System
  * Tracks user navigation path and displays contextual breadcrumbs
+ *
+ * Follows Open-Closed Principle with extensible page registry
  */
 
 (function () {
   'use strict';
 
-  // Page metadata - defines the display names and possible parent pages
-  const pageMetadata = {
-    '/': {
-      title: 'Home',
-      icon: '🏠',
-      isRoot: true,
-    },
-    '/index.html': {
-      title: 'Home',
-      icon: '🏠',
-      isRoot: true,
-    },
-    '/ci-cd-pipeline.html': {
-      title: 'CI/CD Pipeline',
-      icon: '🚀',
-      possibleParents: ['/'],
-    },
-    '/custom-linters.html': {
-      title: 'Custom Linters',
-      icon: '🎯',
-      possibleParents: ['/', '/ci-cd-pipeline.html', '/set-standards.html'],
-    },
-    '/set-standards.html': {
-      title: 'Standards Guide',
-      icon: '📖',
-      possibleParents: ['/'],
-    },
-  };
+  // Page Registry - follows Open-Closed Principle
+  // Can be extended without modifying existing code
+  class PageRegistry {
+    constructor() {
+      this.pages = new Map();
+      this.initializeDefaultPages();
+    }
+
+    // Register a new page without modifying existing code
+    register(path, config) {
+      this.pages.set(path, config);
+      return this;
+    }
+
+    // Get page metadata
+    get(path) {
+      return this.pages.get(path);
+    }
+
+    // Check if page exists
+    has(path) {
+      return this.pages.has(path);
+    }
+
+    // Initialize with default pages
+    // This method is closed for modification but the registry is open for extension
+    initializeDefaultPages() {
+      this.register('/', {
+        title: 'Home',
+        icon: '🏠',
+        isRoot: true,
+      })
+        .register('/index.html', {
+          title: 'Home',
+          icon: '🏠',
+          isRoot: true,
+        })
+        .register('/ci-cd-pipeline.html', {
+          title: 'CI/CD Pipeline',
+          icon: '🚀',
+          possibleParents: ['/'],
+        })
+        .register('/custom-linters.html', {
+          title: 'Custom Linters',
+          icon: '🎯',
+          possibleParents: ['/', '/ci-cd-pipeline.html', '/set-standards.html'],
+        })
+        .register('/set-standards.html', {
+          title: 'Standards Guide',
+          icon: '📖',
+          possibleParents: ['/'],
+        });
+    }
+  }
 
   // Storage key for navigation history
   const STORAGE_KEY = 'navigation_path';
   const MAX_HISTORY = 10;
 
   class BreadcrumbNavigator {
-    constructor() {
+    constructor(pageRegistry) {
+      this.pageRegistry = pageRegistry;
       this.history = this.loadHistory();
-      this.currentPath = this.normalizeePath(window.location.pathname);
+      this.currentPath = this.normalizePath(window.location.pathname);
     }
 
-    normalizeePath(path) {
+    normalizePath(path) {
       // Normalize paths to always have .html extension where appropriate
       if (path === '/' || path === '') {
         return '/';
@@ -93,7 +122,7 @@
 
     buildBreadcrumbTrail() {
       const trail = [];
-      const metadata = pageMetadata[this.currentPath];
+      const metadata = this.pageRegistry.get(this.currentPath);
 
       if (!metadata) {
         // If page not in metadata, show default breadcrumb
@@ -112,7 +141,7 @@
       if (referrer) {
         try {
           const referrerUrl = new URL(referrer);
-          const referrerPath = this.normalizeePath(referrerUrl.pathname);
+          const referrerPath = this.normalizePath(referrerUrl.pathname);
 
           // Check if referrer is a valid parent for this page
           if (
@@ -147,7 +176,7 @@
         trail.push(this.createBreadcrumbItem('/', true));
 
         if (parentPath !== '/') {
-          const parentMetadata = pageMetadata[parentPath];
+          const parentMetadata = this.pageRegistry.get(parentPath);
           if (parentMetadata) {
             trail.push(this.createBreadcrumbItem(parentPath, true));
           }
@@ -180,7 +209,7 @@
     }
 
     createBreadcrumbItem(path, isLink = true) {
-      const metadata = pageMetadata[path] || {};
+      const metadata = this.pageRegistry.get(path) || {};
       return {
         title: metadata.title || 'Unknown',
         path: path,
@@ -266,13 +295,10 @@
                         flex-wrap: wrap;
                     }
                     .breadcrumb-link {
-                        color: #667eea;
+                        color: #0066cc;
                         text-decoration: none;
-                        font-weight: 500;
-                        transition: color 0.3s ease;
                     }
                     .breadcrumb-link:hover {
-                        color: #764ba2;
                         text-decoration: underline;
                     }
                     .breadcrumb .separator {
@@ -289,10 +315,22 @@
     }
   }
 
-  // Initialize breadcrumb navigator
-  const navigator = new BreadcrumbNavigator();
+  // Create the page registry (extensible without modification)
+  const pageRegistry = new PageRegistry();
+
+  // Initialize breadcrumb navigator with the registry
+  const navigator = new BreadcrumbNavigator(pageRegistry);
   navigator.init();
 
-  // Expose to global scope for debugging
+  // Expose both registry and navigator to global scope
+  // This allows external code to extend the registry without modifying this file
+  window.BreadcrumbPageRegistry = pageRegistry;
   window.BreadcrumbNavigator = navigator;
+
+  // Example of how to extend from external code:
+  // window.BreadcrumbPageRegistry.register('/new-page.html', {
+  //   title: 'New Page',
+  //   icon: '📑',
+  //   possibleParents: ['/']
+  // });
 })();
