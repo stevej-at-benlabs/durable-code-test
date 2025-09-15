@@ -1,7 +1,7 @@
 # Makefile for Durable Code Test Project
 # Docker-based development and deployment automation
 
-.PHONY: help init build start stop restart launch logs clean status dev dev-start dev-stop dev-restart dev-logs test lint format check-deps update-deps
+.PHONY: help init build start stop restart launch logs clean status dev dev-start dev-stop dev-restart dev-logs test lint format check-deps update-deps install-hooks
 
 # Default target
 .DEFAULT_GOAL := help
@@ -40,6 +40,9 @@ help: ## Show this help message
 # Production targets
 init: ## Initialize the project (build images, install dependencies)
 	@echo "$(CYAN)Initializing project...$(NC)"
+	@echo "$(YELLOW)Installing pre-commit hooks...$(NC)"
+	@pip3 install pre-commit 2>/dev/null || pip install pre-commit 2>/dev/null || echo "$(YELLOW)⚠ Pre-commit not installed - please install manually$(NC)"
+	@pre-commit install 2>/dev/null || echo "$(YELLOW)⚠ Pre-commit hooks not installed$(NC)"
 	@echo "$(YELLOW)Building Docker images...$(NC)"
 	@$(DOCKER_COMPOSE) build --no-cache
 	@echo "$(GREEN)✓ Initialization complete!$(NC)"
@@ -75,6 +78,9 @@ dev: dev-start ## Alias for dev-start
 
 dev-init: ## Initialize development environment
 	@echo "$(CYAN)Initializing development environment...$(NC)"
+	@echo "$(YELLOW)Installing pre-commit hooks...$(NC)"
+	@pip3 install pre-commit 2>/dev/null || pip install pre-commit 2>/dev/null || echo "$(YELLOW)⚠ Pre-commit not installed - please install manually$(NC)"
+	@pre-commit install 2>/dev/null || echo "$(YELLOW)⚠ Pre-commit hooks not installed$(NC)"
 	@$(DOCKER_COMPOSE_DEV) build --no-cache
 	@echo "$(GREEN)✓ Development environment initialized!$(NC)"
 
@@ -135,6 +141,14 @@ shell-backend: ## Open shell in backend container
 
 shell-frontend: ## Open shell in frontend container
 	@docker exec -it durable-code-frontend /bin/sh || docker exec -it durable-code-frontend-dev /bin/sh
+
+# Pre-commit hooks
+install-hooks: ## Install pre-commit hooks
+	@echo "$(CYAN)Installing pre-commit hooks...$(NC)"
+	@which pre-commit > /dev/null 2>&1 || (echo "$(YELLOW)Installing pre-commit...$(NC)" && pip3 install pre-commit)
+	@pre-commit install
+	@echo "$(GREEN)✓ Pre-commit hooks installed!$(NC)"
+	@echo "$(YELLOW)Hooks will run automatically on git commit$(NC)"
 
 # Testing and quality targets
 test: dev-start ## Run all tests with coverage (starts dev containers if needed)
