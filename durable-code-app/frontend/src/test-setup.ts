@@ -10,6 +10,12 @@
 import '@testing-library/jest-dom';
 import { vi } from 'vitest';
 
+// Mock HTMLCanvasElement.getContext to prevent canvas errors in tests
+Object.defineProperty(HTMLCanvasElement.prototype, 'getContext', {
+  value: () => null,
+  writable: true,
+});
+
 // Mock window.location methods that are used in the app
 Object.defineProperty(window, 'location', {
   value: {

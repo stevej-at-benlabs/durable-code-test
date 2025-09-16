@@ -27,7 +27,15 @@ const ParticleBackground = ({
     if (!canvas) return;
 
     // Skip canvas operations in test environment
-    const ctx = canvas.getContext?.('2d');
+    if (typeof window === 'undefined' || process.env.NODE_ENV === 'test') return;
+
+    let ctx: CanvasRenderingContext2D | null = null;
+    try {
+      ctx = canvas.getContext('2d');
+    } catch (error) {
+      // Canvas not supported in test environment
+      return;
+    }
     if (!ctx) return;
 
     // Set canvas size
