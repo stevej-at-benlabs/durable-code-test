@@ -22,6 +22,27 @@ from html.parser import HTMLParser
 from abc import ABC, abstractmethod
 
 
+class ValidationRule(ABC):
+    """Abstract interface for validation rules - follows OCP."""
+
+    @abstractmethod
+    def validate(self, parser_state: dict) -> List[str]:
+        """Validate parser state and return list of issues."""
+        pass
+
+
+class BreadcrumbValidationRule(ValidationRule):
+    """Validates breadcrumb presence and structure."""
+
+    def validate(self, parser_state: dict) -> List[str]:
+        issues = []
+        if not parser_state.get('has_breadcrumb') and not parser_state.get('has_aria_label'):
+            issues.append("No breadcrumb navigation found")
+        elif not parser_state.get('has_home_link'):
+            issues.append("Breadcrumb missing home page link")
+        return issues
+
+
 class DocumentParser(ABC):
     """Abstract interface for document parsers - follows OCP."""
 
@@ -39,13 +60,14 @@ class DocumentParser(ABC):
 class BreadcrumbParser(HTMLParser, DocumentParser):
     """HTML parser to detect breadcrumb navigation elements."""
 
-    def __init__(self):
+    def __init__(self, validation_rules: Optional[List[ValidationRule]] = None):
         super().__init__()
         self.has_breadcrumb = False
         self.has_aria_label = False
         self.has_home_link = False
         self.in_breadcrumb = False
         self.breadcrumb_content = []
+        self.validation_rules = validation_rules or [BreadcrumbValidationRule()]
 
     def handle_starttag(self, tag, attrs):
         attrs_dict = dict(attrs)
@@ -77,12 +99,20 @@ class BreadcrumbParser(HTMLParser, DocumentParser):
     def parse(self, content: str) -> Tuple[bool, List[str]]:
         """Parse HTML content and return breadcrumb analysis."""
         self.feed(content)
-        issues = []
 
-        if not self.has_breadcrumb and not self.has_aria_label:
-            issues.append("No breadcrumb navigation found")
-        elif not self.has_home_link:
-            issues.append("Breadcrumb missing home page link")
+        # Create parser state for validation
+        parser_state = {
+            'has_breadcrumb': self.has_breadcrumb,
+            'has_aria_label': self.has_aria_label,
+            'has_home_link': self.has_home_link,
+            'in_breadcrumb': self.in_breadcrumb,
+            'breadcrumb_content': self.breadcrumb_content
+        }
+
+        # Run all validation rules
+        issues = []
+        for rule in self.validation_rules:
+            issues.extend(rule.validate(parser_state))
 
         return len(issues) == 0, issues
 
