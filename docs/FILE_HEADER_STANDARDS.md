@@ -219,8 +219,8 @@ This file does stuff with files.
 ## Tools and Automation
 
 ### Header Linter
-- Location: `/tools/design-linters/header_linter.py` (to be created)
-- Usage: `python tools/design-linters/header_linter.py --path .`
+- Location: `/tools/design_linters/header_linter.py` (to be created)
+- Usage: `python tools/design_linters/header_linter.py --path .`
 - Validates: Purpose field presence, header structure, formatting
 - Exit codes: 0 (pass), 1 (warnings), 2 (failures)
 
@@ -230,7 +230,7 @@ This file does stuff with files.
   hooks:
     - id: header-check
       name: Check file headers
-      entry: python tools/design-linters/header_linter.py
+      entry: python tools/design_linters/header_linter.py
       language: system
       files: \.(md|py|ts|tsx|js|jsx|html|yml|yaml)$
 ```
