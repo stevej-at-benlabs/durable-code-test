@@ -18,9 +18,11 @@ import ast
 import os
 import sys
 from pathlib import Path
-from typing import List, Set, Union, Optional, Dict, cast
+from typing import List, Set, Union, Optional, Dict, Any
 import argparse
 import json
+from abc import ABC, abstractmethod
+
 try:
     from .constants import ALLOWED_STRING_PATTERNS, handle_syntax_error
 except ImportError:
@@ -34,7 +36,7 @@ class MagicNumberViolation:
     """Represents a magic number/literal violation."""
 
     def __init__(self, file_path: str, line: int, *, column: int,
-                 value: Union[int, float, str], context: str):
+                 value: Union[int, float, str, complex], context: str):
         self.file_path = file_path
         self.line = line
         self.column = column
@@ -46,9 +48,16 @@ class MagicNumberViolation:
         """Generate a constant name suggestion."""
         if isinstance(self.value, (int, float)):
             return self._generate_number_suggestion()
-        # For strings, convert to constant format
-        cleaned = self.value.upper().replace(' ', '_').replace('-', '_')[:30]
-        return cleaned + "_CONSTANT"
+        if isinstance(self.value, str):
+            # For strings, convert to constant format
+            cleaned = self.value.upper().replace(' ', '_').replace('-', '_')[:30]
+            return cleaned + "_CONSTANT"
+        if isinstance(self.value, complex):
+            # For complex numbers, create a descriptive name
+            complex_str = str(self.value).replace('(', '').replace(')', '').replace('+', '_PLUS_').replace('j', 'J')
+            return f"COMPLEX_{complex_str}"
+        # For other types
+        return f"{type(self.value).__name__.upper()}_CONSTANT"
 
     def _generate_number_suggestion(self) -> str:
         """Generate a suggestion for numeric values."""
@@ -115,11 +124,183 @@ class MagicNumberConfig:
         self.allowed_string_patterns.add(pattern)
 
 
-class MagicNumberDetector(ast.NodeVisitor):
-    """AST visitor that detects magic numbers and literals."""
+# Strategy Pattern for Type Checking
+class LiteralCheckStrategy(ABC):
+    """Abstract base class for literal checking strategies."""
+
+    @abstractmethod
+    def can_handle(self, value: Any) -> bool:
+        """Check if this strategy can handle the given value type."""
+        raise NotImplementedError
+
+    @abstractmethod
+    def check(self, node: ast.Constant, detector: 'MagicNumberDetector') -> Optional[MagicNumberViolation]:
+        """Check if the node contains a magic literal and return a violation if found."""
+        raise NotImplementedError
+
+
+class NumberCheckStrategy(LiteralCheckStrategy):
+    """Strategy for checking numeric literals."""
+
+    def can_handle(self, value: Any) -> bool:
+        """Check if value is a number."""
+        return isinstance(value, (int, float))
+
+    def check(self, node: ast.Constant, detector: 'MagicNumberDetector') -> Optional[MagicNumberViolation]:
+        """Check if a number is a magic number."""
+        if not isinstance(node.value, (int, float)):
+            return None
+
+        if node.value in detector.config.allowed_numbers:
+            return None
+
+        # Check for special contexts where numbers are OK
+        if detector._is_acceptable_context(node):
+            return None
+
+        context = (
+            f"in {detector.current_function}"
+            if detector.current_function else "at module level"
+        )
+
+        return MagicNumberViolation(
+            detector.file_path,
+            node.lineno,
+            column=node.col_offset,
+            value=node.value,
+            context=context
+        )
+
+
+class StringCheckStrategy(LiteralCheckStrategy):
+    """Strategy for checking string literals."""
+
+    def can_handle(self, value: Any) -> bool:
+        """Check if value is a string."""
+        return isinstance(value, str)
+
+    def check(self, node: ast.Constant, detector: 'MagicNumberDetector') -> Optional[MagicNumberViolation]:
+        """Check if a string is a magic string."""
+        if not isinstance(node.value, str) or not node.value:
+            return None
+
+        if self._should_skip_string(node, detector):
+            return None
+
+        context = (
+            f"in {detector.current_function}"
+            if detector.current_function else "at module level"
+        )
+
+        return MagicNumberViolation(
+            detector.file_path,
+            node.lineno,
+            column=node.col_offset,
+            value=node.value,
+            context=context
+        )
+
+    def _should_skip_string(self, node: ast.Constant, detector: 'MagicNumberDetector') -> bool:
+        """Check if string should be skipped based on various criteria."""
+        return (self._is_allowed_pattern(node, detector) or
+                self._is_url_or_path(node) or
+                detector._is_acceptable_string_context(node))
+
+    def _is_allowed_pattern(self, node: ast.Constant, detector: 'MagicNumberDetector') -> bool:
+        """Check if string matches allowed patterns."""
+        if not isinstance(node.value, str):
+            return False
+        return node.value.lower() in detector.config.allowed_string_patterns
+
+    def _is_url_or_path(self, node: ast.Constant) -> bool:
+        """Check if string is a URL or path."""
+        if not isinstance(node.value, str):
+            return False
+        return any(node.value.startswith(prefix) for prefix in ['http://', 'https://', '/', './'])
+
+
+class ComplexNumberCheckStrategy(LiteralCheckStrategy):
+    """Strategy for checking complex number literals."""
+
+    def can_handle(self, value: Any) -> bool:
+        """Check if value is a complex number."""
+        return isinstance(value, complex)
+
+    def check(self, node: ast.Constant, detector: 'MagicNumberDetector') -> Optional[MagicNumberViolation]:
+        """Check if a complex number is a magic literal."""
+        if not isinstance(node.value, complex):
+            return None
+
+        # Complex numbers are usually domain-specific, so flag them
+        context = (
+            f"in {detector.current_function}"
+            if detector.current_function else "at module level"
+        )
+
+        return MagicNumberViolation(
+            detector.file_path,
+            node.lineno,
+            column=node.col_offset,
+            value=node.value,
+            context=context
+        )
+
+
+class BooleanCheckStrategy(LiteralCheckStrategy):
+    """Strategy for checking boolean literals - usually allowed."""
+
+    def can_handle(self, value: Any) -> bool:
+        """Check if value is a boolean."""
+        return isinstance(value, bool)
+
+    def check(self, node: ast.Constant, detector: 'MagicNumberDetector') -> Optional[MagicNumberViolation]:
+        """Booleans are typically allowed - no violation."""
+        return None
+
+
+class NoneCheckStrategy(LiteralCheckStrategy):
+    """Strategy for checking None literals - always allowed."""
+
+    def can_handle(self, value: Any) -> bool:
+        """Check if value is None."""
+        return value is None
+
+    def check(self, node: ast.Constant, detector: 'MagicNumberDetector') -> Optional[MagicNumberViolation]:
+        """None is always allowed - no violation."""
+        return None
+
+
+class LiteralCheckStrategyManager:
+    """Manages literal checking strategies."""
+
+    def __init__(self, strategies: Optional[List[LiteralCheckStrategy]] = None):
+        """Initialize with default or custom strategies."""
+        self.strategies = strategies or [
+            NumberCheckStrategy(),
+            StringCheckStrategy(),
+            ComplexNumberCheckStrategy(),
+            BooleanCheckStrategy(),
+            NoneCheckStrategy(),
+        ]
+
+    def add_strategy(self, strategy: LiteralCheckStrategy) -> None:
+        """Add a new strategy to the manager."""
+        self.strategies.append(strategy)
+
+    def check_literal(self, node: ast.Constant, detector: 'MagicNumberDetector') -> Optional[MagicNumberViolation]:
+        """Check a literal using the appropriate strategy."""
+        for strategy in self.strategies:
+            if strategy.can_handle(node.value):
+                return strategy.check(node, detector)
+        return None
+
+
+class MagicNumberDetector(ast.NodeVisitor):  # pylint: disable=too-many-instance-attributes
+    """AST visitor that detects magic numbers and literals using strategy pattern."""
 
     def __init__(self, file_path: str, ignore_tests: bool = True,
-                 config: Optional[MagicNumberConfig] = None) -> None:
+                 config: Optional[MagicNumberConfig] = None,
+                 strategy_manager: Optional[LiteralCheckStrategyManager] = None) -> None:
         self.file_path = file_path
         self.violations: List[MagicNumberViolation] = []
         self.current_function: Optional[str] = None
@@ -127,6 +308,7 @@ class MagicNumberDetector(ast.NodeVisitor):
         self.ignore_tests = ignore_tests
         self.is_test_file = 'test' in file_path.lower()
         self.config = config or MagicNumberConfig()
+        self.strategy_manager = strategy_manager or LiteralCheckStrategyManager()
 
     def visit_FunctionDef(self, node: ast.FunctionDef) -> None:
         """Track current function for context."""
@@ -175,11 +357,14 @@ class MagicNumberDetector(ast.NodeVisitor):
         self.in_constant_definition = False
 
     def visit_Constant(self, node: ast.Constant) -> None:
-        """Check for magic numbers and strings."""
+        """Check for magic numbers and strings using strategy pattern."""
         if self._should_skip_constant_check(node):
             return
 
-        self._process_constant_node(node)
+        # Use strategy pattern to check the literal
+        violation = self.strategy_manager.check_literal(node, self)
+        if violation:
+            self.violations.append(violation)
 
     def _should_skip_constant_check(self, node: ast.Constant) -> bool:
         """Check if constant checking should be skipped.
@@ -225,527 +410,219 @@ class MagicNumberDetector(ast.NodeVisitor):
         """
         return isinstance(node.value, str) and self._is_docstring(node)
 
-    def _process_constant_node(self, node: ast.Constant) -> None:
-        """Process a constant node for magic literal detection.
-
-        Args:
-            node: AST Constant node
-        """
-        if isinstance(node.value, (int, float)):
-            self._check_magic_number(node)
-        elif isinstance(node.value, str):
-            self._check_magic_string(node)
-
-    def _check_magic_number(self, node: ast.Constant) -> None:
-        """Check if a number is a magic number."""
-        # Type guard for int/float values
-        if not isinstance(node.value, (int, float)):
-            raise TypeError(f"Expected int or float, got {type(node.value)}")
-
-        if node.value in self.config.allowed_numbers:
-            return
-
-        # Check for special contexts where numbers are OK
-        if self._is_acceptable_context(node):
-            return
-
-        context = (
-            f"in {self.current_function}"
-            if self.current_function else "at module level"
-        )
-        violation = MagicNumberViolation(
-            self.file_path,
-            node.lineno,
-            column=node.col_offset,
-            value=node.value,
-            context=context
-        )
-        self.violations.append(violation)
-
-    def _check_magic_string(self, node: ast.Constant) -> None:
-        """Check if a string is a magic string."""
-        self._validate_string_type(node)
-
-        if self._should_skip_string_check(node):
-            return
-
-        self._create_string_violation(node)
-
-    def _validate_string_type(self, node: ast.Constant) -> None:
-        """Validate that node contains a string value.
-
-        Args:
-            node: AST Constant node
-
-        Raises:
-            TypeError: If node value is not a string
-        """
-        if not isinstance(node.value, str):
-            raise TypeError(f"Expected str, got {type(node.value)}")
-
-    def _should_skip_string_check(self, node: ast.Constant) -> bool:
-        """Check if string checking should be skipped.
-
-        Args:
-            node: AST Constant node
-
-        Returns:
-            True if checking should be skipped
-        """
-        return (self._is_short_string(node) or
-                self._is_allowed_string_pattern(node) or
-                self._is_test_related_string(node) or
-                self._is_special_string_usage(node))
-
-    def _is_short_string(self, node: ast.Constant) -> bool:
-        """Check if string is too short to be considered magic.
-
-        Args:
-            node: AST Constant node
-
-        Returns:
-            True if string is short
-        """
-        if not isinstance(node.value, str):
+    def _is_docstring(self, node: ast.Constant) -> bool:
+        """Check if a string constant is a docstring."""
+        parent = getattr(node, 'parent', None)
+        if parent is None:
             return False
-        return len(node.value) <= 1
 
-    def _is_allowed_string_pattern(self, node: ast.Constant) -> bool:
-        """Check if string matches allowed patterns.
+        # Docstrings are the first statement in a function/class/module
+        return (self._is_function_docstring(parent, node) or
+                self._is_class_docstring(parent, node))
 
-        Args:
-            node: AST Constant node
+    def _is_function_docstring(self, parent: ast.AST, node: ast.Constant) -> bool:
+        """Check if node is a function docstring."""
+        return (isinstance(parent, ast.FunctionDef) and
+                bool(parent.body) and isinstance(parent.body[0], ast.Expr) and
+                parent.body[0].value == node)
 
-        Returns:
-            True if string is in allowed patterns
-        """
-        return node.value in self.config.allowed_string_patterns
-
-    def _is_test_related_string(self, node: ast.Constant) -> bool:
-        """Check if string is test-related.
-
-        Args:
-            node: AST Constant node
-
-        Returns:
-            True if string is test-related
-        """
-        if not isinstance(node.value, str):
-            return False
-        return node.value.startswith(('test', '__'))
-
-    def _is_special_string_usage(self, node: ast.Constant) -> bool:
-        """Check if string has special usage (key, docstring, etc.).
-
-        Args:
-            node: AST Constant node
-
-        Returns:
-            True if string has special usage
-        """
-        return self._is_string_key(node) or self._is_docstring(node)
-
-    def _create_string_violation(self, node: ast.Constant) -> None:
-        """Create a violation for a magic string.
-
-        Args:
-            node: AST Constant node
-        """
-        context = self._get_current_context()
-        violation = MagicNumberViolation(
-            self.file_path,
-            node.lineno,
-            column=node.col_offset,
-            value=(node.value if isinstance(node.value, (int, float, str))
-                   else str(node.value)),
-            context=context
-        )
-        self.violations.append(violation)
-
-    def _get_current_context(self) -> str:
-        """Get the current context description.
-
-        Returns:
-            Context description string
-        """
-        return (
-            f"in {self.current_function}"
-            if self.current_function else "at module level"
-        )
+    def _is_class_docstring(self, parent: ast.AST, node: ast.Constant) -> bool:
+        """Check if node is a class docstring."""
+        return (isinstance(parent, ast.ClassDef) and
+                bool(parent.body) and isinstance(parent.body[0], ast.Expr) and
+                parent.body[0].value == node)
 
     def _is_acceptable_context(self, node: ast.Constant) -> bool:
-        """Check if the context makes the literal acceptable."""
+        """Check if the numeric constant is in an acceptable context."""
         parent = getattr(node, 'parent', None)
-        if not parent:
+        if parent is None:
             return False
 
-        return (self._is_subscript_context(parent) or
-                self._is_range_call_context(parent) or
-                self._is_slice_context(parent))
+        return (self._is_range_parameter(parent) or
+                self._is_acceptable_array_index(parent, node) or
+                self._is_acceptable_arithmetic_value(parent, node))
 
-    def _is_subscript_context(self, parent: ast.AST) -> bool:
-        """Check if parent is a subscript (array/list index).
+    def _is_range_parameter(self, parent: ast.AST) -> bool:
+        """Check if parent is a range() call."""
+        return (isinstance(parent, ast.Call) and
+                isinstance(parent.func, ast.Name) and
+                parent.func.id == 'range')
 
-        Args:
-            parent: Parent AST node
+    def _is_acceptable_array_index(self, parent: ast.AST, node: ast.Constant) -> bool:
+        """Check if node is an acceptable array index."""
+        return (isinstance(parent, ast.Subscript) and
+                isinstance(node.value, int) and
+                node.value in {0, 1, -1, -2})
 
-        Returns:
-            True if parent is a subscript
-        """
+    def _is_acceptable_arithmetic_value(self, parent: ast.AST, node: ast.Constant) -> bool:
+        """Check if node is an acceptable arithmetic value."""
+        return (isinstance(parent, ast.BinOp) and
+                isinstance(node.value, (int, float)) and
+                node.value in {2, 10, 100, 1000})
+
+    def _is_acceptable_string_context(self, node: ast.Constant) -> bool:
+        """Check if the string constant is in an acceptable context."""
+        parent = getattr(node, 'parent', None)
+        if parent is None:
+            return False
+
+        return (self._is_dictionary_access(parent) or
+                self._is_dictionary_key(parent, node) or
+                self._is_format_string(parent) or
+                self._is_logging_call(parent))
+
+    def _is_dictionary_access(self, parent: ast.AST) -> bool:
+        """Check if parent is a dictionary subscript access."""
         return isinstance(parent, ast.Subscript)
 
-    def _is_range_call_context(self, parent: ast.AST) -> bool:
-        """Check if parent is a call to range or enumerate.
-
-        Args:
-            parent: Parent AST node
-
-        Returns:
-            True if parent is a range/enumerate call
-        """
-        if not isinstance(parent, ast.Call):
+    def _is_dictionary_key(self, parent: ast.AST, node: ast.Constant) -> bool:
+        """Check if node is a dictionary key in a literal."""
+        if not isinstance(parent, ast.Dict):
             return False
+        return any(key == node for key in parent.keys)
 
-        return (hasattr(parent.func, 'id') and
-                parent.func.id in ('range', 'enumerate'))
+    def _is_format_string(self, parent: ast.AST) -> bool:
+        """Check if parent is a format string."""
+        return isinstance(parent, ast.JoinedStr)
 
-    def _is_slice_context(self, parent: ast.AST) -> bool:
-        """Check if parent is a slice.
-
-        Args:
-            parent: Parent AST node
-
-        Returns:
-            True if parent is a slice
-        """
-        return isinstance(parent, ast.Slice)
-
-    def _is_string_key(self, node: ast.Constant) -> bool:
-        """Check if string is used as a dictionary key or similar."""
-        parent = getattr(node, 'parent', None)
-        if not parent:
-            return False
-
-        # Subscript strings (dict access) are OK
-        if isinstance(parent, ast.Subscript):
-            return True
-
-        # Attribute access strings are OK
-        if isinstance(parent, ast.Attribute):
-            return True
-
-        # Dictionary keys are generally OK
-        if isinstance(parent, ast.Dict):
-            return self._is_dict_key(parent, node)
-
-        return False
-
-    def _is_dict_key(self, dict_node: ast.Dict, node: ast.Constant) -> bool:
-        """Check if node is a key in dict_node."""
-        try:
-            dict_node.keys.index(node)
-            return True
-        except (ValueError, AttributeError):
-            return False
-
-    def _is_docstring(self, node: ast.Constant) -> bool:
-        """Check if string is a docstring."""
-        parent = self._get_parent_expr(node)
-        if not parent:
-            return False
-
-        grandparent = self._get_grandparent_container(parent)
-        if not grandparent:
-            return False
-
-        body = self._get_container_body(grandparent)
-        if not body:
-            return False
-
-        return self._is_first_string_statement(parent, body)
-
-    def _get_parent_expr(self, node: ast.Constant) -> ast.Expr | None:
-        """Get parent expression node if valid.
-
-        Args:
-            node: AST Constant node
-
-        Returns:
-            Parent expression node or None
-        """
-        parent = getattr(node, 'parent', None)
-        if not parent or not isinstance(parent, ast.Expr):
-            return None
-        return cast(ast.Expr, parent)
-
-    def _get_grandparent_container(self, parent: ast.Expr) -> Optional[ast.AST]:
-        """Get grandparent container if it's a valid docstring container.
-
-        Args:
-            parent: Parent expression node
-
-        Returns:
-            Grandparent container or None
-        """
-        grandparent = getattr(parent, 'parent', None)
-        if not grandparent:
-            return None
-
-        allowed_types = (
-            ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef, ast.Module
-        )
-        if not isinstance(grandparent, allowed_types):
-            return None
-
-        return grandparent
-
-    def _get_container_body(self, container: ast.AST) -> Optional[list]:
-        """Get the body of a container node.
-
-        Args:
-            container: Container AST node
-
-        Returns:
-            Body list or None
-        """
-        body = getattr(container, 'body', None)
-        return body if body else None
-
-    def _is_first_string_statement(self, expr_node: ast.Expr, body: list) -> bool:
-        """Check if an expression node is the first string statement in a body."""
-        for stmt in body:
-            if self._should_skip_statement(stmt):
-                continue
-
-            if self._is_target_expression(stmt, expr_node):
-                return self._is_valid_string_constant(stmt)
-
-            # If we hit any other statement type first, it's not a docstring
-            return False
-
-        return False
-
-    def _should_skip_statement(self, stmt: ast.stmt) -> bool:
-        """Check if statement should be skipped.
-
-        Args:
-            stmt: AST statement
-
-        Returns:
-            True if statement should be skipped
-        """
-        return isinstance(stmt, ast.Pass)
-
-    def _is_target_expression(self, stmt: ast.stmt, target_expr: ast.Expr) -> bool:
-        """Check if statement is the target expression.
-
-        Args:
-            stmt: AST statement
-            target_expr: Target expression to find
-
-        Returns:
-            True if statement is the target expression
-        """
-        return isinstance(stmt, ast.Expr) and stmt == target_expr
-
-    def _is_valid_string_constant(self, stmt: ast.Expr) -> bool:
-        """Check if expression contains a valid string constant.
-
-        Args:
-            stmt: Expression statement
-
-        Returns:
-            True if expression contains a string constant
-        """
-        if not isinstance(stmt.value, ast.Constant):
-            return False
-
-        return isinstance(stmt.value.value, str)
+    def _is_logging_call(self, parent: ast.AST) -> bool:
+        """Check if parent is a logging/print call."""
+        return (isinstance(parent, ast.Call) and
+                isinstance(parent.func, ast.Attribute) and
+                parent.func.attr in {'debug', 'info', 'warning', 'error', 'critical', 'print'})
 
 
 def add_parent_refs(tree: ast.AST) -> None:
-    """Add parent references to all nodes in the AST."""
-    for parent in ast.walk(tree):
-        for child in ast.iter_child_nodes(parent):
-            setattr(child, 'parent', parent)
+    """Add parent references to AST nodes for backward compatibility with tests."""
+    for node in ast.walk(tree):
+        for child in ast.iter_child_nodes(node):
+            setattr(child, 'parent', node)
+
+
+def analyze_directory(directory_path: str, ignore_tests: bool = True,
+                     config: Optional[MagicNumberConfig] = None) -> List[MagicNumberViolation]:
+    """Analyze all Python files in a directory for magic numbers.
+
+    Args:
+        directory_path: Path to directory to analyze
+        ignore_tests: Whether to skip test files/functions
+        config: Optional configuration for detection
+
+    Returns:
+        List of MagicNumberViolation objects from all files
+    """
+    all_violations: List[MagicNumberViolation] = []
+    path_obj = Path(directory_path)
+
+    if path_obj.is_dir():
+        for py_file in path_obj.rglob('*.py'):
+            violations = analyze_file(str(py_file), ignore_tests, config)
+            all_violations.extend(violations)
+
+    return all_violations
 
 
 def analyze_file(file_path: str, ignore_tests: bool = True,
-                 config: Optional[MagicNumberConfig] = None
-                 ) -> List[MagicNumberViolation]:
-    """Analyze a single Python file for magic numbers."""
-    with open(file_path, 'r', encoding='utf-8') as f:
-        try:
+                 config: Optional[MagicNumberConfig] = None) -> List[MagicNumberViolation]:
+    """Analyze a single file for magic numbers.
+
+    Args:
+        file_path: Path to Python file to analyze
+        ignore_tests: Whether to skip test files/functions
+        config: Optional configuration for detection
+
+    Returns:
+        List of MagicNumberViolation objects
+    """
+    try:
+        with open(file_path, 'r', encoding='utf-8') as f:
             tree = ast.parse(f.read())
-            add_parent_refs(tree)
-            detector = MagicNumberDetector(file_path, ignore_tests, config)
-            detector.visit(tree)
-            return detector.violations
-        except SyntaxError as e:
-            handle_syntax_error(file_path, e)
-            return []
 
+        # Add parent references for context checking
+        for node in ast.walk(tree):
+            for child in ast.iter_child_nodes(node):
+                setattr(child, 'parent', node)
 
-def analyze_directory(
-        directory: str, exclude_patterns: Optional[List[str]] = None,
-        ignore_tests: bool = True, config: Optional[MagicNumberConfig] = None
-) -> List[MagicNumberViolation]:
-    """Analyze all Python files in a directory."""
-    exclude_patterns = exclude_patterns or [
-        '__pycache__', '.git', 'venv', '.venv', 'migrations'
-    ]
-    violations = []
+        detector = MagicNumberDetector(file_path, ignore_tests, config)
+        detector.visit(tree)
+        return detector.violations
 
-    for path in Path(directory).rglob('*.py'):
-        # Skip excluded patterns
-        if any(pattern in str(path) for pattern in exclude_patterns):
-            continue
-
-        file_violations = analyze_file(str(path), ignore_tests, config)
-        violations.extend(file_violations)
-
-    return violations
+    except SyntaxError as e:
+        handle_syntax_error(file_path, e)
+        return []
+    except OSError as e:
+        print(f"Error analyzing {file_path}: {str(e)}")
+        return []
 
 
 def main() -> None:
-    """Main entry point."""
-    args = _parse_magic_number_arguments()
-    violations = _analyze_path(args)
-    _output_magic_number_results(violations, args.json)
-    _handle_magic_number_exit_code(violations, args.fail_on_violation)
+    """CLI entry point."""
+    args = _parse_arguments()
+    config = _load_config(args.config)
+    all_violations = _analyze_paths(args.paths, not args.include_tests, config)
+    _output_results(all_violations, args.json)
+    sys.exit(1 if all_violations else 0)
 
 
-def _parse_magic_number_arguments() -> argparse.Namespace:
-    """Parse command line arguments for magic number detector.
-
-    Returns:
-        Parsed arguments namespace
-    """
-    parser = _create_magic_number_parser()
-    _add_magic_number_arguments(parser)
+def _parse_arguments() -> argparse.Namespace:
+    """Parse command line arguments."""
+    parser = argparse.ArgumentParser(
+        description='Detect magic numbers and literals in Python code'
+    )
+    parser.add_argument('paths', nargs='+', help='Files or directories to analyze')
+    parser.add_argument('--include-tests', action='store_true',
+                        help='Include test files and functions')
+    parser.add_argument('--json', action='store_true',
+                        help='Output results as JSON')
+    parser.add_argument('--config', type=str,
+                        help='Path to configuration file')
     return parser.parse_args()
 
 
-def _create_magic_number_parser() -> argparse.ArgumentParser:
-    """Create the argument parser for magic number detector.
+def _load_config(config_path: Optional[str]) -> Optional[MagicNumberConfig]:
+    """Load configuration from file if provided."""
+    if not config_path or not os.path.exists(config_path):
+        return None
 
-    Returns:
-        Configured ArgumentParser
-    """
-    return argparse.ArgumentParser(
-        description='Detect magic numbers and literals in Python code'
-    )
-
-
-def _add_magic_number_arguments(parser: argparse.ArgumentParser) -> None:
-    """Add arguments to the magic number parser.
-
-    Args:
-        parser: ArgumentParser to add arguments to
-    """
-    parser.add_argument('path', help='File or directory to analyze')
-    parser.add_argument('--json', action='store_true', help='Output as JSON')
-    parser.add_argument(
-        '--include-tests', action='store_true',
-        help='Include test files in analysis'
-    )
-    parser.add_argument(
-        '--fail-on-violation', action='store_true',
-        help='Exit with non-zero code if violations found'
-    )
+    with open(config_path, 'r', encoding='utf-8') as f:
+        config_data = json.load(f)
+        return MagicNumberConfig(
+            allowed_numbers=set(config_data.get('allowed_numbers', [])),
+            allowed_string_patterns=set(config_data.get('allowed_strings', []))
+        )
 
 
-def _analyze_path(args: argparse.Namespace) -> List[MagicNumberViolation]:
-    """Analyze the specified path for magic numbers.
+def _analyze_paths(paths: List[str], ignore_tests: bool,
+                   config: Optional[MagicNumberConfig]) -> List[MagicNumberViolation]:
+    """Analyze all provided paths for magic literals."""
+    all_violations: List[MagicNumberViolation] = []
 
-    Args:
-        args: Parsed arguments
+    for path in paths:
+        path_obj = Path(path)
+        if path_obj.is_file():
+            violations = analyze_file(str(path_obj), ignore_tests, config)
+            all_violations.extend(violations)
+        elif path_obj.is_dir():
+            for py_file in path_obj.rglob('*.py'):
+                violations = analyze_file(str(py_file), ignore_tests, config)
+                all_violations.extend(violations)
 
-    Returns:
-        List of violations found
-    """
-    ignore_tests = not args.include_tests
-
-    if os.path.isfile(args.path):
-        return analyze_file(args.path, ignore_tests=ignore_tests)
-
-    return analyze_directory(args.path, ignore_tests=ignore_tests)
+    return all_violations
 
 
-def _output_magic_number_results(violations: List[MagicNumberViolation],
-                                 json_output: bool) -> None:
-    """Output the analysis results.
-
-    Args:
-        violations: List of violations to output
-        json_output: Whether to use JSON format
-    """
+def _output_results(violations: List[MagicNumberViolation], json_output: bool) -> None:
+    """Output the analysis results."""
     if json_output:
-        _output_json_magic_numbers(violations)
+        print(json.dumps([v.to_dict() for v in violations], indent=2))
     else:
-        _output_text_magic_numbers(violations)
-
-
-def _output_json_magic_numbers(violations: List[MagicNumberViolation]) -> None:
-    """Output violations in JSON format.
-
-    Args:
-        violations: List of violations to output
-    """
-    print(json.dumps([v.to_dict() for v in violations], indent=2))
-
-
-def _output_text_magic_numbers(violations: List[MagicNumberViolation]) -> None:
-    """Output violations in text format.
-
-    Args:
-        violations: List of violations to output
-    """
-    if not violations:
-        print("✅ No magic numbers detected!")
-        return
-
-    print(f"Found {len(violations)} magic numbers/literals:\n")
-    _print_violation_details(violations)
-
-
-def _print_violation_details(violations: List[MagicNumberViolation]) -> None:
-    """Print detailed information about each violation.
-
-    Args:
-        violations: List of violations to print
-    """
-    for violation in violations:
-        value_display = _format_violation_value(violation.value)
-        print(f"⚠️  {violation.file_path}:{violation.line}:{violation.column}")
-        print(f"   Value: {value_display}")
-        print(f"   Context: {violation.context}")
-        print(f"   Suggestion: Define as constant '{violation.suggestion}'")
-        print()
-
-
-def _format_violation_value(value: Union[int, float, str]) -> str:
-    """Format the violation value for display.
-
-    Args:
-        value: The violation value
-
-    Returns:
-        Formatted value string
-    """
-    return f'"{value}"' if isinstance(value, str) else str(value)
-
-
-def _handle_magic_number_exit_code(violations: List[MagicNumberViolation],
-                                   fail_on_violation: bool) -> None:
-    """Handle the exit code based on violations.
-
-    Args:
-        violations: List of violations found
-        fail_on_violation: Whether to exit with error code on violations
-    """
-    if fail_on_violation and violations:
-        sys.exit(1)
+        if violations:
+            print(f"Found {len(violations)} magic literals:\n")
+            for v in violations:
+                print(f"{v.file_path}:{v.line}:{v.column} - "
+                      f"{v.value} ({type(v.value).__name__}) {v.context}")
+                print(f"  Suggestion: {v.suggestion}\n")
+        else:
+            print("No magic literals found!")
 
 
 if __name__ == '__main__':

@@ -12,35 +12,35 @@
 ## Header Linter Tool
 
 ### Purpose
-The `design-linters/header_linter.py` tool enforces standardized file headers across all documentation and source code files in the project.
+The `design_linters/header_linter.py` tool enforces standardized file headers across all documentation and source code files in the project.
 
 ### Usage
 
 #### Lint a directory
 ```bash
 # Lint all files in docs/ directory
-python tools/design-linters/header_linter.py --path docs/
+python tools/design_linters/header_linter.py --path docs/
 
 # Lint all files recursively from root
-python tools/design-linters/header_linter.py --path . --recursive
+python tools/design_linters/header_linter.py --path . --recursive
 
 # Strict mode (warnings treated as errors)
-python tools/design-linters/header_linter.py --path docs/ --strict
+python tools/design_linters/header_linter.py --path docs/ --strict
 ```
 
 #### Lint a single file
 ```bash
 # Check specific file
-python tools/design-linters/header_linter.py --file README.md
+python tools/design_linters/header_linter.py --file README.md
 ```
 
 #### Integration options
 ```bash
 # Quiet mode (errors only)
-python tools/design-linters/header_linter.py --path . --quiet
+python tools/design_linters/header_linter.py --path . --quiet
 
 # Get help
-python tools/design-linters/header_linter.py --help
+python tools/design_linters/header_linter.py --help
 ```
 
 ### Exit Codes

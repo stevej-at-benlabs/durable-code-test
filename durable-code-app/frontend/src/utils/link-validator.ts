@@ -1,60 +1,61 @@
 /**
- * Purpose: Utility functions for validating links and external resources
- * Scope: Link checking, resource validation, and broken link detection
+ * Purpose: Facade for link validation functionality, combining all services
+ * Scope: Unified interface for link validation, categorization, and reporting
  * Created: 2025-09-12
- * Updated: 2025-09-12
+ * Updated: 2025-09-16
  * Author: Development Team
- * Version: 1.0
+ * Version: 2.0
+ *
+ * This file acts as a facade that combines and re-exports functionality from:
+ * - LinkValidationService: HTTP validation logic
+ * - LinkCategorizationService: Link classification logic
+ * - LinkReportService: Report generation logic
+ * - LinkExtractionService: DOM parsing (already separate)
+ * - LinkRegistry: Registry management (already separate)
  */
 
-import {
-  UrlNormalizer,
-  HttpRequestService,
-  ValidationResultBuilder,
-} from './HttpRequestService';
-import type { ValidationResult } from './HttpRequestService';
+// Re-export validation functionality
+export {
+  LinkValidationService,
+  validateLink,
+  validateLinks,
+  type LinkValidationResult,
+  type LinkValidationOptions,
+} from './LinkValidationService';
+
+// Re-export categorization functionality
+export {
+  LinkCategorizationService,
+  HttpLinkCategorizer,
+  RelativeLinkCategorizer,
+  HashLinkCategorizer,
+  ProtocolLinkCategorizer,
+  categorizeLinks,
+  type LinkCategorizer,
+  type CategorizedLinks,
+} from './LinkCategorizationService';
+
+// Re-export report functionality
+export {
+  LinkReportService,
+  SummaryReportBuilder,
+  DetailedReportBuilder,
+  CsvReportBuilder,
+  createLinkReportSummary,
+  type LinkReportSummary,
+  type DetailedLinkReport,
+  type ReportBuilder,
+} from './LinkReportService';
+
+// Import services for facade operations
+import { LinkValidationService } from './LinkValidationService';
+import type {
+  LinkValidationResult,
+  LinkValidationOptions,
+} from './LinkValidationService';
+import { categorizeLinks } from './LinkCategorizationService';
 import { CompositeLinkExtractor } from './LinkExtractionService';
 import type { LinkRegistry } from './LinkRegistryInterfaces';
-
-export type LinkValidationResult = ValidationResult;
-
-export interface LinkValidationOptions {
-  timeout?: number;
-  followRedirects?: boolean;
-  checkHeaders?: boolean;
-}
-
-/**
- * Validates a single link by making an HTTP request
- */
-export async function validateLink(
-  url: string,
-  options: LinkValidationOptions = {},
-): Promise<LinkValidationResult> {
-  const startTime = Date.now();
-  const httpService = new HttpRequestService();
-
-  try {
-    const fullUrl = UrlNormalizer.normalizeUrl(url);
-    const response = await httpService.makeRequest(fullUrl, options);
-
-    return ValidationResultBuilder.createSuccessResult(url, response);
-  } catch (error) {
-    const responseTime = Date.now() - startTime;
-    return ValidationResultBuilder.createErrorResult(url, error, responseTime);
-  }
-}
-
-/**
- * Validates multiple links concurrently
- */
-export async function validateLinks(
-  urls: string[],
-  options: LinkValidationOptions = {},
-): Promise<LinkValidationResult[]> {
-  const validationPromises = urls.map((url) => validateLink(url, options));
-  return Promise.all(validationPromises);
-}
 
 /**
  * Extracts all links from a DOM element
@@ -65,107 +66,8 @@ export function extractLinksFromElement(element: HTMLElement): string[] {
 }
 
 /**
- * Link categorizer interface for extensible link classification
- */
-export interface LinkCategorizer {
-  categorize(url: string): string[];
-}
-
-/**
- * Default implementation for HTTP/HTTPS link categorization
- */
-export class HttpLinkCategorizer implements LinkCategorizer {
-  categorize(url: string): string[] {
-    const categories: string[] = [];
-
-    if (url.startsWith('http://') || url.startsWith('https://')) {
-      categories.push('absolute');
-      if (url.includes(window.location.hostname)) {
-        categories.push('internal');
-      } else {
-        categories.push('external');
-      }
-    }
-
-    return categories;
-  }
-}
-
-/**
- * Relative link categorizer
- */
-export class RelativeLinkCategorizer implements LinkCategorizer {
-  categorize(url: string): string[] {
-    if (!url.startsWith('http://') && !url.startsWith('https://')) {
-      return ['relative', 'internal'];
-    }
-    return [];
-  }
-}
-
-/**
- * Link categorization service that supports multiple categorizers
- */
-export class LinkCategorizationService {
-  private categorizers: LinkCategorizer[] = [];
-
-  constructor(categorizers: LinkCategorizer[] = []) {
-    this.categorizers =
-      categorizers.length > 0
-        ? categorizers
-        : [new HttpLinkCategorizer(), new RelativeLinkCategorizer()];
-  }
-
-  addCategorizer(categorizer: LinkCategorizer): void {
-    this.categorizers.push(categorizer);
-  }
-
-  categorizeLinks(urls: string[]): {
-    internal: string[];
-    external: string[];
-    relative: string[];
-    absolute: string[];
-  } {
-    const internal: string[] = [];
-    const external: string[] = [];
-    const relative: string[] = [];
-    const absolute: string[] = [];
-
-    urls.forEach((url) => {
-      const allCategories = new Set<string>();
-
-      // Apply all categorizers and collect unique categories
-      this.categorizers.forEach((categorizer) => {
-        const categories = categorizer.categorize(url);
-        categories.forEach((category) => allCategories.add(category));
-      });
-
-      // Sort URLs into appropriate arrays based on categories
-      if (allCategories.has('internal')) internal.push(url);
-      if (allCategories.has('external')) external.push(url);
-      if (allCategories.has('relative')) relative.push(url);
-      if (allCategories.has('absolute')) absolute.push(url);
-    });
-
-    return { internal, external, relative, absolute };
-  }
-}
-
-/**
- * Backward compatibility function - uses the new service internally
- */
-export function categorizeLinks(urls: string[]): {
-  internal: string[];
-  external: string[];
-  relative: string[];
-  absolute: string[];
-} {
-  const service = new LinkCategorizationService();
-  return service.categorizeLinks(urls);
-}
-
-/**
- * Generates a validation report for all links
+ * Generates a validation report for all links in an element
+ * This is a facade method that combines multiple services
  */
 export async function generateLinkReport(
   element: HTMLElement,
@@ -177,10 +79,17 @@ export async function generateLinkReport(
   results: LinkValidationResult[];
   categories: ReturnType<typeof categorizeLinks>;
 }> {
+  // Extract links from DOM
   const links = extractLinksFromElement(element);
-  const categories = categorizeLinks(links);
-  const results = await validateLinks(links, options);
 
+  // Categorize links
+  const categories = categorizeLinks(links);
+
+  // Validate links
+  const validationService = new LinkValidationService();
+  const results = await validationService.validateLinks(links, options);
+
+  // Generate summary
   const validLinks = results.filter((r) => r.isValid).length;
   const brokenLinks = results.filter((r) => !r.isValid).length;
 
@@ -193,74 +102,7 @@ export async function generateLinkReport(
   };
 }
 
-/**
- * Interface for building different types of reports
- */
-export interface LinkReportSummary {
-  summary: {
-    total: number;
-    valid: number;
-    broken: number;
-  };
-  results: LinkValidationResult[];
-}
-
-export interface ReportBuilder {
-  buildSummary(results: LinkValidationResult[]): LinkReportSummary;
-}
-
-/**
- * Default summary report builder
- */
-export class SummaryReportBuilder implements ReportBuilder {
-  buildSummary(results: LinkValidationResult[]) {
-    const total = results.length;
-    const valid = results.filter((r) => r.isValid).length;
-    const broken = results.filter((r) => !r.isValid).length;
-
-    return {
-      summary: {
-        total,
-        valid,
-        broken,
-      },
-      results,
-    };
-  }
-}
-
-/**
- * Service for creating link reports with extensible builders
- */
-export class LinkReportService {
-  private builder: ReportBuilder;
-
-  constructor(builder?: ReportBuilder) {
-    this.builder = builder || new SummaryReportBuilder();
-  }
-
-  setBuilder(builder: ReportBuilder): void {
-    this.builder = builder;
-  }
-
-  createReport(results: LinkValidationResult[]) {
-    return this.builder.buildSummary(results);
-  }
-}
-
-/**
- * Creates a link report summary from validation results
- * @deprecated Use LinkReportService for new code
- */
-export function createLinkReportSummary(results: LinkValidationResult[]) {
-  const service = new LinkReportService();
-  return service.createReport(results);
-}
-
-/**
- * Link registry interface for managing expected links
- * @deprecated Use ReadableLinkRegistry for read-only access or ModifiableLinkRegistry for full access
- */
+// Registry functionality (keeping existing implementations for backward compatibility)
 
 /**
  * Registry for React route links
@@ -345,12 +187,8 @@ export class ExpectedLinksRegistry {
  */
 export const defaultExpectedLinksRegistry = new ExpectedLinksRegistry();
 
-// Hardcoded array removed in favor of registry pattern
-// Use getExpectedPublicLinks() or defaultExpectedLinksRegistry.getAllLinks() instead
-
 /**
  * Gets all expected public links from the registry system
- * Use this for new code instead of the deprecated expectedPublicLinks array
  */
 export function getExpectedPublicLinks(): string[] {
   return defaultExpectedLinksRegistry.getAllLinks();
@@ -367,8 +205,9 @@ export async function validateExpectedLinks(
   results: LinkValidationResult[];
   missing: string[];
 }> {
+  const validationService = new LinkValidationService();
   const linksToValidate = registry.getAllLinks();
-  const results = await validateLinks(linksToValidate, options);
+  const results = await validationService.validateLinks(linksToValidate, options);
   const missing = results.filter((r) => !r.isValid).map((r) => r.url);
 
   return {

@@ -1,3 +1,18 @@
+# Purpose: Development Docker Compose configuration with hot reload support
+# Scope: Local development environment orchestration for rapid iteration
+# Overview: Configures comprehensive Docker services for local development with automatic code
+#     reloading capabilities for both backend (FastAPI with uvicorn --reload) and frontend
+#     (Vite HMR) applications. Volume mounts bind local source directories to containers
+#     enabling instant code updates without rebuilds. Includes development-specific settings
+#     like debug mode, verbose logging, and isolated network configuration. The backend service
+#     mounts app, test, and tools directories while excluding __pycache__ for performance.
+#     Frontend excludes node_modules from volume mounts to prevent conflicts. All services
+#     auto-restart unless explicitly stopped, ensuring development continuity.
+# Dependencies: Docker, Docker Compose, local source code directories
+# Exports: Development Docker services with hot reload capabilities
+# Interfaces: Backend on port 8000, Frontend on port 5173 (Vite dev server)
+# Implementation: Volume mounts for source code, development server configurations
+
 version: '3.8'
 
 services:

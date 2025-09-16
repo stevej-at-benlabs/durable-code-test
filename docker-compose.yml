@@ -1,3 +1,19 @@
+# Purpose: Production Docker Compose configuration for multi-container application
+# Scope: Orchestrates backend and frontend containers for production deployment
+# Overview: Defines production-ready Docker services for the full-stack application consisting
+#     of a FastAPI backend service and React frontend, both configured for optimal production
+#     performance. The backend service exposes port 8001 (mapped from internal 8000) with
+#     production environment variables and persistent volume mounting. The frontend service
+#     runs on port 3000 with dependency ordering ensuring backend availability. Both services
+#     utilize multi-stage Dockerfile builds for minimal image sizes, include automatic restart
+#     policies for resilience, and communicate through an isolated bridge network named
+#     'durable-network'. Volume mounts maintain code accessibility while preserving container
+#     isolation. Configuration optimized for production deployment with security best practices.
+# Dependencies: Docker, Docker Compose, backend and frontend Dockerfiles
+# Exports: Docker services configuration for production deployment
+# Interfaces: Backend on port 8001, Frontend on port 3000
+# Implementation: Multi-stage builds with production optimizations
+
 version: '3.8'
 
 services:

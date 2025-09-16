@@ -1,3 +1,15 @@
+<!--
+Purpose: Project documentation and setup guide for Durable Code Test
+Scope: Repository-level documentation for developers and contributors
+Overview: Comprehensive guide covering project structure, setup instructions,
+    development workflow, testing procedures, and architectural decisions.
+    Demonstrates AI-assisted development with strict coding standards.
+Dependencies: Docker, Make, Python 3.11+, Node.js 18+, Poetry, npm
+Exports: Documentation for project setup, usage, and contribution
+Interfaces: README documentation following GitHub markdown standards
+Implementation: Markdown documentation with code examples and CLI instructions
+-->
+
 # Durable Code Test
 
 A demonstration project showcasing AI-assisted development with strong coding standards and best practices.

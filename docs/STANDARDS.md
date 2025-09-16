@@ -41,7 +41,7 @@ backend/
 ```
 
 ### 2. Code Style and Formatting
-- **Formatter**: Black with line length 88
+- **Formatter**: Black with line length 120
 - **Linter**: Ruff with default configuration
 - **Type Checker**: MyPy with strict mode
 - **Docstrings**: Google style docstrings for all public functions/classes

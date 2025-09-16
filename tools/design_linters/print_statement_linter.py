@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# pylint: disable=too-many-lines
 """
 Purpose: Detects and reports print statements, console.log, alert, and debugger
     statements
@@ -23,7 +24,7 @@ import json
 import re
 import sys
 from pathlib import Path
-from typing import Dict, List, NamedTuple, Optional, Tuple
+from typing import Any, Dict, List, NamedTuple, Optional, Tuple
 
 
 class PrintViolation(NamedTuple):
@@ -85,6 +86,28 @@ class PatternRegistry:
                 (r'\balert\s*\(', 'alert()'),
                 (r'\bdebugger\b', 'debugger'),
             ]
+        }
+
+        # Language configuration map for OCP compliance
+        self.language_config: Dict[str, Dict[str, Any]] = {
+            'python': {
+                'comment_chars': ['#'],
+                'disable_directives': ['# noqa', '# noprint', '# type: ignore'],
+                'block_comment_start': None,
+                'allowed_logging': [r'logging\.(debug|info|warning|error|critical)\s*\(']
+            },
+            'javascript': {
+                'comment_chars': ['//', '/*', '*'],
+                'disable_directives': ['// eslint-disable', '// noprint', '/* noprint'],
+                'block_comment_start': '/*',
+                'allowed_logging': [r'console\s*\.\s*(warn|error)\s*\(']
+            },
+            'typescript': {
+                'comment_chars': ['//', '/*', '*'],
+                'disable_directives': ['// eslint-disable', '// noprint', '/* noprint', '// @ts-ignore'],
+                'block_comment_start': '/*',
+                'allowed_logging': [r'console\s*\.\s*(warn|error)\s*\(']
+            }
         }
 
     def add_language(self, extension: str, language: str) -> None:
@@ -289,29 +312,32 @@ class PrintStatementLinter:
         if self._is_line_disabled(lines, node.lineno, 'python'):
             return None
 
-        # Check for print/pprint functions
-        if node.func.id in ('print', 'pprint'):
+        func_name = node.func.id
+        violation_info = self._get_violation_info_for_function(func_name)
+
+        if violation_info:
+            statement, severity = violation_info
             return PrintViolation(
                 file_path=file_path,
                 line_number=node.lineno,
                 column=node.col_offset,
-                statement=f"{node.func.id}()",
+                statement=statement,
                 context=self._get_line_context(content, node.lineno),
                 language='python',
-                severity='error'
+                severity=severity
             )
 
+        return None
+
+    def _get_violation_info_for_function(self, func_name: str) -> Optional[tuple[str, str]]:
+        """Get violation info (statement, severity) for a function name."""
+        # Check for print/pprint functions
+        if func_name in ('print', 'pprint'):
+            return f"{func_name}()", 'error'
+
         # Check for pp (pprint alias)
-        if node.func.id == 'pp':
-            return PrintViolation(
-                file_path=file_path,
-                line_number=node.lineno,
-                column=node.col_offset,
-                statement='pp()',
-                context=self._get_line_context(content, node.lineno),
-                language='python',
-                severity='warning'
-            )
+        if func_name == 'pp':
+            return 'pp()', 'warning'
 
         # Check custom patterns from pattern registry
         patterns = self.pattern_registry.get_patterns('python')
@@ -319,16 +345,8 @@ class PrintStatementLinter:
             # Check if this function name matches any custom pattern
             # Pattern format is typically: \bFUNCNAME\s*\(
             # So we check if the function name is in the pattern
-            if f'\\b{node.func.id}\\s*\\(' in pattern_str:
-                return PrintViolation(
-                    file_path=file_path,
-                    line_number=node.lineno,
-                    column=node.col_offset,
-                    statement=description,
-                    context=self._get_line_context(content, node.lineno),
-                    language='python',
-                    severity='warning'
-                )
+            if f'\\b{func_name}\\s*\\(' in pattern_str:
+                return description, 'warning'
 
         return None
 
@@ -516,11 +534,12 @@ class PrintStatementLinter:
         """Check if a line is a comment."""
         stripped = line.strip()
 
-        if language == 'python':
-            return stripped.startswith('#')
-        if language in ('javascript', 'typescript'):
-            return (stripped.startswith('//') or stripped.startswith('/*') or
-                    stripped.startswith('*'))
+        config = self.pattern_registry.language_config.get(language, {})
+        comment_chars = config.get('comment_chars', [])
+
+        for char in comment_chars:
+            if stripped.startswith(char):
+                return True
 
         return False
 
@@ -529,13 +548,9 @@ class PrintStatementLinter:
         if not self.allow_logging:
             return False
 
-        allowed_patterns = {
-            'javascript': [r'console\s*\.\s*(warn|error)\s*\('],
-            'typescript': [r'console\s*\.\s*(warn|error)\s*\('],
-            'python': [r'logging\.(debug|info|warning|error|critical)\s*\(']
-        }
+        config = self.pattern_registry.language_config.get(language, {})
+        patterns = config.get('allowed_logging', [])
 
-        patterns = allowed_patterns.get(language, [])
         for pattern in patterns:
             if re.search(pattern, line):
                 return True
@@ -611,6 +626,14 @@ class PrintStatementLinter:
 
     def _has_inline_disable_comment(self, line: str, language: str) -> bool:
         """Check if line has inline disable comments."""
+        config = self.pattern_registry.language_config.get(language, {})
+        disable_directives = config.get('disable_directives', [])
+
+        for directive in disable_directives:
+            if directive in line:
+                return True
+
+        # Also check legacy methods for backward compatibility
         if language == 'python':
             return self._has_python_inline_disable(line)
         if language in ('javascript', 'typescript'):

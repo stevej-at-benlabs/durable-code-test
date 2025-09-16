@@ -10,9 +10,11 @@ import pytest
 from design_linters.magic_number_detector import (
     MagicNumberDetector,
     MagicNumberViolation,
-    add_parent_refs,
-    analyze_directory,
     analyze_file,
+    analyze_directory,
+    add_parent_refs,
+    MagicNumberConfig,
+    LiteralCheckStrategyManager,
 )
 
 

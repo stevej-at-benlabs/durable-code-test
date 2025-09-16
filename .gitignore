@@ -58,3 +58,6 @@ durable-code-app/backend/*.db
 durable-code-app/frontend/dist/
 durable-code-app/frontend/dist-ssr/
 durable-code-app/frontend/*.local
+
+# Reports directory for analysis outputs
+.reports/
