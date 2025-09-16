@@ -1,12 +1,16 @@
 #!/usr/bin/env python3
 """
-Single Responsibility Principle Analyzer.
-
-Detects potential SRP violations using multiple heuristics:
-- Method count and complexity
-- Method name clustering
-- Dependency analysis
-- Cohesion metrics
+Purpose: Detects Single Responsibility Principle violations in Python code
+Scope: Python classes and modules across backend and tools directories
+Overview: This analyzer detects potential SRP violations using multiple heuristics including
+    method count and complexity analysis, method name clustering to identify unrelated
+    responsibilities, dependency analysis to find excessive coupling, and cohesion metrics
+    to measure class unity. It helps identify classes that are doing too much and suggests
+    refactoring opportunities to improve code maintainability and adherence to SOLID principles.
+Dependencies: ast for Python AST parsing, collections for data structures, pathlib for file operations
+Exports: SRPAnalyzer class, SRPViolation dataclass, CohesionCalculator class
+Interfaces: main() CLI function, analyze_file() returns List[SRPViolation]
+Implementation: Uses AST analysis to calculate complexity metrics and semantic clustering algorithms
 """
 
 import ast

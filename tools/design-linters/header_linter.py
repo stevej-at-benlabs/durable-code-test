@@ -1,11 +1,18 @@
 #!/usr/bin/env python3
 """
-Purpose: Lint file headers to ensure compliance with project standards
-Scope: All documentation and source code files in the project
-Created: 2025-09-12
-Updated: 2025-09-12
-Author: Development Team
-Version: 1.0
+Purpose: Validates file headers according to comprehensive header standards
+Scope: All code files (Python, TypeScript, JavaScript) and documentation files
+Overview: This comprehensive linter ensures all files have proper headers with required fields
+    including Purpose, Scope, Overview, Dependencies, Exports, and Interfaces as defined in
+    FILE_HEADER_STANDARDS.md. It validates header structure, field presence, and content
+    quality to ensure headers provide sufficient information for understanding files without
+    reading the implementation. The linter supports different header formats for different
+    file types (Python docstrings, TypeScript block comments, Markdown metadata) and enforces
+    content quality standards including minimum word counts and descriptiveness requirements.
+Dependencies: pathlib for file operations, re for regex parsing, argparse for CLI interface
+Exports: FileHeaderLinter class, HeaderField class, ValidationResult class
+Interfaces: main() CLI function, lint_file() returns ValidationResult
+Implementation: Uses regex parsing to extract header blocks and validate required fields
 """
 
 import argparse
@@ -35,10 +42,13 @@ class FileHeaderLinter:
     """Lints file headers according to project standards."""
 
     # Required fields for all files
-    REQUIRED_FIELDS = {'purpose', 'created', 'author'}
+    REQUIRED_FIELDS = {'purpose', 'scope', 'overview'}
 
-    # Recommended fields (generate warnings if missing)
-    RECOMMENDED_FIELDS = {'scope', 'updated', 'version'}
+    # Recommended fields for code files (generate warnings if missing)
+    RECOMMENDED_CODE_FIELDS = {'dependencies', 'exports'}
+
+    # Optional fields that can be present
+    OPTIONAL_FIELDS = {'interfaces', 'props/interfaces', 'implementation', 'state/behavior', 'notes', 'related', 'configuration'}
 
     # Valid date format pattern
     DATE_PATTERN = re.compile(r'^\d{4}-\d{2}-\d{2}$')
@@ -211,13 +221,14 @@ class FileHeaderLinter:
             if required_field not in field_names:
                 errors.append(f"Missing required field: {required_field}")
 
-        # Check for recommended fields
-        for recommended_field in self.RECOMMENDED_FIELDS:
-            if recommended_field not in field_names:
-                warnings.append(f"Missing recommended field: {recommended_field}")
+        # Check for recommended fields (only for code files)
+        if suffix in ['.py', '.ts', '.tsx', '.js', '.jsx']:
+            for recommended_field in self.RECOMMENDED_CODE_FIELDS:
+                if recommended_field not in field_names:
+                    warnings.append(f"Missing recommended field for code files: {recommended_field}")
 
         # Validate field content
-        self._validate_field_content(header_fields, errors, warnings)
+        self._validate_field_content(header_fields, errors, warnings, suffix)
 
         # Determine pass/fail
         passed = len(errors) == 0
@@ -259,44 +270,50 @@ class FileHeaderLinter:
 
         return fields
 
-    def _validate_field_content(self, fields: List[HeaderField], errors: List[str], warnings: List[str]) -> None:
+    def _validate_field_content(self, fields: List[HeaderField], errors: List[str], warnings: List[str], suffix: str) -> None:
         """Validate the content of header fields.
 
         Args:
             fields: List of header fields to validate
             errors: List to append errors to
             warnings: List to append warnings to
+            suffix: File extension to determine validation rules
         """
         field_dict = {field.name: field.value for field in fields}
 
-        # Validate date fields
-        for date_field in ['created', 'updated']:
-            if date_field in field_dict:
-                if not self.DATE_PATTERN.match(field_dict[date_field]):
-                    errors.append(f"Invalid date format for {date_field} (expected YYYY-MM-DD)")
-                else:
-                    # Check if date is reasonable
-                    try:
-                        date_obj = datetime.strptime(field_dict[date_field], '%Y-%m-%d')
-                        if date_obj.year < 2020 or date_obj > datetime.now():
-                            warnings.append(f"Unusual date for {date_field}: {field_dict[date_field]}")
-                    except ValueError:
-                        errors.append(f"Invalid date value for {date_field}: {field_dict[date_field]}")
-
         # Validate purpose field
         if 'purpose' in field_dict:
-            purpose = field_dict['purpose']
-            if len(purpose) < 10:
-                warnings.append("Purpose field is very short (less than 10 characters)")
-            elif len(purpose) > 200:
-                warnings.append("Purpose field is very long (more than 200 characters)")
+            purpose = field_dict['purpose'].strip()
+            if len(purpose) < 20:
+                warnings.append("Purpose field is too brief (should be 1-2 descriptive lines)")
+            elif len(purpose.split()) < 5:
+                warnings.append("Purpose field should be more descriptive")
 
-        # Validate version field
-        if 'version' in field_dict:
-            version = field_dict['version']
-            version_pattern = re.compile(r'^\d+\.\d+(\.\d+)?(-\w+)?$')
-            if not version_pattern.match(version):
-                warnings.append(f"Version format may not follow semantic versioning: {version}")
+        # Validate scope field
+        if 'scope' in field_dict:
+            scope = field_dict['scope'].strip()
+            if len(scope) < 10:
+                warnings.append("Scope field is too brief (should describe what areas this file covers)")
+
+        # Validate overview field
+        if 'overview' in field_dict:
+            overview = field_dict['overview'].strip()
+            if len(overview.split()) < 15:
+                warnings.append("Overview field is too brief (should provide comprehensive summary)")
+            elif len(overview.split()) < 25 and suffix in ['.py', '.ts', '.tsx', '.js', '.jsx']:
+                warnings.append("Overview field should be more comprehensive for code files")
+
+        # Validate dependencies field for code files
+        if suffix in ['.py', '.ts', '.tsx', '.js', '.jsx'] and 'dependencies' in field_dict:
+            dependencies = field_dict['dependencies'].strip()
+            if len(dependencies) < 10:
+                warnings.append("Dependencies field should list key dependencies and libraries")
+
+        # Validate exports field for code files
+        if suffix in ['.py', '.ts', '.tsx', '.js', '.jsx'] and 'exports' in field_dict:
+            exports = field_dict['exports'].strip()
+            if len(exports) < 10:
+                warnings.append("Exports field should list main classes, functions, or components")
 
     def lint_directory(self, directory: Path, recursive: bool = True) -> Dict[Path, ValidationResult]:
         """Lint all supported files in a directory.

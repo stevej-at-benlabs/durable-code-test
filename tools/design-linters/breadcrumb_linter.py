@@ -1,15 +1,16 @@
 #!/usr/bin/env python3
 """
-Breadcrumb Navigation Linter
-
-This linter ensures that all HTML documentation files contain proper breadcrumb navigation.
-Breadcrumbs are essential for user navigation and understanding document hierarchy.
-
-Requirements:
-- All HTML files in public directories must have breadcrumb navigation
-- Breadcrumbs must include proper ARIA labels for accessibility
-- Breadcrumbs must link back to home page
-- Current page should be marked as non-link text
+Purpose: Validates HTML documentation files for proper breadcrumb navigation compliance
+Scope: HTML files in public directories and documentation folders
+Overview: This linter ensures that all HTML documentation files contain proper breadcrumb
+    navigation elements for user navigation and understanding document hierarchy. It validates
+    that breadcrumbs include proper ARIA labels for accessibility, link back to home page,
+    and mark the current page as non-link text. The linter helps maintain consistent
+    navigation patterns across all documentation and prevents navigation dead-ends.
+Dependencies: html.parser for HTML parsing, pathlib for file operations, re for pattern matching
+Exports: BreadcrumbLinter class, BreadcrumbViolation dataclass, HTMLParser subclass
+Interfaces: main() CLI function, check_file() returns List[BreadcrumbViolation]
+Implementation: Uses HTML parsing to detect navigation elements and validates ARIA compliance
 """
 
 import os

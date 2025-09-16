@@ -1,9 +1,16 @@
 #!/usr/bin/env python3
 """
-Magic Number Detector.
-
-Detects hardcoded numeric and string literals that should be constants.
-This is a separate concern from design principles - it's about code clarity.
+Purpose: Detects hardcoded numeric and string literals that should be named constants
+Scope: Python source files across the project for code clarity enforcement
+Overview: This analyzer identifies magic numbers and strings that reduce code readability
+    and maintainability by scanning Python source code using AST parsing. It detects
+    hardcoded literals that should be converted to named constants, excluding common
+    acceptable values like 0, 1, and empty strings. The tool helps enforce coding
+    standards that improve code self-documentation and make values easier to maintain.
+Dependencies: ast for Python AST parsing, pathlib for file operations, argparse for CLI
+Exports: MagicNumberDetector class, MagicLiteral dataclass, LiteralType enum
+Interfaces: main() CLI function, analyze_file() returns List[MagicLiteral]
+Implementation: Uses AST visitor pattern to traverse code and identify literal nodes
 """
 
 import ast

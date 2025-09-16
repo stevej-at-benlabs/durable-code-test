@@ -1,7 +1,15 @@
 """
-Design principle linters and constants.
-
-All thresholds and configuration constants for design linting tools.
+Purpose: Provides configuration constants and thresholds for design principle linters
+Scope: All design linting tools including SRP analyzer, magic number detector, and file placement linter
+Overview: This module centralizes all thresholds and configuration constants used by design
+    linting tools. It provides dataclasses for SRP thresholds, magic number detection patterns,
+    responsibility detection rules, and file placement configurations. The module ensures
+    consistent configuration across all linting tools and makes it easy to adjust sensitivity
+    levels and detection rules from a single location.
+Dependencies: dataclasses for configuration structures, typing for type hints
+Exports: SRPThresholds, MagicNumberThresholds, Severity class, FILE_PLACEMENT_RULES
+Interfaces: Configuration constants and default instances for all linters
+Implementation: Uses frozen dataclasses for immutable configuration and constants
 """
 
 from dataclasses import dataclass

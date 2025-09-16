@@ -1,10 +1,10 @@
 # Comprehensive Linting Makefile Extension
 # Include this in the main Makefile or use directly
 
-.PHONY: lint-all lint-python lint-frontend lint-complexity lint-security lint-format-check ci-lint lint-file-placement lint-print-statements lint-breadcrumbs
+.PHONY: lint-all lint-python lint-frontend lint-complexity lint-security lint-format-check ci-lint lint-file-placement lint-print-statements lint-breadcrumbs lint-headers
 
 # Main linting targets
-lint-all: lint-python lint-frontend lint-magic-numbers lint-file-placement lint-print-statements lint-breadcrumbs ## Run all linting checks
+lint-all: lint-python lint-frontend lint-magic-numbers lint-file-placement lint-print-statements lint-breadcrumbs lint-headers ## Run all linting checks
 
 lint-python: ## Run all Python linting tools
 	@echo "$(CYAN)╔════════════════════════════════════════════════════════════╗$(NC)"
@@ -177,6 +177,14 @@ lint-breadcrumbs: ## Check HTML documentation for breadcrumb navigation
 	@echo "$(YELLOW)Checking HTML documentation for breadcrumb navigation...$(NC)"
 	@python tools/design-linters/breadcrumb_linter.py || (echo "$(RED)❌ HTML files missing breadcrumb navigation! Add proper navigation to all documentation$(NC)" && exit 1)
 	@echo "$(GREEN)✅ All HTML documentation has proper breadcrumb navigation!$(NC)"
+
+lint-headers: ## Check file headers for compliance with standards
+	@echo "$(CYAN)╔════════════════════════════════════════════════════════════╗$(NC)"
+	@echo "$(CYAN)║              File Header Validation                       ║$(NC)"
+	@echo "$(CYAN)╚════════════════════════════════════════════════════════════╝$(NC)"
+	@echo "$(YELLOW)Checking file headers for compliance with standards...$(NC)"
+	@python tools/design-linters/header_linter.py --path . --strict || (echo "$(RED)❌ File header violations found! Update headers according to FILE_HEADER_STANDARDS.md$(NC)" && exit 1)
+	@echo "$(GREEN)✅ All file headers are compliant with standards!$(NC)"
 
 quality-report: ## Generate detailed quality report
 	@echo "$(CYAN)Generating quality report...$(NC)"

@@ -1,11 +1,16 @@
 #!/usr/bin/env python3
 """
-Purpose: Detect and report print statements in production code
-Scope: Python, JavaScript, TypeScript source files
-Created: 2025-09-12
-Updated: 2025-09-12
-Author: Development Team
-Version: 1.0
+Purpose: Detects and reports print statements, console.log, alert, and debugger statements
+Scope: Python, JavaScript, TypeScript source files across the entire project
+Overview: This linter enforces proper logging standards by detecting print statements,
+    console.log, alert, and debugger statements in production code. It analyzes Python,
+    JavaScript, and TypeScript files to ensure developers use proper logging libraries
+    (like loguru for Python) instead of debug statements that can leak sensitive information
+    or degrade performance. The tool helps maintain clean, production-ready code.
+Dependencies: ast for Python AST parsing, pathlib for file operations, re for pattern matching
+Exports: PrintStatementLinter class, PrintViolation class, ViolationType enum
+Interfaces: main() CLI function, analyze_file() returns List[PrintViolation]
+Implementation: Uses AST parsing for Python and regex patterns for JavaScript/TypeScript
 """
 
 import argparse
