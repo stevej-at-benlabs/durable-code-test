@@ -607,7 +607,7 @@ describe('App Component', () => {
 
           // Allow diagram HTML files but no other standalone HTML
           if (href.includes('.html') && !href.includes('/diagrams/')) {
-            fail(`Unexpected standalone HTML file found: ${href}`);
+            throw new Error(`Unexpected standalone HTML file found: ${href}`);
           }
 
           // Ensure all internal paths start with / or are external URLs or hash anchors
