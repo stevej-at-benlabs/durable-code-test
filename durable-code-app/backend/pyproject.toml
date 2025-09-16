@@ -135,6 +135,9 @@ testpaths = ["test"]  # Use mounted test directory
 python_files = ["test_*.py", "*_test.py"]
 addopts = "--tb=short"
 cache_dir = "/tmp/.pytest_cache"
+markers = [
+    "integration: marks tests as integration tests (may require external services)"
+]
 
 [tool.coverage.run]
 source = ["app"]
