@@ -12,11 +12,13 @@
 ## Header Linter Tool
 
 ### Purpose
+
 The `design-linters/header_linter.py` tool enforces standardized file headers across all documentation and source code files in the project.
 
 ### Usage
 
 #### Lint a directory
+
 ```bash
 # Lint all files in docs/ directory
 python tools/design-linters/header_linter.py --path docs/
@@ -29,12 +31,14 @@ python tools/design-linters/header_linter.py --path docs/ --strict
 ```
 
 #### Lint a single file
+
 ```bash
 # Check specific file
 python tools/design-linters/header_linter.py --file README.md
 ```
 
 #### Integration options
+
 ```bash
 # Quiet mode (errors only)
 python tools/design-linters/header_linter.py --path . --quiet
@@ -44,17 +48,21 @@ python tools/design-linters/header_linter.py --help
 ```
 
 ### Exit Codes
+
 - **0**: All files passed validation
 - **1**: Files have warnings (non-strict mode)
 - **2**: Files have errors or failures
 
 ### Pre-commit Integration
+
 The tool is automatically run as part of pre-commit hooks. Install with:
+
 ```bash
 pre-commit install
 ```
 
 ### Supported File Types
+
 - **Markdown** (`.md`) - Uses `**Field**: value` format
 - **Python** (`.py`) - Uses docstring format
 - **TypeScript/JavaScript** (`.ts`, `.tsx`, `.js`, `.jsx`) - Uses JSDoc format
@@ -62,12 +70,15 @@ pre-commit install
 - **YAML** (`.yml`, `.yaml`) - Uses comment format
 
 ### Required Fields
+
 All files must include:
+
 - **Purpose**: Brief description of file's functionality
 - **Created**: Creation date (YYYY-MM-DD format)
 - **Author**: Creator's name or team
 
 ### Recommended Fields
+
 - **Scope**: What the file covers
 - **Updated**: Last update date (YYYY-MM-DD format)
 - **Version**: Semantic version number
@@ -75,6 +86,7 @@ All files must include:
 ### Example Headers
 
 #### Markdown File
+
 ```markdown
 # Document Title
 
@@ -91,6 +103,7 @@ Content starts here...
 ```
 
 #### Python File
+
 ```python
 """
 Purpose: Brief description of module functionality
@@ -103,7 +116,9 @@ Version: 1.0
 ```
 
 ### Configuration
+
 The linter is configured in the tool itself. Key settings:
+
 - Required fields validation
 - Date format validation (YYYY-MM-DD)
 - File type detection by extension

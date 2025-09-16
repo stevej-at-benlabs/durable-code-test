@@ -12,6 +12,7 @@
 ## Python Backend Standards
 
 ### 1. Project Structure
+
 ```
 backend/
 ├── app/
@@ -41,6 +42,7 @@ backend/
 ```
 
 ### 2. Code Style and Formatting
+
 - **Formatter**: Black with line length 88
 - **Linter**: Ruff with default configuration
 - **Type Checker**: MyPy with strict mode
@@ -49,9 +51,10 @@ backend/
   - Classes: PascalCase
   - Functions/Variables: snake_case
   - Constants: UPPER_SNAKE_CASE
-  - Private methods: _leading_underscore
+  - Private methods: \_leading_underscore
 
 ### 3. API Design Principles
+
 - RESTful conventions with proper HTTP methods
 - Version API endpoints (/api/v1/)
 - Use Pydantic models for request/response validation
@@ -59,13 +62,15 @@ backend/
 - Document all endpoints with OpenAPI/Swagger
 
 ### 4. Testing Requirements
+
 - Minimum 80% code coverage
 - Use pytest for all tests
-- Test file naming: test_*.py
+- Test file naming: test\_\*.py
 - Use fixtures for common test data
 - Mock external dependencies
 
 ### 5. Security Best Practices
+
 - Never hardcode secrets
 - Use environment variables for configuration
 - Implement proper authentication/authorization
@@ -74,6 +79,7 @@ backend/
 - Enable CORS with specific origins only
 
 ### 6. Error Handling
+
 - Use custom exception classes
 - Implement global exception handlers
 - Return consistent error response format:
@@ -88,11 +94,13 @@ backend/
   ```
 
 ### 7. Logging Standards - NO PRINT STATEMENTS
+
 - **PROHIBITED**: `print()` statements are strictly forbidden in production code
 - **Required Logger**: Use `loguru` for all logging needs
 - **Installation**: `poetry add loguru` or `pip install loguru`
 - **Import**: `from loguru import logger`
 - **Usage Examples**:
+
   ```python
   from loguru import logger
 
@@ -108,6 +116,7 @@ backend/
   # Instead of print(f"Error: {error}")
   logger.error(f"Error occurred: {error}")
   ```
+
 - **Log Levels**:
   - `logger.trace()`: Detailed diagnostic info
   - `logger.debug()`: Debug information
@@ -117,6 +126,7 @@ backend/
   - `logger.error()`: Error messages
   - `logger.critical()`: Critical failure messages
 - **Configuration**:
+
   ```python
   # Configure in main.py or config.py
   from loguru import logger
@@ -128,6 +138,7 @@ backend/
       level="INFO"
   )
   ```
+
 - **Benefits of Loguru**:
   - Structured logging with automatic formatting
   - Built-in rotation and retention
@@ -138,6 +149,7 @@ backend/
 - **Enforcement**: The `print_statement_linter.py` tool automatically detects and reports any print statements
 
 ### 8. Dependency Management
+
 - Use Poetry for dependency management
 - Pin exact versions in pyproject.toml
 - Separate dev dependencies
@@ -146,6 +158,7 @@ backend/
 ## React Frontend Standards
 
 ### 1. Project Structure
+
 ```
 frontend/
 ├── src/
@@ -170,6 +183,7 @@ frontend/
 ```
 
 ### 2. Code Style and Formatting
+
 - **Formatter**: Prettier with 2 space indentation
 - **Linter**: ESLint with recommended rules
 - **TypeScript**: Strict mode enabled
@@ -181,6 +195,7 @@ frontend/
   5. Style imports
 
 ### 3. Component Guidelines
+
 - **Functional Components Only**: Use hooks instead of class components
 - **Component Structure**:
   ```typescript
@@ -197,6 +212,7 @@ frontend/
   - Boolean props: is/has/should prefix
 
 ### 4. TypeScript Best Practices
+
 - Define explicit types for all props
 - Avoid using `any` type
 - Use interfaces for object types
@@ -204,12 +220,14 @@ frontend/
 - Export types from their usage location
 
 ### 5. State Management
+
 - Use React Context for global state
 - Use local state for component-specific data
 - Use custom hooks for reusable stateful logic
 - Implement proper loading and error states
 
 ### 6. API Integration
+
 - Centralize API calls in services directory
 - Use environment variables for API URLs
 - Implement proper error handling
@@ -217,6 +235,7 @@ frontend/
 - Type all API responses
 
 ### 7. Performance Optimization
+
 - Use React.memo for expensive components
 - Implement lazy loading for routes
 - Use useMemo and useCallback appropriately
@@ -224,6 +243,7 @@ frontend/
 - Minimize re-renders
 
 ### 8. Logging Standards - NO CONSOLE STATEMENTS
+
 - **PROHIBITED**: `console.log()`, `console.debug()`, `alert()`, and `debugger` statements are strictly forbidden in production code
 - **Allowed in Development Only**: Console statements must be removed before committing
 - **Recommended Loggers**:
@@ -231,19 +251,22 @@ frontend/
   - **Pino**: Lightweight alternative for Node.js
   - **Debug**: For development debugging (`DEBUG=app:* npm start`)
 - **For Frontend React/TypeScript**:
+
   ```typescript
   // Use a logging service/utility
-  import { logger } from '@/utils/logger';
+  import { logger } from "@/utils/logger";
 
   // Instead of console.log("User logged in")
-  logger.info('User logged in', { userId: user.id });
+  logger.info("User logged in", { userId: user.id });
 
   // Instead of console.error("API failed")
-  logger.error('API request failed', { error, endpoint });
+  logger.error("API request failed", { error, endpoint });
   ```
+
 - **Example Logger Setup** (utils/logger.ts):
+
   ```typescript
-  const isDevelopment = process.env.NODE_ENV === 'development';
+  const isDevelopment = process.env.NODE_ENV === "development";
 
   export const logger = {
     debug: (...args: any[]) => isDevelopment && console.debug(...args),
@@ -252,6 +275,7 @@ frontend/
     error: (...args: any[]) => console.error(...args), // Keep errors
   };
   ```
+
 - **Benefits**:
   - Can be toggled off in production builds
   - Prevents sensitive data leakage
@@ -267,12 +291,14 @@ frontend/
 - **Enforcement**: The `print_statement_linter.py` tool detects console.log, alert, and debugger statements
 
 ### 9. Testing Requirements
+
 - Unit tests for utilities and hooks
 - Component testing with React Testing Library
 - Integration tests for critical user flows
 - Maintain 70% code coverage minimum
 
 ### 10. Accessibility Standards
+
 - Use semantic HTML elements
 - Provide proper ARIA labels
 - Ensure keyboard navigation
@@ -280,6 +306,7 @@ frontend/
 - Test with screen readers
 
 ### 11. CSS Guidelines
+
 - Use CSS Modules or styled-components
 - Follow BEM naming for class names
 - Use CSS variables for theming
@@ -289,18 +316,22 @@ frontend/
 ## File Placement and Organization Standards
 
 ### 1. Root-Level Files
+
 **Allowed files only:**
+
 - Configuration files: `.gitignore`, `.env.example`, `docker-compose.yml`, `Makefile`, `README.md`
 - Project setup files: `pyproject.toml`, `package.json` (for monorepo package managers)
 - CI/CD files: `.pre-commit-config.yaml`, `.github/` directory contents
 - IDE configurations: `.vscode/`, `.idea/` (optional)
 
 **Prohibited at root:**
+
 - Source code files (`.py`, `.js`, `.ts`, `.tsx`, `.html`, `.css`)
 - Test files (`test_*.py`, `*.test.js`, `*.spec.ts`)
 - Build artifacts (`dist/`, `build/`, compiled files)
 
 ### 2. Python Files Placement
+
 ```
 ├── durable-code-app/backend/
 │   ├── app/                    # Application source code
@@ -323,6 +354,7 @@ frontend/
 **Important**: All test files should be in the root `test/` directory, organized by component being tested. This provides a unified testing structure across the entire project.
 
 ### 3. Frontend Files Placement
+
 ```
 ├── durable-code-app/frontend/
 │   ├── src/                   # Source code
@@ -346,6 +378,7 @@ frontend/
 ```
 
 ### 4. HTML Files Placement Rules
+
 - **Main Template**: `frontend/index.html` (Vite entry point - required in frontend root)
 - **Static HTML**: `frontend/public/` for additional static pages
 - **Documentation HTML**: `docs/` directory only
@@ -353,6 +386,7 @@ frontend/
 - **Component HTML**: Should be React/JSX components in `frontend/src/components/`
 
 **Prohibited locations:**
+
 - Root directory
 - Backend directories
 - Direct in `src/` without component structure
@@ -360,6 +394,7 @@ frontend/
 **Note**: `index.html` must be in the frontend root directory as required by Vite.
 
 ### 5. Test Files Organization
+
 ```
 ├── test/                      # ALL project tests (unified structure)
 │   ├── unit_test/            # Unit tests organized by component
@@ -382,18 +417,21 @@ frontend/
 ```
 
 **Key Principles:**
+
 - **Unified Structure**: All tests in root `test/` directory
 - **Component Organization**: Tests organized by what they test, not where they run
 - **Clear Separation**: Unit tests, integration tests, and fixtures clearly separated
 - **Frontend Exception**: Only E2E tests can remain in frontend/tests/ if needed for tooling
 
 ### 6. Documentation Files
+
 - **Project docs**: `docs/` directory
 - **Component docs**: Next to source files or in module `docs/` subdirectory
 - **API docs**: Auto-generated in `durable-code-app/backend/docs/`
 - **README files**: Each major directory can have one README.md
 
 ### 7. Configuration Files Hierarchy
+
 ```
 ├── .env.example               # Global environment template
 ├── .pre-commit-config.yaml    # Global pre-commit
@@ -410,7 +448,9 @@ frontend/
 ```
 
 ### 8. File Placement Validation Rules
+
 The custom file placement linter enforces these rules:
+
 - **Python files**: Must be in `app/`, `tools/`, or root `test/` directories
 - **HTML files**: Must be in `frontend/`, `frontend/public/`, `frontend/dist/`, or `docs/`
 - **TypeScript/React**: Must be in `frontend/src/` or `frontend/tests/` (E2E only)
@@ -423,12 +463,14 @@ The custom file placement linter enforces these rules:
 ## General Development Practices
 
 ### 1. Version Control
+
 - Commit messages: type(scope): description
 - Types: feat, fix, docs, style, refactor, test, chore
 - Keep commits atomic and focused
 - Write descriptive PR descriptions
 
 ### 2. Code Review Checklist
+
 - [ ] Code follows style guidelines
 - [ ] Tests are included and passing
 - [ ] Documentation is updated
@@ -438,6 +480,7 @@ The custom file placement linter enforces these rules:
 - [ ] Performance impact considered
 
 ### 3. Documentation Requirements
+
 - README with setup instructions
 - API documentation
 - Component documentation
@@ -445,6 +488,7 @@ The custom file placement linter enforces these rules:
 - Deployment guides
 
 ### 4. Development Workflow
+
 1. Create feature branch from main
 2. Write tests first (TDD approach)
 3. Implement feature
@@ -456,12 +500,14 @@ The custom file placement linter enforces these rules:
 9. Merge after approval
 
 ### 5. Performance Monitoring
+
 - Implement logging for errors
 - Monitor API response times
 - Track frontend performance metrics
 - Set up alerts for critical issues
 
 ### 6. Security Checklist
+
 - [ ] No secrets in code
 - [ ] Input validation implemented
 - [ ] Authentication required where needed
@@ -473,12 +519,14 @@ The custom file placement linter enforces these rules:
 ## Continuous Integration/Deployment
 
 ### 1. Pre-commit Hooks
+
 - Format code automatically
 - Run linters
 - Check for secrets
 - Verify commit message format
 
 ### 2. CI Pipeline
+
 - Run tests on every PR
 - Check code coverage
 - Run security scans
@@ -486,6 +534,7 @@ The custom file placement linter enforces these rules:
 - Deploy to staging
 
 ### 3. Production Deployment
+
 - Require PR approval
 - Run full test suite
 - Deploy with rollback capability
@@ -493,6 +542,7 @@ The custom file placement linter enforces these rules:
 - Update documentation
 
 ## Code Quality Metrics
+
 - Code coverage: >75%
 - Cyclomatic complexity: <10
 - Duplication: <3%

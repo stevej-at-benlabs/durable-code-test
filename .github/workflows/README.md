@@ -15,6 +15,7 @@ This GitHub Action automatically checks pull requests for violations of the SOLI
 ### 2. How It Works
 
 The action automatically runs when:
+
 - A pull request is opened, synchronized, or reopened
 - The PR contains changes to code files (`.py`, `.js`, `.ts`, `.java`, `.cs`, `.go`, `.rb`, `.php`)
 
@@ -37,6 +38,7 @@ The OCP checker analyzes code changes for common violations including:
 ### 5. PR Comments
 
 The action will automatically comment on your PR with:
+
 - A summary of any violations found
 - Specific file and line references
 - Code snippets showing the violations
@@ -71,6 +73,7 @@ python .github/scripts/check_ocp_violations.py \
 ## Configuration
 
 The action configuration is in `.github/workflows/ocp-check.yml`. You can modify:
+
 - File patterns to check
 - Severity thresholds
 - Comment formatting
@@ -78,6 +81,7 @@ The action configuration is in `.github/workflows/ocp-check.yml`. You can modify
 ## Troubleshooting
 
 If the action fails:
+
 1. Check that `CLAUDE_API_KEY` is properly set in GitHub Secrets
 2. Verify the API key has sufficient rate limits
 3. Check the action logs for specific error messages
@@ -85,6 +89,7 @@ If the action fails:
 ## Example Violations
 
 ### High Severity Example
+
 ```python
 # Bad: Modifying existing class for new feature
 class OrderProcessor:
@@ -96,6 +101,7 @@ class OrderProcessor:
 ```
 
 ### Suggested Fix
+
 ```python
 # Good: Using abstraction and polymorphism
 class OrderProcessor:
@@ -114,6 +120,7 @@ class ExpressOrderStrategy(OrderStrategy):
 ## Contributing
 
 To improve the OCP checker:
+
 1. Modify `.github/scripts/check_ocp_violations.py`
 2. Update the prompt or analysis logic
 3. Test locally before committing

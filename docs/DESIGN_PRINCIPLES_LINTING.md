@@ -10,6 +10,7 @@
 ---
 
 ## Overview
+
 This document outlines strategies for automatically detecting violations of SOLID principles and other design patterns that are traditionally considered "subjective" but are crucial for durable code.
 
 ## 1. Single Responsibility Principle (SRP) Detection
@@ -17,12 +18,14 @@ This document outlines strategies for automatically detecting violations of SOLI
 ### Metrics-Based Approach
 
 #### Class/Module Cohesion Metrics
+
 - **LCOM (Lack of Cohesion of Methods)**: Classes with LCOM > 1 likely violate SRP
 - **Method Count**: Classes with > 7 methods are suspects
 - **Import Diversity**: Modules importing from > 5 different domains likely have multiple responsibilities
 - **File Length**: Files > 200 lines often indicate multiple responsibilities
 
 #### Semantic Analysis Indicators
+
 - **Multiple "and" in class/function names**: `UserManagerAndValidator` → SRP violation
 - **Diverse method prefixes**: If a class has methods like `save_`, `validate_`, `send_`, `calculate_` → multiple responsibilities
 - **Multiple reasons to change**: Track which methods change together in git history
@@ -30,6 +33,7 @@ This document outlines strategies for automatically detecting violations of SOLI
 ### Implementation Tools
 
 #### 1. AST-Based Analysis (Python)
+
 ```python
 # Detect classes with multiple responsibility indicators
 - Count distinct method prefixes (get_, set_, validate_, save_, etc.)
@@ -38,12 +42,14 @@ This document outlines strategies for automatically detecting violations of SOLI
 ```
 
 #### 2. Git History Analysis
+
 ```bash
 # Find files that change for multiple reasons
 git log --format="" --name-only | sort | uniq -c | sort -rn
 ```
 
 #### 3. Dependency Analysis
+
 - Classes depending on multiple unrelated modules
 - Circular dependencies between modules
 - Fan-out complexity > 5
@@ -51,12 +57,14 @@ git log --format="" --name-only | sort | uniq -c | sort -rn
 ## 2. Open/Closed Principle (OCP) Detection
 
 ### Violation Indicators
+
 - **Frequent modifications**: Files changed > 10 times in 6 months
 - **Switch/if-else chains**: Multiple conditional branches on type checking
 - **Hardcoded values**: Magic numbers and strings instead of configuration
 - **Missing abstraction layers**: Direct dependencies on concrete implementations
 
 ### Detection Methods
+
 ```python
 # AST analysis for:
 - isinstance() checks in multiple branches
@@ -68,12 +76,14 @@ git log --format="" --name-only | sort | uniq -c | sort -rn
 ## 3. Liskov Substitution Principle (LSP) Detection
 
 ### Violation Indicators
+
 - **Method signature changes**: Overridden methods with different parameters
 - **Exception throwing**: Subclasses throwing exceptions base class doesn't
 - **Precondition strengthening**: Subclasses with stricter input validation
 - **Return type narrowing**: Returning None when base returns value
 
 ### Detection Tools
+
 ```python
 # Check for:
 - NotImplementedError in subclasses
@@ -84,24 +94,28 @@ git log --format="" --name-only | sort | uniq -c | sort -rn
 ## 4. Interface Segregation Principle (ISP) Detection
 
 ### Violation Indicators
+
 - **Large interfaces**: > 5 methods in an interface/ABC
 - **Unused interface methods**: Implementations that raise NotImplementedError
 - **Fat interfaces**: Multiple unrelated method groups
 - **Client-specific methods**: Methods used by only one client
 
 ### Metrics
+
 - **Interface Utilization Rate**: % of interface methods actually used by each client
 - **Method Grouping**: Cluster analysis of which methods are used together
 
 ## 5. Dependency Inversion Principle (DIP) Detection
 
 ### Violation Indicators
+
 - **Direct instantiation**: Using `ClassName()` instead of dependency injection
 - **Import from implementation**: Importing concrete classes instead of interfaces
 - **Hardcoded dependencies**: No constructor parameters for dependencies
 - **Framework coupling**: Business logic importing framework-specific modules
 
 ### Detection Methods
+
 ```python
 # Check for:
 - Direct instantiation patterns (Class() instead of injected)
@@ -176,14 +190,16 @@ class SRPAnalyzer {
       methodCount: methods.length,
       responsibilityGroups: Array.from(responsibilityGroups),
       dependencies: this.extractDependencies(node),
-      complexity: this.calculateComplexity(node)
+      complexity: this.calculateComplexity(node),
     };
   }
 
-  private groupMethodsByResponsibility(methods: ts.MethodDeclaration[]): Set<string> {
+  private groupMethodsByResponsibility(
+    methods: ts.MethodDeclaration[],
+  ): Set<string> {
     const groups = new Set<string>();
-    methods.forEach(method => {
-      const name = method.name?.getText() || '';
+    methods.forEach((method) => {
+      const name = method.name?.getText() || "";
       // Group by prefix: get, set, validate, save, send, etc.
       const prefix = name.split(/(?=[A-Z])/)[0];
       groups.add(prefix);
@@ -219,6 +235,7 @@ review_prompts:
 ## 8. Metrics Thresholds
 
 ### Configurable Limits
+
 ```yaml
 # .design-lint.yml
 srp:
@@ -278,16 +295,19 @@ jobs:
 ## 10. Gradual Enforcement Strategy
 
 ### Phase 1: Monitoring (Months 1-2)
+
 - Run checks but don't fail builds
 - Generate reports and track trends
 - Identify hotspots
 
 ### Phase 2: Warnings (Months 3-4)
+
 - Fail on severe violations only
 - Require justification for overrides
 - Track improvement metrics
 
 ### Phase 3: Enforcement (Month 5+)
+
 - Strict enforcement of all rules
 - Require architectural review for exceptions
 - Automated refactoring suggestions
@@ -295,6 +315,7 @@ jobs:
 ## 11. Example Violations and Fixes
 
 ### SRP Violation Example
+
 ```python
 # BAD: Multiple responsibilities
 class UserManager:
@@ -343,6 +364,7 @@ assert metrics['cohesion'] > 0.7, "Low cohesion detected"
 ## Conclusion
 
 While SRP and other design principles are "less objective," we can create objective proxies through:
+
 1. **Quantitative metrics** (method count, LCOM, coupling)
 2. **Pattern detection** (naming conventions, change patterns)
 3. **Historical analysis** (change frequency, co-change patterns)

@@ -1,478 +1,520 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Durable Code Implementation Plan</title>
     <script src="https://cdn.jsdelivr.net/npm/frappe-gantt@0.6.1/dist/frappe-gantt.min.js"></script>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/frappe-gantt@0.6.1/dist/frappe-gantt.min.css">
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/frappe-gantt@0.6.1/dist/frappe-gantt.min.css"
+    />
     <style>
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
-            margin: 0;
-            padding: 20px;
-            background: #f5f5f5;
-        }
-        .container {
-            max-width: 1800px;
-            margin: 0 auto;
-            background: white;
-            padding: 30px;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-        h1 {
-            color: #333;
-            border-bottom: 3px solid #007bff;
-            padding-bottom: 10px;
-            margin-bottom: 30px;
-        }
-        h2 {
-            color: #555;
-            margin-top: 40px;
-            margin-bottom: 20px;
-            padding-left: 10px;
-            border-left: 4px solid #007bff;
-        }
-        .legend {
-            display: flex;
-            gap: 30px;
-            margin: 20px 0;
-            padding: 15px;
-            background: #f8f9fa;
-            border-radius: 5px;
-            flex-wrap: wrap;
-        }
-        .legend-item {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        .legend-color {
-            width: 20px;
-            height: 20px;
-            border-radius: 3px;
-        }
-        .critical { background: #dc3545; }
-        .high { background: #ffc107; }
-        .medium { background: #28a745; }
-        .info-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 20px;
-            margin: 30px 0;
-        }
-        .info-card {
-            padding: 20px;
-            border-radius: 8px;
-            border: 1px solid #ddd;
-        }
-        .info-card h3 {
-            margin-top: 0;
-            color: #333;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        .info-card.critical { border-left: 4px solid #dc3545; }
-        .info-card.high { border-left: 4px solid #ffc107; }
-        .info-card.medium { border-left: 4px solid #28a745; }
-        .status-badge {
-            display: inline-block;
-            padding: 3px 8px;
-            border-radius: 12px;
-            font-size: 12px;
-            font-weight: bold;
-            text-transform: uppercase;
-        }
-        .status-ready { background: #d4edda; color: #155724; }
-        .status-blocked { background: #f8d7da; color: #721c24; }
-        .status-progress { background: #fff3cd; color: #856404; }
-        .chart-wrapper {
-            margin: 30px 0;
-            padding: 20px;
-            background: #fafafa;
-            border-radius: 8px;
-            overflow-x: auto;
-            overflow-y: visible;
-            border: 1px solid #ddd;
-            position: relative;
-        }
-        .gantt-section {
-            margin-bottom: 40px;
-        }
-        .gantt-section h3 {
-            margin-bottom: 15px;
-            padding: 10px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            border-radius: 6px;
-        }
-        #gantt-phase-1, #gantt-phase-2, #gantt-phase-3, #gantt-phase-4 {
-            min-width: 1400px;
-            height: auto;
-            width: 100%;
-            min-height: 400px;
-        }
-        .milestone-list {
-            background: #f8f9fa;
-            padding: 20px;
-            border-radius: 8px;
-            margin: 20px 0;
-        }
-        .milestone-list h3 {
-            margin-top: 0;
-            color: #333;
-        }
-        .milestone-item {
-            padding: 10px;
-            margin: 10px 0;
-            background: white;
-            border-radius: 5px;
-            border-left: 3px solid #007bff;
-        }
-        .milestone-item strong {
-            color: #007bff;
-        }
-        .breadcrumb {
-            padding: 12px 20px;
-            background: #f8f9fa;
-            border-radius: 6px;
-            margin-bottom: 20px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-size: 14px;
-        }
-        .breadcrumb a {
-            color: #007bff;
-            text-decoration: none;
-            transition: color 0.2s;
-        }
-        .breadcrumb a:hover {
-            color: #0056b3;
-            text-decoration: underline;
-        }
-        .breadcrumb-separator {
-            color: #6c757d;
-            margin: 0 4px;
-        }
-        .breadcrumb-current {
-            color: #495057;
-            font-weight: 600;
-        }
+      body {
+        font-family:
+          -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu,
+          sans-serif;
+        margin: 0;
+        padding: 20px;
+        background: #f5f5f5;
+      }
+      .container {
+        max-width: 1800px;
+        margin: 0 auto;
+        background: white;
+        padding: 30px;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      }
+      h1 {
+        color: #333;
+        border-bottom: 3px solid #007bff;
+        padding-bottom: 10px;
+        margin-bottom: 30px;
+      }
+      h2 {
+        color: #555;
+        margin-top: 40px;
+        margin-bottom: 20px;
+        padding-left: 10px;
+        border-left: 4px solid #007bff;
+      }
+      .legend {
+        display: flex;
+        gap: 30px;
+        margin: 20px 0;
+        padding: 15px;
+        background: #f8f9fa;
+        border-radius: 5px;
+        flex-wrap: wrap;
+      }
+      .legend-item {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .legend-color {
+        width: 20px;
+        height: 20px;
+        border-radius: 3px;
+      }
+      .critical {
+        background: #dc3545;
+      }
+      .high {
+        background: #ffc107;
+      }
+      .medium {
+        background: #28a745;
+      }
+      .info-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 20px;
+        margin: 30px 0;
+      }
+      .info-card {
+        padding: 20px;
+        border-radius: 8px;
+        border: 1px solid #ddd;
+      }
+      .info-card h3 {
+        margin-top: 0;
+        color: #333;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .info-card.critical {
+        border-left: 4px solid #dc3545;
+      }
+      .info-card.high {
+        border-left: 4px solid #ffc107;
+      }
+      .info-card.medium {
+        border-left: 4px solid #28a745;
+      }
+      .status-badge {
+        display: inline-block;
+        padding: 3px 8px;
+        border-radius: 12px;
+        font-size: 12px;
+        font-weight: bold;
+        text-transform: uppercase;
+      }
+      .status-ready {
+        background: #d4edda;
+        color: #155724;
+      }
+      .status-blocked {
+        background: #f8d7da;
+        color: #721c24;
+      }
+      .status-progress {
+        background: #fff3cd;
+        color: #856404;
+      }
+      .chart-wrapper {
+        margin: 30px 0;
+        padding: 20px;
+        background: #fafafa;
+        border-radius: 8px;
+        overflow-x: auto;
+        overflow-y: visible;
+        border: 1px solid #ddd;
+        position: relative;
+      }
+      .gantt-section {
+        margin-bottom: 40px;
+      }
+      .gantt-section h3 {
+        margin-bottom: 15px;
+        padding: 10px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border-radius: 6px;
+      }
+      #gantt-phase-1,
+      #gantt-phase-2,
+      #gantt-phase-3,
+      #gantt-phase-4 {
+        min-width: 1400px;
+        height: auto;
+        width: 100%;
+        min-height: 400px;
+      }
+      .milestone-list {
+        background: #f8f9fa;
+        padding: 20px;
+        border-radius: 8px;
+        margin: 20px 0;
+      }
+      .milestone-list h3 {
+        margin-top: 0;
+        color: #333;
+      }
+      .milestone-item {
+        padding: 10px;
+        margin: 10px 0;
+        background: white;
+        border-radius: 5px;
+        border-left: 3px solid #007bff;
+      }
+      .milestone-item strong {
+        color: #007bff;
+      }
+      .breadcrumb {
+        padding: 12px 20px;
+        background: #f8f9fa;
+        border-radius: 6px;
+        margin-bottom: 20px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 14px;
+      }
+      .breadcrumb a {
+        color: #007bff;
+        text-decoration: none;
+        transition: color 0.2s;
+      }
+      .breadcrumb a:hover {
+        color: #0056b3;
+        text-decoration: underline;
+      }
+      .breadcrumb-separator {
+        color: #6c757d;
+        margin: 0 4px;
+      }
+      .breadcrumb-current {
+        color: #495057;
+        font-weight: 600;
+      }
     </style>
-</head>
-<body>
+  </head>
+  <body>
     <div class="container">
-        <nav class="breadcrumb" aria-label="Breadcrumb navigation">
-            <a href="/">🏠 Home</a>
-            <span class="breadcrumb-separator">›</span>
-            <a href="/#doc-driven">Documentation</a>
-            <span class="breadcrumb-separator">›</span>
-            <span class="breadcrumb-current">Implementation Plan</span>
-        </nav>
-        <h1>📅 Durable Code Implementation Strategic Plan</h1>
+      <nav class="breadcrumb" aria-label="Breadcrumb navigation">
+        <a href="/">🏠 Home</a>
+        <span class="breadcrumb-separator">›</span>
+        <a href="/#doc-driven">Documentation</a>
+        <span class="breadcrumb-separator">›</span>
+        <span class="breadcrumb-current">Implementation Plan</span>
+      </nav>
+      <h1>📅 Durable Code Implementation Strategic Plan</h1>
 
-        <div class="info-grid">
-            <div class="info-card critical">
-                <h3>🎯 Project Goal</h3>
-                <p>Establish a comprehensive framework for developing maintainable, scalable, and robust software using AI-assisted development techniques.</p>
-            </div>
-            <div class="info-card high">
-                <h3>⏱️ Timeline</h3>
-                <p>12-week implementation plan with 4 major phases, each building upon previous achievements.</p>
-            </div>
-            <div class="info-card medium">
-                <h3>👥 Team Involvement</h3>
-                <p>Cross-functional collaboration between developers, DevOps, QA, and architecture teams.</p>
-            </div>
+      <div class="info-grid">
+        <div class="info-card critical">
+          <h3>🎯 Project Goal</h3>
+          <p>
+            Establish a comprehensive framework for developing maintainable, scalable,
+            and robust software using AI-assisted development techniques.
+          </p>
         </div>
+        <div class="info-card high">
+          <h3>⏱️ Timeline</h3>
+          <p>
+            12-week implementation plan with 4 major phases, each building upon previous
+            achievements.
+          </p>
+        </div>
+        <div class="info-card medium">
+          <h3>👥 Team Involvement</h3>
+          <p>
+            Cross-functional collaboration between developers, DevOps, QA, and
+            architecture teams.
+          </p>
+        </div>
+      </div>
 
-        <div class="legend">
-            <div class="legend-item">
-                <div class="legend-color critical"></div>
-                <span><strong>Critical Path:</strong> Must complete for project success</span>
-            </div>
-            <div class="legend-item">
-                <div class="legend-color high"></div>
-                <span><strong>High Priority:</strong> Important for quality outcomes</span>
-            </div>
-            <div class="legend-item">
-                <div class="legend-color medium"></div>
-                <span><strong>Medium Priority:</strong> Enhances overall solution</span>
-            </div>
+      <div class="legend">
+        <div class="legend-item">
+          <div class="legend-color critical"></div>
+          <span><strong>Critical Path:</strong> Must complete for project success</span>
         </div>
+        <div class="legend-item">
+          <div class="legend-color high"></div>
+          <span><strong>High Priority:</strong> Important for quality outcomes</span>
+        </div>
+        <div class="legend-item">
+          <div class="legend-color medium"></div>
+          <span><strong>Medium Priority:</strong> Enhances overall solution</span>
+        </div>
+      </div>
 
-        <!-- Phase 1: Foundation -->
-        <div class="gantt-section">
-            <h3>📋 Phase 1: Foundation & Standards (Weeks 1-3)</h3>
-            <div class="chart-wrapper">
-                <div id="gantt-phase-1"></div>
-            </div>
+      <!-- Phase 1: Foundation -->
+      <div class="gantt-section">
+        <h3>📋 Phase 1: Foundation & Standards (Weeks 1-3)</h3>
+        <div class="chart-wrapper">
+          <div id="gantt-phase-1"></div>
         </div>
+      </div>
 
-        <!-- Phase 2: Automation Setup -->
-        <div class="gantt-section">
-            <h3>⚙️ Phase 2: Automation & Tooling (Weeks 4-6)</h3>
-            <div class="chart-wrapper">
-                <div id="gantt-phase-2"></div>
-            </div>
+      <!-- Phase 2: Automation Setup -->
+      <div class="gantt-section">
+        <h3>⚙️ Phase 2: Automation & Tooling (Weeks 4-6)</h3>
+        <div class="chart-wrapper">
+          <div id="gantt-phase-2"></div>
         </div>
+      </div>
 
-        <!-- Phase 3: AI Integration -->
-        <div class="gantt-section">
-            <h3>🤖 Phase 3: AI Integration (Weeks 7-9)</h3>
-            <div class="chart-wrapper">
-                <div id="gantt-phase-3"></div>
-            </div>
+      <!-- Phase 3: AI Integration -->
+      <div class="gantt-section">
+        <h3>🤖 Phase 3: AI Integration (Weeks 7-9)</h3>
+        <div class="chart-wrapper">
+          <div id="gantt-phase-3"></div>
         </div>
+      </div>
 
-        <!-- Phase 4: Optimization -->
-        <div class="gantt-section">
-            <h3>🚀 Phase 4: Optimization & Rollout (Weeks 10-12)</h3>
-            <div class="chart-wrapper">
-                <div id="gantt-phase-4"></div>
-            </div>
+      <!-- Phase 4: Optimization -->
+      <div class="gantt-section">
+        <h3>🚀 Phase 4: Optimization & Rollout (Weeks 10-12)</h3>
+        <div class="chart-wrapper">
+          <div id="gantt-phase-4"></div>
         </div>
+      </div>
 
-        <!-- Milestones -->
-        <div class="milestone-list">
-            <h3>🏆 Key Milestones</h3>
-            <div class="milestone-item">
-                <strong>Week 3:</strong> Complete Standards Documentation - All coding standards, architecture patterns, and quality requirements documented
-            </div>
-            <div class="milestone-item">
-                <strong>Week 6:</strong> Automation Pipeline Live - Pre-commit hooks, CI/CD, and custom linters fully operational
-            </div>
-            <div class="milestone-item">
-                <strong>Week 9:</strong> AI Tools Integrated - Claude/GPT-4 code reviews and generation workflows established
-            </div>
-            <div class="milestone-item">
-                <strong>Week 12:</strong> Full Production Rollout - Complete durable code framework deployed across all teams
-            </div>
+      <!-- Milestones -->
+      <div class="milestone-list">
+        <h3>🏆 Key Milestones</h3>
+        <div class="milestone-item">
+          <strong>Week 3:</strong> Complete Standards Documentation - All coding
+          standards, architecture patterns, and quality requirements documented
         </div>
+        <div class="milestone-item">
+          <strong>Week 6:</strong> Automation Pipeline Live - Pre-commit hooks, CI/CD,
+          and custom linters fully operational
+        </div>
+        <div class="milestone-item">
+          <strong>Week 9:</strong> AI Tools Integrated - Claude/GPT-4 code reviews and
+          generation workflows established
+        </div>
+        <div class="milestone-item">
+          <strong>Week 12:</strong> Full Production Rollout - Complete durable code
+          framework deployed across all teams
+        </div>
+      </div>
 
-        <!-- Success Metrics -->
-        <div class="info-grid">
-            <div class="info-card medium">
-                <h3>📊 Success Metrics</h3>
-                <ul>
-                    <li>Code review time reduced by 40%</li>
-                    <li>Bug detection rate increased by 60%</li>
-                    <li>Test coverage above 85%</li>
-                    <li>SOLID principle compliance at 95%</li>
-                    <li>Documentation completeness at 100%</li>
-                </ul>
-            </div>
-            <div class="info-card high">
-                <h3>⚠️ Risk Mitigation</h3>
-                <ul>
-                    <li>Gradual rollout to minimize disruption</li>
-                    <li>Training sessions for all team members</li>
-                    <li>Fallback procedures for tool failures</li>
-                    <li>Regular feedback loops for adjustments</li>
-                    <li>Budget allocation for API costs</li>
-                </ul>
-            </div>
-            <div class="info-card critical">
-                <h3>🎯 Critical Dependencies</h3>
-                <ul>
-                    <li>GitHub Enterprise access configured</li>
-                    <li>AI API keys provisioned</li>
-                    <li>Team training completed</li>
-                    <li>Infrastructure scaling ready</li>
-                    <li>Security reviews approved</li>
-                </ul>
-            </div>
+      <!-- Success Metrics -->
+      <div class="info-grid">
+        <div class="info-card medium">
+          <h3>📊 Success Metrics</h3>
+          <ul>
+            <li>Code review time reduced by 40%</li>
+            <li>Bug detection rate increased by 60%</li>
+            <li>Test coverage above 85%</li>
+            <li>SOLID principle compliance at 95%</li>
+            <li>Documentation completeness at 100%</li>
+          </ul>
         </div>
+        <div class="info-card high">
+          <h3>⚠️ Risk Mitigation</h3>
+          <ul>
+            <li>Gradual rollout to minimize disruption</li>
+            <li>Training sessions for all team members</li>
+            <li>Fallback procedures for tool failures</li>
+            <li>Regular feedback loops for adjustments</li>
+            <li>Budget allocation for API costs</li>
+          </ul>
+        </div>
+        <div class="info-card critical">
+          <h3>🎯 Critical Dependencies</h3>
+          <ul>
+            <li>GitHub Enterprise access configured</li>
+            <li>AI API keys provisioned</li>
+            <li>Team training completed</li>
+            <li>Infrastructure scaling ready</li>
+            <li>Security reviews approved</li>
+          </ul>
+        </div>
+      </div>
     </div>
 
     <script>
-        // Phase 1 Tasks
-        const phase1Tasks = [
-            {
-                id: 'task-1-1',
-                name: 'Define Coding Standards',
-                start: '2025-01-20',
-                end: '2025-01-24',
-                progress: 0,
-                dependencies: ''
-            },
-            {
-                id: 'task-1-2',
-                name: 'Document Architecture Patterns',
-                start: '2025-01-22',
-                end: '2025-01-28',
-                progress: 0,
-                dependencies: ''
-            },
-            {
-                id: 'task-1-3',
-                name: 'Create Testing Guidelines',
-                start: '2025-01-24',
-                end: '2025-01-30',
-                progress: 0,
-                dependencies: 'task-1-1'
-            },
-            {
-                id: 'task-1-4',
-                name: 'Setup Documentation Templates',
-                start: '2025-01-27',
-                end: '2025-02-03',
-                progress: 0,
-                dependencies: 'task-1-2'
-            },
-            {
-                id: 'task-1-5',
-                name: 'Team Review & Approval',
-                start: '2025-02-03',
-                end: '2025-02-07',
-                progress: 0,
-                dependencies: 'task-1-3,task-1-4'
-            }
-        ];
+      // Phase 1 Tasks
+      const phase1Tasks = [
+        {
+          id: 'task-1-1',
+          name: 'Define Coding Standards',
+          start: '2025-01-20',
+          end: '2025-01-24',
+          progress: 0,
+          dependencies: '',
+        },
+        {
+          id: 'task-1-2',
+          name: 'Document Architecture Patterns',
+          start: '2025-01-22',
+          end: '2025-01-28',
+          progress: 0,
+          dependencies: '',
+        },
+        {
+          id: 'task-1-3',
+          name: 'Create Testing Guidelines',
+          start: '2025-01-24',
+          end: '2025-01-30',
+          progress: 0,
+          dependencies: 'task-1-1',
+        },
+        {
+          id: 'task-1-4',
+          name: 'Setup Documentation Templates',
+          start: '2025-01-27',
+          end: '2025-02-03',
+          progress: 0,
+          dependencies: 'task-1-2',
+        },
+        {
+          id: 'task-1-5',
+          name: 'Team Review & Approval',
+          start: '2025-02-03',
+          end: '2025-02-07',
+          progress: 0,
+          dependencies: 'task-1-3,task-1-4',
+        },
+      ];
 
-        // Phase 2 Tasks
-        const phase2Tasks = [
-            {
-                id: 'task-2-1',
-                name: 'Configure ESLint/Prettier',
-                start: '2025-02-10',
-                end: '2025-02-14',
-                progress: 0,
-                dependencies: ''
-            },
-            {
-                id: 'task-2-2',
-                name: 'Setup Pre-commit Hooks',
-                start: '2025-02-12',
-                end: '2025-02-17',
-                progress: 0,
-                dependencies: ''
-            },
-            {
-                id: 'task-2-3',
-                name: 'Create Custom Linters',
-                start: '2025-02-14',
-                end: '2025-02-21',
-                progress: 0,
-                dependencies: 'task-2-1'
-            },
-            {
-                id: 'task-2-4',
-                name: 'Setup GitHub Actions',
-                start: '2025-02-17',
-                end: '2025-02-24',
-                progress: 0,
-                dependencies: 'task-2-2'
-            },
-            {
-                id: 'task-2-5',
-                name: 'Integration Testing',
-                start: '2025-02-24',
-                end: '2025-02-28',
-                progress: 0,
-                dependencies: 'task-2-3,task-2-4'
-            }
-        ];
+      // Phase 2 Tasks
+      const phase2Tasks = [
+        {
+          id: 'task-2-1',
+          name: 'Configure ESLint/Prettier',
+          start: '2025-02-10',
+          end: '2025-02-14',
+          progress: 0,
+          dependencies: '',
+        },
+        {
+          id: 'task-2-2',
+          name: 'Setup Pre-commit Hooks',
+          start: '2025-02-12',
+          end: '2025-02-17',
+          progress: 0,
+          dependencies: '',
+        },
+        {
+          id: 'task-2-3',
+          name: 'Create Custom Linters',
+          start: '2025-02-14',
+          end: '2025-02-21',
+          progress: 0,
+          dependencies: 'task-2-1',
+        },
+        {
+          id: 'task-2-4',
+          name: 'Setup GitHub Actions',
+          start: '2025-02-17',
+          end: '2025-02-24',
+          progress: 0,
+          dependencies: 'task-2-2',
+        },
+        {
+          id: 'task-2-5',
+          name: 'Integration Testing',
+          start: '2025-02-24',
+          end: '2025-02-28',
+          progress: 0,
+          dependencies: 'task-2-3,task-2-4',
+        },
+      ];
 
-        // Phase 3 Tasks
-        const phase3Tasks = [
-            {
-                id: 'task-3-1',
-                name: 'Setup AI API Access',
-                start: '2025-03-03',
-                end: '2025-03-07',
-                progress: 0,
-                dependencies: ''
-            },
-            {
-                id: 'task-3-2',
-                name: 'Implement SOLID Checker',
-                start: '2025-03-05',
-                end: '2025-03-12',
-                progress: 0,
-                dependencies: 'task-3-1'
-            },
-            {
-                id: 'task-3-3',
-                name: 'Create AI Review Workflow',
-                start: '2025-03-10',
-                end: '2025-03-17',
-                progress: 0,
-                dependencies: 'task-3-1'
-            },
-            {
-                id: 'task-3-4',
-                name: 'Setup Code Generation Templates',
-                start: '2025-03-12',
-                end: '2025-03-19',
-                progress: 0,
-                dependencies: 'task-3-2'
-            },
-            {
-                id: 'task-3-5',
-                name: 'Train Team on AI Tools',
-                start: '2025-03-17',
-                end: '2025-03-21',
-                progress: 0,
-                dependencies: 'task-3-3,task-3-4'
-            }
-        ];
+      // Phase 3 Tasks
+      const phase3Tasks = [
+        {
+          id: 'task-3-1',
+          name: 'Setup AI API Access',
+          start: '2025-03-03',
+          end: '2025-03-07',
+          progress: 0,
+          dependencies: '',
+        },
+        {
+          id: 'task-3-2',
+          name: 'Implement SOLID Checker',
+          start: '2025-03-05',
+          end: '2025-03-12',
+          progress: 0,
+          dependencies: 'task-3-1',
+        },
+        {
+          id: 'task-3-3',
+          name: 'Create AI Review Workflow',
+          start: '2025-03-10',
+          end: '2025-03-17',
+          progress: 0,
+          dependencies: 'task-3-1',
+        },
+        {
+          id: 'task-3-4',
+          name: 'Setup Code Generation Templates',
+          start: '2025-03-12',
+          end: '2025-03-19',
+          progress: 0,
+          dependencies: 'task-3-2',
+        },
+        {
+          id: 'task-3-5',
+          name: 'Train Team on AI Tools',
+          start: '2025-03-17',
+          end: '2025-03-21',
+          progress: 0,
+          dependencies: 'task-3-3,task-3-4',
+        },
+      ];
 
-        // Phase 4 Tasks
-        const phase4Tasks = [
-            {
-                id: 'task-4-1',
-                name: 'Performance Optimization',
-                start: '2025-03-24',
-                end: '2025-03-28',
-                progress: 0,
-                dependencies: ''
-            },
-            {
-                id: 'task-4-2',
-                name: 'Security Audit',
-                start: '2025-03-26',
-                end: '2025-04-02',
-                progress: 0,
-                dependencies: ''
-            },
-            {
-                id: 'task-4-3',
-                name: 'Create Monitoring Dashboard',
-                start: '2025-03-31',
-                end: '2025-04-07',
-                progress: 0,
-                dependencies: 'task-4-1'
-            },
-            {
-                id: 'task-4-4',
-                name: 'Documentation Finalization',
-                start: '2025-04-02',
-                end: '2025-04-09',
-                progress: 0,
-                dependencies: 'task-4-2'
-            },
-            {
-                id: 'task-4-5',
-                name: 'Production Rollout',
-                start: '2025-04-07',
-                end: '2025-04-11',
-                progress: 0,
-                dependencies: 'task-4-3,task-4-4'
-            }
-        ];
+      // Phase 4 Tasks
+      const phase4Tasks = [
+        {
+          id: 'task-4-1',
+          name: 'Performance Optimization',
+          start: '2025-03-24',
+          end: '2025-03-28',
+          progress: 0,
+          dependencies: '',
+        },
+        {
+          id: 'task-4-2',
+          name: 'Security Audit',
+          start: '2025-03-26',
+          end: '2025-04-02',
+          progress: 0,
+          dependencies: '',
+        },
+        {
+          id: 'task-4-3',
+          name: 'Create Monitoring Dashboard',
+          start: '2025-03-31',
+          end: '2025-04-07',
+          progress: 0,
+          dependencies: 'task-4-1',
+        },
+        {
+          id: 'task-4-4',
+          name: 'Documentation Finalization',
+          start: '2025-04-02',
+          end: '2025-04-09',
+          progress: 0,
+          dependencies: 'task-4-2',
+        },
+        {
+          id: 'task-4-5',
+          name: 'Production Rollout',
+          start: '2025-04-07',
+          end: '2025-04-11',
+          progress: 0,
+          dependencies: 'task-4-3,task-4-4',
+        },
+      ];
 
-        // Initialize Gantt charts
-        document.addEventListener('DOMContentLoaded', function() {
-            // Phase 1 Gantt
-            new Gantt('#gantt-phase-1', phase1Tasks, {
-                view_mode: 'Day',
-                date_format: 'YYYY-MM-DD',
-                custom_popup_html: function(task) {
-                    return `
+      // Initialize Gantt charts
+      document.addEventListener('DOMContentLoaded', function () {
+        // Phase 1 Gantt
+        new Gantt('#gantt-phase-1', phase1Tasks, {
+          view_mode: 'Day',
+          date_format: 'YYYY-MM-DD',
+          custom_popup_html: function (task) {
+            return `
                         <div class="details-container">
                             <h5>${task.name}</h5>
                             <p>Start: ${task._start.format('MMM DD')}</p>
@@ -480,27 +522,27 @@
                             <p>Progress: ${task.progress}%</p>
                         </div>
                     `;
-                }
-            });
-
-            // Phase 2 Gantt
-            new Gantt('#gantt-phase-2', phase2Tasks, {
-                view_mode: 'Day',
-                date_format: 'YYYY-MM-DD'
-            });
-
-            // Phase 3 Gantt
-            new Gantt('#gantt-phase-3', phase3Tasks, {
-                view_mode: 'Day',
-                date_format: 'YYYY-MM-DD'
-            });
-
-            // Phase 4 Gantt
-            new Gantt('#gantt-phase-4', phase4Tasks, {
-                view_mode: 'Day',
-                date_format: 'YYYY-MM-DD'
-            });
+          },
         });
+
+        // Phase 2 Gantt
+        new Gantt('#gantt-phase-2', phase2Tasks, {
+          view_mode: 'Day',
+          date_format: 'YYYY-MM-DD',
+        });
+
+        // Phase 3 Gantt
+        new Gantt('#gantt-phase-3', phase3Tasks, {
+          view_mode: 'Day',
+          date_format: 'YYYY-MM-DD',
+        });
+
+        // Phase 4 Gantt
+        new Gantt('#gantt-phase-4', phase4Tasks, {
+          view_mode: 'Day',
+          date_format: 'YYYY-MM-DD',
+        });
+      });
     </script>
-</body>
+  </body>
 </html>

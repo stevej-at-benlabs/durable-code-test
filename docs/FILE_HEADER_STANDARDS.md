@@ -30,6 +30,7 @@ This document establishes the standardized format for file headers across all do
 ---
 
 ## Overview
+
 Document content starts here...
 ```
 
@@ -45,7 +46,7 @@ Updated: YYYY-MM-DD
 Author: Author name or team
 Version: Semantic version
 -->
-<html lang="en">
+<html lang="en"></html>
 ```
 
 ### Python Files (.py)
@@ -88,16 +89,19 @@ Version: Semantic version
 ## Required Header Fields
 
 ### Mandatory Fields (All Files)
+
 - **Purpose**: 1-2 sentence description of file's purpose
 - **Created**: Date when file was originally created (YYYY-MM-DD format)
 - **Author**: Creator's name or team name
 
 ### Recommended Fields
+
 - **Scope**: What areas/components this file covers
 - **Updated**: Date of last significant update (YYYY-MM-DD format)
 - **Version**: Semantic version number
 
 ### Optional Fields
+
 - **Dependencies**: Key dependencies or requirements
 - **Related**: Links to related files or documentation
 - **Notes**: Any special considerations or warnings
@@ -105,19 +109,23 @@ Version: Semantic version
 ## Implementation Guidelines
 
 ### 1. Header Placement
+
 - **Markdown**: Header immediately after the main title
 - **Code files**: Header as the first comment block (after shebang if present)
 - **HTML**: Header in HTML comment after DOCTYPE
 - **Configuration**: Header as comment at top of file
 
 ### 2. Content Guidelines
+
 - Keep Purpose field concise but descriptive
 - Use ISO date format (YYYY-MM-DD) consistently
 - Update the "Updated" field when making significant changes
 - Version numbers should follow semantic versioning where applicable
 
 ### 3. Automated Validation
+
 The header linter tool validates:
+
 - Presence of mandatory fields
 - Date format compliance
 - Header structure and placement
@@ -126,6 +134,7 @@ The header linter tool validates:
 ## Examples
 
 ### Good Header Example (Markdown)
+
 ```markdown
 # API Documentation Standards
 
@@ -139,28 +148,34 @@ The header linter tool validates:
 ---
 
 ## Overview
+
 This document outlines...
 ```
 
 ### Bad Header Example
+
 ```markdown
 # Some Documentation
+
 This is about APIs or something.
 ```
 
 ## Migration Strategy
 
 ### Phase 1: Update Existing Files
+
 1. Add headers to all existing documentation files
 2. Focus on core documentation first
 3. Ensure all mandatory fields are present
 
 ### Phase 2: Implement Linter
+
 1. Create automated header validation tool
 2. Integrate into pre-commit hooks
 3. Add to CI/CD pipeline
 
 ### Phase 3: Enforce Standards
+
 1. Make header linter blocking in CI/CD
 2. Update contribution guidelines
 3. Train team on new standards
@@ -168,11 +183,13 @@ This is about APIs or something.
 ## Tools and Automation
 
 ### Header Linter
+
 - Location: `/tools/design-linters/header_linter.py`
 - Usage: `python tools/design-linters/header_linter.py --path docs/`
 - Exit codes: 0 (pass), 1 (warnings), 2 (failures)
 
 ### Pre-commit Integration
+
 ```yaml
 - repo: local
   hooks:
@@ -194,6 +211,7 @@ This is about APIs or something.
 ## Exceptions
 
 Files that may not need headers:
+
 - Auto-generated files (clearly marked as such)
 - Very small configuration files (&lt;10 lines)
 - Template files used by generators

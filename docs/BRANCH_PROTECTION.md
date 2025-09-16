@@ -10,11 +10,13 @@
 ---
 
 ## Overview
+
 This document outlines the required GitHub branch protection rules to enforce code quality standards and ensure all code meets our durability requirements.
 
 ## Required Settings for `main` Branch
 
 ### 1. Navigate to Settings
+
 1. Go to your repository on GitHub
 2. Click on **Settings** → **Branches**
 3. Click **Add rule** or edit existing rule for `main`
@@ -22,12 +24,14 @@ This document outlines the required GitHub branch protection rules to enforce co
 ### 2. Branch Protection Rules
 
 #### Basic Settings
+
 - ✅ **Require a pull request before merging**
   - ✅ Require approvals: 1 (minimum)
   - ✅ Dismiss stale pull request approvals when new commits are pushed
   - ✅ Require review from CODEOWNERS (if applicable)
 
 #### Status Checks
+
 - ✅ **Require status checks to pass before merging**
   - ✅ Require branches to be up to date before merging
 
@@ -38,9 +42,11 @@ This document outlines the required GitHub branch protection rules to enforce co
   - `Code Coverage Analysis` (optional but recommended)
 
 #### Conversation Resolution
+
 - ✅ **Require conversation resolution before merging**
 
 #### Additional Settings
+
 - ✅ **Require signed commits** (optional but recommended)
 - ✅ **Include administrators** (enforce rules for admins too)
 - ✅ **Restrict who can push to matching branches** (optional)
@@ -50,6 +56,7 @@ This document outlines the required GitHub branch protection rules to enforce co
 The following checks MUST pass before any PR can be merged:
 
 #### Python Requirements
+
 - **Black**: Code formatting compliance
 - **isort**: Import sorting compliance
 - **Ruff**: Fast linting checks
@@ -60,6 +67,7 @@ The following checks MUST pass before any PR can be merged:
 - **Xenon**: All modules must maintain Grade A complexity
 
 #### TypeScript/React Requirements
+
 - **TypeScript**: Full compilation without errors
 - **ESLint**: All rules must pass with 0 warnings
 - **Prettier**: Code formatting compliance
@@ -84,6 +92,7 @@ gh api repos/:owner/:repo/branches/main/protection \
 ### 5. Bypass Guidelines
 
 **Emergency Bypass** (use sparingly):
+
 - Only repository administrators can bypass
 - Must document reason in PR description
 - Should create follow-up issue to fix any bypassed checks
@@ -109,6 +118,7 @@ make lint-security
 ### 7. Monitoring and Metrics
 
 Track these metrics monthly:
+
 - Number of PRs blocked by quality gates
 - Average complexity scores
 - Security vulnerabilities found and fixed
@@ -142,6 +152,7 @@ Track these metrics monthly:
 ## Contact
 
 For questions about these rules or requesting exceptions, please:
+
 1. Open an issue with the `quality-gate` label
 2. Include justification for any exception requests
 3. Tag the repository maintainers

@@ -153,32 +153,53 @@ export function categorizeLinks(urls: string[]): {
 }
 
 /**
+ * Interface for extensible report generators
+ */
+export interface ReportGenerator {
+  generate(
+    links: string[],
+    results: LinkValidationResult[],
+    categories: ReturnType<typeof categorizeLinks>,
+  ): any;
+}
+
+/**
+ * Default report generator implementation
+ */
+export class DefaultReportGenerator implements ReportGenerator {
+  generate(
+    links: string[],
+    results: LinkValidationResult[],
+    categories: ReturnType<typeof categorizeLinks>,
+  ) {
+    const validLinks = results.filter((r) => r.isValid).length;
+    const brokenLinks = results.filter((r) => !r.isValid).length;
+
+    return {
+      totalLinks: links.length,
+      validLinks,
+      brokenLinks,
+      results,
+      categories,
+    };
+  }
+}
+
+/**
  * Generates a validation report for all links
+ * Now supports custom report generators for extensibility
  */
 export async function generateLinkReport(
   element: HTMLElement,
-  options: LinkValidationOptions = {},
-): Promise<{
-  totalLinks: number;
-  validLinks: number;
-  brokenLinks: number;
-  results: LinkValidationResult[];
-  categories: ReturnType<typeof categorizeLinks>;
-}> {
+  options: LinkValidationOptions & { reportGenerator?: ReportGenerator } = {},
+): Promise<any> {
   const links = extractLinksFromElement(element);
   const categories = categorizeLinks(links);
   const results = await validateLinks(links, options);
 
-  const validLinks = results.filter((r) => r.isValid).length;
-  const brokenLinks = results.filter((r) => !r.isValid).length;
-
-  return {
-    totalLinks: links.length,
-    validLinks,
-    brokenLinks,
-    results,
-    categories,
-  };
+  // Use custom report generator if provided, otherwise use default
+  const generator = options.reportGenerator || new DefaultReportGenerator();
+  return generator.generate(links, results, categories);
 }
 
 /**

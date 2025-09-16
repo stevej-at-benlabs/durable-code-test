@@ -1,0 +1,149 @@
+{
+  "rules": [
+    {
+      "name": "Python source files",
+      "file_patterns": ["*.py"],
+      "allowed_directories": [
+        "durable-code-app/backend/app",
+        "durable-code-app/backend/app/**",
+        "tools",
+        "tools/**",
+        "test",
+        "test/**"
+      ],
+      "prohibited_directories": [
+        ".",
+        "docs",
+        "durable-code-app/frontend",
+        "durable-code-app/frontend/**",
+        "durable-code-app/backend/tests",
+        "durable-code-app/backend/tests/**"
+      ],
+      "description": "Python files must be in backend app/, tools/, or root test/ directories",
+      "violation_type": "PYTHON_MISPLACED",
+      "exceptions": ["__init__.py", "setup.py", "conftest.py"]
+    },
+    {
+      "name": "HTML files",
+      "file_patterns": ["*.html"],
+      "allowed_directories": [
+        "durable-code-app/frontend",
+        "durable-code-app/frontend/dist",
+        "durable-code-app/frontend/dist/**",
+        "docs"
+      ],
+      "prohibited_directories": [
+        ".",
+        "durable-code-app/backend",
+        "durable-code-app/backend/**",
+        "durable-code-app/frontend/src",
+        "durable-code-app/frontend/public",
+        "tools"
+      ],
+      "description": "HTML files should be React components, not standalone pages. Only index.html, docs, and build artifacts allowed.",
+      "violation_type": "HTML_MISPLACED",
+      "exceptions": ["index.html", "diagrams/*.html"]
+    },
+    {
+      "name": "TypeScript/React files",
+      "file_patterns": ["*.ts", "*.tsx"],
+      "allowed_directories": [
+        "durable-code-app/frontend/src",
+        "durable-code-app/frontend/src/**",
+        "durable-code-app/frontend/tests",
+        "durable-code-app/frontend/tests/**"
+      ],
+      "prohibited_directories": [
+        ".",
+        "durable-code-app/backend",
+        "durable-code-app/backend/**",
+        "tools",
+        "test"
+      ],
+      "description": "TypeScript/React files must be in frontend/src/ or frontend/tests/",
+      "violation_type": "FRONTEND_MISPLACED",
+      "exceptions": ["vite.config.ts", "vitest.config.ts", "tsconfig*.json"]
+    },
+    {
+      "name": "CSS files",
+      "file_patterns": ["*.css"],
+      "allowed_directories": [
+        "durable-code-app/frontend/src",
+        "durable-code-app/frontend/src/**",
+        "durable-code-app/frontend/public",
+        "durable-code-app/frontend/dist",
+        "durable-code-app/frontend/dist/**"
+      ],
+      "prohibited_directories": [
+        ".",
+        "durable-code-app/backend",
+        "durable-code-app/backend/**",
+        "tools",
+        "test"
+      ],
+      "description": "CSS files must be in frontend/src/ or frontend/public/",
+      "violation_type": "FRONTEND_MISPLACED",
+      "exceptions": []
+    },
+    {
+      "name": "Python test files",
+      "file_patterns": ["test_*.py", "*_test.py"],
+      "allowed_directories": [
+        "test",
+        "test/**"
+      ],
+      "prohibited_directories": [
+        ".",
+        "docs",
+        "tools",
+        "durable-code-app/backend/tests",
+        "durable-code-app/backend/tests/**",
+        "durable-code-app/frontend",
+        "durable-code-app/frontend/**"
+      ],
+      "description": "Python test files must be in root test/ directory",
+      "violation_type": "TEST_MISPLACED",
+      "exceptions": []
+    },
+    {
+      "name": "Frontend test files",
+      "file_patterns": ["*.test.js", "*.test.ts", "*.test.tsx", "*.spec.js", "*.spec.ts", "*.spec.tsx"],
+      "allowed_directories": [
+        "durable-code-app/frontend/src",
+        "durable-code-app/frontend/src/**",
+        "durable-code-app/frontend/tests",
+        "durable-code-app/frontend/tests/**"
+      ],
+      "prohibited_directories": [
+        ".",
+        "docs",
+        "tools",
+        "durable-code-app/backend",
+        "durable-code-app/backend/**",
+        "test",
+        "test/**"
+      ],
+      "description": "Frontend test files can be co-located with source files or in frontend/tests/",
+      "violation_type": "TEST_MISPLACED",
+      "exceptions": []
+    },
+    {
+      "name": "Build artifacts",
+      "file_patterns": ["*.js", "*.css", "*.map"],
+      "allowed_directories": [
+        "durable-code-app/frontend/src",
+        "durable-code-app/frontend/src/**",
+        "durable-code-app/frontend/dist",
+        "durable-code-app/frontend/dist/**",
+        "durable-code-app/frontend/node_modules",
+        "durable-code-app/frontend/node_modules/**"
+      ],
+      "prohibited_directories": [
+        "."
+      ],
+      "description": "Build artifacts should not be in root directory",
+      "violation_type": "BUILD_ARTIFACT",
+      "exceptions": ["eslint.config.js", "vite.config.js"]
+    }
+  ]
+}

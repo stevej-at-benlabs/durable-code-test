@@ -1,252 +1,294 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>AI Code Review Process - Sequence Diagram</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/raphael/2.3.0/raphael.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.13.6/underscore-min.js"></script>
     <script src="https://bramp.github.io/js-sequence-diagrams/js/sequence-diagram-min.js"></script>
     <style>
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            margin: 20px;
-            background-color: #f8f9fa;
-        }
-        .diagram-container {
-            background: white;
-            border-radius: 8px;
-            padding: 20px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            margin: 20px 0;
-        }
-        h1 {
-            color: #007bff;
-            text-align: center;
-            margin-bottom: 30px;
-        }
-        h2 {
-            color: #495057;
-            border-bottom: 2px solid #007bff;
-            padding-bottom: 8px;
-        }
-        .legend {
-            background: #fff;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            padding: 15px;
-            margin-top: 20px;
-        }
-        .legend h3 {
-            color: #2c3e50;
-            margin-top: 0;
-        }
-        .success { color: #28a745; font-weight: bold; }
-        .warning { color: #ffc107; font-weight: bold; }
-        .error { color: #dc3545; font-weight: bold; }
-        .info { color: #17a2b8; font-weight: bold; }
-        .alert-box {
-            background: #d1ecf1;
-            border: 1px solid #bee5eb;
-            border-radius: 5px;
-            padding: 15px;
-            margin: 20px 0;
-        }
-        .warning-box {
-            background: #fff3cd;
-            border: 1px solid #ffeaa7;
-            border-radius: 5px;
-            padding: 15px;
-            margin: 20px 0;
-        }
-        .success-box {
-            background: #d4edda;
-            border: 1px solid #c3e6cb;
-            border-radius: 5px;
-            padding: 15px;
-            margin: 20px 0;
-        }
-        .tabs {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 20px;
-            border-bottom: 2px solid #dee2e6;
-        }
-        .tab {
-            padding: 10px 20px;
-            background: #f8f9fa;
-            border: 1px solid #dee2e6;
-            border-bottom: none;
-            border-radius: 5px 5px 0 0;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-        .tab.active {
-            background: white;
-            border-bottom: 2px solid white;
-            margin-bottom: -2px;
-            font-weight: bold;
-            color: #007bff;
-        }
-        .tab:hover {
-            background: #e9ecef;
-        }
-        .scenario {
-            display: none;
-        }
-        .scenario.active {
-            display: block;
-        }
-        .sequence-diagram {
-            overflow-x: auto;
-            max-width: 100%;
-            text-align: center;
-            padding: 20px;
-            background: white;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-        }
-        .sequence-diagram svg {
-            max-width: 100%;
-            height: auto;
-        }
-        .breadcrumb {
-            padding: 12px 20px;
-            background: #f8f9fa;
-            border-radius: 6px;
-            margin: 20px;
-            margin-bottom: 20px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-size: 14px;
-        }
-        .breadcrumb a {
-            color: #007bff;
-            text-decoration: none;
-            transition: color 0.2s;
-        }
-        .breadcrumb a:hover {
-            color: #0056b3;
-            text-decoration: underline;
-        }
-        .breadcrumb-separator {
-            color: #6c757d;
-            margin: 0 4px;
-        }
-        .breadcrumb-current {
-            color: #495057;
-            font-weight: 600;
-        }
+      body {
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        margin: 20px;
+        background-color: #f8f9fa;
+      }
+      .diagram-container {
+        background: white;
+        border-radius: 8px;
+        padding: 20px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        margin: 20px 0;
+      }
+      h1 {
+        color: #007bff;
+        text-align: center;
+        margin-bottom: 30px;
+      }
+      h2 {
+        color: #495057;
+        border-bottom: 2px solid #007bff;
+        padding-bottom: 8px;
+      }
+      .legend {
+        background: #fff;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+        padding: 15px;
+        margin-top: 20px;
+      }
+      .legend h3 {
+        color: #2c3e50;
+        margin-top: 0;
+      }
+      .success {
+        color: #28a745;
+        font-weight: bold;
+      }
+      .warning {
+        color: #ffc107;
+        font-weight: bold;
+      }
+      .error {
+        color: #dc3545;
+        font-weight: bold;
+      }
+      .info {
+        color: #17a2b8;
+        font-weight: bold;
+      }
+      .alert-box {
+        background: #d1ecf1;
+        border: 1px solid #bee5eb;
+        border-radius: 5px;
+        padding: 15px;
+        margin: 20px 0;
+      }
+      .warning-box {
+        background: #fff3cd;
+        border: 1px solid #ffeaa7;
+        border-radius: 5px;
+        padding: 15px;
+        margin: 20px 0;
+      }
+      .success-box {
+        background: #d4edda;
+        border: 1px solid #c3e6cb;
+        border-radius: 5px;
+        padding: 15px;
+        margin: 20px 0;
+      }
+      .tabs {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 20px;
+        border-bottom: 2px solid #dee2e6;
+      }
+      .tab {
+        padding: 10px 20px;
+        background: #f8f9fa;
+        border: 1px solid #dee2e6;
+        border-bottom: none;
+        border-radius: 5px 5px 0 0;
+        cursor: pointer;
+        transition: all 0.3s;
+      }
+      .tab.active {
+        background: white;
+        border-bottom: 2px solid white;
+        margin-bottom: -2px;
+        font-weight: bold;
+        color: #007bff;
+      }
+      .tab:hover {
+        background: #e9ecef;
+      }
+      .scenario {
+        display: none;
+      }
+      .scenario.active {
+        display: block;
+      }
+      .sequence-diagram {
+        overflow-x: auto;
+        max-width: 100%;
+        text-align: center;
+        padding: 20px;
+        background: white;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+      }
+      .sequence-diagram svg {
+        max-width: 100%;
+        height: auto;
+      }
+      .breadcrumb {
+        padding: 12px 20px;
+        background: #f8f9fa;
+        border-radius: 6px;
+        margin: 20px;
+        margin-bottom: 20px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 14px;
+      }
+      .breadcrumb a {
+        color: #007bff;
+        text-decoration: none;
+        transition: color 0.2s;
+      }
+      .breadcrumb a:hover {
+        color: #0056b3;
+        text-decoration: underline;
+      }
+      .breadcrumb-separator {
+        color: #6c757d;
+        margin: 0 4px;
+      }
+      .breadcrumb-current {
+        color: #495057;
+        font-weight: 600;
+      }
     </style>
-</head>
-<body>
+  </head>
+  <body>
     <nav class="breadcrumb" aria-label="Breadcrumb navigation">
-        <a href="/">🏠 Home</a>
-        <span class="breadcrumb-separator">›</span>
-        <a href="/#doc-driven">Documentation</a>
-        <span class="breadcrumb-separator">›</span>
-        <span class="breadcrumb-current">AI Review Sequence Diagram</span>
+      <a href="/">🏠 Home</a>
+      <span class="breadcrumb-separator">›</span>
+      <a href="/#doc-driven">Documentation</a>
+      <span class="breadcrumb-separator">›</span>
+      <span class="breadcrumb-current">AI Review Sequence Diagram</span>
     </nav>
     <h1>🔄 AI Code Review Process - Sequence Diagram</h1>
 
     <div class="alert-box">
-        <h3 style="color: #0c5460; margin-top: 0;">📋 Overview</h3>
-        <p>This sequence diagram illustrates how AI-powered code reviews are integrated into the development workflow, including SOLID principle checks, design pattern validation, and automated quality assessments.</p>
+      <h3 style="color: #0c5460; margin-top: 0">📋 Overview</h3>
+      <p>
+        This sequence diagram illustrates how AI-powered code reviews are integrated
+        into the development workflow, including SOLID principle checks, design pattern
+        validation, and automated quality assessments.
+      </p>
     </div>
 
     <!-- Tab Navigation for Multiple Scenarios -->
     <div class="tabs">
-        <div class="tab active" onclick="showScenario('scenario1')">Scenario 1: Pull Request Review</div>
-        <div class="tab" onclick="showScenario('scenario2')">Scenario 2: SOLID Principle Check</div>
-        <div class="tab" onclick="showScenario('scenario3')">Scenario 3: Custom Linting Flow</div>
+      <div class="tab active" onclick="showScenario('scenario1')">
+        Scenario 1: Pull Request Review
+      </div>
+      <div class="tab" onclick="showScenario('scenario2')">
+        Scenario 2: SOLID Principle Check
+      </div>
+      <div class="tab" onclick="showScenario('scenario3')">
+        Scenario 3: Custom Linting Flow
+      </div>
     </div>
 
     <!-- Scenario 1: Pull Request Review -->
     <div id="scenario1" class="scenario active">
-        <h2>Scenario 1: Complete Pull Request Review Flow</h2>
+      <h2>Scenario 1: Complete Pull Request Review Flow</h2>
 
-        <div class="diagram-container">
-            <div class="sequence-diagram" id="diagram1"></div>
-        </div>
+      <div class="diagram-container">
+        <div class="sequence-diagram" id="diagram1"></div>
+      </div>
     </div>
 
     <!-- Scenario 2: SOLID Principle Check -->
     <div id="scenario2" class="scenario">
-        <h2>Scenario 2: SOLID Principle Validation</h2>
+      <h2>Scenario 2: SOLID Principle Validation</h2>
 
-        <div class="diagram-container">
-            <div class="sequence-diagram" id="diagram2"></div>
-        </div>
+      <div class="diagram-container">
+        <div class="sequence-diagram" id="diagram2"></div>
+      </div>
     </div>
 
     <!-- Scenario 3: Custom Linting -->
     <div id="scenario3" class="scenario">
-        <h2>Scenario 3: Custom Linting Workflow</h2>
+      <h2>Scenario 3: Custom Linting Workflow</h2>
 
-        <div class="diagram-container">
-            <div class="sequence-diagram" id="diagram3"></div>
-        </div>
+      <div class="diagram-container">
+        <div class="sequence-diagram" id="diagram3"></div>
+      </div>
     </div>
 
     <!-- Legend Section -->
     <div class="legend">
-        <h3>Key Components</h3>
-        <ul>
-            <li><span class="info">Developer:</span> Software engineer making code changes</li>
-            <li><span class="info">Git/GitHub:</span> Version control and repository hosting</li>
-            <li><span class="info">GitHub Actions:</span> CI/CD automation platform</li>
-            <li><span class="info">AI Review Service:</span> Claude/GPT-4 for subjective code analysis</li>
-            <li><span class="info">Linters:</span> ESLint, Ruff, and custom linting tools</li>
-            <li><span class="info">Test Suite:</span> Unit, integration, and end-to-end tests</li>
-        </ul>
+      <h3>Key Components</h3>
+      <ul>
+        <li>
+          <span class="info">Developer:</span> Software engineer making code changes
+        </li>
+        <li>
+          <span class="info">Git/GitHub:</span> Version control and repository hosting
+        </li>
+        <li><span class="info">GitHub Actions:</span> CI/CD automation platform</li>
+        <li>
+          <span class="info">AI Review Service:</span> Claude/GPT-4 for subjective code
+          analysis
+        </li>
+        <li>
+          <span class="info">Linters:</span> ESLint, Ruff, and custom linting tools
+        </li>
+        <li>
+          <span class="info">Test Suite:</span> Unit, integration, and end-to-end tests
+        </li>
+      </ul>
 
-        <h3>Message Flow Patterns</h3>
-        <ul>
-            <li><span class="success">Synchronous Calls:</span> Direct request-response for immediate validation</li>
-            <li><span class="warning">Asynchronous Processing:</span> Background jobs for complex analysis</li>
-            <li><span class="error">Error Handling:</span> Failure recovery and retry mechanisms</li>
-        </ul>
+      <h3>Message Flow Patterns</h3>
+      <ul>
+        <li>
+          <span class="success">Synchronous Calls:</span> Direct request-response for
+          immediate validation
+        </li>
+        <li>
+          <span class="warning">Asynchronous Processing:</span> Background jobs for
+          complex analysis
+        </li>
+        <li>
+          <span class="error">Error Handling:</span> Failure recovery and retry
+          mechanisms
+        </li>
+      </ul>
 
-        <h3>Implementation Notes</h3>
-        <ul>
-            <li>AI reviews are triggered automatically on every pull request</li>
-            <li>SOLID principle checks use GPT-4 API through GitHub Actions</li>
-            <li>Custom linters run as pre-commit hooks and in CI/CD pipeline</li>
-            <li>All checks must pass before merge is allowed</li>
-        </ul>
+      <h3>Implementation Notes</h3>
+      <ul>
+        <li>AI reviews are triggered automatically on every pull request</li>
+        <li>SOLID principle checks use GPT-4 API through GitHub Actions</li>
+        <li>Custom linters run as pre-commit hooks and in CI/CD pipeline</li>
+        <li>All checks must pass before merge is allowed</li>
+      </ul>
     </div>
 
     <!-- Success Criteria -->
     <div class="success-box">
-        <h3 style="color: #155724; margin-top: 0;">✅ Success Criteria</h3>
-        <ul style="margin-bottom: 0;">
-            <li>All automated tests pass (unit, integration, e2e)</li>
-            <li>SOLID principles are validated by AI</li>
-            <li>No custom linting violations detected</li>
-            <li>Code coverage meets threshold (>80%)</li>
-            <li>Documentation is complete and accurate</li>
-        </ul>
+      <h3 style="color: #155724; margin-top: 0">✅ Success Criteria</h3>
+      <ul style="margin-bottom: 0">
+        <li>All automated tests pass (unit, integration, e2e)</li>
+        <li>SOLID principles are validated by AI</li>
+        <li>No custom linting violations detected</li>
+        <li>Code coverage meets threshold (>80%)</li>
+        <li>Documentation is complete and accurate</li>
+      </ul>
     </div>
 
     <!-- Warning/Considerations -->
     <div class="warning-box">
-        <h3 style="color: #856404; margin-top: 0;">⚠️ Important Considerations</h3>
-        <ul style="margin-bottom: 0;">
-            <li>AI reviews may have API rate limits - plan accordingly</li>
-            <li>Custom linters should be fast to avoid blocking development</li>
-            <li>False positives should be minimized through careful rule tuning</li>
-            <li>Human review is still valuable for context-specific decisions</li>
-        </ul>
+      <h3 style="color: #856404; margin-top: 0">⚠️ Important Considerations</h3>
+      <ul style="margin-bottom: 0">
+        <li>AI reviews may have API rate limits - plan accordingly</li>
+        <li>Custom linters should be fast to avoid blocking development</li>
+        <li>False positives should be minimized through careful rule tuning</li>
+        <li>Human review is still valuable for context-specific decisions</li>
+      </ul>
     </div>
 
     <script>
-        // Track rendered diagrams to prevent duplicates
-        const renderedDiagrams = {};
+      // Track rendered diagrams to prevent duplicates
+      const renderedDiagrams = {};
 
-        // Define diagram data
-        const diagrams = {
-            diagram1: `
+      // Define diagram data
+      const diagrams = {
+        diagram1: `
 Title: Pull Request Review Flow
 
 Developer->Git: git push origin feature-branch
@@ -286,7 +328,7 @@ GitHub->Reviewer: Notify for Review
 Reviewer->GitHub: Approve PR
 GitHub->Git: Merge to Main
             `,
-            diagram2: `
+        diagram2: `
 Title: SOLID Principle Validation
 
 Developer->GitHub: Push Code Changes
@@ -322,7 +364,7 @@ Note left of GitHub: If no violations
 
 GitHub->Developer: ✅ SOLID Principles Verified
             `,
-            diagram3: `
+        diagram3: `
 Title: Custom Linting Workflow
 
 Developer->IDE: Write Code
@@ -356,69 +398,69 @@ CustomLinters-->GitHubActions: CI Results
 GitHubActions->GitHub: Update Status
 
 Note right of GitHub: Double validation ensures consistency
-            `
+            `,
+      };
+
+      function renderDiagram(diagramId, diagramText) {
+        const element = document.getElementById(diagramId);
+        if (element && diagramText.trim() !== '') {
+          // Check if already rendered
+          if (renderedDiagrams[diagramId]) {
+            console.log('Diagram already rendered:', diagramId);
+            return;
+          }
+
+          try {
+            // Clear any existing content first
+            element.innerHTML = '';
+
+            console.log('Rendering diagram:', diagramId);
+            const diagram = Diagram.parse(diagramText);
+            diagram.drawSVG(element, { theme: 'simple' });
+
+            // Mark as rendered
+            renderedDiagrams[diagramId] = true;
+          } catch (e) {
+            console.error('Error rendering diagram:', e);
+            element.innerHTML = '<p style="color: red;">Error: ' + e.message + '</p>';
+          }
+        }
+      }
+
+      function showScenario(scenarioId) {
+        // Hide all scenarios
+        document.querySelectorAll('.scenario').forEach((s) => {
+          s.classList.remove('active');
+        });
+
+        // Remove active class from all tabs
+        document.querySelectorAll('.tab').forEach((t) => {
+          t.classList.remove('active');
+        });
+
+        // Show selected scenario
+        document.getElementById(scenarioId).classList.add('active');
+
+        // Mark corresponding tab as active
+        event.target.classList.add('active');
+
+        // Render the appropriate diagram
+        const diagramMap = {
+          scenario1: 'diagram1',
+          scenario2: 'diagram2',
+          scenario3: 'diagram3',
         };
 
-        function renderDiagram(diagramId, diagramText) {
-            const element = document.getElementById(diagramId);
-            if (element && diagramText.trim() !== '') {
-                // Check if already rendered
-                if (renderedDiagrams[diagramId]) {
-                    console.log('Diagram already rendered:', diagramId);
-                    return;
-                }
-
-                try {
-                    // Clear any existing content first
-                    element.innerHTML = '';
-
-                    console.log('Rendering diagram:', diagramId);
-                    const diagram = Diagram.parse(diagramText);
-                    diagram.drawSVG(element, {theme: 'simple'});
-
-                    // Mark as rendered
-                    renderedDiagrams[diagramId] = true;
-                } catch (e) {
-                    console.error('Error rendering diagram:', e);
-                    element.innerHTML = '<p style="color: red;">Error: ' + e.message + '</p>';
-                }
-            }
+        const diagramId = diagramMap[scenarioId];
+        if (diagramId && diagrams[diagramId]) {
+          renderDiagram(diagramId, diagrams[diagramId]);
         }
+      }
 
-        function showScenario(scenarioId) {
-            // Hide all scenarios
-            document.querySelectorAll('.scenario').forEach(s => {
-                s.classList.remove('active');
-            });
-
-            // Remove active class from all tabs
-            document.querySelectorAll('.tab').forEach(t => {
-                t.classList.remove('active');
-            });
-
-            // Show selected scenario
-            document.getElementById(scenarioId).classList.add('active');
-
-            // Mark corresponding tab as active
-            event.target.classList.add('active');
-
-            // Render the appropriate diagram
-            const diagramMap = {
-                'scenario1': 'diagram1',
-                'scenario2': 'diagram2',
-                'scenario3': 'diagram3'
-            };
-
-            const diagramId = diagramMap[scenarioId];
-            if (diagramId && diagrams[diagramId]) {
-                renderDiagram(diagramId, diagrams[diagramId]);
-            }
-        }
-
-        // Initialize the first diagram when page loads
-        document.addEventListener('DOMContentLoaded', function() {
-            renderDiagram('diagram1', diagrams.diagram1);
-        });
+      // Initialize the first diagram when page loads
+      document.addEventListener('DOMContentLoaded', function () {
+        renderDiagram('diagram1', diagrams.diagram1);
+      });
     </script>
-</body>
+  </body>
 </html>

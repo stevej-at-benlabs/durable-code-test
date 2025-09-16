@@ -78,15 +78,48 @@ class FilePlacementViolation:
 class FilePlacementLinter:
     """Analyzes project structure for file placement violations."""
 
-    def __init__(self, project_root: str):
+    def __init__(self, project_root: str, config_file: Optional[str] = None):
         self.project_root = Path(project_root).resolve()
         self.violations: List[FilePlacementViolation] = []
-        self.rules = self._init_placement_rules()
+        self.config_file = config_file or self.project_root / '.file-placement-rules.json'
+        self.rules = self._load_placement_rules()
 
-    def _init_placement_rules(self) -> List[PlacementRule]:
-        """Initialize file placement rules based on project standards."""
+    def _load_placement_rules(self) -> List[PlacementRule]:
+        """Load file placement rules from configuration file or use defaults."""
+        config_path = Path(self.config_file)
+
+        # Try to load from config file
+        if config_path.exists():
+            try:
+                with open(config_path, 'r') as f:
+                    config = json.load(f)
+                return self._parse_rules_from_config(config)
+            except (json.JSONDecodeError, KeyError) as e:
+                print(f"Warning: Failed to load config from {config_path}: {e}")
+                print("Falling back to default rules")
+
+        # Fallback to default rules if config doesn't exist
+        return self._get_default_rules()
+
+    def _parse_rules_from_config(self, config: dict) -> List[PlacementRule]:
+        """Parse rules from configuration dictionary."""
+        rules = []
+        for rule_config in config.get('rules', []):
+            violation_type = ViolationType[rule_config['violation_type']]
+            rule = PlacementRule(
+                file_patterns=rule_config['file_patterns'],
+                allowed_directories=rule_config['allowed_directories'],
+                prohibited_directories=rule_config['prohibited_directories'],
+                description=rule_config['description'],
+                violation_type=violation_type,
+                exceptions=rule_config.get('exceptions', [])
+            )
+            rules.append(rule)
+        return rules
+
+    def _get_default_rules(self) -> List[PlacementRule]:
+        """Get default placement rules (fallback when config file is not available)."""
         return [
-            # Python source files
             PlacementRule(
                 file_patterns=["*.py"],
                 allowed_directories=[
@@ -98,144 +131,14 @@ class FilePlacementLinter:
                     "test/**"
                 ],
                 prohibited_directories=[
-                    ".",  # Root directory
+                    ".",
                     "docs",
                     "durable-code-app/frontend",
-                    "durable-code-app/frontend/**",
-                    "durable-code-app/backend/tests",  # Backend-specific tests not allowed
-                    "durable-code-app/backend/tests/**"
+                    "durable-code-app/frontend/**"
                 ],
                 description="Python files must be in backend app/, tools/, or root test/ directories",
                 violation_type=ViolationType.PYTHON_MISPLACED,
                 exceptions=["__init__.py", "setup.py", "conftest.py"]
-            ),
-
-            # HTML files - Restrict standalone HTML pages, encourage React components
-            PlacementRule(
-                file_patterns=["*.html"],
-                allowed_directories=[
-                    "durable-code-app/frontend",      # Allow index.html in frontend root (Vite requirement)
-                    "durable-code-app/frontend/dist", # Built files only
-                    "durable-code-app/frontend/dist/**",
-                    "docs"                            # Documentation only
-                ],
-                prohibited_directories=[
-                    ".",  # Root directory
-                    "durable-code-app/backend",
-                    "durable-code-app/backend/**",
-                    "durable-code-app/frontend/src",
-                    "durable-code-app/frontend/public", # Discourage standalone HTML in public/
-                    "tools"
-                ],
-                description="HTML files should be React components, not standalone pages. Only index.html, docs, and build artifacts allowed.",
-                violation_type=ViolationType.HTML_MISPLACED,
-                exceptions=[
-                    "index.html",                     # Vite entry point
-                    "diagrams/*.html"                 # Allow diagram files for now (to be migrated)
-                ]
-            ),
-
-            # TypeScript/React files
-            PlacementRule(
-                file_patterns=["*.ts", "*.tsx"],
-                allowed_directories=[
-                    "durable-code-app/frontend/src",
-                    "durable-code-app/frontend/src/**",
-                    "durable-code-app/frontend/tests",
-                    "durable-code-app/frontend/tests/**"
-                ],
-                prohibited_directories=[
-                    ".",  # Root directory
-                    "durable-code-app/backend",
-                    "durable-code-app/backend/**",
-                    "tools",
-                    "test"
-                ],
-                description="TypeScript/React files must be in frontend/src/ or frontend/tests/",
-                violation_type=ViolationType.FRONTEND_MISPLACED,
-                exceptions=["vite.config.ts", "vitest.config.ts", "tsconfig*.json"]
-            ),
-
-            # CSS files
-            PlacementRule(
-                file_patterns=["*.css"],
-                allowed_directories=[
-                    "durable-code-app/frontend/src",
-                    "durable-code-app/frontend/src/**",
-                    "durable-code-app/frontend/public",
-                    "durable-code-app/frontend/dist",
-                    "durable-code-app/frontend/dist/**"
-                ],
-                prohibited_directories=[
-                    ".",  # Root directory
-                    "durable-code-app/backend",
-                    "durable-code-app/backend/**",
-                    "tools",
-                    "test"
-                ],
-                description="CSS files must be in frontend/src/ or frontend/public/",
-                violation_type=ViolationType.FRONTEND_MISPLACED
-            ),
-
-            # Test files - Python tests in root test/, Frontend tests can be co-located or in tests/
-            PlacementRule(
-                file_patterns=["test_*.py", "*_test.py"],  # Python test files only
-                allowed_directories=[
-                    "test",
-                    "test/**"
-                ],
-                prohibited_directories=[
-                    ".",  # Root directory
-                    "docs",
-                    "tools",
-                    "durable-code-app/backend/tests",  # Backend-specific tests prohibited
-                    "durable-code-app/backend/tests/**",
-                    "durable-code-app/frontend",
-                    "durable-code-app/frontend/**"
-                ],
-                description="Python test files must be in root test/ directory",
-                violation_type=ViolationType.TEST_MISPLACED
-            ),
-
-            # Frontend test files - allow co-location with source or in tests/ directory
-            PlacementRule(
-                file_patterns=["*.test.js", "*.test.ts", "*.test.tsx", "*.spec.js", "*.spec.ts", "*.spec.tsx"],
-                allowed_directories=[
-                    "durable-code-app/frontend/src",      # Co-located with source
-                    "durable-code-app/frontend/src/**",   # Co-located with source in subdirs
-                    "durable-code-app/frontend/tests",    # Centralized test directory
-                    "durable-code-app/frontend/tests/**"  # All subdirs in tests
-                ],
-                prohibited_directories=[
-                    ".",  # Root directory
-                    "docs",
-                    "tools",
-                    "durable-code-app/backend",
-                    "durable-code-app/backend/**",
-                    "test",  # Root test/ is for Python tests only
-                    "test/**"
-                ],
-                description="Frontend test files can be co-located with source files or in frontend/tests/",
-                violation_type=ViolationType.TEST_MISPLACED
-            ),
-
-            # Build artifacts that shouldn't be in root
-            PlacementRule(
-                file_patterns=["*.js", "*.css", "*.map"],
-                allowed_directories=[
-                    "durable-code-app/frontend/src",
-                    "durable-code-app/frontend/src/**",
-                    "durable-code-app/frontend/dist",
-                    "durable-code-app/frontend/dist/**",
-                    "durable-code-app/frontend/node_modules",
-                    "durable-code-app/frontend/node_modules/**"
-                ],
-                prohibited_directories=[
-                    ".",  # Root directory
-                ],
-                description="Build artifacts should not be in root directory",
-                violation_type=ViolationType.BUILD_ARTIFACT,
-                exceptions=["eslint.config.js", "vite.config.js"]
             )
         ]
 

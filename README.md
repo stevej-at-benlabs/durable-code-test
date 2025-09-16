@@ -18,12 +18,14 @@ A demonstration project showcasing AI-assisted development with strong coding st
 ## Tech Stack
 
 ### Frontend
+
 - React 18
 - TypeScript
 - Vite
 - CSS Modules
 
 ### Backend
+
 - Python 3.11+
 - FastAPI
 - Poetry
@@ -32,11 +34,13 @@ A demonstration project showcasing AI-assisted development with strong coding st
 ## Getting Started
 
 ### Prerequisites
+
 - Node.js 18+
 - Python 3.11+
 - Poetry
 
 ### Backend Setup
+
 ```bash
 cd durable-code-app/backend
 poetry install
@@ -44,6 +48,7 @@ poetry run uvicorn app.main:app --reload
 ```
 
 ### Frontend Setup
+
 ```bash
 cd durable-code-app/frontend
 npm install
@@ -53,6 +58,7 @@ npm run dev
 ## Development Standards
 
 All code in this project follows strict standards defined in `/docs/STANDARDS.md`. These standards ensure:
+
 - Consistent code style
 - Comprehensive testing
 - Security best practices

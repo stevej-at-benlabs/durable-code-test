@@ -3,15 +3,15 @@ name: Breadcrumb Navigation Check
 on:
   pull_request:
     paths:
-      - '**/*.html'
-      - 'tools/design-linters/breadcrumb_linter.py'
-      - '.github/workflows/breadcrumb-check.yml'
+      - "**/*.html"
+      - "tools/design-linters/breadcrumb_linter.py"
+      - ".github/workflows/breadcrumb-check.yml"
   push:
     branches: [main, develop]
     paths:
-      - '**/*.html'
-      - 'tools/design-linters/breadcrumb_linter.py'
-      - '.github/workflows/breadcrumb-check.yml'
+      - "**/*.html"
+      - "tools/design-linters/breadcrumb_linter.py"
+      - ".github/workflows/breadcrumb-check.yml"
 
 jobs:
   breadcrumb-check:
@@ -25,7 +25,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
-          python-version: '3.11'
+          python-version: "3.11"
 
       - name: Run breadcrumb linter
         run: |

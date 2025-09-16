@@ -1,6 +1,7 @@
 # New Code Command
 
 ## Purpose
+
 This command ensures all new code adheres to the established development standards before implementation.
 
 ## Pre-Implementation Checklist
@@ -8,6 +9,7 @@ This command ensures all new code adheres to the established development standar
 Before writing any new code, I will:
 
 ### 1. Review Documentation
+
 - Read all documents in the `/docs/` folder to understand:
   - Development standards and best practices (`STANDARDS.md`)
   - Design principles and linting requirements (`DESIGN_PRINCIPLES_LINTING.md`)
@@ -18,12 +20,14 @@ Before writing any new code, I will:
 - Note specific requirements for the language/framework being used
 
 ### 2. Analyze Existing Codebase
+
 - Check existing code patterns in similar files
 - Identify naming conventions in use
 - Review import structures and dependencies
 - Understand the current testing approach
 
 ### 3. Plan Implementation
+
 - Define the component/module structure
 - Identify required types/interfaces
 - Plan error handling approach
@@ -32,9 +36,10 @@ Before writing any new code, I will:
 ## Implementation Process
 
 ### For Python Backend Code:
+
 1. **Structure Check**
    - Verify proper module placement according to project structure
-   - Ensure __init__.py files exist where needed
+   - Ensure **init**.py files exist where needed
 
 2. **Code Standards**
    - Apply Black formatting (88 char line length)
@@ -60,6 +65,7 @@ Before writing any new code, I will:
    - Use parameterized queries
 
 ### For React Frontend Code:
+
 1. **Component Creation**
    - Place in appropriate directory (components/pages/hooks)
    - Use functional components with hooks
@@ -93,6 +99,7 @@ Before writing any new code, I will:
 After writing code, verify:
 
 ### Code Quality
+
 - [ ] Runs without errors
 - [ ] Passes all linting checks
 - [ ] Formatted correctly
@@ -100,18 +107,21 @@ After writing code, verify:
 - [ ] No console.logs or debugging code
 
 ### Testing
+
 - [ ] All tests pass
 - [ ] Coverage meets requirements
 - [ ] Edge cases handled
 - [ ] Error scenarios tested
 
 ### Documentation
+
 - [ ] Functions/components documented
 - [ ] Complex logic explained
 - [ ] API endpoints documented
 - [ ] README updated if needed
 
 ### Security
+
 - [ ] No exposed secrets
 - [ ] Input validation present
 - [ ] Error messages don't leak sensitive info
@@ -122,18 +132,21 @@ After writing code, verify:
 When this command is invoked, I will:
 
 1. **First Step - Documentation Review**
+
    ```
    Read all files in /docs/ folder
    Focus on standards, principles, and requirements relevant to task
    ```
 
 2. **Second Step - Context Analysis**
+
    ```
    Analyze existing code in the target directory
    Check for patterns and conventions
    ```
 
 3. **Third Step - Implementation**
+
    ```
    Write code following all identified standards
    Include proper error handling
@@ -141,6 +154,7 @@ When this command is invoked, I will:
    ```
 
 4. **Fourth Step - Testing**
+
    ```
    Write and run tests
    Verify coverage requirements
@@ -157,6 +171,7 @@ When this command is invoked, I will:
 ## Error Handling
 
 If standards are not met:
+
 - Identify specific violations
 - Fix issues before proceeding
 - Re-run validation checks
@@ -165,6 +180,7 @@ If standards are not met:
 ## Continuous Improvement
 
 After each use:
+
 - Note any missing standards
 - Update STANDARDS.md if needed
 - Refine this command based on experience

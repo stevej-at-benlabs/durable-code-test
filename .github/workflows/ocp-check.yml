@@ -8,14 +8,14 @@ on:
   pull_request:
     types: [opened, synchronize, reopened]
     paths:
-      - '**.py'
-      - '**.js'
-      - '**.ts'
-      - '**.java'
-      - '**.cs'
-      - '**.go'
-      - '**.rb'
-      - '**.php'
+      - "**.py"
+      - "**.js"
+      - "**.ts"
+      - "**.java"
+      - "**.cs"
+      - "**.go"
+      - "**.rb"
+      - "**.php"
 
 jobs:
   check-ocp:
@@ -28,12 +28,12 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0  # Fetch all history for proper diff analysis
+          fetch-depth: 0 # Fetch all history for proper diff analysis
 
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.11'
+          python-version: "3.11"
 
       - name: Cache pip packages
         uses: actions/cache@v4

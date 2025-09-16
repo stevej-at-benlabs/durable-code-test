@@ -17,6 +17,7 @@ import {
   createLinkReportSummary,
   validateExpectedLinks,
   expectedPublicLinks,
+  DefaultReportGenerator,
 } from './link-validator';
 import { mockFetch, mockFailedFetch } from '../test-setup';
 

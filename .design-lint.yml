@@ -3,7 +3,7 @@
 # Single Responsibility Principle
 srp:
   max_methods_per_class: 7
-  max_method_groups: 3  # Different responsibility groups
+  max_method_groups: 3 # Different responsibility groups
   max_class_lines: 200
   max_instance_variables: 7
   max_dependencies: 5
@@ -11,8 +11,8 @@ srp:
 
   # Naming patterns that indicate SRP violations
   violation_patterns:
-    - "and"  # UserManagerAndValidator
-    - "or"   # SaveOrUpdate
+    - "and" # UserManagerAndValidator
+    - "or" # SaveOrUpdate
     - "with" # ProcessWithValidation
 
   # Method prefixes for responsibility detection
@@ -77,16 +77,16 @@ dip:
 # General Design Metrics
 metrics:
   # Coupling metrics
-  max_afferent_coupling: 7  # Classes depending on this
-  max_efferent_coupling: 5  # Classes this depends on
+  max_afferent_coupling: 7 # Classes depending on this
+  max_efferent_coupling: 5 # Classes this depends on
   max_coupling_between_objects: 4
 
   # Cohesion metrics
   min_cohesion_ratio: 0.7
-  max_lcom: 1  # Lack of Cohesion of Methods
+  max_lcom: 1 # Lack of Cohesion of Methods
 
   # Complexity metrics
-  max_cyclomatic_complexity: 5  # Already enforced by Radon
+  max_cyclomatic_complexity: 5 # Already enforced by Radon
   max_cognitive_complexity: 7
   max_nesting_depth: 3
 
@@ -159,7 +159,7 @@ exclude:
 
 # Reporting
 reporting:
-  format: "json"  # Options: json, html, markdown, console
+  format: "json" # Options: json, html, markdown, console
   output_file: "design-lint-report.json"
   include_metrics: true
   include_suggestions: true

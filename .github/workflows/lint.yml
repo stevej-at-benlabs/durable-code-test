@@ -7,9 +7,9 @@ on:
     branches: [main]
 
 env:
-  PYTHON_VERSION: '3.11'
-  NODE_VERSION: '20'
-  POETRY_VERSION: '1.7.1'
+  PYTHON_VERSION: "3.11"
+  NODE_VERSION: "20"
+  POETRY_VERSION: "1.7.1"
 
 jobs:
   python-quality:
@@ -67,7 +67,7 @@ jobs:
 
       - name: Run Pylint
         working-directory: ./durable-code-app/backend
-        run: poetry run pylint app || true  # Warning only for now
+        run: poetry run pylint app || true # Warning only for now
 
       - name: Run Bandit (security linting)
         working-directory: ./durable-code-app/backend
@@ -85,7 +85,7 @@ jobs:
 
       - name: Check dependencies with Safety
         working-directory: ./durable-code-app/backend
-        run: poetry run safety check || true  # Warning only
+        run: poetry run safety check || true # Warning only
 
       - name: Generate complexity report
         working-directory: ./durable-code-app/backend
@@ -141,7 +141,7 @@ jobs:
 
       - name: Security audit
         working-directory: ./durable-code-app/frontend
-        run: npm audit --audit-level=moderate || true  # Warning only
+        run: npm audit --audit-level=moderate || true # Warning only
 
       - name: Generate frontend report
         if: always()
