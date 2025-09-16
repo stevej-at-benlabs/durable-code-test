@@ -1,3 +1,16 @@
+/**
+ * Purpose: Particle system for animated background effects with canvas rendering
+ * Scope: UI animation utilities for creating interactive particle backgrounds
+ * Overview: Complete particle system implementation providing physics simulation, rendering,
+ *     and mouse interaction for animated background effects. Includes configurable particle
+ *     generation, movement physics, connection drawing between nearby particles, and mouse
+ *     tracking for interactive effects. Uses strategy patterns for extensible rendering
+ *     and physics calculations with dependency injection support for testing.
+ * Dependencies: HTML5 Canvas API for rendering, requestAnimationFrame for animation
+ * Exports: Particle interface, ParticleConfig, RenderConfig, ParticleFactory, ParticlePhysics, ParticleRenderer, MouseTracker
+ * Interfaces: Strategy interfaces for rendering and physics, configuration objects for customization
+ * State/Behavior: Maintains particle states, handles continuous animation loop, tracks mouse position
+ */
 export interface Particle {
   x: number;
   y: number;

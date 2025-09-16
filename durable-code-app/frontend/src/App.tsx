@@ -1,6 +1,15 @@
 /**
- * Durable Code - AI-Ready Project Framework
- * A comprehensive approach to building maintainable, scalable software with AI assistance
+ * Purpose: Main application component providing tabbed interface for durable code framework
+ * Scope: Root component for the React application displaying different aspects of AI-ready development
+ * Overview: Homepage component that renders a comprehensive dashboard for the Durable Code framework.
+ *     Provides tabbed navigation between Infrastructure, Planning, Building, Quality Assurance,
+ *     and Maintenance sections. Each tab demonstrates different aspects of AI-ready software
+ *     development including SOLID principles, design patterns, testing strategies, and maintenance
+ *     practices. Includes particle background animation, URL-based navigation, and responsive design.
+ * Dependencies: React (useState, useEffect), React Router, custom tab components, ParticleBackground
+ * Exports: HomePage component (default export), TabName type, TabContent interface
+ * Props/Interfaces: No external props - self-contained root component
+ * State/Behavior: Manages active tab state, URL synchronization, and navigation breadcrumbs
  */
 import { useState, useEffect } from 'react';
 import { Routes, Route } from 'react-router-dom';

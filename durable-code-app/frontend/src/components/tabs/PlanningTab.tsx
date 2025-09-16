@@ -1,3 +1,15 @@
+/**
+ * Purpose: Planning tab component showcasing project planning and documentation strategies
+ * Scope: React component for displaying planning documents and development workflows
+ * Overview: Tab component that presents planning resources for AI-assisted development
+ *     including development flow diagrams, AI review sequences, and implementation
+ *     timelines. Provides links to visual documentation and planning materials that
+ *     help teams organize and execute AI-ready software projects effectively.
+ * Dependencies: React (ReactElement)
+ * Exports: PlanningTab function component
+ * Props/Interfaces: No props - self-contained tab content
+ * State/Behavior: Static content display with links to planning resources and diagrams
+ */
 import type { ReactElement } from 'react';
 
 export function PlanningTab(): ReactElement {

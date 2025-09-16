@@ -81,7 +81,7 @@ class FileHeaderLinter:
                 r'^/\*\*[\s\S]*?\*/',
                 re.MULTILINE
             ),
-            'field_pattern': re.compile(r'^\s\*\s(\w+):\s*(.+)$'),
+            'field_pattern': re.compile(r'^\s\*\s([A-Za-z][A-Za-z0-9 /_-]*?):\s*(.+)$'),
             'comment_prefix': '/**',
             'header_end_marker': '*/'
         },
@@ -90,7 +90,7 @@ class FileHeaderLinter:
                 r'^/\*\*[\s\S]*?\*/',
                 re.MULTILINE
             ),
-            'field_pattern': re.compile(r'^\s\*\s(\w+):\s*(.+)$'),
+            'field_pattern': re.compile(r'^\s\*\s([A-Za-z][A-Za-z0-9 /_-]*?):\s*(.+)$'),
             'comment_prefix': '/**',
             'header_end_marker': '*/'
         },
@@ -99,7 +99,7 @@ class FileHeaderLinter:
                 r'^/\*\*[\s\S]*?\*/',
                 re.MULTILINE
             ),
-            'field_pattern': re.compile(r'^\s\*\s(\w+):\s*(.+)$'),
+            'field_pattern': re.compile(r'^\s\*\s([A-Za-z][A-Za-z0-9 /_-]*?):\s*(.+)$'),
             'comment_prefix': '/**',
             'header_end_marker': '*/'
         },
@@ -108,7 +108,7 @@ class FileHeaderLinter:
                 r'^/\*\*[\s\S]*?\*/',
                 re.MULTILINE
             ),
-            'field_pattern': re.compile(r'^\s\*\s(\w+):\s*(.+)$'),
+            'field_pattern': re.compile(r'^\s\*\s([A-Za-z][A-Za-z0-9 /_-]*?):\s*(.+)$'),
             'comment_prefix': '/**',
             'header_end_marker': '*/'
         },

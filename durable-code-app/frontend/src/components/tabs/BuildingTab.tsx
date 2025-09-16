@@ -1,3 +1,15 @@
+/**
+ * Purpose: Building tab component showcasing development tools and coding practices
+ * Scope: React component for displaying development methodologies and tool integrations
+ * Overview: Tab component that demonstrates the building phase of AI-ready development
+ *     including code generation tools, development workflows, testing strategies, and
+ *     integration practices. Shows how AI tools can enhance productivity while maintaining
+ *     code quality and following established development patterns and best practices.
+ * Dependencies: React (ReactElement)
+ * Exports: BuildingTab function component
+ * Props/Interfaces: No props - self-contained tab content
+ * State/Behavior: Static content display with development tools and methodology examples
+ */
 import type { ReactElement } from 'react';
 import { Link } from 'react-router-dom';
 

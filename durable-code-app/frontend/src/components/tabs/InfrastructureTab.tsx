@@ -1,3 +1,15 @@
+/**
+ * Purpose: Infrastructure tab component showcasing AI-ready project setup and architecture
+ * Scope: React component for displaying infrastructure best practices and project structure
+ * Overview: Tab component that demonstrates infrastructure setup for AI-assisted development
+ *     including project organization, tooling configuration, CI/CD setup, and development
+ *     environment preparation. Shows examples of proper project structure, dependency
+ *     management, and integration with AI development tools and workflows.
+ * Dependencies: React (ReactElement)
+ * Exports: InfrastructureTab function component
+ * Props/Interfaces: No props - self-contained tab content
+ * State/Behavior: Static content display with infrastructure examples and best practices
+ */
 import type { ReactElement } from 'react';
 
 export function InfrastructureTab(): ReactElement {
