@@ -21,6 +21,52 @@ export interface RenderConfig {
   connectionLineWidth: number;
 }
 
+export interface RenderStrategy {
+  drawParticle(ctx: CanvasRenderingContext2D, particle: Particle): void;
+  drawConnections(
+    ctx: CanvasRenderingContext2D,
+    particles: Particle[],
+    config: RenderConfig,
+  ): void;
+}
+
+export class CircleRenderStrategy implements RenderStrategy {
+  drawParticle(ctx: CanvasRenderingContext2D, particle: Particle): void {
+    ctx.beginPath();
+    ctx.arc(particle.x, particle.y, particle.radius, 0, Math.PI * 2);
+    ctx.fillStyle = particle.color;
+    ctx.globalAlpha = particle.opacity;
+    ctx.fill();
+  }
+
+  drawConnections(
+    ctx: CanvasRenderingContext2D,
+    particles: Particle[],
+    config: RenderConfig,
+  ): void {
+    for (let i = 0; i < particles.length; i++) {
+      const particle = particles[i];
+      for (let j = i + 1; j < particles.length; j++) {
+        const other = particles[j];
+        const dx = particle.x - other.x;
+        const dy = particle.y - other.y;
+        const distance = Math.sqrt(dx * dx + dy * dy);
+
+        if (distance < config.connectionDistance) {
+          ctx.beginPath();
+          ctx.moveTo(particle.x, particle.y);
+          ctx.lineTo(other.x, other.y);
+          ctx.strokeStyle = particle.color;
+          ctx.globalAlpha =
+            (1 - distance / config.connectionDistance) * config.connectionOpacity;
+          ctx.lineWidth = config.connectionLineWidth;
+          ctx.stroke();
+        }
+      }
+    }
+  }
+}
+
 export class ParticleFactory {
   private config: ParticleConfig;
 
@@ -90,46 +136,28 @@ export class ParticlePhysics {
 
 export class ParticleRenderer {
   private config: RenderConfig;
+  private strategy: RenderStrategy;
 
-  constructor(config?: Partial<RenderConfig>) {
+  constructor(config?: Partial<RenderConfig>, strategy?: RenderStrategy) {
     this.config = {
       connectionDistance: 150,
       connectionOpacity: 0.2,
       connectionLineWidth: 0.5,
       ...config,
     };
+    this.strategy = strategy || new CircleRenderStrategy();
+  }
+
+  setStrategy(strategy: RenderStrategy): void {
+    this.strategy = strategy;
   }
 
   drawParticle(ctx: CanvasRenderingContext2D, particle: Particle): void {
-    ctx.beginPath();
-    ctx.arc(particle.x, particle.y, particle.radius, 0, Math.PI * 2);
-    ctx.fillStyle = particle.color;
-    ctx.globalAlpha = particle.opacity;
-    ctx.fill();
+    this.strategy.drawParticle(ctx, particle);
   }
 
   drawConnections(ctx: CanvasRenderingContext2D, particles: Particle[]): void {
-    for (let i = 0; i < particles.length; i++) {
-      const particle = particles[i];
-      for (let j = i + 1; j < particles.length; j++) {
-        const other = particles[j];
-        const dx = particle.x - other.x;
-        const dy = particle.y - other.y;
-        const distance = Math.sqrt(dx * dx + dy * dy);
-
-        if (distance < this.config.connectionDistance) {
-          ctx.beginPath();
-          ctx.moveTo(particle.x, particle.y);
-          ctx.lineTo(other.x, other.y);
-          ctx.strokeStyle = particle.color;
-          ctx.globalAlpha =
-            (1 - distance / this.config.connectionDistance) *
-            this.config.connectionOpacity;
-          ctx.lineWidth = this.config.connectionLineWidth;
-          ctx.stroke();
-        }
-      }
-    }
+    this.strategy.drawConnections(ctx, particles, this.config);
   }
 }
 

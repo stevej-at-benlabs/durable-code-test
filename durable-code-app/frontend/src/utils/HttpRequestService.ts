@@ -10,13 +10,11 @@ export interface HttpResponse {
   responseTime: number;
 }
 
-export class UrlNormalizer {
-  static normalizeUrl(url: string): string {
-    return url.startsWith('http') ? url : `${window.location.origin}/${url}`;
-  }
+export interface RequestStrategy {
+  makeRequest(url: string, options: HttpRequestOptions): Promise<HttpResponse>;
 }
 
-export class HttpRequestService {
+export class FetchRequestStrategy implements RequestStrategy {
   async makeRequest(
     url: string,
     options: HttpRequestOptions = {},
@@ -45,6 +43,31 @@ export class HttpRequestService {
     } finally {
       clearTimeout(timeoutId);
     }
+  }
+}
+
+export class UrlNormalizer {
+  static normalizeUrl(url: string): string {
+    return url.startsWith('http') ? url : `${window.location.origin}/${url}`;
+  }
+}
+
+export class HttpRequestService {
+  private strategy: RequestStrategy;
+
+  constructor(strategy?: RequestStrategy) {
+    this.strategy = strategy || new FetchRequestStrategy();
+  }
+
+  setStrategy(strategy: RequestStrategy): void {
+    this.strategy = strategy;
+  }
+
+  async makeRequest(
+    url: string,
+    options: HttpRequestOptions = {},
+  ): Promise<HttpResponse> {
+    return this.strategy.makeRequest(url, options);
   }
 }
 

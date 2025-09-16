@@ -194,21 +194,58 @@ export async function generateLinkReport(
 }
 
 /**
+ * Interface for building different types of reports
+ */
+export interface ReportBuilder {
+  buildSummary(results: LinkValidationResult[]): any;
+}
+
+/**
+ * Default summary report builder
+ */
+export class SummaryReportBuilder implements ReportBuilder {
+  buildSummary(results: LinkValidationResult[]) {
+    const total = results.length;
+    const valid = results.filter((r) => r.isValid).length;
+    const broken = results.filter((r) => !r.isValid).length;
+
+    return {
+      summary: {
+        total,
+        valid,
+        broken,
+      },
+      results,
+    };
+  }
+}
+
+/**
+ * Service for creating link reports with extensible builders
+ */
+export class LinkReportService {
+  private builder: ReportBuilder;
+
+  constructor(builder?: ReportBuilder) {
+    this.builder = builder || new SummaryReportBuilder();
+  }
+
+  setBuilder(builder: ReportBuilder): void {
+    this.builder = builder;
+  }
+
+  createReport(results: LinkValidationResult[]) {
+    return this.builder.buildSummary(results);
+  }
+}
+
+/**
  * Creates a link report summary from validation results
+ * @deprecated Use LinkReportService for new code
  */
 export function createLinkReportSummary(results: LinkValidationResult[]) {
-  const total = results.length;
-  const valid = results.filter((r) => r.isValid).length;
-  const broken = results.filter((r) => !r.isValid).length;
-
-  return {
-    summary: {
-      total,
-      valid,
-      broken,
-    },
-    results,
-  };
+  const service = new LinkReportService();
+  return service.createReport(results);
 }
 
 /**
