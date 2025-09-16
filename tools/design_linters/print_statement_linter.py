@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# pylint: disable=too-many-lines
 """
 Purpose: Detects and reports print statements, console.log, alert, and debugger
     statements
@@ -311,29 +312,32 @@ class PrintStatementLinter:
         if self._is_line_disabled(lines, node.lineno, 'python'):
             return None
 
-        # Check for print/pprint functions
-        if node.func.id in ('print', 'pprint'):
+        func_name = node.func.id
+        violation_info = self._get_violation_info_for_function(func_name)
+
+        if violation_info:
+            statement, severity = violation_info
             return PrintViolation(
                 file_path=file_path,
                 line_number=node.lineno,
                 column=node.col_offset,
-                statement=f"{node.func.id}()",
+                statement=statement,
                 context=self._get_line_context(content, node.lineno),
                 language='python',
-                severity='error'
+                severity=severity
             )
 
+        return None
+
+    def _get_violation_info_for_function(self, func_name: str) -> Optional[tuple[str, str]]:
+        """Get violation info (statement, severity) for a function name."""
+        # Check for print/pprint functions
+        if func_name in ('print', 'pprint'):
+            return f"{func_name}()", 'error'
+
         # Check for pp (pprint alias)
-        if node.func.id == 'pp':
-            return PrintViolation(
-                file_path=file_path,
-                line_number=node.lineno,
-                column=node.col_offset,
-                statement='pp()',
-                context=self._get_line_context(content, node.lineno),
-                language='python',
-                severity='warning'
-            )
+        if func_name == 'pp':
+            return 'pp()', 'warning'
 
         # Check custom patterns from pattern registry
         patterns = self.pattern_registry.get_patterns('python')
@@ -341,16 +345,8 @@ class PrintStatementLinter:
             # Check if this function name matches any custom pattern
             # Pattern format is typically: \bFUNCNAME\s*\(
             # So we check if the function name is in the pattern
-            if f'\\b{node.func.id}\\s*\\(' in pattern_str:
-                return PrintViolation(
-                    file_path=file_path,
-                    line_number=node.lineno,
-                    column=node.col_offset,
-                    statement=description,
-                    context=self._get_line_context(content, node.lineno),
-                    language='python',
-                    severity='warning'
-                )
+            if f'\\b{func_name}\\s*\\(' in pattern_str:
+                return description, 'warning'
 
         return None
 
