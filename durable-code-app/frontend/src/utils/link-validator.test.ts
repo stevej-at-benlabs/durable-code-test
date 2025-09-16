@@ -14,6 +14,7 @@ import {
   extractLinksFromElement,
   categorizeLinks,
   generateLinkReport,
+  createLinkReportSummary,
   validateExpectedLinks,
   expectedPublicLinks,
 } from './link-validator';
@@ -318,8 +319,9 @@ describe('Link Validator Utilities', () => {
       expect(result.missing).toEqual(expectedPublicLinks);
     });
 
-    it('includes set-standards.html in expected links', () => {
-      expect(expectedPublicLinks).toContain('set-standards.html');
+    it('includes React routes in expected links', () => {
+      expect(expectedPublicLinks).toContain('standards');
+      expect(expectedPublicLinks).toContain('diagrams/durable-code-flow.html');
     });
   });
 
@@ -328,14 +330,16 @@ describe('Link Validator Utilities', () => {
       // This would be used in the actual App component tests
       const appElement = document.createElement('div');
       appElement.innerHTML = `
-        <a href="set-standards.html" class="hero-cta">Standards Driven Design</a>
+        <a href="/standards?return=Building" class="action-link">Development Standards Guide</a>
+        <a href="/diagrams/durable-code-flow.html?return=Planning" class="card-link">View Flow Diagram</a>
       `;
 
       const links = extractLinksFromElement(appElement);
-      expect(links).toContain('set-standards.html');
+      expect(links).toContain('/standards?return=Building');
+      expect(links).toContain('/diagrams/durable-code-flow.html?return=Planning');
 
       const categories = categorizeLinks(links);
-      expect(categories.internal).toContain('set-standards.html');
+      expect(categories.internal).toContain('/standards?return=Building');
     });
 
     it('validates link performance metrics', async () => {
@@ -347,6 +351,160 @@ describe('Link Validator Utilities', () => {
       expect(typeof result.responseTime).toBe('number');
       expect(result.responseTime).toBeGreaterThanOrEqual(0);
       expect(result.responseTime).toBeLessThan(5000); // Should be fast in tests
+    });
+  });
+
+  describe('Comprehensive Broken Link Detection', () => {
+    it('detects broken React route links', async () => {
+      // Mock 404 response for invalid route
+      global.fetch = vi.fn().mockResolvedValue({
+        ok: false,
+        status: 404,
+        statusText: 'Not Found',
+      });
+
+      const result = await validateLink('/invalid-route');
+
+      expect(result.isValid).toBe(false);
+      expect(result.status).toBe(404);
+    });
+
+    it('validates all current app internal links', async () => {
+      const currentAppLinks = [
+        '/standards',
+        '/standards?return=Building',
+        '/diagrams/durable-code-flow.html',
+        '/diagrams/ai-review-sequence.html',
+        '/diagrams/implementation-plan.html',
+      ];
+
+      // Mock successful responses for valid links
+      global.fetch = vi.fn().mockResolvedValue({
+        ok: true,
+        status: 200,
+        statusText: 'OK',
+      });
+
+      const results = await validateLinks(currentAppLinks);
+
+      results.forEach((result) => {
+        expect(result.isValid).toBe(true);
+        expect(result.status).toBe(200);
+      });
+    });
+
+    it('detects broken external resource links', async () => {
+      const externalLinks = [
+        'https://github.com/stevej-at-benlabs/durable-code-test',
+        'https://github.com/stevej-at-benlabs/durable-code-test/blob/main/README.md',
+        'https://nonexistent-domain-for-testing.com/invalid-path',
+      ];
+
+      // Mock responses: first two succeed, last one fails
+      global.fetch = vi
+        .fn()
+        .mockResolvedValueOnce({ ok: true, status: 200, statusText: 'OK' })
+        .mockResolvedValueOnce({ ok: true, status: 200, statusText: 'OK' })
+        .mockRejectedValueOnce(new Error('Network error'));
+
+      const results = await validateLinks(externalLinks);
+
+      expect(results[0].isValid).toBe(true);
+      expect(results[1].isValid).toBe(true);
+      expect(results[2].isValid).toBe(false);
+      expect(results[2].error).toContain('Network error');
+    });
+
+    it('validates links with return parameters maintain functionality', async () => {
+      const linksWithReturnParams = [
+        '/standards?return=Building',
+        '/standards?return=Quality%20Assurance',
+        '/diagrams/durable-code-flow.html?return=Planning',
+      ];
+
+      global.fetch = vi.fn().mockResolvedValue({
+        ok: true,
+        status: 200,
+        statusText: 'OK',
+      });
+
+      const results = await validateLinks(linksWithReturnParams);
+
+      results.forEach((result) => {
+        expect(result.isValid).toBe(true);
+        expect(result.url).toMatch(/\?return=/);
+      });
+    });
+
+    it('reports broken links in current app structure', async () => {
+      // Create a mock app structure with some broken links
+      const appElement = document.createElement('div');
+      appElement.innerHTML = `
+        <a href="/standards">Valid Standards Link</a>
+        <a href="/nonexistent-page">Broken Internal Link</a>
+        <a href="https://valid-external-site.com">Valid External Link</a>
+        <a href="https://broken-external-site-12345.com">Broken External Link</a>
+        <a href="/diagrams/durable-code-flow.html">Valid Diagram Link</a>
+        <a href="/diagrams/nonexistent-diagram.html">Broken Diagram Link</a>
+      `;
+
+      const links = extractLinksFromElement(appElement);
+
+      // Mock responses: alternating valid/invalid
+      global.fetch = vi
+        .fn()
+        .mockResolvedValueOnce({ ok: true, status: 200, statusText: 'OK' }) // standards - valid
+        .mockResolvedValueOnce({ ok: false, status: 404, statusText: 'Not Found' }) // nonexistent-page - broken
+        .mockResolvedValueOnce({ ok: true, status: 200, statusText: 'OK' }) // valid external - valid
+        .mockRejectedValueOnce(new Error('DNS resolution failed')) // broken external - broken
+        .mockResolvedValueOnce({ ok: true, status: 200, statusText: 'OK' }) // valid diagram - valid
+        .mockResolvedValueOnce({ ok: false, status: 404, statusText: 'Not Found' }); // broken diagram - broken
+
+      const results = await validateLinks(links);
+      const report = createLinkReportSummary(results);
+
+      expect(report.summary.total).toBe(6);
+      expect(report.summary.valid).toBe(3);
+      expect(report.summary.broken).toBe(3);
+
+      // Check that broken links are properly identified
+      const brokenLinks = results.filter((r) => !r.isValid);
+      expect(brokenLinks).toHaveLength(3);
+      expect(brokenLinks.map((l) => l.url)).toEqual(
+        expect.arrayContaining([
+          expect.stringContaining('nonexistent-page'),
+          expect.stringContaining('broken-external-site'),
+          expect.stringContaining('nonexistent-diagram'),
+        ]),
+      );
+    });
+
+    it('validates performance of link checking', async () => {
+      const testLinks = ['/standards', '/diagrams/durable-code-flow.html'];
+
+      global.fetch = vi
+        .fn()
+        .mockImplementation(
+          () =>
+            new Promise((resolve) =>
+              setTimeout(
+                () => resolve({ ok: true, status: 200, statusText: 'OK' }),
+                100,
+              ),
+            ),
+        );
+
+      const startTime = Date.now();
+      const results = await validateLinks(testLinks);
+      const totalTime = Date.now() - startTime;
+
+      // Should validate links concurrently, not sequentially
+      expect(totalTime).toBeLessThan(200); // Less than 200ms for 2 x 100ms links (concurrent)
+      expect(results).toHaveLength(2);
+      results.forEach((result) => {
+        expect(result.responseTime).toBeGreaterThan(90);
+        expect(result.responseTime).toBeLessThan(150);
+      });
     });
   });
 });

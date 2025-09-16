@@ -110,26 +110,29 @@ class FilePlacementLinter:
                 exceptions=["__init__.py", "setup.py", "conftest.py"]
             ),
 
-            # HTML files
+            # HTML files - Restrict standalone HTML pages, encourage React components
             PlacementRule(
                 file_patterns=["*.html"],
                 allowed_directories=[
                     "durable-code-app/frontend",      # Allow index.html in frontend root (Vite requirement)
-                    "durable-code-app/frontend/public",
-                    "durable-code-app/frontend/dist",
+                    "durable-code-app/frontend/dist", # Built files only
                     "durable-code-app/frontend/dist/**",
-                    "docs"
+                    "docs"                            # Documentation only
                 ],
                 prohibited_directories=[
                     ".",  # Root directory
                     "durable-code-app/backend",
                     "durable-code-app/backend/**",
                     "durable-code-app/frontend/src",
+                    "durable-code-app/frontend/public", # Discourage standalone HTML in public/
                     "tools"
                 ],
-                description="HTML files must be in frontend/, frontend/public/, frontend/dist/, or docs/",
+                description="HTML files should be React components, not standalone pages. Only index.html, docs, and build artifacts allowed.",
                 violation_type=ViolationType.HTML_MISPLACED,
-                exceptions=["index.html"]  # index.html can be in frontend root for Vite
+                exceptions=[
+                    "index.html",                     # Vite entry point
+                    "diagrams/*.html"                 # Allow diagram files for now (to be migrated)
+                ]
             ),
 
             # TypeScript/React files

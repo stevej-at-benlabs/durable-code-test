@@ -182,10 +182,33 @@ export async function generateLinkReport(
 }
 
 /**
+ * Creates a link report summary from validation results
+ */
+export function createLinkReportSummary(results: LinkValidationResult[]) {
+  const total = results.length;
+  const valid = results.filter((r) => r.isValid).length;
+  const broken = results.filter((r) => !r.isValid).length;
+
+  return {
+    summary: {
+      total,
+      valid,
+      broken,
+    },
+    results,
+  };
+}
+
+/**
  * Common public links that should exist in the application
  */
 export const expectedPublicLinks = [
-  'set-standards.html',
+  // React routes (handled by client-side routing)
+  'standards',
+  // Diagram files (still external for now)
+  'diagrams/durable-code-flow.html',
+  'diagrams/ai-review-sequence.html',
+  'diagrams/implementation-plan.html',
   // Add more expected public files here as they're created
 ];
 
