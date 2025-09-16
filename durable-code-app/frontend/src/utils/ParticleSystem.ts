@@ -8,19 +8,43 @@ export interface Particle {
   opacity: number;
 }
 
+export interface ParticleConfig {
+  colors: string[];
+  maxRadius: number;
+  velocityRange: number;
+  opacityRange: { min: number; max: number };
+}
+
+export interface RenderConfig {
+  connectionDistance: number;
+  connectionOpacity: number;
+  connectionLineWidth: number;
+}
+
 export class ParticleFactory {
-  private colors = ['#3b82f6', '#8b5cf6', '#ec4899', '#f59e0b'];
-  private maxRadius = 3;
+  private config: ParticleConfig;
+
+  constructor(config?: Partial<ParticleConfig>) {
+    this.config = {
+      colors: ['#3b82f6', '#8b5cf6', '#ec4899', '#f59e0b'],
+      maxRadius: 3,
+      velocityRange: 0.5,
+      opacityRange: { min: 0.2, max: 0.7 },
+      ...config,
+    };
+  }
 
   createParticle(canvas: HTMLCanvasElement): Particle {
     return {
       x: Math.random() * canvas.width,
       y: Math.random() * canvas.height,
-      vx: (Math.random() - 0.5) * 0.5,
-      vy: (Math.random() - 0.5) * 0.5,
-      radius: Math.random() * this.maxRadius + 1,
-      color: this.colors[Math.floor(Math.random() * this.colors.length)],
-      opacity: Math.random() * 0.5 + 0.2,
+      vx: (Math.random() - 0.5) * this.config.velocityRange,
+      vy: (Math.random() - 0.5) * this.config.velocityRange,
+      radius: Math.random() * this.config.maxRadius + 1,
+      color: this.config.colors[Math.floor(Math.random() * this.config.colors.length)],
+      opacity:
+        Math.random() * (this.config.opacityRange.max - this.config.opacityRange.min) +
+        this.config.opacityRange.min,
     };
   }
 }
@@ -65,7 +89,16 @@ export class ParticlePhysics {
 }
 
 export class ParticleRenderer {
-  private connectionDistance = 150;
+  private config: RenderConfig;
+
+  constructor(config?: Partial<RenderConfig>) {
+    this.config = {
+      connectionDistance: 150,
+      connectionOpacity: 0.2,
+      connectionLineWidth: 0.5,
+      ...config,
+    };
+  }
 
   drawParticle(ctx: CanvasRenderingContext2D, particle: Particle): void {
     ctx.beginPath();
@@ -84,13 +117,15 @@ export class ParticleRenderer {
         const dy = particle.y - other.y;
         const distance = Math.sqrt(dx * dx + dy * dy);
 
-        if (distance < this.connectionDistance) {
+        if (distance < this.config.connectionDistance) {
           ctx.beginPath();
           ctx.moveTo(particle.x, particle.y);
           ctx.lineTo(other.x, other.y);
           ctx.strokeStyle = particle.color;
-          ctx.globalAlpha = (1 - distance / this.connectionDistance) * 0.2;
-          ctx.lineWidth = 0.5;
+          ctx.globalAlpha =
+            (1 - distance / this.config.connectionDistance) *
+            this.config.connectionOpacity;
+          ctx.lineWidth = this.config.connectionLineWidth;
           ctx.stroke();
         }
       }

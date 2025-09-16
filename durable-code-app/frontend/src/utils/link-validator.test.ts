@@ -16,7 +16,7 @@ import {
   generateLinkReport,
   createLinkReportSummary,
   validateExpectedLinks,
-  expectedPublicLinks,
+  getExpectedPublicLinks,
 } from './link-validator';
 import { mockFetch, mockFailedFetch } from '../test-setup';
 
@@ -306,7 +306,7 @@ describe('Link Validator Utilities', () => {
       const result = await validateExpectedLinks();
 
       expect(result.allValid).toBe(true);
-      expect(result.results).toHaveLength(expectedPublicLinks.length);
+      expect(result.results).toHaveLength(getExpectedPublicLinks().length);
       expect(result.missing).toHaveLength(0);
     });
 
@@ -316,12 +316,13 @@ describe('Link Validator Utilities', () => {
       const result = await validateExpectedLinks();
 
       expect(result.allValid).toBe(false);
-      expect(result.missing).toEqual(expectedPublicLinks);
+      expect(result.missing).toEqual(getExpectedPublicLinks());
     });
 
     it('includes React routes in expected links', () => {
-      expect(expectedPublicLinks).toContain('standards');
-      expect(expectedPublicLinks).toContain('diagrams/durable-code-flow.html');
+      const expectedLinks = getExpectedPublicLinks();
+      expect(expectedLinks).toContain('standards');
+      expect(expectedLinks).toContain('diagrams/durable-code-flow.html');
     });
   });
 
