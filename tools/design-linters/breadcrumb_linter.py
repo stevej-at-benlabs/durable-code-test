@@ -1,15 +1,16 @@
 #!/usr/bin/env python3
 """
-Breadcrumb Navigation Linter
-
-This linter ensures that all HTML documentation files contain proper breadcrumb navigation.
-Breadcrumbs are essential for user navigation and understanding document hierarchy.
-
-Requirements:
-- All HTML files in public directories must have breadcrumb navigation
-- Breadcrumbs must include proper ARIA labels for accessibility
-- Breadcrumbs must link back to home page
-- Current page should be marked as non-link text
+Purpose: Validates HTML documentation files for proper breadcrumb navigation compliance
+Scope: HTML files in public directories and documentation folders
+Overview: This linter ensures that all HTML documentation files contain proper breadcrumb
+    navigation elements for user navigation and understanding document hierarchy. It validates
+    that breadcrumbs include proper ARIA labels for accessibility, link back to home page,
+    and mark the current page as non-link text. The linter helps maintain consistent
+    navigation patterns across all documentation and prevents navigation dead-ends.
+Dependencies: html.parser for HTML parsing, pathlib for file operations, re for pattern matching
+Exports: BreadcrumbLinter class, BreadcrumbViolation dataclass, HTMLParser subclass
+Interfaces: main() CLI function, check_file() returns List[BreadcrumbViolation]
+Implementation: Uses HTML parsing to detect navigation elements and validates ARIA compliance
 """
 
 import os
@@ -18,18 +19,55 @@ import re
 from pathlib import Path
 from typing import List, Tuple, Optional
 from html.parser import HTMLParser
+from abc import ABC, abstractmethod
 
 
-class BreadcrumbParser(HTMLParser):
+class ValidationRule(ABC):
+    """Abstract interface for validation rules - follows OCP."""
+
+    @abstractmethod
+    def validate(self, parser_state: dict) -> List[str]:
+        """Validate parser state and return list of issues."""
+        pass
+
+
+class BreadcrumbValidationRule(ValidationRule):
+    """Validates breadcrumb presence and structure."""
+
+    def validate(self, parser_state: dict) -> List[str]:
+        issues = []
+        if not parser_state.get('has_breadcrumb') and not parser_state.get('has_aria_label'):
+            issues.append("No breadcrumb navigation found")
+        elif not parser_state.get('has_home_link'):
+            issues.append("Breadcrumb missing home page link")
+        return issues
+
+
+class DocumentParser(ABC):
+    """Abstract interface for document parsers - follows OCP."""
+
+    @abstractmethod
+    def parse(self, content: str) -> Tuple[bool, List[str]]:
+        """Parse document content and return (has_breadcrumbs, issues)."""
+        pass
+
+    @abstractmethod
+    def get_supported_extensions(self) -> List[str]:
+        """Get list of supported file extensions."""
+        pass
+
+
+class BreadcrumbParser(HTMLParser, DocumentParser):
     """HTML parser to detect breadcrumb navigation elements."""
 
-    def __init__(self):
+    def __init__(self, validation_rules: Optional[List[ValidationRule]] = None):
         super().__init__()
         self.has_breadcrumb = False
         self.has_aria_label = False
         self.has_home_link = False
         self.in_breadcrumb = False
         self.breadcrumb_content = []
+        self.validation_rules = validation_rules or [BreadcrumbValidationRule()]
 
     def handle_starttag(self, tag, attrs):
         attrs_dict = dict(attrs)
@@ -57,6 +95,30 @@ class BreadcrumbParser(HTMLParser):
     def handle_data(self, data):
         if self.in_breadcrumb:
             self.breadcrumb_content.append(data.strip())
+
+    def parse(self, content: str) -> Tuple[bool, List[str]]:
+        """Parse HTML content and return breadcrumb analysis."""
+        self.feed(content)
+
+        # Create parser state for validation
+        parser_state = {
+            'has_breadcrumb': self.has_breadcrumb,
+            'has_aria_label': self.has_aria_label,
+            'has_home_link': self.has_home_link,
+            'in_breadcrumb': self.in_breadcrumb,
+            'breadcrumb_content': self.breadcrumb_content
+        }
+
+        # Run all validation rules
+        issues = []
+        for rule in self.validation_rules:
+            issues.extend(rule.validate(parser_state))
+
+        return len(issues) == 0, issues
+
+    def get_supported_extensions(self) -> List[str]:
+        """Get supported file extensions for HTML parsing."""
+        return ['.html', '.htm']
 
 
 def check_breadcrumbs(file_path: str) -> Tuple[bool, List[str]]:

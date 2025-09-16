@@ -1,9 +1,16 @@
 #!/usr/bin/env python3
 """
-Magic Number Detector.
-
-Detects hardcoded numeric and string literals that should be constants.
-This is a separate concern from design principles - it's about code clarity.
+Purpose: Detects hardcoded numeric and string literals that should be named constants
+Scope: Python source files across the project for code clarity enforcement
+Overview: This analyzer identifies magic numbers and strings that reduce code readability
+    and maintainability by scanning Python source code using AST parsing. It detects
+    hardcoded literals that should be converted to named constants, excluding common
+    acceptable values like 0, 1, and empty strings. The tool helps enforce coding
+    standards that improve code self-documentation and make values easier to maintain.
+Dependencies: ast for Python AST parsing, pathlib for file operations, argparse for CLI
+Exports: MagicNumberDetector class, MagicLiteral dataclass, LiteralType enum
+Interfaces: main() CLI function, analyze_file() returns List[MagicLiteral]
+Implementation: Uses AST visitor pattern to traverse code and identify literal nodes
 """
 
 import ast
@@ -59,11 +66,10 @@ class MagicNumberViolation:
         }
 
 
-class MagicNumberDetector(ast.NodeVisitor):
-    """AST visitor that detects magic numbers and literals."""
+class MagicNumberConfig:
+    """Configuration for magic number detection - follows OCP by allowing extension."""
 
-    # Values that are generally acceptable as literals
-    ALLOWED_NUMBERS = {
+    DEFAULT_ALLOWED_NUMBERS = {
         -1,  # Common index/flag
         0,   # Zero initialization
         1,   # Unity/increment
@@ -75,8 +81,7 @@ class MagicNumberDetector(ast.NodeVisitor):
         1024, # Binary kilo
     }
 
-    # String patterns that are acceptable as literals
-    ALLOWED_STRING_PATTERNS = {
+    DEFAULT_ALLOWED_STRING_PATTERNS = {
         '',      # Empty string
         ' ',     # Space
         '\n',    # Newline
@@ -94,13 +99,31 @@ class MagicNumberDetector(ast.NodeVisitor):
         'wb',    # Write binary
     }
 
-    def __init__(self, file_path: str, ignore_tests: bool = True):
+    def __init__(self, allowed_numbers=None, allowed_string_patterns=None):
+        """Initialize config with optional custom values."""
+        self.allowed_numbers = allowed_numbers or self.DEFAULT_ALLOWED_NUMBERS.copy()
+        self.allowed_string_patterns = allowed_string_patterns or self.DEFAULT_ALLOWED_STRING_PATTERNS.copy()
+
+    def add_allowed_number(self, number):
+        """Add a new allowed number without modifying the class."""
+        self.allowed_numbers.add(number)
+
+    def add_allowed_string_pattern(self, pattern):
+        """Add a new allowed string pattern without modifying the class."""
+        self.allowed_string_patterns.add(pattern)
+
+
+class MagicNumberDetector(ast.NodeVisitor):
+    """AST visitor that detects magic numbers and literals."""
+
+    def __init__(self, file_path: str, ignore_tests: bool = True, config: MagicNumberConfig = None):
         self.file_path = file_path
         self.violations: List[MagicNumberViolation] = []
         self.current_function = None
         self.in_constant_definition = False
         self.ignore_tests = ignore_tests
         self.is_test_file = 'test' in file_path.lower()
+        self.config = config or MagicNumberConfig()
 
     def visit_FunctionDef(self, node: ast.FunctionDef) -> None:
         """Track current function for context."""
@@ -165,7 +188,7 @@ class MagicNumberDetector(ast.NodeVisitor):
 
         # Check for magic numbers
         if isinstance(node.value, (int, float)):
-            if node.value not in self.ALLOWED_NUMBERS:
+            if node.value not in self.config.allowed_numbers:
                 # Check for special contexts where numbers are OK
                 if not self._is_acceptable_context(node):
                     context = f"in {self.current_function}" if self.current_function else "at module level"
@@ -181,7 +204,7 @@ class MagicNumberDetector(ast.NodeVisitor):
         # Check for magic strings
         elif isinstance(node.value, str):
             if (len(node.value) > 1 and
-                node.value not in self.ALLOWED_STRING_PATTERNS and
+                node.value not in self.config.allowed_string_patterns and
                 not node.value.startswith(('test', '__'))):
 
                 # Skip if it looks like a dict key or similar
@@ -268,13 +291,13 @@ def add_parent_refs(tree: ast.AST) -> None:
             setattr(child, 'parent', parent)
 
 
-def analyze_file(file_path: str, ignore_tests: bool = True) -> List[MagicNumberViolation]:
+def analyze_file(file_path: str, ignore_tests: bool = True, config: MagicNumberConfig = None) -> List[MagicNumberViolation]:
     """Analyze a single Python file for magic numbers."""
     with open(file_path, 'r') as f:
         try:
             tree = ast.parse(f.read())
             add_parent_refs(tree)
-            detector = MagicNumberDetector(file_path, ignore_tests)
+            detector = MagicNumberDetector(file_path, ignore_tests, config)
             detector.visit(tree)
             return detector.violations
         except SyntaxError as e:
@@ -282,7 +305,7 @@ def analyze_file(file_path: str, ignore_tests: bool = True) -> List[MagicNumberV
             return []
 
 
-def analyze_directory(directory: str, exclude_patterns: List[str] = None, ignore_tests: bool = True) -> List[MagicNumberViolation]:
+def analyze_directory(directory: str, exclude_patterns: List[str] = None, ignore_tests: bool = True, config: MagicNumberConfig = None) -> List[MagicNumberViolation]:
     """Analyze all Python files in a directory."""
     exclude_patterns = exclude_patterns or ['__pycache__', '.git', 'venv', '.venv', 'migrations']
     violations = []
@@ -292,7 +315,7 @@ def analyze_directory(directory: str, exclude_patterns: List[str] = None, ignore
         if any(pattern in str(path) for pattern in exclude_patterns):
             continue
 
-        file_violations = analyze_file(str(path), ignore_tests)
+        file_violations = analyze_file(str(path), ignore_tests, config)
         violations.extend(file_violations)
 
     return violations

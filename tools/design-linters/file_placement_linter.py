@@ -1,10 +1,18 @@
 #!/usr/bin/env python3
 """
-File Placement Linter.
-
-Ensures files are placed in appropriate directories according to project standards.
-Validates that Python files, HTML files, tests, and other file types follow
-the project's organizational structure as defined in STANDARDS.md.
+Purpose: Validates file placement according to project structure standards
+Scope: Project-wide file organization enforcement across all directories
+Overview: This comprehensive linter analyzes Python, HTML, TypeScript, and configuration
+    files to ensure they are located in appropriate directories as defined in STANDARDS.md.
+    It enforces project organization rules by checking files against configurable placement
+    rules, detecting violations, and providing suggested corrections with clear explanations.
+    The linter supports multiple file types, handles complex directory patterns with wildcards,
+    and can be integrated into CI/CD pipelines to maintain consistent project structure.
+    It helps prevent misplaced files that could break builds or violate architectural principles.
+Dependencies: pathlib for file operations, fnmatch for pattern matching, argparse for CLI interface
+Exports: FilePlacementLinter class, ViolationType enum, PlacementRule dataclass
+Interfaces: main() CLI function, analyze_project() returns List[FilePlacementViolation]
+Implementation: Uses rule-based pattern matching with configurable directory allowlists/blocklists
 """
 
 import os

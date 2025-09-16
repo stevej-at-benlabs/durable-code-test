@@ -1,12 +1,16 @@
 #!/usr/bin/env python3
 """
-Single Responsibility Principle Analyzer.
-
-Detects potential SRP violations using multiple heuristics:
-- Method count and complexity
-- Method name clustering
-- Dependency analysis
-- Cohesion metrics
+Purpose: Detects Single Responsibility Principle violations in Python code
+Scope: Python classes and modules across backend and tools directories
+Overview: This analyzer detects potential SRP violations using multiple heuristics including
+    method count and complexity analysis, method name clustering to identify unrelated
+    responsibilities, dependency analysis to find excessive coupling, and cohesion metrics
+    to measure class unity. It helps identify classes that are doing too much and suggests
+    refactoring opportunities to improve code maintainability and adherence to SOLID principles.
+Dependencies: ast for Python AST parsing, collections for data structures, pathlib for file operations
+Exports: SRPAnalyzer class, SRPViolation dataclass, CohesionCalculator class
+Interfaces: main() CLI function, analyze_file() returns List[SRPViolation]
+Implementation: Uses AST analysis to calculate complexity metrics and semantic clustering algorithms
 """
 
 import ast
@@ -14,9 +18,10 @@ import os
 import sys
 from collections import defaultdict
 from pathlib import Path
-from typing import Dict, List, Set, Optional
+from typing import Dict, List, Set, Optional, Protocol
 import argparse
 import json
+from abc import ABC, abstractmethod
 
 try:
     from . import (
@@ -35,6 +40,124 @@ except ImportError:
         Severity,
         SRPThresholds
     )
+
+
+class ClassAnalyzer(ABC):
+    """Abstract interface for class analysis techniques - follows OCP."""
+
+    @abstractmethod
+    def analyze(self, node: ast.ClassDef) -> Dict[str, any]:
+        """Analyze a class and return metrics."""
+        pass
+
+    @abstractmethod
+    def get_metric_names(self) -> List[str]:
+        """Get the names of metrics this analyzer provides."""
+        pass
+
+
+class DefaultClassAnalyzer(ClassAnalyzer):
+    """Default implementation of class analysis."""
+
+    def __init__(self, responsibility_prefixes):
+        self.responsibility_prefixes = responsibility_prefixes
+
+    def analyze(self, node: ast.ClassDef) -> Dict[str, any]:
+        methods = [n for n in node.body if isinstance(n, ast.FunctionDef)]
+        instance_vars = self._extract_instance_variables(node)
+        dependencies = self._extract_dependencies(node)
+        responsibility_groups = self._group_methods_by_responsibility(methods)
+
+        return {
+            'name': node.name,
+            'method_count': len(methods),
+            'line_count': node.end_lineno - node.lineno if node.end_lineno else 0,
+            'instance_var_count': len(instance_vars),
+            'dependency_count': len(dependencies),
+            'responsibility_groups': responsibility_groups,
+            'responsibility_group_count': len(responsibility_groups),
+            'methods': [m.name for m in methods],
+            'cohesion_score': self._calculate_cohesion(methods, instance_vars)
+        }
+
+    def get_metric_names(self) -> List[str]:
+        return ['name', 'method_count', 'line_count', 'instance_var_count', 'dependency_count',
+                'responsibility_groups', 'responsibility_group_count', 'methods', 'cohesion_score']
+
+    def _extract_instance_variables(self, node: ast.ClassDef) -> Set[str]:
+        """Extract instance variables from a class."""
+        instance_vars = set()
+        for item in ast.walk(node):
+            if isinstance(item, ast.Attribute):
+                if isinstance(item.value, ast.Name) and item.value.id == 'self':
+                    instance_vars.add(item.attr)
+        return instance_vars
+
+    def _extract_dependencies(self, node: ast.ClassDef) -> Set[str]:
+        """Extract external dependencies from a class."""
+        dependencies = set()
+        for item in ast.walk(node):
+            if isinstance(item, ast.Import):
+                for alias in item.names:
+                    dependencies.add(alias.name.split('.')[0])
+            elif isinstance(item, ast.ImportFrom):
+                if item.module:
+                    dependencies.add(item.module.split('.')[0])
+        return dependencies
+
+    def _group_methods_by_responsibility(self, methods: List[ast.FunctionDef]) -> Dict[str, List[str]]:
+        """Group methods by their likely responsibility based on naming."""
+        groups = defaultdict(list)
+
+        for method in methods:
+            if method.name.startswith('_'):
+                continue  # Skip private methods
+
+            categorized = False
+            for category, prefixes in self.responsibility_prefixes.items():
+                for prefix in prefixes:
+                    if method.name.lower().startswith(prefix):
+                        groups[category].append(method.name)
+                        categorized = True
+                        break
+                if categorized:
+                    break
+
+            if not categorized:
+                groups['other'].append(method.name)
+
+        return dict(groups)
+
+    def _calculate_cohesion(self, methods: List[ast.FunctionDef], instance_vars: Set[str]) -> float:
+        """Calculate cohesion score (0-1)."""
+        if not methods or not instance_vars:
+            return 1.0
+
+        method_var_usage = {}
+        for method in methods:
+            used_vars = set()
+            for node in ast.walk(method):
+                if isinstance(node, ast.Attribute):
+                    if isinstance(node.value, ast.Name) and node.value.id == 'self':
+                        if node.attr in instance_vars:
+                            used_vars.add(node.attr)
+            method_var_usage[method.name] = used_vars
+
+        # Calculate LCOM (Lack of Cohesion of Methods)
+        total_pairs = 0
+        shared_pairs = 0
+
+        method_names = list(method_var_usage.keys())
+        for i in range(len(method_names)):
+            for j in range(i + 1, len(method_names)):
+                total_pairs += 1
+                if method_var_usage[method_names[i]] & method_var_usage[method_names[j]]:
+                    shared_pairs += 1
+
+        if total_pairs == 0:
+            return 1.0
+
+        return shared_pairs / total_pairs
 
 
 class SRPViolation:
@@ -61,12 +184,17 @@ class SRPViolation:
 class SRPAnalyzer(ast.NodeVisitor):
     """Analyzes Python code for SRP violations."""
 
-    def __init__(self, file_path: str, thresholds: Optional[SRPThresholds] = None):
+    def __init__(self, file_path: str, thresholds: Optional[SRPThresholds] = None, analyzers: Optional[List[ClassAnalyzer]] = None):
         self.file_path = file_path
         self.violations: List[SRPViolation] = []
         self.current_class = None
         self.class_metrics = {}
         self.thresholds = thresholds or DEFAULT_SRP_THRESHOLDS
+        self.analyzers = analyzers or self._get_default_analyzers()
+
+    def _get_default_analyzers(self) -> List[ClassAnalyzer]:
+        """Get the default set of analyzers."""
+        return [DefaultClassAnalyzer(RESPONSIBILITY_PREFIXES)]
 
     def visit_ClassDef(self, node: ast.ClassDef) -> None:
         """Analyze a class definition for SRP violations."""
@@ -89,23 +217,15 @@ class SRPAnalyzer(ast.NodeVisitor):
         self.current_class = None
 
     def _analyze_class(self, node: ast.ClassDef) -> Dict:
-        """Extract metrics from a class."""
-        methods = [n for n in node.body if isinstance(n, ast.FunctionDef)]
-        instance_vars = self._extract_instance_variables(node)
-        dependencies = self._extract_dependencies(node)
-        responsibility_groups = self._group_methods_by_responsibility(methods)
+        """Extract metrics from a class using pluggable analyzers."""
+        metrics = {}
 
-        return {
-            'name': node.name,
-            'method_count': len(methods),
-            'line_count': node.end_lineno - node.lineno if node.end_lineno else 0,
-            'instance_var_count': len(instance_vars),
-            'dependency_count': len(dependencies),
-            'responsibility_groups': responsibility_groups,
-            'responsibility_group_count': len(responsibility_groups),
-            'methods': [m.name for m in methods],
-            'cohesion_score': self._calculate_cohesion(methods, instance_vars)
-        }
+        # Run all analyzers and combine their results
+        for analyzer in self.analyzers:
+            analyzer_metrics = analyzer.analyze(node)
+            metrics.update(analyzer_metrics)
+
+        return metrics
 
     def _extract_instance_variables(self, node: ast.ClassDef) -> Set[str]:
         """Extract instance variables from a class."""
