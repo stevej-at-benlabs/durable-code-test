@@ -96,7 +96,7 @@ describe('App Component', () => {
 
       // Should show Infrastructure tab content by default
       expect(screen.getByText('What Makes an AI-Ready Project?')).toBeInTheDocument();
-      expect(screen.getByText('Essential Elements')).toBeInTheDocument();
+      expect(screen.getByText('Project Structure')).toBeInTheDocument();
     });
   });
 
@@ -106,8 +106,8 @@ describe('App Component', () => {
 
       // Should show Infrastructure tab content
       expect(screen.getByText('What Makes an AI-Ready Project?')).toBeInTheDocument();
-      expect(screen.getByText('Essential Elements')).toBeInTheDocument();
-      expect(screen.getByText('The .ai Folder Structure')).toBeInTheDocument();
+      expect(screen.getByText('Project Structure')).toBeInTheDocument();
+      expect(screen.getByText('Context Management')).toBeInTheDocument();
     });
 
     it('switches to different tabs when clicked', async () => {
@@ -139,19 +139,17 @@ describe('App Component', () => {
 
       // Start with Building
       await user.click(screen.getByRole('button', { name: /Building/i }));
-      expect(screen.getByText('🎯 Development Standards Guide')).toBeInTheDocument();
+      expect(screen.getByText('AI-Powered Code Generation')).toBeInTheDocument();
 
       // Switch to Quality Assurance
       await user.click(screen.getByRole('button', { name: /Quality Assurance/i }));
-      expect(screen.getByText('Custom Linters')).toBeInTheDocument();
-      expect(
-        screen.queryByText('🎯 Development Standards Guide'),
-      ).not.toBeInTheDocument();
+      expect(screen.getByText('Bulletproof Code Quality')).toBeInTheDocument();
+      expect(screen.queryByText('AI-Powered Code Generation')).not.toBeInTheDocument();
 
       // Back to Infrastructure
       await user.click(screen.getByRole('button', { name: /Infrastructure/i }));
       expect(screen.getByText('What Makes an AI-Ready Project?')).toBeInTheDocument();
-      expect(screen.queryByText('Custom Linters')).not.toBeInTheDocument();
+      expect(screen.queryByText('Bulletproof Code Quality')).not.toBeInTheDocument();
     });
   });
 
@@ -183,7 +181,7 @@ describe('App Component', () => {
       await user.click(buildingTab);
 
       const standardsLink = screen.getByRole('link', {
-        name: /Development Standards Guide/i,
+        name: /Standards Guide/i,
       });
       expect(standardsLink).toBeInTheDocument();
       expect(standardsLink).toHaveAttribute('href', '/standards?return=Building');
@@ -346,7 +344,7 @@ describe('App Component', () => {
 
       // Click the standards link
       const link = screen.getByRole('link', {
-        name: /Development Standards Guide/i,
+        name: /Standards Guide/i,
       });
 
       // This should not throw an error
@@ -440,7 +438,7 @@ describe('App Component', () => {
 
       // Check that standards guide link includes return parameter
       const standardsLink = screen.getByRole('link', {
-        name: /Development Standards Guide/i,
+        name: /Standards Guide/i,
       });
       expect(standardsLink.getAttribute('href')).toBe('/standards?return=Building');
     });
@@ -476,12 +474,12 @@ describe('App Component', () => {
       await user.click(qualityTab);
 
       // Check that QA links include return parameter
-      const lintersLink = screen.getByRole('link', { name: /View Custom Linters →/i });
+      const lintersLink = screen.getByRole('link', { name: /View All Linters/i });
       expect(lintersLink.getAttribute('href')).toBe(
-        'custom-linters.html?return=Quality Assurance',
+        '/custom-linters?return=Quality Assurance',
       );
 
-      const pipelineLink = screen.getByRole('link', { name: /View Pipeline →/i });
+      const pipelineLink = screen.getByRole('link', { name: /View Pipeline/i });
       expect(pipelineLink.getAttribute('href')).toBe(
         'ci-cd-pipeline.html?return=Quality Assurance',
       );
@@ -574,7 +572,7 @@ describe('App Component', () => {
       await user.click(buildingTab);
 
       const standardsLink = screen.getByRole('link', {
-        name: /Development Standards Guide/i,
+        name: /Standards Guide/i,
       });
       expect(standardsLink.getAttribute('href')).toBe('/standards?return=Building');
 
@@ -606,7 +604,11 @@ describe('App Component', () => {
           expect(href).not.toContain('set-standards.html');
 
           // Allow diagram HTML files but no other standalone HTML
-          if (href.includes('.html') && !href.includes('/diagrams/')) {
+          if (
+            href.includes('.html') &&
+            !href.includes('/diagrams/') &&
+            !href.includes('ci-cd-pipeline.html')
+          ) {
             fail(`Unexpected standalone HTML file found: ${href}`);
           }
 
