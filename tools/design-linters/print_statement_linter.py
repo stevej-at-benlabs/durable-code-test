@@ -19,7 +19,7 @@ import json
 import re
 import sys
 from pathlib import Path
-from typing import Dict, List, NamedTuple, Optional, Set
+from typing import Dict, List, NamedTuple, Optional, Set, Tuple
 
 
 class PrintViolation(NamedTuple):
@@ -33,56 +33,77 @@ class PrintViolation(NamedTuple):
     severity: str  # 'error', 'warning', 'info'
 
 
+class PatternRegistry:
+    """Registry for print statement patterns - follows OCP by allowing extension."""
+
+    def __init__(self):
+        self.language_map = {
+            '.py': 'python',
+            '.js': 'javascript',
+            '.jsx': 'javascript',
+            '.ts': 'typescript',
+            '.tsx': 'typescript',
+            '.mjs': 'javascript',
+            '.cjs': 'javascript',
+        }
+
+        self.print_patterns = {
+            'python': [
+                (r'\bprint\s*\(', 'print()'),
+                (r'\bpprint\s*\(', 'pprint()'),
+                (r'\bpp\s*\(', 'pp()'),  # common pprint alias
+            ],
+            'javascript': [
+                (r'\bconsole\s*\.\s*log\s*\(', 'console.log()'),
+                (r'\bconsole\s*\.\s*debug\s*\(', 'console.debug()'),
+                (r'\bconsole\s*\.\s*info\s*\(', 'console.info()'),
+                (r'\bconsole\s*\.\s*warn\s*\(', 'console.warn()'),
+                (r'\bconsole\s*\.\s*error\s*\(', 'console.error()'),
+                (r'\bconsole\s*\.\s*trace\s*\(', 'console.trace()'),
+                (r'\bconsole\s*\.\s*dir\s*\(', 'console.dir()'),
+                (r'\bconsole\s*\.\s*table\s*\(', 'console.table()'),
+                (r'\bconsole\s*\.\s*time\s*\(', 'console.time()'),
+                (r'\bconsole\s*\.\s*timeEnd\s*\(', 'console.timeEnd()'),
+                (r'\balert\s*\(', 'alert()'),
+                (r'\bdebugger\b', 'debugger'),
+            ],
+            'typescript': [
+                (r'\bconsole\s*\.\s*log\s*\(', 'console.log()'),
+                (r'\bconsole\s*\.\s*debug\s*\(', 'console.debug()'),
+                (r'\bconsole\s*\.\s*info\s*\(', 'console.info()'),
+                (r'\bconsole\s*\.\s*warn\s*\(', 'console.warn()'),
+                (r'\bconsole\s*\.\s*error\s*\(', 'console.error()'),
+                (r'\bconsole\s*\.\s*trace\s*\(', 'console.trace()'),
+                (r'\bconsole\s*\.\s*dir\s*\(', 'console.dir()'),
+                (r'\bconsole\s*\.\s*table\s*\(', 'console.table()'),
+                (r'\bconsole\s*\.\s*time\s*\(', 'console.time()'),
+                (r'\bconsole\s*\.\s*timeEnd\s*\(', 'console.timeEnd()'),
+                (r'\balert\s*\(', 'alert()'),
+                (r'\bdebugger\b', 'debugger'),
+            ]
+        }
+
+    def add_language(self, extension: str, language: str):
+        """Add a new language mapping without modifying the class."""
+        self.language_map[extension] = language
+
+    def add_pattern(self, language: str, pattern: str, description: str):
+        """Add a new pattern for a language without modifying the class."""
+        if language not in self.print_patterns:
+            self.print_patterns[language] = []
+        self.print_patterns[language].append((pattern, description))
+
+    def get_language(self, extension: str) -> str:
+        """Get the language for a file extension."""
+        return self.language_map.get(extension)
+
+    def get_patterns(self, language: str) -> List[Tuple[str, str]]:
+        """Get patterns for a language."""
+        return self.print_patterns.get(language, [])
+
+
 class PrintStatementLinter:
     """Linter to detect print statements in code."""
-
-    # Language detection by file extension
-    LANGUAGE_MAP = {
-        '.py': 'python',
-        '.js': 'javascript',
-        '.jsx': 'javascript',
-        '.ts': 'typescript',
-        '.tsx': 'typescript',
-        '.mjs': 'javascript',
-        '.cjs': 'javascript',
-    }
-
-    # Patterns to detect print statements by language
-    PRINT_PATTERNS = {
-        'python': [
-            (r'\bprint\s*\(', 'print()'),
-            (r'\bpprint\s*\(', 'pprint()'),
-            (r'\bpp\s*\(', 'pp()'),  # common pprint alias
-        ],
-        'javascript': [
-            (r'\bconsole\s*\.\s*log\s*\(', 'console.log()'),
-            (r'\bconsole\s*\.\s*debug\s*\(', 'console.debug()'),
-            (r'\bconsole\s*\.\s*info\s*\(', 'console.info()'),
-            (r'\bconsole\s*\.\s*warn\s*\(', 'console.warn()'),
-            (r'\bconsole\s*\.\s*error\s*\(', 'console.error()'),
-            (r'\bconsole\s*\.\s*trace\s*\(', 'console.trace()'),
-            (r'\bconsole\s*\.\s*dir\s*\(', 'console.dir()'),
-            (r'\bconsole\s*\.\s*table\s*\(', 'console.table()'),
-            (r'\bconsole\s*\.\s*time\s*\(', 'console.time()'),
-            (r'\bconsole\s*\.\s*timeEnd\s*\(', 'console.timeEnd()'),
-            (r'\balert\s*\(', 'alert()'),
-            (r'\bdebugger\b', 'debugger'),
-        ],
-        'typescript': [
-            (r'\bconsole\s*\.\s*log\s*\(', 'console.log()'),
-            (r'\bconsole\s*\.\s*debug\s*\(', 'console.debug()'),
-            (r'\bconsole\s*\.\s*info\s*\(', 'console.info()'),
-            (r'\bconsole\s*\.\s*warn\s*\(', 'console.warn()'),
-            (r'\bconsole\s*\.\s*error\s*\(', 'console.error()'),
-            (r'\bconsole\s*\.\s*trace\s*\(', 'console.trace()'),
-            (r'\bconsole\s*\.\s*dir\s*\(', 'console.dir()'),
-            (r'\bconsole\s*\.\s*table\s*\(', 'console.table()'),
-            (r'\bconsole\s*\.\s*time\s*\(', 'console.time()'),
-            (r'\bconsole\s*\.\s*timeEnd\s*\(', 'console.timeEnd()'),
-            (r'\balert\s*\(', 'alert()'),
-            (r'\bdebugger\b', 'debugger'),
-        ]
-    }
 
     # Directories to skip (excluding test directories - they should also use logging)
     SKIP_DIRS = {
@@ -99,17 +120,17 @@ class PrintStatementLinter:
     def __init__(self,
                  allow_logging: bool = False,
                  allow_in_tests: bool = True,
-                 custom_patterns: Optional[Dict[str, List[tuple]]] = None):
+                 pattern_registry: Optional[PatternRegistry] = None):
         """Initialize the linter.
 
         Args:
             allow_logging: If True, allow logging statements (warn/error)
             allow_in_tests: If True, allow print statements in test files
-            custom_patterns: Additional patterns to check
+            pattern_registry: Custom pattern registry (defaults to standard patterns)
         """
         self.allow_logging = allow_logging
         self.allow_in_tests = allow_in_tests
-        self.custom_patterns = custom_patterns or {}
+        self.pattern_registry = pattern_registry or PatternRegistry()
         self.violations: List[PrintViolation] = []
 
     def should_skip_file(self, file_path: Path) -> bool:
@@ -141,7 +162,7 @@ class PrintStatementLinter:
                     return True
 
         # Skip non-source files
-        if file_path.suffix not in self.LANGUAGE_MAP:
+        if self.pattern_registry.get_language(file_path.suffix) is None:
             return True
 
         return False
@@ -149,7 +170,7 @@ class PrintStatementLinter:
     def detect_language(self, file_path: Path) -> Optional[str]:
         """Detect the programming language of a file."""
         suffix = file_path.suffix.lower()
-        return self.LANGUAGE_MAP.get(suffix)
+        return self.pattern_registry.get_language(suffix)
 
     def lint_python_file(self, file_path: Path, content: str) -> List[PrintViolation]:
         """Lint a Python file using AST parsing."""
@@ -201,14 +222,11 @@ class PrintStatementLinter:
             # Fall back to regex if AST parsing fails
             violations.extend(self.lint_with_regex(file_path, content, 'python'))
 
-        # Also check custom patterns with regex (if any)
-        if 'python' in self.custom_patterns:
-            custom_violations = self.lint_with_regex(file_path, content, 'python', custom_only=True)
-            violations.extend(custom_violations)
+        # The pattern registry already handles all patterns
 
         return violations
 
-    def lint_with_regex(self, file_path: Path, content: str, language: str, custom_only: bool = False) -> List[PrintViolation]:
+    def lint_with_regex(self, file_path: Path, content: str, language: str) -> List[PrintViolation]:
         """Lint a file using regex patterns.
 
         Args:
@@ -223,15 +241,8 @@ class PrintStatementLinter:
         if self._is_file_disabled(content, language):
             return []
 
-        if custom_only:
-            # Only use custom patterns
-            patterns = self.custom_patterns.get(language, [])
-        else:
-            # Use default patterns
-            patterns = self.PRINT_PATTERNS.get(language, [])
-            # Add custom patterns
-            if language in self.custom_patterns:
-                patterns.extend(self.custom_patterns[language])
+        # Use patterns from registry
+        patterns = self.pattern_registry.get_patterns(language)
 
         lines = content.split('\n')
 

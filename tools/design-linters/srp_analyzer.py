@@ -18,9 +18,10 @@ import os
 import sys
 from collections import defaultdict
 from pathlib import Path
-from typing import Dict, List, Set, Optional
+from typing import Dict, List, Set, Optional, Protocol
 import argparse
 import json
+from abc import ABC, abstractmethod
 
 try:
     from . import (
@@ -39,6 +40,20 @@ except ImportError:
         Severity,
         SRPThresholds
     )
+
+
+class ClassAnalyzer(ABC):
+    """Abstract interface for class analysis techniques - follows OCP."""
+
+    @abstractmethod
+    def analyze(self, node: ast.ClassDef) -> Dict[str, any]:
+        """Analyze a class and return metrics."""
+        pass
+
+    @abstractmethod
+    def get_metric_names(self) -> List[str]:
+        """Get the names of metrics this analyzer provides."""
+        pass
 
 
 class SRPViolation:
@@ -65,12 +80,17 @@ class SRPViolation:
 class SRPAnalyzer(ast.NodeVisitor):
     """Analyzes Python code for SRP violations."""
 
-    def __init__(self, file_path: str, thresholds: Optional[SRPThresholds] = None):
+    def __init__(self, file_path: str, thresholds: Optional[SRPThresholds] = None, analyzers: Optional[List[ClassAnalyzer]] = None):
         self.file_path = file_path
         self.violations: List[SRPViolation] = []
         self.current_class = None
         self.class_metrics = {}
         self.thresholds = thresholds or DEFAULT_SRP_THRESHOLDS
+        self.analyzers = analyzers or self._get_default_analyzers()
+
+    def _get_default_analyzers(self) -> List[ClassAnalyzer]:
+        """Get the default set of analyzers."""
+        return []  # To be implemented when analyzers are defined
 
     def visit_ClassDef(self, node: ast.ClassDef) -> None:
         """Analyze a class definition for SRP violations."""
@@ -93,23 +113,34 @@ class SRPAnalyzer(ast.NodeVisitor):
         self.current_class = None
 
     def _analyze_class(self, node: ast.ClassDef) -> Dict:
-        """Extract metrics from a class."""
-        methods = [n for n in node.body if isinstance(n, ast.FunctionDef)]
-        instance_vars = self._extract_instance_variables(node)
-        dependencies = self._extract_dependencies(node)
-        responsibility_groups = self._group_methods_by_responsibility(methods)
+        """Extract metrics from a class using pluggable analyzers."""
+        metrics = {}
 
-        return {
-            'name': node.name,
-            'method_count': len(methods),
-            'line_count': node.end_lineno - node.lineno if node.end_lineno else 0,
-            'instance_var_count': len(instance_vars),
-            'dependency_count': len(dependencies),
-            'responsibility_groups': responsibility_groups,
-            'responsibility_group_count': len(responsibility_groups),
-            'methods': [m.name for m in methods],
-            'cohesion_score': self._calculate_cohesion(methods, instance_vars)
-        }
+        # Run all analyzers and combine their results
+        for analyzer in self.analyzers:
+            analyzer_metrics = analyzer.analyze(node)
+            metrics.update(analyzer_metrics)
+
+        # Fallback to basic analysis if no analyzers
+        if not self.analyzers:
+            methods = [n for n in node.body if isinstance(n, ast.FunctionDef)]
+            instance_vars = self._extract_instance_variables(node)
+            dependencies = self._extract_dependencies(node)
+            responsibility_groups = self._group_methods_by_responsibility(methods)
+
+            metrics = {
+                'name': node.name,
+                'method_count': len(methods),
+                'line_count': node.end_lineno - node.lineno if node.end_lineno else 0,
+                'instance_var_count': len(instance_vars),
+                'dependency_count': len(dependencies),
+                'responsibility_groups': responsibility_groups,
+                'responsibility_group_count': len(responsibility_groups),
+                'methods': [m.name for m in methods],
+                'cohesion_score': self._calculate_cohesion(methods, instance_vars)
+            }
+
+        return metrics
 
     def _extract_instance_variables(self, node: ast.ClassDef) -> Set[str]:
         """Extract instance variables from a class."""

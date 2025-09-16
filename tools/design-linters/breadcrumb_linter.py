@@ -19,9 +19,24 @@ import re
 from pathlib import Path
 from typing import List, Tuple, Optional
 from html.parser import HTMLParser
+from abc import ABC, abstractmethod
 
 
-class BreadcrumbParser(HTMLParser):
+class DocumentParser(ABC):
+    """Abstract interface for document parsers - follows OCP."""
+
+    @abstractmethod
+    def parse(self, content: str) -> Tuple[bool, List[str]]:
+        """Parse document content and return (has_breadcrumbs, issues)."""
+        pass
+
+    @abstractmethod
+    def get_supported_extensions(self) -> List[str]:
+        """Get list of supported file extensions."""
+        pass
+
+
+class BreadcrumbParser(HTMLParser, DocumentParser):
     """HTML parser to detect breadcrumb navigation elements."""
 
     def __init__(self):
@@ -58,6 +73,22 @@ class BreadcrumbParser(HTMLParser):
     def handle_data(self, data):
         if self.in_breadcrumb:
             self.breadcrumb_content.append(data.strip())
+
+    def parse(self, content: str) -> Tuple[bool, List[str]]:
+        """Parse HTML content and return breadcrumb analysis."""
+        self.feed(content)
+        issues = []
+
+        if not self.has_breadcrumb and not self.has_aria_label:
+            issues.append("No breadcrumb navigation found")
+        elif not self.has_home_link:
+            issues.append("Breadcrumb missing home page link")
+
+        return len(issues) == 0, issues
+
+    def get_supported_extensions(self) -> List[str]:
+        """Get supported file extensions for HTML parsing."""
+        return ['.html', '.htm']
 
 
 def check_breadcrumbs(file_path: str) -> Tuple[bool, List[str]]:
