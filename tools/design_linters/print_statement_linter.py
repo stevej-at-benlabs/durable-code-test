@@ -23,7 +23,7 @@ import json
 import re
 import sys
 from pathlib import Path
-from typing import Dict, List, NamedTuple, Optional, Tuple
+from typing import Any, Dict, List, NamedTuple, Optional, Tuple
 
 
 class PrintViolation(NamedTuple):
@@ -85,6 +85,28 @@ class PatternRegistry:
                 (r'\balert\s*\(', 'alert()'),
                 (r'\bdebugger\b', 'debugger'),
             ]
+        }
+
+        # Language configuration map for OCP compliance
+        self.language_config: Dict[str, Dict[str, Any]] = {
+            'python': {
+                'comment_chars': ['#'],
+                'disable_directives': ['# noqa', '# noprint', '# type: ignore'],
+                'block_comment_start': None,
+                'allowed_logging': [r'logging\.(debug|info|warning|error|critical)\s*\(']
+            },
+            'javascript': {
+                'comment_chars': ['//', '/*', '*'],
+                'disable_directives': ['// eslint-disable', '// noprint', '/* noprint'],
+                'block_comment_start': '/*',
+                'allowed_logging': [r'console\s*\.\s*(warn|error)\s*\(']
+            },
+            'typescript': {
+                'comment_chars': ['//', '/*', '*'],
+                'disable_directives': ['// eslint-disable', '// noprint', '/* noprint', '// @ts-ignore'],
+                'block_comment_start': '/*',
+                'allowed_logging': [r'console\s*\.\s*(warn|error)\s*\(']
+            }
         }
 
     def add_language(self, extension: str, language: str) -> None:
@@ -516,11 +538,12 @@ class PrintStatementLinter:
         """Check if a line is a comment."""
         stripped = line.strip()
 
-        if language == 'python':
-            return stripped.startswith('#')
-        if language in ('javascript', 'typescript'):
-            return (stripped.startswith('//') or stripped.startswith('/*') or
-                    stripped.startswith('*'))
+        config = self.pattern_registry.language_config.get(language, {})
+        comment_chars = config.get('comment_chars', [])
+
+        for char in comment_chars:
+            if stripped.startswith(char):
+                return True
 
         return False
 
@@ -529,13 +552,9 @@ class PrintStatementLinter:
         if not self.allow_logging:
             return False
 
-        allowed_patterns = {
-            'javascript': [r'console\s*\.\s*(warn|error)\s*\('],
-            'typescript': [r'console\s*\.\s*(warn|error)\s*\('],
-            'python': [r'logging\.(debug|info|warning|error|critical)\s*\(']
-        }
+        config = self.pattern_registry.language_config.get(language, {})
+        patterns = config.get('allowed_logging', [])
 
-        patterns = allowed_patterns.get(language, [])
         for pattern in patterns:
             if re.search(pattern, line):
                 return True
@@ -611,6 +630,14 @@ class PrintStatementLinter:
 
     def _has_inline_disable_comment(self, line: str, language: str) -> bool:
         """Check if line has inline disable comments."""
+        config = self.pattern_registry.language_config.get(language, {})
+        disable_directives = config.get('disable_directives', [])
+
+        for directive in disable_directives:
+            if directive in line:
+                return True
+
+        # Also check legacy methods for backward compatibility
         if language == 'python':
             return self._has_python_inline_disable(line)
         if language in ('javascript', 'typescript'):
