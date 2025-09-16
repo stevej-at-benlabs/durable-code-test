@@ -196,8 +196,17 @@ export async function generateLinkReport(
 /**
  * Interface for building different types of reports
  */
+export interface LinkReportSummary {
+  summary: {
+    total: number;
+    valid: number;
+    broken: number;
+  };
+  results: LinkValidationResult[];
+}
+
 export interface ReportBuilder {
-  buildSummary(results: LinkValidationResult[]): any;
+  buildSummary(results: LinkValidationResult[]): LinkReportSummary;
 }
 
 /**
