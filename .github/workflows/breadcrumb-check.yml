@@ -4,13 +4,13 @@ on:
   pull_request:
     paths:
       - '**/*.html'
-      - 'tools/design-linters/breadcrumb_linter.py'
+      - 'tools/design_linters/breadcrumb_linter.py'
       - '.github/workflows/breadcrumb-check.yml'
   push:
     branches: [main, develop]
     paths:
       - '**/*.html'
-      - 'tools/design-linters/breadcrumb_linter.py'
+      - 'tools/design_linters/breadcrumb_linter.py'
       - '.github/workflows/breadcrumb-check.yml'
 
 jobs:
@@ -30,7 +30,7 @@ jobs:
       - name: Run breadcrumb linter
         run: |
           echo "🔍 Checking HTML documentation for breadcrumb navigation..."
-          python tools/design-linters/breadcrumb_linter.py
+          python tools/design_linters/breadcrumb_linter.py
 
       - name: Comment on PR if failed
         if: failure() && github.event_name == 'pull_request'

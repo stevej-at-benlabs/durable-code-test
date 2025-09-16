@@ -21,7 +21,7 @@ jobs:
 
       - name: Run SRP Analyzer
         run: |
-          python tools/design-linters/srp_analyzer.py durable-code-app --threshold normal --json > srp-report.json
+          python tools/design_linters/srp_analyzer.py durable-code-app --threshold normal --json > srp-report.json
 
       - name: Generate SRP Report
         if: always()

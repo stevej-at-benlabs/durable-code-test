@@ -1,3 +1,17 @@
+# Purpose: Pre-commit hooks configuration for code quality enforcement
+# Scope: Repository-wide automated code quality checks before commits
+# Overview: Configures comprehensive pre-commit hooks for Python and TypeScript/JavaScript projects
+#     ensuring code quality standards are met before any code is committed. Includes formatting
+#     tools (black for Python, prettier for JS/TS), import sorting (isort), linting (ruff, mypy),
+#     security scanning (bandit), complexity analysis (radon), and custom design linters for
+#     enforcing project-specific standards like header validation, breadcrumb checking, and
+#     nesting depth limits. All hooks run automatically on git commit and can be manually
+#     triggered for validation. The configuration supports file filtering by type and location.
+# Dependencies: pre-commit, various linting tools specified in each hook
+# Exports: Pre-commit hook configuration for the repository
+# Interfaces: Triggered automatically on git commit, can be run manually with pre-commit run
+# Implementation: Defines hooks for black, isort, ruff, mypy, prettier, bandit, radon, and custom linters
+
 repos:
   # Python hooks
   - repo: https://github.com/psf/black
@@ -84,7 +98,7 @@ repos:
 
       # - id: header-check
       #   name: Check file headers
-      #   entry: python tools/design-linters/header_linter.py
+      #   entry: python tools/design_linters/header_linter.py
       #   language: system
       #   pass_filenames: false
       #   args: ['--path', '.', '--recursive']
@@ -93,7 +107,7 @@ repos:
 
       # - id: print-statement-check
       #   name: Check for print statements
-      #   entry: python tools/design-linters/print_statement_linter.py
+      #   entry: python tools/design_linters/print_statement_linter.py
       #   language: system
       #   pass_filenames: false
       #   args: ['--path', '.', '--recursive', '--format', 'text', '--no-skip-tests']
@@ -102,7 +116,7 @@ repos:
 
       - id: breadcrumb-check
         name: Check HTML documentation for breadcrumbs
-        entry: python tools/design-linters/breadcrumb_linter.py
+        entry: python tools/design_linters/breadcrumb_linter.py
         language: system
         pass_filenames: false
         files: \.html$

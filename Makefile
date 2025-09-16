@@ -154,14 +154,14 @@ install-hooks: ## Install pre-commit hooks
 test: dev-start ## Run all tests with coverage (starts dev containers if needed)
 	@echo "$(CYAN)Running tests with coverage...$(NC)"
 	@echo "$(YELLOW)Backend tests with coverage:$(NC)"
-	@docker exec -u appuser durable-code-backend-dev bash -c "cd /tmp && PYTHONPATH=/app/tools/design-linters:/app/tools pytest /app/test --cov=app --cov-report=term --cov-report=term:skip-covered --tb=short" || echo "$(YELLOW)Backend tests failed$(NC)"
+	@docker exec -u appuser durable-code-backend-dev bash -c "cd /tmp && PYTHONPATH=/app/tools/design_linters:/app/tools pytest /app/test --cov=app --cov-report=term --cov-report=term:skip-covered --tb=short" || echo "$(YELLOW)Backend tests failed$(NC)"
 	@echo "$(YELLOW)Frontend tests with coverage:$(NC)"
 	@cd durable-code-app/frontend && npm run test:coverage || echo "$(YELLOW)Frontend tests failed or not available$(NC)"
 
 test-quick: dev-start ## Run all tests without coverage (faster)
 	@echo "$(CYAN)Running tests (no coverage)...$(NC)"
 	@echo "$(YELLOW)Backend tests:$(NC)"
-	@docker exec durable-code-backend-dev bash -c "cd /app && PYTHONPATH=/app/tools/design-linters:/app/tools pytest" || echo "$(YELLOW)Backend tests failed$(NC)"
+	@docker exec durable-code-backend-dev bash -c "cd /app && PYTHONPATH=/app/tools/design_linters:/app/tools pytest" || echo "$(YELLOW)Backend tests failed$(NC)"
 	@echo "$(YELLOW)Frontend tests:$(NC)"
 	@cd durable-code-app/frontend && npm run test:run || echo "$(YELLOW)Frontend tests failed or not available$(NC)"
 
@@ -192,7 +192,7 @@ lint: ## Run basic linters
 	@echo "$(YELLOW)Frontend linting:$(NC)"
 	@docker exec durable-code-frontend-dev npm run lint || echo "$(YELLOW)Frontend container not running$(NC)"
 	@echo "$(YELLOW)Print statement check (including tests):$(NC)"
-	@python tools/design-linters/print_statement_linter.py --path . --recursive --no-skip-tests || echo "$(GREEN)✓ No print statements found$(NC)"
+	@python tools/design_linters/print_statement_linter.py --path . --recursive --no-skip-tests || echo "$(GREEN)✓ No print statements found$(NC)"
 
 format: ## Format code
 	@echo "$(CYAN)Formatting code...$(NC)"

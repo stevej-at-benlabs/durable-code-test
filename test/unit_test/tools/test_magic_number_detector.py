@@ -7,7 +7,7 @@ import tempfile
 from pathlib import Path
 
 import pytest
-from magic_number_detector import (
+from design_linters.magic_number_detector import (
     MagicNumberDetector,
     MagicNumberViolation,
     add_parent_refs,
@@ -183,28 +183,28 @@ class TestMagicNumberViolation:
 
     def test_suggestion_generation_for_numbers(self):
         """Test constant name suggestions for numbers."""
-        violation = MagicNumberViolation("test.py", 10, 5, 42, "in main")
+        violation = MagicNumberViolation("test.py", 10, column=5, value=42, context="in main")
         assert "THRESHOLD_42" in violation.suggestion
 
-        violation = MagicNumberViolation("test.py", 10, 5, 3.14, "in main")
+        violation = MagicNumberViolation("test.py", 10, column=5, value=3.14, context="in main")
         assert "THRESHOLD_3_14" in violation.suggestion
 
-        violation = MagicNumberViolation("test.py", 10, 5, -5, "in main")
+        violation = MagicNumberViolation("test.py", 10, column=5, value=-5, context="in main")
         assert "NEG_5" in violation.suggestion
 
     def test_suggestion_generation_for_strings(self):
         """Test constant name suggestions for strings."""
-        violation = MagicNumberViolation("test.py", 10, 5, "active-status", "in main")
+        violation = MagicNumberViolation("test.py", 10, column=5, value="active-status", context="in main")
         assert "ACTIVE_STATUS" in violation.suggestion
 
         violation = MagicNumberViolation(
-            "test.py", 10, 5, "very long string that should be truncated", "in main"
+            "test.py", 10, column=5, value="very long string that should be truncated", context="in main"
         )
         assert len(violation.suggestion) <= 40  # Should be truncated
 
     def test_to_dict(self):
         """Test conversion to dictionary."""
-        violation = MagicNumberViolation("test.py", 10, 5, 42, "in calculate")
+        violation = MagicNumberViolation("test.py", 10, column=5, value=42, context="in calculate")
         result = violation.to_dict()
 
         assert result["file"] == "test.py"
@@ -294,7 +294,7 @@ class TestSpecialNumbers:
         ]
 
         for value, expected in test_cases:
-            violation = MagicNumberViolation("test.py", 1, 1, value, "test")
+            violation = MagicNumberViolation("test.py", 1, column=1, value=value, context="test")
             assert expected in violation.suggestion
 
 
