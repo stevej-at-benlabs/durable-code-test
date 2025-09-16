@@ -297,7 +297,8 @@ class FilePlacementLinter:
 
     def _get_excluded_patterns(self) -> List[str]:
         """Get patterns for files/directories to exclude from analysis."""
-        return [
+        # Base exclusion patterns - common across all projects
+        base_patterns = [
             '.git',
             '__pycache__',
             '.mypy_cache',
@@ -307,14 +308,20 @@ class FilePlacementLinter:
             'venv',
             '.pytest_cache',
             '.coverage',
-            'coverage',  # Test coverage reports
-            'htmlcov',  # Coverage HTML reports
             '*.pyc',
             '*.pyo',
             '*.egg-info',
             '.DS_Store',
             'Thumbs.db'
         ]
+
+        # Additional exclusions for this project
+        project_specific_patterns = [
+            'coverage',  # Test coverage reports
+            'htmlcov',  # Coverage HTML reports
+        ]
+
+        return base_patterns + project_specific_patterns
 
     def _should_exclude_file(self, file_path: Path) -> bool:
         """Check if file should be excluded from analysis."""
