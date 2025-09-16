@@ -85,13 +85,11 @@ jobs:
       - name: Run link validation tests
         run: npm run test:links
 
-      - name: Check public files exist
+      - name: Check React routing works
         run: |
-          if [ ! -f "public/set-standards.html" ]; then
-            echo "❌ Missing required file: public/set-standards.html"
-            exit 1
-          fi
-          echo "✅ All required public files exist"
+          # Test that the standards route is accessible
+          curl -f http://localhost:5173/standards || exit 1
+          echo "✅ React routes are accessible"
 
   build:
     name: Build & Deploy Check
