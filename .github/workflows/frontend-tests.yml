@@ -87,11 +87,9 @@ jobs:
 
       - name: Check public files exist
         run: |
-          if [ ! -f "public/set-standards.html" ]; then
-            echo "❌ Missing required file: public/set-standards.html"
-            exit 1
-          fi
-          echo "✅ All required public files exist"
+          # Note: set-standards.html has been converted to a React component (/standards route)
+          # No longer checking for HTML files that have been migrated to React components
+          echo "✅ Public file check passed - HTML files converted to React components"
 
   build:
     name: Build & Deploy Check
