@@ -345,18 +345,8 @@ export class ExpectedLinksRegistry {
  */
 export const defaultExpectedLinksRegistry = new ExpectedLinksRegistry();
 
-/**
- * Original expected public links array - maintained for backward compatibility
- * @deprecated Use defaultExpectedLinksRegistry.getAllLinks() for new code
- */
-export const expectedPublicLinks = [
-  // React routes (handled by client-side routing)
-  'standards',
-  // Diagram files (still external for now)
-  'diagrams/durable-code-flow.html',
-  'diagrams/ai-review-sequence.html',
-  'diagrams/implementation-plan.html',
-];
+// Hardcoded array removed in favor of registry pattern
+// Use getExpectedPublicLinks() or defaultExpectedLinksRegistry.getAllLinks() instead
 
 /**
  * Gets all expected public links from the registry system

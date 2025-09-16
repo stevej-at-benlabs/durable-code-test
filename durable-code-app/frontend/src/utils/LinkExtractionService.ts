@@ -66,19 +66,22 @@ export interface LinkExtractor {
   extract(element: HTMLElement): string[];
 }
 
-export class CompositeLinkExtractor {
-  private extractors: LinkExtractor[] = [];
+export class DefaultExtractorFactory {
+  static createDefaultExtractors(): LinkExtractor[] {
+    return [
+      new AnchorLinkExtractor(),
+      new ImageLinkExtractor(),
+      new ScriptLinkExtractor(),
+      new StylesheetLinkExtractor(),
+    ];
+  }
+}
 
-  constructor(extractors: LinkExtractor[] = []) {
-    this.extractors =
-      extractors.length > 0
-        ? extractors
-        : [
-            new AnchorLinkExtractor(),
-            new ImageLinkExtractor(),
-            new ScriptLinkExtractor(),
-            new StylesheetLinkExtractor(),
-          ];
+export class CompositeLinkExtractor {
+  private extractors: LinkExtractor[];
+
+  constructor(extractors?: LinkExtractor[]) {
+    this.extractors = extractors || DefaultExtractorFactory.createDefaultExtractors();
   }
 
   addExtractor(extractor: LinkExtractor): void {
