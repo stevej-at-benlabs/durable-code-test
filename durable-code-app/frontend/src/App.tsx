@@ -350,55 +350,197 @@ function HomePage() {
           <div className="cli-showcase">
             <div className="cli-header">
               <h4>
-                <span className="cli-icon">💻</span>
-                new-code CLI Tool
+                <span className="cli-icon">⚡</span>
+                Slash Commands
               </h4>
-              <div className="cli-badge">v2.0</div>
+              <div className="cli-badge">3 Available</div>
             </div>
 
             <div className="command-cards">
               <div className="command-card">
                 <div className="command-header">
                   <span className="command-icon">🧩</span>
-                  <span className="command-type">Component</span>
+                  <span className="command-type">Generation</span>
                 </div>
-                <code className="command-syntax">$ new-code component UserProfile</code>
+                <code className="command-syntax">
+                  $ /new-code Create a user authentication system with login and
+                  registration
+                </code>
                 <p className="command-desc">
+                  Generate production-ready code with proper structure and standards
+                </p>
+              </div>
+
+              <div className="command-card">
+                <div className="command-header">
+                  <span className="command-icon">🎯</span>
+                  <span className="command-type">Quality</span>
+                </div>
+                <code className="command-syntax">$ /solid</code>
+                <p className="command-desc">
+                  Run parallel AI agents to check SOLID principle violations
+                </p>
+              </div>
+
+              <div className="command-card">
+                <div className="command-header">
+                  <span className="command-icon">✅</span>
+                  <span className="command-type">Workflow</span>
+                </div>
+                <code className="command-syntax">$ /done [with merge]</code>
+                <p className="command-desc">
+                  Complete workflow with optional auto-merge after all checks pass
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div className="new-code-showcase">
+            <div className="showcase-header">
+              <h4>
+                <span className="showcase-icon">🛠️</span>
+                /new-code Capabilities
+              </h4>
+              <div className="showcase-badge">Smart Generation</div>
+            </div>
+
+            <div className="capability-cards">
+              <div className="capability-card">
+                <div className="capability-header">
+                  <span className="capability-icon">🧩</span>
+                  <span className="capability-type">Component</span>
+                </div>
+                <code className="capability-syntax">
+                  /new-code Create a user profile component with avatar, bio, and
+                  contact information
+                </code>
+                <p className="capability-desc">
                   Generate React/Vue/Angular components with props, state, and lifecycle
                 </p>
               </div>
 
-              <div className="command-card">
-                <div className="command-header">
-                  <span className="command-icon">🔧</span>
-                  <span className="command-type">Service</span>
+              <div className="capability-card">
+                <div className="capability-header">
+                  <span className="capability-icon">🔧</span>
+                  <span className="capability-type">Service</span>
                 </div>
-                <code className="command-syntax">$ new-code service AuthService</code>
-                <p className="command-desc">
+                <code className="capability-syntax">
+                  /new-code Build an authentication service with JWT token management
+                </code>
+                <p className="capability-desc">
                   Create service layers with dependency injection and error handling
                 </p>
               </div>
 
-              <div className="command-card">
-                <div className="command-header">
-                  <span className="command-icon">🧪</span>
-                  <span className="command-type">Test</span>
+              <div className="capability-card">
+                <div className="capability-header">
+                  <span className="capability-icon">🧪</span>
+                  <span className="capability-type">Test</span>
                 </div>
-                <code className="command-syntax">$ new-code test UserProfile.test</code>
-                <p className="command-desc">
+                <code className="capability-syntax">
+                  /new-code Write comprehensive tests for the payment processing module
+                </code>
+                <p className="capability-desc">
                   Generate test suites with mocks, fixtures, and coverage setup
                 </p>
               </div>
 
-              <div className="command-card">
-                <div className="command-header">
-                  <span className="command-icon">🗄️</span>
-                  <span className="command-type">API</span>
+              <div className="capability-card">
+                <div className="capability-header">
+                  <span className="capability-icon">🗄️</span>
+                  <span className="capability-type">API</span>
                 </div>
-                <code className="command-syntax">$ new-code api users</code>
-                <p className="command-desc">
+                <code className="capability-syntax">
+                  /new-code Implement a REST API for managing user subscriptions and
+                  billing
+                </code>
+                <p className="capability-desc">
                   Scaffold REST/GraphQL endpoints with validation and middleware
                 </p>
+              </div>
+
+              <div className="capability-card">
+                <div className="capability-header">
+                  <span className="capability-icon">🗃️</span>
+                  <span className="capability-type">Database</span>
+                </div>
+                <code className="capability-syntax">
+                  /new-code Design database models for an e-commerce product catalog
+                </code>
+                <p className="capability-desc">
+                  Create database schemas, migrations, and ORM models
+                </p>
+              </div>
+
+              <div className="capability-card">
+                <div className="capability-header">
+                  <span className="capability-icon">🎨</span>
+                  <span className="capability-type">UI/UX</span>
+                </div>
+                <code className="capability-syntax">
+                  /new-code Build a responsive dashboard with charts and data
+                  visualization
+                </code>
+                <p className="capability-desc">
+                  Generate styled components with responsive design and accessibility
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div className="ai-commands-showcase">
+            <div className="showcase-header">
+              <h4>
+                <span className="showcase-icon">🤖</span>
+                AI-Powered Slash Commands
+              </h4>
+              <div className="showcase-badge">New</div>
+            </div>
+
+            <div className="ai-command-cards">
+              <div className="ai-command-card">
+                <div className="ai-command-icon">🎯</div>
+                <h5>/solid</h5>
+                <p>Parallel AI agents analyze SOLID principle violations</p>
+                <div className="ai-command-features">
+                  <span className="feature-tag">5 AI Agents</span>
+                  <span className="feature-tag">Parallel Analysis</span>
+                  <span className="feature-tag">Smart Reports</span>
+                </div>
+                <div className="ai-command-modes">
+                  <div className="mode-item">
+                    <code>/solid</code>
+                    <span>Current branch only</span>
+                  </div>
+                  <div className="mode-item">
+                    <code>/solid all code</code>
+                    <span>Comprehensive analysis</span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="ai-command-card">
+                <div className="ai-command-icon">✅</div>
+                <h5>/done</h5>
+                <p>
+                  Complete workflow automation from commit to PR with optional
+                  auto-merge
+                </p>
+                <div className="ai-command-features">
+                  <span className="feature-tag">Auto Commit</span>
+                  <span className="feature-tag">Quality Checks</span>
+                  <span className="feature-tag">Auto Merge</span>
+                </div>
+                <div className="ai-command-modes">
+                  <div className="mode-item">
+                    <code>/done</code>
+                    <span>Create PR, wait for review</span>
+                  </div>
+                  <div className="mode-item">
+                    <code>/done with merge</code>
+                    <span>Auto-merge after all checks pass</span>
+                  </div>
+                </div>
               </div>
             </div>
           </div>

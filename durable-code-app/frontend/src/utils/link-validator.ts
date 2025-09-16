@@ -7,13 +7,16 @@
  * Version: 1.0
  */
 
-export interface LinkValidationResult {
-  url: string;
-  isValid: boolean;
-  status?: number;
-  error?: string;
-  responseTime?: number;
-}
+import {
+  UrlNormalizer,
+  HttpRequestService,
+  ValidationResultBuilder,
+} from './HttpRequestService';
+import type { ValidationResult } from './HttpRequestService';
+import { CompositeLinkExtractor } from './LinkExtractionService';
+import type { LinkRegistry } from './LinkRegistryInterfaces';
+
+export type LinkValidationResult = ValidationResult;
 
 export interface LinkValidationOptions {
   timeout?: number;
@@ -28,40 +31,17 @@ export async function validateLink(
   url: string,
   options: LinkValidationOptions = {},
 ): Promise<LinkValidationResult> {
-  const { timeout = 5000, followRedirects = true } = options;
   const startTime = Date.now();
+  const httpService = new HttpRequestService();
 
   try {
-    // Handle relative URLs
-    const fullUrl = url.startsWith('http') ? url : `${window.location.origin}/${url}`;
+    const fullUrl = UrlNormalizer.normalizeUrl(url);
+    const response = await httpService.makeRequest(fullUrl, options);
 
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), timeout);
-
-    const response = await fetch(fullUrl, {
-      method: 'HEAD', // Use HEAD to avoid downloading content
-      signal: controller.signal,
-      redirect: followRedirects ? 'follow' : 'manual',
-    });
-
-    clearTimeout(timeoutId);
-    const responseTime = Date.now() - startTime;
-
-    return {
-      url,
-      isValid: response.ok,
-      status: response.status,
-      responseTime,
-    };
+    return ValidationResultBuilder.createSuccessResult(url, response);
   } catch (error) {
     const responseTime = Date.now() - startTime;
-
-    return {
-      url,
-      isValid: false,
-      error: error instanceof Error ? error.message : 'Unknown error',
-      responseTime,
-    };
+    return ValidationResultBuilder.createErrorResult(url, error, responseTime);
   }
 }
 
@@ -80,45 +60,8 @@ export async function validateLinks(
  * Extracts all links from a DOM element
  */
 export function extractLinksFromElement(element: HTMLElement): string[] {
-  const links: string[] = [];
-
-  // Get all anchor tags
-  const anchors = element.querySelectorAll('a[href]');
-  anchors.forEach((anchor) => {
-    const href = anchor.getAttribute('href');
-    if (href && !href.startsWith('mailto:') && !href.startsWith('tel:')) {
-      links.push(href);
-    }
-  });
-
-  // Get all img tags
-  const images = element.querySelectorAll('img[src]');
-  images.forEach((img) => {
-    const src = img.getAttribute('src');
-    if (src) {
-      links.push(src);
-    }
-  });
-
-  // Get all script tags with src
-  const scripts = element.querySelectorAll('script[src]');
-  scripts.forEach((script) => {
-    const src = script.getAttribute('src');
-    if (src) {
-      links.push(src);
-    }
-  });
-
-  // Get all link tags with href (CSS, etc.)
-  const linkTags = element.querySelectorAll('link[href]');
-  linkTags.forEach((link) => {
-    const href = link.getAttribute('href');
-    if (href) {
-      links.push(href);
-    }
-  });
-
-  return [...new Set(links)]; // Remove duplicates
+  const extractor = new CompositeLinkExtractor();
+  return extractor.extractAllLinks(element);
 }
 
 /**
@@ -270,12 +213,8 @@ export function createLinkReportSummary(results: LinkValidationResult[]) {
 
 /**
  * Link registry interface for managing expected links
+ * @deprecated Use ReadableLinkRegistry for read-only access or ModifiableLinkRegistry for full access
  */
-export interface LinkRegistry {
-  getLinks(): string[];
-  addLink(link: string): void;
-  removeLink(link: string): void;
-}
 
 /**
  * Registry for React route links
