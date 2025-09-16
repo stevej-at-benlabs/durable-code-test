@@ -1,10 +1,10 @@
 # Comprehensive Linting Makefile Extension
 # Include this in the main Makefile or use directly
 
-.PHONY: lint-all lint-python lint-frontend lint-complexity lint-security lint-format-check ci-lint lint-file-placement lint-print-statements lint-breadcrumbs lint-headers
+.PHONY: lint-all lint-python lint-frontend lint-complexity lint-security lint-format-check ci-lint lint-file-placement lint-print-statements lint-breadcrumbs lint-headers lint-nesting-depth
 
 # Main linting targets
-lint-all: lint-python lint-frontend lint-magic-numbers lint-file-placement lint-print-statements lint-breadcrumbs lint-headers ## Run all linting checks
+lint-all: lint-python lint-frontend lint-complexity lint-magic-numbers lint-file-placement lint-print-statements lint-breadcrumbs lint-headers lint-nesting-depth ## Run all linting checks
 
 lint-python: ## Run all Python linting tools
 	@echo "$(CYAN)╔════════════════════════════════════════════════════════════╗$(NC)"
@@ -28,15 +28,15 @@ lint-python: ## Run all Python linting tools
 		echo "$(GREEN)✓ Flake8 passed$(NC)" && \
 		echo "" && \
 		echo "$(YELLOW)5. MyPy (type checking)...$(NC)" && \
-		poetry run mypy app && \
+		poetry run mypy app ../../tools && \
 		echo "$(GREEN)✓ MyPy passed$(NC)" && \
 		echo "" && \
 		echo "$(YELLOW)6. Pylint (code analysis)...$(NC)" && \
-		poetry run pylint app && \
+		poetry run pylint app ../../tools && \
 		echo "$(GREEN)✓ Pylint passed$(NC)" && \
 		echo "" && \
 		echo "$(YELLOW)7. Bandit (security)...$(NC)" && \
-		poetry run bandit -r app && \
+		poetry run bandit -r app ../../tools && \
 		echo "$(GREEN)✓ Bandit passed$(NC)" && \
 		echo "" && \
 		echo "$(YELLOW)8. Pip-audit (dependency vulnerabilities)...$(NC)" && \
@@ -51,19 +51,19 @@ lint-complexity: ## Check code complexity (Radon)
 	@echo "$(CYAN)╚════════════════════════════════════════════════════════════╝$(NC)"
 	@cd durable-code-app/backend && \
 		echo "$(YELLOW)Cyclomatic Complexity (must be A):$(NC)" && \
-		poetry run radon cc app -s -n A && \
+		poetry run radon cc app ../../tools -s -n A && \
 		echo "" && \
 		echo "$(YELLOW)Maintainability Index (must be A):$(NC)" && \
-		poetry run radon mi app -s -n A && \
+		poetry run radon mi app ../../tools -s -n A && \
 		echo "" && \
 		echo "$(YELLOW)Halstead Metrics:$(NC)" && \
-		poetry run radon hal app && \
+		poetry run radon hal app ../../tools && \
 		echo "" && \
 		echo "$(YELLOW)Raw Metrics:$(NC)" && \
-		poetry run radon raw app && \
+		poetry run radon raw app ../../tools && \
 		echo "" && \
 		echo "$(YELLOW)Xenon (complexity monitoring):$(NC)" && \
-		poetry run xenon --max-absolute A --max-modules A --max-average A app && \
+		poetry run xenon --max-absolute A --max-modules A --max-average A app ../../tools && \
 		echo "$(GREEN)✅ All complexity checks passed (Grade A)!$(NC)"
 
 lint-frontend: ## Run all TypeScript/React linting
@@ -91,7 +91,7 @@ lint-security: ## Run security-focused linting
 	@echo "$(CYAN)╚════════════════════════════════════════════════════════════╝$(NC)"
 	@cd durable-code-app/backend && \
 		echo "$(YELLOW)Python Security (Bandit):$(NC)" && \
-		poetry run bandit -r app -ll && \
+		poetry run bandit -r app ../../tools -ll && \
 		echo "" && \
 		echo "$(YELLOW)Dependency Vulnerabilities (Safety):$(NC)" && \
 		poetry run safety check --json && \
@@ -129,10 +129,10 @@ ci-lint: ## Linting for CI/CD (strict mode)
 		poetry run isort --check-only . && \
 		poetry run ruff check . && \
 		poetry run flake8 . && \
-		poetry run mypy app && \
-		poetry run bandit -r app && \
-		poetry run radon cc app -n A -s && \
-		poetry run xenon --max-absolute A --max-modules A --max-average A app
+		poetry run mypy app ../../tools && \
+		poetry run bandit -r app ../../tools && \
+		poetry run radon cc app ../../tools -n A -s && \
+		poetry run xenon --max-absolute A --max-modules A --max-average A app ../../tools
 	@cd durable-code-app/frontend && \
 		npm run typecheck && \
 		npm run lint && \
@@ -148,10 +148,10 @@ lint-magic-numbers: ## Detect magic numbers and literals
 	@echo "$(CYAN)║               Magic Number Detection                       ║$(NC)"
 	@echo "$(CYAN)╚════════════════════════════════════════════════════════════╝$(NC)"
 	@echo "$(YELLOW)Checking backend for magic numbers...$(NC)"
-	@python tools/design-linters/magic_number_detector.py durable-code-app/backend/app || echo "$(GREEN)✓ No magic numbers detected$(NC)"
+	@python tools/design_linters/magic_number_detector.py durable-code-app/backend/app || echo "$(GREEN)✓ No magic numbers detected$(NC)"
 	@echo ""
 	@echo "$(YELLOW)Checking frontend for magic numbers...$(NC)"
-	@python tools/design-linters/magic_number_detector.py durable-code-app/frontend/src 2>/dev/null || echo "$(GREEN)✓ No magic numbers detected$(NC)"
+	@python tools/design_linters/magic_number_detector.py durable-code-app/frontend/src 2>/dev/null || echo "$(GREEN)✓ No magic numbers detected$(NC)"
 
 # File placement linting
 lint-file-placement: ## Check file placement according to project standards
@@ -159,7 +159,7 @@ lint-file-placement: ## Check file placement according to project standards
 	@echo "$(CYAN)║              File Placement Validation                    ║$(NC)"
 	@echo "$(CYAN)╚════════════════════════════════════════════════════════════╝$(NC)"
 	@echo "$(YELLOW)Checking file placement standards...$(NC)"
-	@python tools/design-linters/file_placement_linter.py . --fail-on-violation || (echo "$(RED)❌ File placement violations found!$(NC)" && exit 1)
+	@python tools/design_linters/file_placement_linter.py . --fail-on-violation || (echo "$(RED)❌ File placement violations found!$(NC)" && exit 1)
 	@echo "$(GREEN)✅ All files are properly placed!$(NC)"
 
 lint-print-statements: ## Check for print statements in code (including tests)
@@ -167,7 +167,7 @@ lint-print-statements: ## Check for print statements in code (including tests)
 	@echo "$(CYAN)║              Print Statement Detection                    ║$(NC)"
 	@echo "$(CYAN)╚════════════════════════════════════════════════════════════╝$(NC)"
 	@echo "$(YELLOW)Checking for print statements in all code (including tests)...$(NC)"
-	@python tools/design-linters/print_statement_linter.py --path . --recursive --no-skip-tests --format text || (echo "$(RED)❌ Print statements detected! Use loguru for Python or proper logging libraries for JS/TS$(NC)" && exit 1)
+	@python tools/design_linters/print_statement_linter.py --path . --recursive --no-skip-tests --format text || (echo "$(RED)❌ Print statements detected! Use loguru for Python or proper logging libraries for JS/TS$(NC)" && exit 1)
 	@echo "$(GREEN)✅ No print statements found!$(NC)"
 
 lint-breadcrumbs: ## Check HTML documentation for breadcrumb navigation
@@ -175,7 +175,7 @@ lint-breadcrumbs: ## Check HTML documentation for breadcrumb navigation
 	@echo "$(CYAN)║             Breadcrumb Navigation Check                   ║$(NC)"
 	@echo "$(CYAN)╚════════════════════════════════════════════════════════════╝$(NC)"
 	@echo "$(YELLOW)Checking HTML documentation for breadcrumb navigation...$(NC)"
-	@python tools/design-linters/breadcrumb_linter.py || (echo "$(RED)❌ HTML files missing breadcrumb navigation! Add proper navigation to all documentation$(NC)" && exit 1)
+	@python tools/design_linters/breadcrumb_linter.py || (echo "$(RED)❌ HTML files missing breadcrumb navigation! Add proper navigation to all documentation$(NC)" && exit 1)
 	@echo "$(GREEN)✅ All HTML documentation has proper breadcrumb navigation!$(NC)"
 
 lint-headers: ## Check file headers for compliance with standards
@@ -183,15 +183,27 @@ lint-headers: ## Check file headers for compliance with standards
 	@echo "$(CYAN)║              File Header Validation                       ║$(NC)"
 	@echo "$(CYAN)╚════════════════════════════════════════════════════════════╝$(NC)"
 	@echo "$(YELLOW)Checking file headers for compliance with standards...$(NC)"
-	@python tools/design-linters/header_linter.py --path . --strict || (echo "$(RED)❌ File header violations found! Update headers according to FILE_HEADER_STANDARDS.md$(NC)" && exit 1)
+	@python tools/design_linters/header_linter.py --path . --strict || (echo "$(RED)❌ File header violations found! Update headers according to FILE_HEADER_STANDARDS.md$(NC)" && exit 1)
 	@echo "$(GREEN)✅ All file headers are compliant with standards!$(NC)"
+
+lint-nesting-depth: ## Check for excessive nesting depth in code
+	@echo "$(CYAN)╔════════════════════════════════════════════════════════════╗$(NC)"
+	@echo "$(CYAN)║             Nesting Depth Analysis                        ║$(NC)"
+	@echo "$(CYAN)╚════════════════════════════════════════════════════════════╝$(NC)"
+	@echo "$(YELLOW)Checking Python code for excessive nesting depth (max: 3)...$(NC)"
+	@python tools/design_linters/nesting_depth_linter.py durable-code-app/backend --max-depth 3 --exit-zero || echo "$(YELLOW)⚠ Backend nesting depth violations found$(NC)"
+	@echo ""
+	@echo "$(YELLOW)Checking tools and test code for excessive nesting depth...$(NC)"
+	@python tools/design_linters/nesting_depth_linter.py tools --max-depth 3 --exit-zero || echo "$(YELLOW)⚠ Tools nesting depth violations found$(NC)"
+	@python tools/design_linters/nesting_depth_linter.py test --max-depth 3 --exit-zero || echo "$(YELLOW)⚠ Test code nesting depth violations found$(NC)"
+	@echo "$(GREEN)✅ Nesting depth analysis complete!$(NC)"
 
 quality-report: ## Generate detailed quality report
 	@echo "$(CYAN)Generating quality report...$(NC)"
 	@cd durable-code-app/backend && \
 		echo "# Python Code Quality Report" > quality-report.md && \
 		echo "## Complexity Metrics" >> quality-report.md && \
-		poetry run radon cc app -s --json >> quality-report.md && \
+		poetry run radon cc app ../../tools -s --json >> quality-report.md && \
 		echo "## Maintainability Index" >> quality-report.md && \
-		poetry run radon mi app -s --json >> quality-report.md && \
+		poetry run radon mi app ../../tools -s --json >> quality-report.md && \
 		echo "$(GREEN)✓ Report generated: backend/quality-report.md$(NC)"

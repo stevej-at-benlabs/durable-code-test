@@ -8,8 +8,8 @@ from dataclasses import replace
 from pathlib import Path
 
 import pytest
-from __init__ import DEFAULT_SRP_THRESHOLDS, Severity
-from srp_analyzer import SRPAnalyzer, SRPViolation, analyze_directory, analyze_file
+from design_linters import DEFAULT_SRP_THRESHOLDS, Severity
+from design_linters.srp_analyzer import SRPAnalyzer, SRPViolation, analyze_directory, analyze_file
 
 
 class TestSRPAnalyzer:
@@ -71,7 +71,7 @@ class LargeClass:
         tree = ast.parse(code)
 
         # Use strict thresholds for testing
-        strict_thresholds = replace(DEFAULT_SRP_THRESHOLDS, MAX_CLASS_LINES=40)
+        strict_thresholds = replace(DEFAULT_SRP_THRESHOLDS, limits=replace(DEFAULT_SRP_THRESHOLDS.limits, MAX_CLASS_LINES=40))
         analyzer = SRPAnalyzer("test.py", strict_thresholds)
         analyzer.visit(tree)
 
@@ -183,13 +183,13 @@ class SmallClass:
         tree = ast.parse(code)
 
         # Strict thresholds - should detect violation
-        strict_thresholds = replace(DEFAULT_SRP_THRESHOLDS, MAX_METHODS_PER_CLASS=2)
+        strict_thresholds = replace(DEFAULT_SRP_THRESHOLDS, limits=replace(DEFAULT_SRP_THRESHOLDS.limits, MAX_METHODS_PER_CLASS=2))
         analyzer = SRPAnalyzer("test.py", strict_thresholds)
         analyzer.visit(tree)
         assert len(analyzer.violations) == 1
 
         # Lenient thresholds - should not detect violation
-        lenient_thresholds = replace(DEFAULT_SRP_THRESHOLDS, MAX_METHODS_PER_CLASS=10)
+        lenient_thresholds = replace(DEFAULT_SRP_THRESHOLDS, limits=replace(DEFAULT_SRP_THRESHOLDS.limits, MAX_METHODS_PER_CLASS=10))
         analyzer = SRPAnalyzer("test.py", lenient_thresholds)
         analyzer.visit(tree)
         assert len(analyzer.violations) == 0
@@ -204,8 +204,8 @@ class TestSRPViolation:
             "test.py",
             "TestClass",
             10,
-            Severity.WARNING,
-            ["Too many methods", "Low cohesion"],
+            severity=Severity.WARNING,
+            reasons=["Too many methods", "Low cohesion"],
         )
         result = violation.to_dict()
 

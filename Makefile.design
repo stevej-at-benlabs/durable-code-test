@@ -12,9 +12,9 @@ srp-check: ## Check for SRP violations
 	@echo "$(CYAN)╔════════════════════════════════════════════════════════════╗$(NC)"
 	@echo "$(CYAN)║          Single Responsibility Principle Check            ║$(NC)"
 	@echo "$(CYAN)╚════════════════════════════════════════════════════════════╝$(NC)"
-	@python tools/design-linters/srp_analyzer.py durable-code-app/backend --threshold normal
+	@python tools/design_linters/srp_analyzer.py durable-code-app/backend --threshold normal
 	@echo ""
-	@python tools/design-linters/srp_analyzer.py durable-code-app/frontend --threshold normal || true
+	@python tools/design_linters/srp_analyzer.py durable-code-app/frontend --threshold normal || true
 	@echo "$(GREEN)✓ SRP analysis complete$(NC)"
 
 # SOLID Principles Check
@@ -96,7 +96,7 @@ design-report: ## Generate comprehensive design metrics report
 	@echo "Generated: $$(date)" >> design-report.md
 	@echo "" >> design-report.md
 	@echo "## SRP Compliance" >> design-report.md
-	@python tools/design-linters/srp_analyzer.py durable-code-app --json | \
+	@python tools/design_linters/srp_analyzer.py durable-code-app --json | \
 		python -m json.tool >> design-report.md 2>/dev/null || echo "No violations" >> design-report.md
 	@echo "" >> design-report.md
 	@echo "## Complexity Metrics" >> design-report.md
@@ -128,7 +128,7 @@ design-review: ## Interactive design review with suggestions
 
 # CI-specific design check (strict mode)
 ci-design-check: ## Design check for CI/CD pipeline
-	@python tools/design-linters/srp_analyzer.py durable-code-app --threshold strict --fail-on-error
+	@python tools/design_linters/srp_analyzer.py durable-code-app --threshold strict --fail-on-error
 	@echo "$(GREEN)✓ CI design checks passed$(NC)"
 
 # Fix common design issues
@@ -157,6 +157,6 @@ design-watch: ## Monitor design metrics over time
 		clear; \
 		echo "$(CYAN)Design Metrics Monitor - $$(date)$(NC)"; \
 		echo ""; \
-		python tools/design-linters/srp_analyzer.py durable-code-app --threshold normal; \
+		python tools/design_linters/srp_analyzer.py durable-code-app --threshold normal; \
 		sleep 10; \
 	done

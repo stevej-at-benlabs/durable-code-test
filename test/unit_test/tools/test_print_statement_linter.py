@@ -17,9 +17,9 @@ from unittest.mock import MagicMock, patch
 
 # Add tools directory to path for import
 import sys
-sys.path.insert(0, str(Path(__file__).parent.parent.parent.parent / 'tools' / 'design-linters'))
+sys.path.insert(0, str(Path(__file__).parent.parent.parent.parent / 'tools' / 'design_linters'))
 
-from print_statement_linter import PrintStatementLinter, PrintViolation
+from print_statement_linter import PrintStatementLinter, PrintViolation, PatternRegistry
 
 
 class TestPrintStatementLinter(unittest.TestCase):
@@ -433,12 +433,11 @@ function test() {
 
     def test_custom_patterns(self):
         """Test adding custom patterns."""
-        custom_patterns = {
-            'python': [
-                (r'\bdebug\s*\(', 'debug()'),
-            ]
-        }
-        linter = PrintStatementLinter(custom_patterns=custom_patterns)
+        pattern_registry = PatternRegistry()
+        pattern_registry.print_patterns['python'] = [
+            (r'\bdebug\s*\(', 'debug()'),
+        ]
+        linter = PrintStatementLinter(pattern_registry=pattern_registry)
 
         content = '''
 def test():
