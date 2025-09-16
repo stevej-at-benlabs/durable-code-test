@@ -74,9 +74,8 @@ export class DetailedReportBuilder implements ReportBuilder {
     // Status code breakdown
     const statusCodeBreakdown: Record<number, number> = {};
     validResults.forEach((r) => {
-      if (r.statusCode) {
-        statusCodeBreakdown[r.statusCode] =
-          (statusCodeBreakdown[r.statusCode] || 0) + 1;
+      if (r.status) {
+        statusCodeBreakdown[r.status] = (statusCodeBreakdown[r.status] || 0) + 1;
       }
     });
 
@@ -117,7 +116,7 @@ export class CsvReportBuilder implements ReportBuilder {
     const rows = results.map((r) => [
       r.url,
       r.isValid ? 'Yes' : 'No',
-      r.statusCode?.toString() || '',
+      r.status?.toString() || '',
       r.responseTime.toString(),
       r.error || '',
     ]);
