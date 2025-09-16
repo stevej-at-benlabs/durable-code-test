@@ -609,7 +609,7 @@ describe('App Component', () => {
             !href.includes('/diagrams/') &&
             !href.includes('ci-cd-pipeline.html')
           ) {
-            fail(`Unexpected standalone HTML file found: ${href}`);
+            throw new Error(`Unexpected standalone HTML file found: ${href}`);
           }
 
           // Ensure all internal paths start with / or are external URLs or hash anchors
