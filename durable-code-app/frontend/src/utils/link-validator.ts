@@ -7,13 +7,16 @@
  * Version: 1.0
  */
 
-export interface LinkValidationResult {
-  url: string;
-  isValid: boolean;
-  status?: number;
-  error?: string;
-  responseTime?: number;
-}
+import {
+  UrlNormalizer,
+  HttpRequestService,
+  ValidationResultBuilder,
+} from './HttpRequestService';
+import type { ValidationResult } from './HttpRequestService';
+import { CompositeLinkExtractor } from './LinkExtractionService';
+import type { LinkRegistry } from './LinkRegistryInterfaces';
+
+export type LinkValidationResult = ValidationResult;
 
 export interface LinkValidationOptions {
   timeout?: number;
@@ -28,40 +31,17 @@ export async function validateLink(
   url: string,
   options: LinkValidationOptions = {},
 ): Promise<LinkValidationResult> {
-  const { timeout = 5000, followRedirects = true } = options;
   const startTime = Date.now();
+  const httpService = new HttpRequestService();
 
   try {
-    // Handle relative URLs
-    const fullUrl = url.startsWith('http') ? url : `${window.location.origin}/${url}`;
+    const fullUrl = UrlNormalizer.normalizeUrl(url);
+    const response = await httpService.makeRequest(fullUrl, options);
 
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), timeout);
-
-    const response = await fetch(fullUrl, {
-      method: 'HEAD', // Use HEAD to avoid downloading content
-      signal: controller.signal,
-      redirect: followRedirects ? 'follow' : 'manual',
-    });
-
-    clearTimeout(timeoutId);
-    const responseTime = Date.now() - startTime;
-
-    return {
-      url,
-      isValid: response.ok,
-      status: response.status,
-      responseTime,
-    };
+    return ValidationResultBuilder.createSuccessResult(url, response);
   } catch (error) {
     const responseTime = Date.now() - startTime;
-
-    return {
-      url,
-      isValid: false,
-      error: error instanceof Error ? error.message : 'Unknown error',
-      responseTime,
-    };
+    return ValidationResultBuilder.createErrorResult(url, error, responseTime);
   }
 }
 
@@ -80,49 +60,99 @@ export async function validateLinks(
  * Extracts all links from a DOM element
  */
 export function extractLinksFromElement(element: HTMLElement): string[] {
-  const links: string[] = [];
-
-  // Get all anchor tags
-  const anchors = element.querySelectorAll('a[href]');
-  anchors.forEach((anchor) => {
-    const href = anchor.getAttribute('href');
-    if (href && !href.startsWith('mailto:') && !href.startsWith('tel:')) {
-      links.push(href);
-    }
-  });
-
-  // Get all img tags
-  const images = element.querySelectorAll('img[src]');
-  images.forEach((img) => {
-    const src = img.getAttribute('src');
-    if (src) {
-      links.push(src);
-    }
-  });
-
-  // Get all script tags with src
-  const scripts = element.querySelectorAll('script[src]');
-  scripts.forEach((script) => {
-    const src = script.getAttribute('src');
-    if (src) {
-      links.push(src);
-    }
-  });
-
-  // Get all link tags with href (CSS, etc.)
-  const linkTags = element.querySelectorAll('link[href]');
-  linkTags.forEach((link) => {
-    const href = link.getAttribute('href');
-    if (href) {
-      links.push(href);
-    }
-  });
-
-  return [...new Set(links)]; // Remove duplicates
+  const extractor = new CompositeLinkExtractor();
+  return extractor.extractAllLinks(element);
 }
 
 /**
- * Categorizes links by type
+ * Link categorizer interface for extensible link classification
+ */
+export interface LinkCategorizer {
+  categorize(url: string): string[];
+}
+
+/**
+ * Default implementation for HTTP/HTTPS link categorization
+ */
+export class HttpLinkCategorizer implements LinkCategorizer {
+  categorize(url: string): string[] {
+    const categories: string[] = [];
+
+    if (url.startsWith('http://') || url.startsWith('https://')) {
+      categories.push('absolute');
+      if (url.includes(window.location.hostname)) {
+        categories.push('internal');
+      } else {
+        categories.push('external');
+      }
+    }
+
+    return categories;
+  }
+}
+
+/**
+ * Relative link categorizer
+ */
+export class RelativeLinkCategorizer implements LinkCategorizer {
+  categorize(url: string): string[] {
+    if (!url.startsWith('http://') && !url.startsWith('https://')) {
+      return ['relative', 'internal'];
+    }
+    return [];
+  }
+}
+
+/**
+ * Link categorization service that supports multiple categorizers
+ */
+export class LinkCategorizationService {
+  private categorizers: LinkCategorizer[] = [];
+
+  constructor(categorizers: LinkCategorizer[] = []) {
+    this.categorizers =
+      categorizers.length > 0
+        ? categorizers
+        : [new HttpLinkCategorizer(), new RelativeLinkCategorizer()];
+  }
+
+  addCategorizer(categorizer: LinkCategorizer): void {
+    this.categorizers.push(categorizer);
+  }
+
+  categorizeLinks(urls: string[]): {
+    internal: string[];
+    external: string[];
+    relative: string[];
+    absolute: string[];
+  } {
+    const internal: string[] = [];
+    const external: string[] = [];
+    const relative: string[] = [];
+    const absolute: string[] = [];
+
+    urls.forEach((url) => {
+      const allCategories = new Set<string>();
+
+      // Apply all categorizers and collect unique categories
+      this.categorizers.forEach((categorizer) => {
+        const categories = categorizer.categorize(url);
+        categories.forEach((category) => allCategories.add(category));
+      });
+
+      // Sort URLs into appropriate arrays based on categories
+      if (allCategories.has('internal')) internal.push(url);
+      if (allCategories.has('external')) external.push(url);
+      if (allCategories.has('relative')) relative.push(url);
+      if (allCategories.has('absolute')) absolute.push(url);
+    });
+
+    return { internal, external, relative, absolute };
+  }
+}
+
+/**
+ * Backward compatibility function - uses the new service internally
  */
 export function categorizeLinks(urls: string[]): {
   internal: string[];
@@ -130,26 +160,8 @@ export function categorizeLinks(urls: string[]): {
   relative: string[];
   absolute: string[];
 } {
-  const internal: string[] = [];
-  const external: string[] = [];
-  const relative: string[] = [];
-  const absolute: string[] = [];
-
-  urls.forEach((url) => {
-    if (url.startsWith('http://') || url.startsWith('https://')) {
-      absolute.push(url);
-      if (url.includes(window.location.hostname)) {
-        internal.push(url);
-      } else {
-        external.push(url);
-      }
-    } else {
-      relative.push(url);
-      internal.push(url);
-    }
-  });
-
-  return { internal, external, relative, absolute };
+  const service = new LinkCategorizationService();
+  return service.categorizeLinks(urls);
 }
 
 /**
@@ -182,24 +194,181 @@ export async function generateLinkReport(
 }
 
 /**
- * Common public links that should exist in the application
+ * Interface for building different types of reports
  */
-export const expectedPublicLinks = [
-  'set-standards.html',
-  // Add more expected public files here as they're created
-];
+export interface LinkReportSummary {
+  summary: {
+    total: number;
+    valid: number;
+    broken: number;
+  };
+  results: LinkValidationResult[];
+}
+
+export interface ReportBuilder {
+  buildSummary(results: LinkValidationResult[]): LinkReportSummary;
+}
+
+/**
+ * Default summary report builder
+ */
+export class SummaryReportBuilder implements ReportBuilder {
+  buildSummary(results: LinkValidationResult[]) {
+    const total = results.length;
+    const valid = results.filter((r) => r.isValid).length;
+    const broken = results.filter((r) => !r.isValid).length;
+
+    return {
+      summary: {
+        total,
+        valid,
+        broken,
+      },
+      results,
+    };
+  }
+}
+
+/**
+ * Service for creating link reports with extensible builders
+ */
+export class LinkReportService {
+  private builder: ReportBuilder;
+
+  constructor(builder?: ReportBuilder) {
+    this.builder = builder || new SummaryReportBuilder();
+  }
+
+  setBuilder(builder: ReportBuilder): void {
+    this.builder = builder;
+  }
+
+  createReport(results: LinkValidationResult[]) {
+    return this.builder.buildSummary(results);
+  }
+}
+
+/**
+ * Creates a link report summary from validation results
+ * @deprecated Use LinkReportService for new code
+ */
+export function createLinkReportSummary(results: LinkValidationResult[]) {
+  const service = new LinkReportService();
+  return service.createReport(results);
+}
+
+/**
+ * Link registry interface for managing expected links
+ * @deprecated Use ReadableLinkRegistry for read-only access or ModifiableLinkRegistry for full access
+ */
+
+/**
+ * Registry for React route links
+ */
+export class ReactRouteRegistry implements LinkRegistry {
+  private routes: string[] = ['standards'];
+
+  getLinks(): string[] {
+    return [...this.routes];
+  }
+
+  addLink(link: string): void {
+    if (!this.routes.includes(link)) {
+      this.routes.push(link);
+    }
+  }
+
+  removeLink(link: string): void {
+    this.routes = this.routes.filter((route) => route !== link);
+  }
+}
+
+/**
+ * Registry for diagram files
+ */
+export class DiagramRegistry implements LinkRegistry {
+  private diagrams: string[] = [
+    'diagrams/durable-code-flow.html',
+    'diagrams/ai-review-sequence.html',
+    'diagrams/implementation-plan.html',
+  ];
+
+  getLinks(): string[] {
+    return [...this.diagrams];
+  }
+
+  addLink(link: string): void {
+    if (!this.diagrams.includes(link)) {
+      this.diagrams.push(link);
+    }
+  }
+
+  removeLink(link: string): void {
+    this.diagrams = this.diagrams.filter((diagram) => diagram !== link);
+  }
+}
+
+/**
+ * Composite registry that manages multiple link registries
+ */
+export class ExpectedLinksRegistry {
+  private registries: LinkRegistry[] = [];
+
+  constructor(registries: LinkRegistry[] = []) {
+    this.registries =
+      registries.length > 0
+        ? registries
+        : [new ReactRouteRegistry(), new DiagramRegistry()];
+  }
+
+  addRegistry(registry: LinkRegistry): void {
+    this.registries.push(registry);
+  }
+
+  getAllLinks(): string[] {
+    const allLinks: string[] = [];
+    this.registries.forEach((registry) => {
+      allLinks.push(...registry.getLinks());
+    });
+    return allLinks;
+  }
+
+  addLinkToRegistry(registryIndex: number, link: string): void {
+    if (this.registries[registryIndex]) {
+      this.registries[registryIndex].addLink(link);
+    }
+  }
+}
+
+/**
+ * Default expected links registry instance
+ */
+export const defaultExpectedLinksRegistry = new ExpectedLinksRegistry();
+
+// Hardcoded array removed in favor of registry pattern
+// Use getExpectedPublicLinks() or defaultExpectedLinksRegistry.getAllLinks() instead
+
+/**
+ * Gets all expected public links from the registry system
+ * Use this for new code instead of the deprecated expectedPublicLinks array
+ */
+export function getExpectedPublicLinks(): string[] {
+  return defaultExpectedLinksRegistry.getAllLinks();
+}
 
 /**
  * Validates that all expected public links exist
  */
 export async function validateExpectedLinks(
   options: LinkValidationOptions = {},
+  registry: ExpectedLinksRegistry = defaultExpectedLinksRegistry,
 ): Promise<{
   allValid: boolean;
   results: LinkValidationResult[];
   missing: string[];
 }> {
-  const results = await validateLinks(expectedPublicLinks, options);
+  const linksToValidate = registry.getAllLinks();
+  const results = await validateLinks(linksToValidate, options);
   const missing = results.filter((r) => !r.isValid).map((r) => r.url);
 
   return {
