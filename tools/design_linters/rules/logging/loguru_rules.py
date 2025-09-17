@@ -258,12 +258,21 @@ class StructuredLoggingRule(ASTLintRule):
 
     def _is_message_complex(self, message: str) -> bool:
         """Check if message meets complexity criteria."""
-        return len(message) > 50 or message.count(" ") > 5 or self._has_action_words(message)
+        # Much higher thresholds to reduce noise - only flag genuinely complex messages
+        return len(message) > 100 or message.count(" ") > 15 or self._has_action_words(message)
 
     def _has_action_words(self, message: str) -> bool:
-        """Check if message contains action-related words."""
-        action_words = ["completed", "failed", "started", "finished", "processing"]
-        return any(word in message.lower() for word in action_words)
+        """Check if message contains action-related words that suggest measurable context."""
+        # Only flag specific patterns that strongly suggest missing context
+        action_patterns = [
+            "processing completed",
+            "operation failed",
+            "request failed",
+            "task completed",
+            "job finished",
+        ]
+        message_lower = message.lower()
+        return any(pattern in message_lower for pattern in action_patterns)
 
 
 class LogLevelConsistencyRule(ASTLintRule):
