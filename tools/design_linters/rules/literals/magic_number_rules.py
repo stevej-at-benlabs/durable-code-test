@@ -19,6 +19,157 @@ from typing import Any
 from design_linters.framework.interfaces import ASTLintRule, LintContext, LintViolation, Severity
 
 
+class MagicNumberContextAnalyzer:
+    """Helper class for analyzing magic number contexts."""
+
+    def is_acceptable_context(self, node: ast.Constant, context: LintContext, config: dict[str, Any]) -> bool:
+        """Check if a magic number is in an acceptable context."""
+        if self._is_test_file(context):
+            return True
+
+        if self._is_configuration_context(context):
+            return True
+
+        if self._is_small_integer_in_range(node, context, config):
+            return True
+
+        if self._is_constant_definition(node, context):
+            return True
+
+        return bool(self._is_in_math_context(context))
+
+    def _is_test_file(self, context: LintContext) -> bool:
+        return context.file_path and ("test" in str(context.file_path) or "spec" in str(context.file_path))
+
+    def _is_configuration_context(self, context: LintContext) -> bool:
+        return context.file_path and any(
+            config_indicator in str(context.file_path) for config_indicator in ["config", "settings", "constants"]
+        )
+
+    def _is_small_integer_in_range(self, node: ast.Constant, context: LintContext, config: dict[str, Any]) -> bool:
+        max_small_int = config.get("max_small_integer", 10)
+        return (
+            isinstance(node.value, int)
+            and 0 <= node.value <= max_small_int
+            and self._is_in_range_context(context)
+            and self._has_sufficient_context(context)
+        )
+
+    def _is_in_range_context(self, context: LintContext) -> bool:
+        return self._check_range_functions_in_stack(context)
+
+    def _has_sufficient_context(self, context: LintContext) -> bool:
+        return bool(context.node_stack and len(context.node_stack) > 2)
+
+    def _check_range_functions_in_stack(self, context: LintContext) -> bool:
+        if not context.node_stack:
+            return False
+
+        return any(isinstance(node, ast.Call) and self._is_range_like_call(node) for node in context.node_stack)
+
+    def _is_range_like_call(self, node: ast.AST) -> bool:
+        return isinstance(node, ast.Call) and isinstance(node.func, ast.Name) and node.func.id in ["range", "enumerate"]
+
+    def _is_constant_definition(self, _node: ast.Constant, context: LintContext) -> bool:
+        if not context.node_stack or len(context.node_stack) < 2:
+            return False
+
+        parent = context.node_stack[-2]
+        if isinstance(parent, ast.Assign):
+            for target in parent.targets:
+                if isinstance(target, ast.Name) and self._is_constant_name(target.id, context):
+                    return True
+        return False
+
+    def _is_constant_name(self, name: str, context: LintContext) -> bool:
+        return name.isupper() and len(name) > 1
+
+    def _is_in_math_context(self, context: LintContext) -> bool:
+        if not context.file_path:
+            return False
+
+        return any(
+            math_indicator in str(context.file_path).lower()
+            for math_indicator in ["math", "geometry", "physics", "calculation", "formula"]
+        )
+
+
+class MagicNumberSuggestionGenerator:
+    """Helper class for generating magic number constant suggestions."""
+
+    def generate_constant_suggestion(self, value: Any, context: LintContext) -> str:
+        """Generate a suggestion for naming a magic number constant."""
+        if not hasattr(value, "__int__") and not hasattr(value, "__float__"):
+            return self._get_generic_suggestion(value)
+
+        common_suggestion = self._get_common_pattern_suggestion(value)
+        if common_suggestion != f"VALUE_{value}":
+            return common_suggestion
+
+        if context.node_stack and len(context.node_stack) > 1:
+            parent = context.node_stack[-2]
+            if isinstance(parent, ast.Call) and isinstance(parent.func, ast.Name):
+                function_name = parent.func.id
+                context_suggestion = self._get_context_based_suggestion(value, function_name)
+                if context_suggestion != f"VALUE_{value}":
+                    return context_suggestion
+
+        return self._get_generic_suggestion(value)
+
+    def _get_generic_suggestion(self, value: Any) -> str:
+        return f"CONSTANT_{str(value).replace('.', '_').replace('-', 'NEGATIVE_')}"
+
+    def _get_common_pattern_suggestion(self, value: Any) -> str:
+        time_constants = {
+            60: "SECONDS_PER_MINUTE",
+            3600: "SECONDS_PER_HOUR",
+            24: "HOURS_PER_DAY",
+            365: "DAYS_PER_YEAR",
+            1000: "MILLISECONDS_PER_SECOND",
+        }
+
+        if value in time_constants:
+            return time_constants[value]
+
+        return f"VALUE_{value}"
+
+    def _get_context_based_suggestion(self, value: Any, function_name: str) -> str:
+        lower_func_name = function_name.lower()
+
+        specific_suggestion = self._check_specific_patterns(value, lower_func_name)
+        if specific_suggestion != f"VALUE_{value}":
+            return specific_suggestion
+
+        size_suggestion = self._check_size_patterns(value, lower_func_name)
+        if size_suggestion != f"VALUE_{value}":
+            return size_suggestion
+
+        return f"VALUE_{value}"
+
+    def _check_specific_patterns(self, value: Any, lower_func_name: str) -> str:
+        if "timeout" in lower_func_name or "delay" in lower_func_name:
+            return f"TIMEOUT_SECONDS_{value}" if value < 3600 else f"TIMEOUT_MINUTES_{value // 60}"
+
+        if "retry" in lower_func_name or "attempt" in lower_func_name:
+            return f"MAX_RETRIES_{value}"
+
+        if "port" in lower_func_name:
+            return f"DEFAULT_PORT_{value}"
+
+        return f"VALUE_{value}"
+
+    def _check_size_patterns(self, value: Any, lower_func_name: str) -> str:
+        if "size" in lower_func_name or "length" in lower_func_name or "count" in lower_func_name:
+            if value < 100:
+                return f"DEFAULT_SIZE_{value}"
+            elif value < 10000:
+                return f"BUFFER_SIZE_{value}"
+            else:
+                return f"MAX_SIZE_{value}"
+
+        return f"VALUE_{value}"
+
+
 class MagicNumberRule(ASTLintRule):
     """Rule to detect magic numbers that should be replaced with named constants."""
 
@@ -28,6 +179,11 @@ class MagicNumberRule(ASTLintRule):
     HOURS_PER_DAY = 24  # design-lint: ignore[literals.magic-number]
     DAYS_PER_YEAR = 365  # design-lint: ignore[literals.magic-number]
     MILLISECONDS_PER_SECOND = 1000  # design-lint: ignore[literals.magic-number]
+
+    def __init__(self):
+        super().__init__()
+        self._context_analyzer = MagicNumberContextAnalyzer()
+        self._suggestion_generator = MagicNumberSuggestionGenerator()
 
     @property
     def rule_id(self) -> str:
@@ -67,11 +223,11 @@ class MagicNumberRule(ASTLintRule):
             return []
 
         # Check for specific contexts where numbers are acceptable
-        if self._is_acceptable_context(node, context, config):
+        if self._context_analyzer.is_acceptable_context(node, context, config):
             return []
 
         # Generate appropriate suggestion
-        suggestion = self._generate_constant_suggestion(node.value, context)
+        suggestion = self._suggestion_generator.generate_constant_suggestion(node.value, context)
 
         return [
             self.create_violation(
@@ -88,161 +244,6 @@ class MagicNumberRule(ASTLintRule):
                 },
             )
         ]
-
-    def _is_acceptable_context(self, node: ast.Constant, context: LintContext, config: dict[str, Any]) -> bool:
-        """Check if the number appears in an acceptable context."""
-        if self._is_test_file(context):
-            return True
-
-        if self._is_configuration_context(context):
-            return True
-
-        if self._is_constant_definition(node, context):
-            return True
-
-        if self._is_small_integer_in_range(node, context, config):
-            return True
-
-        return self._is_in_math_context(context)
-
-    def _is_test_file(self, context: LintContext) -> bool:
-        """Check if current file is a test file."""
-        return "test" in str(context.file_path).lower()
-
-    def _is_configuration_context(self, context: LintContext) -> bool:
-        """Check if current context is configuration-related."""
-        if not context.current_function:
-            return False
-        return any(word in context.current_function.lower() for word in ["config", "setup", "init"])
-
-    def _is_small_integer_in_range(self, node: ast.Constant, context: LintContext, config: dict[str, Any]) -> bool:
-        """Check if number is a small integer used in range context."""
-        if not isinstance(node.value, int):
-            return False
-
-        max_small_int = config.get("max_acceptable_small_int", 10)
-        return abs(node.value) <= max_small_int and self._is_in_range_context(context)
-
-    def _is_in_range_context(self, context: LintContext) -> bool:
-        """Check if the number is used in range() function or similar contexts."""
-        if not self._has_sufficient_context(context):
-            return False
-
-        return self._check_range_functions_in_stack(context)
-
-    def _has_sufficient_context(self, context: LintContext) -> bool:
-        """Check if context has sufficient node stack for analysis."""
-        return bool(context.node_stack and len(context.node_stack) >= 2)
-
-    def _check_range_functions_in_stack(self, context: LintContext) -> bool:
-        """Check if any parent nodes are range-like function calls."""
-        if not context.node_stack:
-            return False
-
-        for i in range(1, min(4, len(context.node_stack))):
-            index = -i
-            if abs(index) <= len(context.node_stack):
-                node = context.node_stack[index]
-                if self._is_range_like_call(node):
-                    return True
-        return False
-
-    def _is_range_like_call(self, node: ast.AST) -> bool:
-        """Check if node is a range-like function call."""
-        return isinstance(node, ast.Call) and isinstance(node.func, ast.Name) and node.func.id in ["range", "enumerate"]
-
-    def _is_constant_name(self, name: str, context: LintContext) -> bool:
-        """Check if a name follows constant naming conventions."""
-        if name.isupper() or name.startswith("DEFAULT_"):
-            return True
-        return bool(context.current_class and name and name[0].isupper())
-
-    def _is_constant_definition(self, _node: ast.Constant, context: LintContext) -> bool:
-        """Check if this number is part of a constant definition (ALL_CAPS variable)."""
-        if not context.node_stack or len(context.node_stack) < 2:
-            return False
-
-        parent = context.node_stack[-2]
-        if not isinstance(parent, ast.Assign) or context.current_function:
-            return False
-
-        return any(
-            isinstance(target, ast.Name) and self._is_constant_name(target.id, context) for target in parent.targets
-        )
-
-    def _is_in_math_context(self, context: LintContext) -> bool:
-        """Check if the number is part of a mathematical operation."""
-        if not context.node_stack or len(context.node_stack) < 2:
-            return False
-
-        # The parent is the second-to-last node (current node is last)
-        parent = context.node_stack[-2]
-        return isinstance(parent, (ast.BinOp, ast.UnaryOp, ast.Compare))
-
-    def _generate_constant_suggestion(self, value: Any, context: LintContext) -> str:
-        """Generate an appropriate constant name suggestion."""
-        function_name = context.current_function or ""
-
-        suggestion = (
-            self._get_common_pattern_suggestion(value)
-            or self._get_context_based_suggestion(value, function_name)
-            or self._get_generic_suggestion(value)
-        )
-
-        return suggestion
-
-    def _get_generic_suggestion(self, value: Any) -> str:
-        """Get generic constant suggestion."""
-        return f"Consider extracting to a named constant: CONSTANT_NAME = {value}"
-
-    def _get_common_pattern_suggestion(self, value: Any) -> str:
-        """Get suggestion for common time/mathematical patterns."""
-        common_patterns = {
-            self.SECONDS_PER_MINUTE: "SECONDS_PER_MINUTE = 60",
-            self.SECONDS_PER_HOUR: "SECONDS_PER_HOUR = 3600",
-            self.HOURS_PER_DAY: "HOURS_PER_DAY = 24",
-            self.DAYS_PER_YEAR: "DAYS_PER_YEAR = 365",
-            self.MILLISECONDS_PER_SECOND: "MILLISECONDS_PER_SECOND = 1000",
-        }
-
-        if value in common_patterns:
-            return common_patterns[value]
-
-        if isinstance(value, float) and 0 < value < 1:
-            return f"THRESHOLD_VALUE = {value}"
-
-        return ""
-
-    def _get_context_based_suggestion(self, value: Any, function_name: str) -> str:
-        """Get suggestion based on function context."""
-        if not function_name:
-            return ""
-
-        lower_func_name = function_name.lower()
-        suggestion = self._check_specific_patterns(value, lower_func_name)
-        if suggestion:
-            return suggestion
-
-        return self._check_size_patterns(value, lower_func_name)
-
-    def _check_specific_patterns(self, value: Any, lower_func_name: str) -> str:
-        """Check for specific context patterns."""
-        context_patterns = {
-            "timeout": f"DEFAULT_TIMEOUT = {value}",
-            "retry": f"MAX_RETRIES = {value}",
-            "port": f"DEFAULT_PORT = {value}",
-        }
-
-        for pattern, suggestion in context_patterns.items():
-            if pattern in lower_func_name:
-                return suggestion
-        return ""
-
-    def _check_size_patterns(self, value: Any, lower_func_name: str) -> str:
-        """Check for size-related patterns."""
-        if "size" in lower_func_name or "limit" in lower_func_name:
-            return f"MAX_SIZE = {value}"
-        return ""
 
 
 class MagicComplexRule(ASTLintRule):

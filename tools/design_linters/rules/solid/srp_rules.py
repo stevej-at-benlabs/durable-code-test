@@ -190,10 +190,74 @@ class TooManyResponsibilitiesRule(ASTLintRule):
         return any(pattern in class_name for pattern in interface_patterns)
 
 
+class CohesionAnalyzer:
+    """Helper class for analyzing class cohesion."""
+
+    def extract_instance_variables(self, node: ast.ClassDef) -> set[str]:
+        """Extract instance variables from a class."""
+        instance_vars = set()
+        for item in ast.walk(node):
+            if isinstance(item, ast.Attribute) and isinstance(item.value, ast.Name) and item.value.id == "self":
+                instance_vars.add(item.attr)
+        return instance_vars
+
+    def calculate_cohesion(self, methods: list[ast.FunctionDef], instance_vars: set[str]) -> float:
+        """Calculate cohesion score using LCOM metric."""
+        method_var_usage = self._build_method_var_usage_map(methods, instance_vars)
+        method_names = list(method_var_usage.keys())
+
+        if len(method_names) < 2:
+            return 1.0
+
+        return self._calculate_shared_variable_ratio(method_names, method_var_usage)
+
+    def _build_method_var_usage_map(self, methods: list[ast.FunctionDef], instance_vars: set[str]) -> dict:
+        """Build mapping of methods to their used instance variables."""
+        method_var_usage = {}
+        for method in methods:
+            used_vars = self._find_used_instance_vars(method, instance_vars)
+            method_var_usage[method.name] = used_vars
+        return method_var_usage
+
+    def _calculate_shared_variable_ratio(self, method_names: list[str], method_var_usage: dict) -> float:
+        """Calculate ratio of method pairs that share variables."""
+        total_pairs = 0
+        shared_pairs = 0
+
+        for i, method_i in enumerate(method_names):
+            for method_j in method_names[i + 1 :]:
+                total_pairs += 1
+                if method_var_usage[method_i] & method_var_usage[method_j]:
+                    shared_pairs += 1
+
+        return shared_pairs / total_pairs if total_pairs > 0 else 1.0
+
+    def _find_used_instance_vars(self, method: ast.FunctionDef, instance_vars: set[str]) -> set[str]:
+        """Find instance variables used by a method."""
+        used_vars = set()
+        for node in ast.walk(method):
+            if self._is_instance_variable_access(node, instance_vars):
+                used_vars.add(node.attr)  # type: ignore
+        return used_vars
+
+    def _is_instance_variable_access(self, node: ast.AST, instance_vars: set[str]) -> bool:
+        """Check if node is an instance variable access."""
+        return (
+            isinstance(node, ast.Attribute)
+            and isinstance(node.value, ast.Name)
+            and node.value.id == "self"
+            and node.attr in instance_vars
+        )
+
+
 class LowCohesionRule(ASTLintRule):
     """Rule to detect classes with low cohesion."""
 
     DEFAULT_MIN_COHESION = 0.02  # Very lenient - only catch egregious violations
+
+    def __init__(self):
+        super().__init__()
+        self._cohesion_analyzer = CohesionAnalyzer()
 
     @property
     def rule_id(self) -> str:
@@ -247,10 +311,10 @@ class LowCohesionRule(ASTLintRule):
         min_cohesion = config.get("min_cohesion_score", self.DEFAULT_MIN_COHESION)
 
         methods = [n for n in node.body if isinstance(n, ast.FunctionDef)]
-        instance_vars = self._extract_instance_variables(node)
+        instance_vars = self._cohesion_analyzer.extract_instance_variables(node)
         can_calculate = self._can_calculate_cohesion(methods, instance_vars)
 
-        cohesion_score = self._calculate_cohesion(methods, instance_vars) if can_calculate else 0.0
+        cohesion_score = self._cohesion_analyzer.calculate_cohesion(methods, instance_vars) if can_calculate else 0.0
 
         return {
             "can_calculate": can_calculate,
@@ -281,62 +345,6 @@ class LowCohesionRule(ASTLintRule):
                 suggestion="Consider splitting the class into more cohesive units",
             )
         ]
-
-    def _extract_instance_variables(self, node: ast.ClassDef) -> set[str]:
-        """Extract instance variables from a class."""
-        instance_vars = set()
-        for item in ast.walk(node):
-            if isinstance(item, ast.Attribute) and isinstance(item.value, ast.Name) and item.value.id == "self":
-                instance_vars.add(item.attr)
-        return instance_vars
-
-    def _calculate_cohesion(self, methods: list[ast.FunctionDef], instance_vars: set[str]) -> float:
-        """Calculate cohesion score using LCOM metric."""
-        method_var_usage = self._build_method_var_usage_map(methods, instance_vars)
-        method_names = list(method_var_usage.keys())
-
-        if len(method_names) < 2:
-            return 1.0
-
-        return self._calculate_shared_variable_ratio(method_names, method_var_usage)
-
-    def _build_method_var_usage_map(self, methods: list[ast.FunctionDef], instance_vars: set[str]) -> dict:
-        """Build mapping of methods to their used instance variables."""
-        method_var_usage = {}
-        for method in methods:
-            used_vars = self._find_used_instance_vars(method, instance_vars)
-            method_var_usage[method.name] = used_vars
-        return method_var_usage
-
-    def _calculate_shared_variable_ratio(self, method_names: list[str], method_var_usage: dict) -> float:
-        """Calculate ratio of method pairs that share variables."""
-        total_pairs = 0
-        shared_pairs = 0
-
-        for i, method_i in enumerate(method_names):
-            for method_j in method_names[i + 1 :]:
-                total_pairs += 1
-                if method_var_usage[method_i] & method_var_usage[method_j]:
-                    shared_pairs += 1
-
-        return shared_pairs / total_pairs if total_pairs > 0 else 1.0
-
-    def _find_used_instance_vars(self, method: ast.FunctionDef, instance_vars: set[str]) -> set[str]:
-        """Find instance variables used by a method."""
-        used_vars = set()
-        for node in ast.walk(method):
-            if self._is_instance_variable_access(node, instance_vars):
-                used_vars.add(node.attr)  # type: ignore
-        return used_vars
-
-    def _is_instance_variable_access(self, node: ast.AST, instance_vars: set[str]) -> bool:
-        """Check if node is an instance variable access."""
-        return (
-            isinstance(node, ast.Attribute)
-            and isinstance(node.value, ast.Name)
-            and node.value.id == "self"
-            and node.attr in instance_vars
-        )
 
     def _is_framework_pattern_class(self, node: ast.ClassDef) -> bool:
         """Check if this is a framework pattern class that's expected to have low cohesion."""
