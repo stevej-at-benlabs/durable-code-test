@@ -70,13 +70,18 @@ def _extract_ignore_pattern(line: str, directive_type: str) -> str | None:
 
 def _matches_rule_pattern(rule_id: str, pattern: str) -> bool:
     """Check if rule ID matches ignore pattern."""
-    if pattern == rule_id:
-        return True
+    # Handle comma-separated patterns
+    patterns = [p.strip() for p in pattern.split(",")]
 
-    # Handle wildcard patterns like "literals.*"
-    if pattern.endswith(".*"):
-        prefix = pattern[:-2]
-        return rule_id.startswith(prefix + ".")
+    for p in patterns:
+        if p == rule_id:
+            return True
+
+        # Handle wildcard patterns like "literals.*"
+        if p.endswith(".*"):
+            prefix = p[:-2]
+            if rule_id.startswith(prefix + "."):
+                return True
 
     return False
 

@@ -7,11 +7,12 @@ Overview: This module provides basic tests that verify the framework loads
 Dependencies: unittest, framework modules
 """
 
+import sys
+import os
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '../../../../tools'))
+
 import unittest
 from pathlib import Path
-
-import sys
-sys.path.insert(0, '/home/stevejackson/Projects/durable-code-test/tools')
 
 
 class TestBasicImports(unittest.TestCase):
@@ -465,36 +466,86 @@ def calculate():
             os.unlink(test_file)
 
 
-    def test_debug_file_level_ignore(self):
-        """Debug test to understand file-level ignore issue."""
+    def test_file_level_ignore_logging_and_style(self):
+        """Test that file-level ignore for logging and style rules works."""
         import tempfile
         import os
         from pathlib import Path
-        from design_linters.framework.ignore_utils import has_file_level_ignore
+        from design_linters.rules.logging.general_logging_rules import NoPlainPrintRule
+        from design_linters.rules.style.print_statement_rules import PrintStatementRule
 
-        # Create test file with file-level ignore
+        # Register the print statement rules
+        self.registry.register_rule(NoPlainPrintRule())
+        self.registry.register_rule(PrintStatementRule())
+
+        # Create test file with file-level ignore for logging and style
         test_code = '''#!/usr/bin/env python3
-# design-lint: ignore-file[literals.*]
-def test():
-    return 42
+# design-lint: ignore-file[logging.*,style.*]
+# This file intentionally contains print statements
+
+def test_function():
+    print("This should be ignored")
+    x = 42
+    print(f"Value: {x}")
+    return x
 '''
 
-        # First, test the utility function directly
-        result = has_file_level_ignore(test_code, 'literals.magic-number')
-        self.assertTrue(result, "has_file_level_ignore should return True for literals.magic-number")
-
-        # Now test through the orchestrator
         with tempfile.NamedTemporaryFile(mode='w', suffix='.py', delete=False) as f:
             f.write(test_code)
             test_file = Path(f.name)
 
         try:
             violations = self.orchestrator.lint_file(test_file)
-            literal_violations = [v for v in violations if v.rule_id.startswith('literals.')]
-            self.assertEqual(len(literal_violations), 0,
-                           f"Should have no violations but got: {[(v.rule_id, getattr(v, 'line', 'N/A'), v.message) for v in literal_violations]}")
+            # Should have no print statement violations
+            print_violations = [v for v in violations if 'print' in v.rule_id]
+            self.assertEqual(len(print_violations), 0,
+                           f"File-level ignore should suppress print statement violations, but got: {[v.rule_id for v in print_violations]}")
+
+            # Magic numbers should still be caught (not ignored)
+            magic_violations = [v for v in violations if 'magic' in v.rule_id]
+            self.assertEqual(len(magic_violations), 1, "Magic number should still be caught")
         finally:
             os.unlink(test_file)
+
+    def test_debug_file_level_ignore(self):
+        """Debug test to understand file-level ignore issue."""
+        import tempfile
+        import os
+        from pathlib import Path
+        from design_linters.framework.interfaces import has_file_level_ignore
+
+        # Test that the pattern matching works for both styles
+        test_code1 = '''#!/usr/bin/env python3
+# design-lint: ignore-file[logging.*,style.*]
+def test():
+    print("test")
+'''
+
+        # Test direct function
+        self.assertTrue(has_file_level_ignore(test_code1, "logging.no-print"))
+        self.assertTrue(has_file_level_ignore(test_code1, "style.print-statement"))
+        self.assertFalse(has_file_level_ignore(test_code1, "other.rule"))
+
+        # Now test with actual linting
+        from design_linters.rules.logging.general_logging_rules import NoPlainPrintRule
+        from design_linters.rules.style.print_statement_rules import PrintStatementRule
+
+        # Register the print statement rules
+        self.registry.register_rule(NoPlainPrintRule())
+        self.registry.register_rule(PrintStatementRule())
+
+        with tempfile.NamedTemporaryFile(mode='w', suffix='.py', delete=False) as f:
+            f.write(test_code1)
+            test_file = Path(f.name)
+
+        try:
+            violations = self.orchestrator.lint_file(test_file)
+            print_violations = [v for v in violations if 'print' in v.rule_id]
+            print(f"DEBUG: Found violations: {[v.rule_id for v in print_violations]}")
+            self.assertEqual(len(print_violations), 0, "Should have no print violations with ignore directive")
+        finally:
+            os.unlink(test_file)
+
 
 
 if __name__ == '__main__':
