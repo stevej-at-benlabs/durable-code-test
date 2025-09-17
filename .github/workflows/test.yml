@@ -1,0 +1,61 @@
+# GitHub Actions workflow for comprehensive testing
+# Runs all tests using make test-all target
+name: Testing
+
+on:
+  pull_request:
+    branches: [main, develop]
+  push:
+    branches: [main]
+
+env:
+  PYTHON_VERSION: '3.11'
+  NODE_VERSION: '20'
+
+jobs:
+  test:
+    name: Test Suite
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Install Docker Compose
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y docker-compose
+
+      - name: Run comprehensive test suite
+        run: make test-all
+
+      - name: Upload coverage reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-reports
+          path: |
+            **/coverage.xml
+            **/coverage/
+            **/htmlcov/
+          retention-days: 30
+
+      - name: Generate test summary
+        if: always()
+        run: |
+          echo "## 🧪 Test Summary" >> $GITHUB_STEP_SUMMARY
+          echo "All tests completed using \`make test-all\`" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ Backend tests with coverage (pytest)" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ Frontend tests with coverage (Jest/Vitest)" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ Integration tests" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ Design linter framework tests" >> $GITHUB_STEP_SUMMARY

@@ -67,7 +67,81 @@ make test-coverage    # Coverage reports
 - Frontend: Minimum 70% coverage required
 - Critical paths: 95% coverage required
 
-### 4. Build Verification
+### 4. AI Documentation Update Opportunities
+
+Before committing, analyze changes for AI documentation updates:
+
+#### Automated Analysis of Changes
+```bash
+# Get list of changed files for analysis
+git diff --name-only HEAD
+
+# Check for changes that might require AI documentation updates
+git diff --stat HEAD | grep -E "\.(py|tsx?|md|yml|json)$"
+```
+
+#### Documentation Update Opportunities
+
+**Check for these scenarios and present user with update options:**
+
+1. **New Templates Needed**
+   - New file patterns that could benefit from templates
+   - New component types not covered by existing templates
+   - New API endpoint patterns
+
+2. **Feature Documentation Updates**
+   - New features added that should be documented in `.ai/features/`
+   - Significant changes to existing features
+   - New integration patterns or workflows
+
+3. **Template Updates Required**
+   - Changes to existing patterns that templates should reflect
+   - New configuration options or parameters
+   - Updated best practices or conventions
+
+4. **Standards Updates**
+   - New development patterns that should be standardized
+   - Changes to coding conventions or style guides
+   - Security or performance best practices
+
+5. **Howto Guide Updates**
+   - New commands or workflows that need documentation
+   - Changes to existing procedures
+   - New debugging techniques or troubleshooting steps
+
+#### Present Update Opportunities
+```
+🤖 AI Documentation Update Analysis
+
+Based on your changes, I've identified opportunities to update AI documentation:
+
+📁 Templates:
+  [✓] Create new React hook template (3 new hooks added)
+  [ ] Update FastAPI template (new validation patterns)
+
+📚 Features:
+  [✓] Update web-application.md (new authentication tab)
+  [ ] Add new feature: real-time notifications
+
+📖 Howto Guides:
+  [✓] Update run-tests.md (new test categories)
+  [ ] Create howto for database migrations
+
+🎯 Standards:
+  [ ] Update STANDARDS.md (new security requirements)
+
+Would you like me to update any of these? (y/N for each, or 'all' for everything)
+```
+
+#### User Response Handling
+```bash
+# If user accepts updates, proceed with:
+# 1. Update relevant .ai/ files
+# 2. Include updates in the commit
+# 3. Mention updates in commit message and PR description
+```
+
+### 5. Build Verification
 Ensure production builds work correctly:
 
 ```bash
@@ -81,7 +155,7 @@ cd durable-code-app/frontend && npm run build
 docker-compose build --no-cache
 ```
 
-### 5. Commit Changes
+### 6. Commit Changes
 Create meaningful commit with proper formatting:
 
 #### Commit Message Format
@@ -118,6 +192,7 @@ feat(api): Add user authentication endpoints
 - Add comprehensive input validation
 - Include rate limiting for auth endpoints
 - Add unit and integration tests with 95% coverage
+- Update AI documentation (templates and feature docs)
 
 🤖 Generated with Claude Code
 Co-Authored-By: Claude <noreply@anthropic.com>
@@ -125,7 +200,7 @@ EOF
 )"
 ```
 
-### 6. Push and Create Pull Request
+### 7. Push and Create Pull Request
 Push changes and create PR with comprehensive details:
 
 #### Push to Remote
@@ -149,6 +224,7 @@ gh pr create --title "feat: Add user authentication system" --body "$(cat <<'EOF
 - ✅ Input validation with Pydantic
 - 🛡️ Rate limiting for security
 - 🧪 Comprehensive test coverage (95%)
+- 📚 AI documentation updated (templates, features, guides)
 
 ## Test Plan
 - [x] Unit tests for all auth functions
@@ -178,7 +254,7 @@ EOF
 )"
 ```
 
-### 7. CI/CD Verification
+### 8. CI/CD Verification
 Monitor and ensure all automated checks pass:
 
 #### GitHub Actions Monitoring
@@ -203,7 +279,7 @@ gh run watch $(gh run list --branch $(git branch --show-current) --json database
 - ✅ Coverage requirements met
 - ✅ Performance benchmarks met
 
-### 8. Auto-Merge Decision (if 'with merge' specified)
+### 9. Auto-Merge Decision (if 'with merge' specified)
 If the `with merge` argument was provided, proceed with automatic merge:
 
 #### Pre-Merge Validation
@@ -269,7 +345,7 @@ git branch -d feature/branch-name
 git fetch --prune
 ```
 
-### 9. Handle Check Failures
+### 10. Handle Check Failures
 If any checks fail, address them systematically:
 
 #### Failed Build
@@ -417,44 +493,51 @@ All standard criteria PLUS:
 
 "🚀 Starting completion workflow for branch: feature/auth-system"
 ""
-"📋 Step 1/8: Pre-commit validation"
+"📋 Step 1/9: Pre-commit validation"
 "✅ On feature branch: feature/auth-system"
 "✅ Working directory clean"
 "✅ Ready to proceed"
 ""
-"🔍 Step 2/8: Code quality checks"
+"🔍 Step 2/9: Code quality checks"
 "✅ Backend linting passed"
 "✅ Frontend linting passed"
 "✅ Type checking passed"
 "✅ Security scan clean"
 "✅ SOLID principles compliant"
 ""
-"🧪 Step 3/8: Comprehensive testing"
+"🧪 Step 3/9: Comprehensive testing"
 "✅ Backend tests: 247 passed, 95% coverage"
 "✅ Frontend tests: 89 passed, 78% coverage"
 "✅ Integration tests: 23 passed"
 "✅ All coverage requirements met"
 ""
-"🏗️ Step 4/8: Build verification"
+"🤖 Step 4/9: AI documentation analysis"
+"✅ Analyzed 12 changed files"
+"✅ Identified 3 documentation opportunities"
+"✅ User accepted updates for templates and features"
+"✅ Updated .ai/templates/react-hook.template"
+"✅ Updated .ai/features/web-application.md"
+""
+"🏗️ Step 5/9: Build verification"
 "✅ Backend compilation successful"
 "✅ Frontend production build successful"
 "✅ Docker images built successfully"
 ""
-"💾 Step 5/8: Committing changes"
+"💾 Step 6/9: Committing changes"
 "✅ Staged 12 files"
 "✅ Created commit: feat(auth): Add user authentication system"
 ""
-"📤 Step 6/8: Push and create PR"
+"📤 Step 7/9: Push and create PR"
 "✅ Pushed to origin/feature/auth-system"
 "✅ PR created: #42 - feat: Add user authentication system"
 ""
-"🔄 Step 7/8: CI/CD verification"
+"🔄 Step 8/9: CI/CD verification"
 "✅ Build check passed (2m 14s)"
 "✅ Test check passed (3m 45s)"
 "✅ Quality check passed (1m 32s)"
 "✅ Security check passed (45s)"
 ""
-"🎉 Step 8/8: Completion"
+"🎉 Step 9/9: Completion"
 "✅ All checks passed successfully"
 "✅ PR ready for review: https://github.com/user/repo/pull/42"
 "✅ Workflow completed successfully"
@@ -475,50 +558,56 @@ All standard criteria PLUS:
 
 "🚀 Starting completion workflow with auto-merge for branch: feature/auth-system"
 ""
-"📋 Step 1/9: Pre-commit validation"
+"📋 Step 1/10: Pre-commit validation"
 "✅ On feature branch: feature/auth-system"
 "✅ Working directory clean"
 "✅ Ready to proceed"
 ""
-"🔍 Step 2/9: Code quality checks"
+"🔍 Step 2/10: Code quality checks"
 "✅ Backend linting passed"
 "✅ Frontend linting passed"
 "✅ Type checking passed"
 "✅ Security scan clean"
 "✅ SOLID principles compliant"
 ""
-"🧪 Step 3/9: Comprehensive testing"
+"🧪 Step 3/10: Comprehensive testing"
 "✅ Backend tests: 247 passed, 95% coverage"
 "✅ Frontend tests: 89 passed, 78% coverage"
 "✅ Integration tests: 23 passed"
 "✅ All coverage requirements met"
 ""
-"🏗️ Step 4/9: Build verification"
+"🤖 Step 4/10: AI documentation analysis"
+"✅ Analyzed 12 changed files"
+"✅ Identified 2 documentation opportunities"
+"✅ User accepted updates for new authentication patterns"
+"✅ Updated .ai/features/web-application.md"
+""
+"🏗️ Step 5/10: Build verification"
 "✅ Backend compilation successful"
 "✅ Frontend production build successful"
 "✅ Docker images built successfully"
 ""
-"💾 Step 5/9: Committing changes"
+"💾 Step 6/10: Committing changes"
 "✅ Staged 12 files"
 "✅ Created commit: feat(auth): Add user authentication system"
 ""
-"📤 Step 6/9: Push and create PR"
+"📤 Step 7/10: Push and create PR"
 "✅ Pushed to origin/feature/auth-system"
 "✅ PR created: #42 - feat: Add user authentication system"
 ""
-"🔄 Step 7/9: CI/CD verification"
+"🔄 Step 8/10: CI/CD verification"
 "✅ Build check passed (2m 14s)"
 "✅ Test check passed (3m 45s)"
 "✅ Quality check passed (1m 32s)"
 "✅ Security check passed (45s)"
 ""
-"🔍 Step 8/9: Auto-merge validation"
+"🔍 Step 9/10: Auto-merge validation"
 "✅ All required checks passing"
 "✅ No merge conflicts detected"
 "✅ Branch protection rules satisfied"
 "✅ PR is mergeable"
 ""
-"🎯 Step 9/9: Auto-merge execution"
+"🎯 Step 10/10: Auto-merge execution"
 "✅ PR automatically merged and squashed"
 "✅ Feature branch deleted from remote"
 "✅ Switched to main branch"
@@ -546,7 +635,7 @@ All standard criteria PLUS:
 ""
 [... all steps 1-7 pass successfully ...]
 ""
-"🔍 Step 8/9: Auto-merge validation"
+"🔍 Step 9/10: Auto-merge validation"
 "✅ All required checks passing"
 "✅ No merge conflicts detected"
 "❌ Required review not obtained"

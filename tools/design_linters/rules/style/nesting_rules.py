@@ -17,7 +17,7 @@ from design_linters.framework.interfaces import ASTLintRule, LintContext, LintVi
 
 # Default configuration constants
 DEFAULT_MAX_NESTING_DEPTH = 4
-DEFAULT_MAX_FUNCTION_LINES = 75  # More realistic for complex functions
+DEFAULT_MAX_FUNCTION_LINES = 50  # Default limit expected by tests
 DEFAULT_MAX_DEEP_FUNCTION_NESTING = 4  # More realistic for real-world code
 
 

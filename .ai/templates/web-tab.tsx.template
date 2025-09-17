@@ -1,0 +1,122 @@
+/**
+ * Purpose: {{TAB_PURPOSE}} tab component for the durable code framework
+ * Scope: Tab component displaying {{TAB_SCOPE}} information and interactive features
+ * Overview: {{TAB_DESCRIPTION}}. Provides comprehensive information about {{TAB_TOPIC}}
+ *     including documentation, examples, interactive demonstrations, and related resources.
+ *     Follows the established tab pattern with consistent styling and navigation.
+ * Dependencies: React, TypeScript, CSS modules, utility functions
+ * Exports: {{TAB_COMPONENT_NAME}} component (default export)
+ * Props/Interfaces: No external props - self-contained tab component
+ * State/Behavior: {{STATE_DESCRIPTION}}
+ */
+
+import { useState, useEffect } from 'react';
+import type { ReactElement } from 'react';
+
+interface {{TAB_COMPONENT_NAME}}State {
+  {{STATE_PROPERTIES}}
+}
+
+interface {{DATA_INTERFACE}} {
+  {{DATA_PROPERTIES}}
+}
+
+export function {{TAB_COMPONENT_NAME}}(): ReactElement {
+  const [state, setState] = useState<{{TAB_COMPONENT_NAME}}State>({
+    {{INITIAL_STATE}}
+  });
+
+  const [{{DATA_STATE}}, set{{DATA_STATE_SETTER}}] = useState<{{DATA_INTERFACE}}[]>([]);
+
+  useEffect(() => {
+    // Initialize component data and state
+    {{INITIALIZATION_LOGIC}}
+  }, []);
+
+  const handle{{ACTION_NAME}} = ({{ACTION_PARAMS}}) => {
+    {{ACTION_LOGIC}}
+  };
+
+  return (
+    <div className="tab-content {{TAB_CSS_CLASS}}">
+      <div className="tab-header">
+        <div className="tab-title-section">
+          <h1 className="tab-title">
+            <span className="tab-icon">{{TAB_ICON}}</span>
+            {{TAB_TITLE}}
+          </h1>
+          <p className="tab-subtitle">{{TAB_SUBTITLE}}</p>
+        </div>
+      </div>
+
+      <div className="tab-body">
+        <div className="content-grid">
+          {/* Main content section */}
+          <section className="main-content">
+            <div className="content-card">
+              <h2>{{MAIN_SECTION_TITLE}}</h2>
+              <p>{{MAIN_SECTION_DESCRIPTION}}</p>
+
+              {{MAIN_CONTENT_ELEMENTS}}
+            </div>
+          </section>
+
+          {/* Interactive section */}
+          <section className="interactive-section">
+            <div className="content-card">
+              <h2>{{INTERACTIVE_SECTION_TITLE}}</h2>
+
+              {{INTERACTIVE_ELEMENTS}}
+            </div>
+          </section>
+
+          {/* Documentation section */}
+          <section className="documentation-section">
+            <div className="content-card">
+              <h2>Documentation & Resources</h2>
+
+              <div className="resource-links">
+                {{RESOURCE_LINKS}}
+              </div>
+            </div>
+          </section>
+        </div>
+      </div>
+
+      <div className="tab-footer">
+        <div className="footer-content">
+          <p className="footer-note">{{FOOTER_TEXT}}</p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// Template usage instructions:
+// 1. Replace {{TAB_PURPOSE}} with tab's purpose (e.g., "Testing strategy")
+// 2. Replace {{TAB_SCOPE}} with scope (e.g., "comprehensive testing")
+// 3. Replace {{TAB_DESCRIPTION}} with detailed description
+// 4. Replace {{TAB_TOPIC}} with main topic (e.g., "testing methodologies")
+// 5. Replace {{TAB_COMPONENT_NAME}} with PascalCase component name
+// 6. Replace {{STATE_DESCRIPTION}} with state behavior description
+// 7. Replace {{STATE_PROPERTIES}} with TypeScript interface properties
+// 8. Replace {{DATA_INTERFACE}} with data interface name
+// 9. Replace {{DATA_PROPERTIES}} with data interface properties
+// 10. Replace {{INITIAL_STATE}} with initial state values
+// 11. Replace {{DATA_STATE}} with data state variable name
+// 12. Replace {{DATA_STATE_SETTER}} with setter function name
+// 13. Replace {{INITIALIZATION_LOGIC}} with useEffect logic
+// 14. Replace {{ACTION_NAME}} with handler function name
+// 15. Replace {{ACTION_PARAMS}} with function parameters
+// 16. Replace {{ACTION_LOGIC}} with handler implementation
+// 17. Replace {{TAB_CSS_CLASS}} with CSS class name
+// 18. Replace {{TAB_ICON}} with appropriate emoji or icon
+// 19. Replace {{TAB_TITLE}} with display title
+// 20. Replace {{TAB_SUBTITLE}} with subtitle text
+// 21. Replace {{MAIN_SECTION_TITLE}} with main section heading
+// 22. Replace {{MAIN_SECTION_DESCRIPTION}} with main section description
+// 23. Replace {{MAIN_CONTENT_ELEMENTS}} with JSX content
+// 24. Replace {{INTERACTIVE_SECTION_TITLE}} with interactive section heading
+// 25. Replace {{INTERACTIVE_ELEMENTS}} with interactive JSX elements
+// 26. Replace {{RESOURCE_LINKS}} with documentation links
+// 27. Replace {{FOOTER_TEXT}} with footer information
