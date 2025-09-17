@@ -408,10 +408,17 @@ class LogLevelConsistencyRule(ASTLintRule):
         message_lower = message.lower()
 
         level_indicators = {
-            "error": ["error", "exception", "failed", "failure", "crash", "fatal"],
+            "error": ["error", "exception", "crash", "fatal"],  # Removed "failed", "failure"
             "warning": ["warning", "warn", "deprecated", "fallback", "retry"],
             "success": ["success", "completed successfully", "finished successfully"],
-            "debug": ["debug", "trace", "dump", "variable", "state"],
+            "debug": [
+                "debug",
+                "trace",
+                "dump",
+                "variable",
+                "state",
+                "skipped",
+            ],  # Removed "failed", "failure" - these can be errors in important contexts
         }
 
         for level, indicators in level_indicators.items():

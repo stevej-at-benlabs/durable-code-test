@@ -328,7 +328,8 @@ class LoggingInExceptionsRule(ASTLintRule):
         if not isinstance(call.func, ast.Attribute):
             return False
         method_name = call.func.attr.lower()
-        return method_name not in ["error", "exception", "critical"]
+        # Allow debug level for exception logging (useful in loops or discovery)
+        return method_name not in ["debug", "error", "exception", "critical"]
 
     def _create_wrong_level_violation(self, context: LintContext, call: ast.Call) -> LintViolation:
         """Create violation for inappropriate logging level."""
