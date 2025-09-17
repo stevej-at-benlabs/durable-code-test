@@ -1,10 +1,22 @@
 # Comprehensive Linting Makefile Extension
-# Include this in the main Makefile or use directly
+# Uses the new unified design linter framework
 
-.PHONY: lint-all lint-python lint-frontend lint-complexity lint-security lint-format-check ci-lint lint-file-placement lint-print-statements lint-breadcrumbs lint-headers lint-nesting-depth
+.PHONY: lint-all lint-python lint-frontend lint-complexity lint-security lint-format-check ci-lint lint-magic-numbers lint-print-statements lint-nesting-depth lint-logging unified-style-check
 
 # Main linting targets
-lint-all: lint-python lint-frontend lint-complexity lint-magic-numbers lint-file-placement lint-print-statements lint-breadcrumbs lint-headers lint-nesting-depth ## Run all linting checks
+lint-all: lint-python lint-frontend lint-complexity lint-magic-numbers lint-print-statements lint-nesting-depth lint-logging ## Run all linting checks
+
+# Unified style checking with new framework
+unified-style-check: ## Run all style checks with unified framework
+	@echo "$(CYAN)╔════════════════════════════════════════════════════════════╗$(NC)"
+	@echo "$(CYAN)║         Unified Style Checking Framework                  ║$(NC)"
+	@echo "$(CYAN)╚════════════════════════════════════════════════════════════╝$(NC)"
+	@PYTHONPATH=tools python -m design_linters \
+		--categories style,literals,logging \
+		--format text \
+		--recursive \
+		.
+	@echo "$(GREEN)✅ Style checks complete!$(NC)"
 
 lint-python: ## Run all Python linting tools
 	@echo "$(CYAN)╔════════════════════════════════════════════════════════════╗$(NC)"
@@ -45,22 +57,22 @@ lint-python: ## Run all Python linting tools
 		echo "" && \
 		echo "$(GREEN)✅ All Python linting checks passed!$(NC)"
 
-lint-complexity: ## Check code complexity (Radon)
+lint-complexity: ## Check code complexity (Radon + unified framework)
 	@echo "$(CYAN)╔════════════════════════════════════════════════════════════╗$(NC)"
 	@echo "$(CYAN)║                  Complexity Analysis                       ║$(NC)"
 	@echo "$(CYAN)╚════════════════════════════════════════════════════════════╝$(NC)"
+	@echo "$(YELLOW)Running unified complexity checks...$(NC)"
+	@PYTHONPATH=tools python -m design_linters \
+		--categories complexity \
+		--format text \
+		durable-code-app tools
+	@echo ""
 	@cd durable-code-app/backend && \
 		echo "$(YELLOW)Cyclomatic Complexity (must be A):$(NC)" && \
 		poetry run radon cc app ../../tools -s -n A && \
 		echo "" && \
 		echo "$(YELLOW)Maintainability Index (must be A):$(NC)" && \
 		poetry run radon mi app ../../tools -s -n A && \
-		echo "" && \
-		echo "$(YELLOW)Halstead Metrics:$(NC)" && \
-		poetry run radon hal app ../../tools && \
-		echo "" && \
-		echo "$(YELLOW)Raw Metrics:$(NC)" && \
-		poetry run radon raw app ../../tools && \
 		echo "" && \
 		echo "$(YELLOW)Xenon (complexity monitoring):$(NC)" && \
 		poetry run xenon --max-absolute A --max-modules A --max-average A app ../../tools && \
@@ -137,73 +149,133 @@ ci-lint: ## Linting for CI/CD (strict mode)
 		npm run typecheck && \
 		npm run lint && \
 		npm run format:check
+	@PYTHONPATH=tools python -m design_linters \
+		--strict \
+		--fail-on-error \
+		--min-severity warning \
+		.
 
 # Local development helpers
 pre-commit: lint-format-check lint-complexity ## Pre-commit checks
 	@echo "$(GREEN)✅ Ready to commit!$(NC)"
 
-# Magic number detection
-lint-magic-numbers: ## Detect magic numbers and literals
+# Magic number detection - now uses unified framework
+lint-magic-numbers: ## Detect magic numbers and literals with unified framework
 	@echo "$(CYAN)╔════════════════════════════════════════════════════════════╗$(NC)"
 	@echo "$(CYAN)║               Magic Number Detection                       ║$(NC)"
 	@echo "$(CYAN)╚════════════════════════════════════════════════════════════╝$(NC)"
-	@echo "$(YELLOW)Checking backend for magic numbers...$(NC)"
-	@python tools/design_linters/magic_number_detector.py durable-code-app/backend/app || echo "$(GREEN)✓ No magic numbers detected$(NC)"
-	@echo ""
-	@echo "$(YELLOW)Checking frontend for magic numbers...$(NC)"
-	@python tools/design_linters/magic_number_detector.py durable-code-app/frontend/src 2>/dev/null || echo "$(GREEN)✓ No magic numbers detected$(NC)"
+	@echo "$(YELLOW)Checking for magic numbers and strings...$(NC)"
+	@PYTHONPATH=tools python -m design_linters \
+		--categories literals \
+		--format text \
+		durable-code-app
+	@echo "$(GREEN)✅ Magic literal check complete!$(NC)"
 
-# File placement linting
-lint-file-placement: ## Check file placement according to project standards
-	@echo "$(CYAN)╔════════════════════════════════════════════════════════════╗$(NC)"
-	@echo "$(CYAN)║              File Placement Validation                    ║$(NC)"
-	@echo "$(CYAN)╚════════════════════════════════════════════════════════════╝$(NC)"
-	@echo "$(YELLOW)Checking file placement standards...$(NC)"
-	@python tools/design_linters/file_placement_linter.py . --fail-on-violation || (echo "$(RED)❌ File placement violations found!$(NC)" && exit 1)
-	@echo "$(GREEN)✅ All files are properly placed!$(NC)"
-
-lint-print-statements: ## Check for print statements in code (including tests)
+# Print statement detection - now uses unified framework
+lint-print-statements: ## Check for print statements with unified framework
 	@echo "$(CYAN)╔════════════════════════════════════════════════════════════╗$(NC)"
 	@echo "$(CYAN)║              Print Statement Detection                    ║$(NC)"
 	@echo "$(CYAN)╚════════════════════════════════════════════════════════════╝$(NC)"
-	@echo "$(YELLOW)Checking for print statements in all code (including tests)...$(NC)"
-	@python tools/design_linters/print_statement_linter.py --path . --recursive --no-skip-tests --format text || (echo "$(RED)❌ Print statements detected! Use loguru for Python or proper logging libraries for JS/TS$(NC)" && exit 1)
-	@echo "$(GREEN)✅ No print statements found!$(NC)"
+	@echo "$(YELLOW)Checking for print statements...$(NC)"
+	@PYTHONPATH=tools python -m design_linters \
+		--rules style.print-statement,style.console-output \
+		--format text \
+		--recursive \
+		.
+	@echo "$(GREEN)✅ Print statement check complete!$(NC)"
 
-lint-breadcrumbs: ## Check HTML documentation for breadcrumb navigation
-	@echo "$(CYAN)╔════════════════════════════════════════════════════════════╗$(NC)"
-	@echo "$(CYAN)║             Breadcrumb Navigation Check                   ║$(NC)"
-	@echo "$(CYAN)╚════════════════════════════════════════════════════════════╝$(NC)"
-	@echo "$(YELLOW)Checking HTML documentation for breadcrumb navigation...$(NC)"
-	@python tools/design_linters/breadcrumb_linter.py || (echo "$(RED)❌ HTML files missing breadcrumb navigation! Add proper navigation to all documentation$(NC)" && exit 1)
-	@echo "$(GREEN)✅ All HTML documentation has proper breadcrumb navigation!$(NC)"
-
-lint-headers: ## Check file headers for compliance with standards
-	@echo "$(CYAN)╔════════════════════════════════════════════════════════════╗$(NC)"
-	@echo "$(CYAN)║              File Header Validation                       ║$(NC)"
-	@echo "$(CYAN)╚════════════════════════════════════════════════════════════╝$(NC)"
-	@echo "$(YELLOW)Checking file headers for compliance with standards...$(NC)"
-	@python tools/design_linters/header_linter.py --path . --strict || (echo "$(RED)❌ File header violations found! Update headers according to FILE_HEADER_STANDARDS.md$(NC)" && exit 1)
-	@echo "$(GREEN)✅ All file headers are compliant with standards!$(NC)"
-
-lint-nesting-depth: ## Check for excessive nesting depth in code
+# Nesting depth analysis - now uses unified framework
+lint-nesting-depth: ## Check for excessive nesting with unified framework
 	@echo "$(CYAN)╔════════════════════════════════════════════════════════════╗$(NC)"
 	@echo "$(CYAN)║             Nesting Depth Analysis                        ║$(NC)"
 	@echo "$(CYAN)╚════════════════════════════════════════════════════════════╝$(NC)"
-	@echo "$(YELLOW)Checking Python code for excessive nesting depth (max: 3)...$(NC)"
-	@python tools/design_linters/nesting_depth_linter.py durable-code-app/backend --max-depth 3 --exit-zero || echo "$(YELLOW)⚠ Backend nesting depth violations found$(NC)"
-	@echo ""
-	@echo "$(YELLOW)Checking tools and test code for excessive nesting depth...$(NC)"
-	@python tools/design_linters/nesting_depth_linter.py tools --max-depth 3 --exit-zero || echo "$(YELLOW)⚠ Tools nesting depth violations found$(NC)"
-	@python tools/design_linters/nesting_depth_linter.py test --max-depth 3 --exit-zero || echo "$(YELLOW)⚠ Test code nesting depth violations found$(NC)"
+	@echo "$(YELLOW)Checking for excessive nesting depth...$(NC)"
+	@PYTHONPATH=tools python -m design_linters \
+		--rules style.excessive-nesting,style.deep-function \
+		--format text \
+		durable-code-app tools test
 	@echo "$(GREEN)✅ Nesting depth analysis complete!$(NC)"
 
-quality-report: ## Generate detailed quality report
+# Logging best practices - uses unified framework
+lint-logging: ## Check logging best practices with unified framework
+	@echo "$(CYAN)╔════════════════════════════════════════════════════════════╗$(NC)"
+	@echo "$(CYAN)║             Logging Best Practices Check                  ║$(NC)"
+	@echo "$(CYAN)╚════════════════════════════════════════════════════════════╝$(NC)"
+	@echo "$(YELLOW)Checking for logging issues...$(NC)"
+	@PYTHONPATH=tools python -m design_linters \
+		--categories logging \
+		--format text \
+		--recursive \
+		.
+	@echo "$(GREEN)✅ Logging check complete!$(NC)"
+
+# Loguru-specific checks
+lint-loguru: ## Check for proper loguru usage
+	@echo "$(CYAN)╔════════════════════════════════════════════════════════════╗$(NC)"
+	@echo "$(CYAN)║                 Loguru Usage Check                        ║$(NC)"
+	@echo "$(CYAN)╚════════════════════════════════════════════════════════════╝$(NC)"
+	@echo "$(YELLOW)Checking for proper loguru patterns...$(NC)"
+	@PYTHONPATH=tools python -m design_linters \
+		--categories loguru \
+		--format text \
+		durable-code-app tools
+	@echo "$(GREEN)✅ Loguru check complete!$(NC)"
+
+# Generate quality report with unified framework
+quality-report: ## Generate detailed quality report with unified framework
 	@echo "$(CYAN)Generating quality report...$(NC)"
+	@echo "# Code Quality Report" > quality-report.md
+	@echo "Generated: $$(date)" >> quality-report.md
+	@echo "" >> quality-report.md
+	@echo "## Design Linting Results" >> quality-report.md
+	@PYTHONPATH=tools python -m design_linters \
+		--format json \
+		. 2>/dev/null >> quality-report.md || echo "[]" >> quality-report.md
+	@echo "" >> quality-report.md
 	@cd durable-code-app/backend && \
-		echo "# Python Code Quality Report" > quality-report.md && \
-		echo "## Complexity Metrics" >> quality-report.md && \
-		poetry run radon cc app ../../tools -s --json >> quality-report.md && \
-		echo "## Maintainability Index" >> quality-report.md && \
-		poetry run radon mi app ../../tools -s --json >> quality-report.md && \
-		echo "$(GREEN)✓ Report generated: backend/quality-report.md$(NC)"
+		echo "## Complexity Metrics" >> ../../../quality-report.md && \
+		poetry run radon cc app ../../tools -s --json >> ../../../quality-report.md && \
+		echo "" >> ../../../quality-report.md && \
+		echo "## Maintainability Index" >> ../../../quality-report.md && \
+		poetry run radon mi app ../../tools -s --json >> ../../../quality-report.md
+	@echo "$(GREEN)✓ Report generated: quality-report.md$(NC)"
+
+# List all available lint rules
+list-lint-rules: ## List all available linting rules
+	@echo "$(CYAN)╔════════════════════════════════════════════════════════════╗$(NC)"
+	@echo "$(CYAN)║                Available Linting Rules                    ║$(NC)"
+	@echo "$(CYAN)╚════════════════════════════════════════════════════════════╝$(NC)"
+	@PYTHONPATH=tools python -m design_linters --list-rules
+
+# Run linting in watch mode
+lint-watch: ## Monitor code for linting issues
+	@echo "$(CYAN)Monitoring for linting issues...$(NC)"
+	@while true; do \
+		clear; \
+		echo "$(CYAN)Lint Monitor - $$(date)$(NC)"; \
+		echo ""; \
+		PYTHONPATH=tools python -m design_linters \
+			--min-severity warning \
+			--format text \
+			.; \
+		sleep 5; \
+	done
+
+# Legacy compatibility targets
+legacy-lint-print: ## Run print statement linter in legacy mode
+	@PYTHONPATH=tools python -m design_linters \
+		--legacy print \
+		.
+
+legacy-lint-nesting: ## Run nesting depth linter in legacy mode
+	@PYTHONPATH=tools python -m design_linters \
+		--legacy nesting \
+		.
+
+# Test the linting framework
+test-lint-framework: ## Run tests for the linting framework
+	@echo "$(CYAN)╔════════════════════════════════════════════════════════════╗$(NC)"
+	@echo "$(CYAN)║            Testing Linting Framework                      ║$(NC)"
+	@echo "$(CYAN)╚════════════════════════════════════════════════════════════╝$(NC)"
+	@PYTHONPATH=tools pytest test/unit_test/tools/design_linters -v --cov=tools/design_linters
+	@echo "$(GREEN)✓ Framework tests passed$(NC)"

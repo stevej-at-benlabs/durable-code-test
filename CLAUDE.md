@@ -1,0 +1,1 @@
+- Don't run tests locally, always used docker or make

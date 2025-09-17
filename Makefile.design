@@ -1,103 +1,107 @@
 # Design Principles Linting Makefile Extension
-# Detects violations of SOLID principles and design patterns
+# Uses the new unified design linter framework
 
-.PHONY: design-lint srp-check solid-check cohesion-check coupling-check smell-check design-report
+.PHONY: design-lint srp-check solid-check cohesion-check coupling-check smell-check design-report unified-lint
 
-# Main design linting target
-design-lint: srp-check solid-check cohesion-check coupling-check smell-check ## Run all design principle checks
+# Main design linting target - now uses unified framework
+design-lint: unified-lint ## Run all design principle checks with new framework
 	@echo "$(GREEN)✅ All design principle checks completed!$(NC)"
 
-# Single Responsibility Principle Check
-srp-check: ## Check for SRP violations
+# Unified linter for all design checks
+unified-lint: ## Run unified design linter framework
+	@echo "$(CYAN)╔════════════════════════════════════════════════════════════╗$(NC)"
+	@echo "$(CYAN)║             Unified Design Linter Framework               ║$(NC)"
+	@echo "$(CYAN)╚════════════════════════════════════════════════════════════╝$(NC)"
+	@echo "$(YELLOW)Running all design principle checks...$(NC)"
+	@PYTHONPATH=tools python -m design_linters durable-code-app --recursive --fail-on-error --format text
+	@echo "$(GREEN)✓ Design analysis complete$(NC)"
+
+# Single Responsibility Principle Check - uses new framework
+srp-check: ## Check for SRP violations using unified framework
 	@echo "$(CYAN)╔════════════════════════════════════════════════════════════╗$(NC)"
 	@echo "$(CYAN)║          Single Responsibility Principle Check            ║$(NC)"
 	@echo "$(CYAN)╚════════════════════════════════════════════════════════════╝$(NC)"
-	@python tools/design_linters/srp_analyzer.py durable-code-app/backend --threshold normal
+	@PYTHONPATH=tools python -m design_linters \
+		--categories solid,srp \
+		--min-severity warning \
+		durable-code-app/backend
 	@echo ""
-	@python tools/design_linters/srp_analyzer.py durable-code-app/frontend --threshold normal || true
+	@PYTHONPATH=tools python -m design_linters \
+		--categories solid,srp \
+		--min-severity warning \
+		durable-code-app/frontend || true
 	@echo "$(GREEN)✓ SRP analysis complete$(NC)"
 
-# SOLID Principles Check
-solid-check: ## Check all SOLID principles
+# SOLID Principles Check - uses new framework
+solid-check: ## Check all SOLID principles with unified framework
 	@echo "$(CYAN)╔════════════════════════════════════════════════════════════╗$(NC)"
 	@echo "$(CYAN)║              SOLID Principles Compliance                   ║$(NC)"
 	@echo "$(CYAN)╚════════════════════════════════════════════════════════════╝$(NC)"
-	@echo "$(YELLOW)Checking Open/Closed Principle...$(NC)"
-	@cd durable-code-app/backend && \
-		find . -name "*.py" -exec grep -l "isinstance\|type(" {} \; | \
-		xargs -I {} sh -c 'echo "Potential OCP violation in: {}"' || echo "✓ No obvious OCP violations"
-	@echo ""
-	@echo "$(YELLOW)Checking Dependency Inversion...$(NC)"
-	@cd durable-code-app/backend && \
-		grep -r "= [A-Z][a-zA-Z]*(" --include="*.py" . | grep -v "__init__\|test_" | \
-		head -5 && echo "⚠️  Direct instantiations found (consider dependency injection)" || \
-		echo "✓ No direct instantiations found"
-	@echo ""
+	@echo "$(YELLOW)Checking all SOLID principles...$(NC)"
+	@PYTHONPATH=tools python -m design_linters \
+		--categories solid \
+		--format text \
+		durable-code-app
 	@echo "$(GREEN)✓ SOLID principles check complete$(NC)"
 
-# Cohesion Analysis
-cohesion-check: ## Analyze class cohesion
+# Cohesion Analysis - uses new framework
+cohesion-check: ## Analyze class cohesion with unified framework
 	@echo "$(CYAN)╔════════════════════════════════════════════════════════════╗$(NC)"
 	@echo "$(CYAN)║                    Cohesion Analysis                       ║$(NC)"
 	@echo "$(CYAN)╚════════════════════════════════════════════════════════════╝$(NC)"
+	@echo "$(YELLOW)Calculating cohesion metrics...$(NC)"
+	@PYTHONPATH=tools python -m design_linters \
+		--rules solid.srp.low-cohesion \
+		--format text \
+		durable-code-app/backend
+	@echo ""
 	@cd durable-code-app/backend && \
-		echo "$(YELLOW)Calculating cohesion metrics...$(NC)" && \
+		echo "$(YELLOW)Additional raw metrics (Radon):$(NC)" && \
 		poetry run radon hal app -s && \
-		echo "" && \
-		echo "$(YELLOW)Raw metrics:$(NC)" && \
 		poetry run radon raw app -s
 	@echo "$(GREEN)✓ Cohesion analysis complete$(NC)"
 
-# Coupling Analysis
+# Coupling Analysis - enhanced with new framework
 coupling-check: ## Analyze coupling between modules
 	@echo "$(CYAN)╔════════════════════════════════════════════════════════════╗$(NC)"
 	@echo "$(CYAN)║                    Coupling Analysis                       ║$(NC)"
 	@echo "$(CYAN)╚════════════════════════════════════════════════════════════╝$(NC)"
+	@echo "$(YELLOW)Checking for excessive dependencies...$(NC)"
+	@PYTHONPATH=tools python -m design_linters \
+		--rules solid.srp.too-many-dependencies \
+		--format text \
+		durable-code-app
+	@echo ""
 	@echo "$(YELLOW)Import analysis:$(NC)"
 	@cd durable-code-app/backend && \
 		find . -name "*.py" -exec grep -c "^import\|^from" {} \; | \
 		sort -rn | head -10 | \
 		awk '{sum+=$$1; files[NR]=$$1} END {print "Average imports per file:", sum/NR; \
 		if(sum/NR > 5) print "⚠️  High import count detected"}' || true
-	@echo ""
-	@echo "$(YELLOW)Circular dependency check:$(NC)"
-	@cd durable-code-app/backend && \
-		python -c "import sys; sys.path.insert(0, '.'); \
-		from app import main; print('✓ No circular dependencies in main module')" 2>/dev/null || \
-		echo "⚠️  Potential circular dependency detected"
 	@echo "$(GREEN)✓ Coupling analysis complete$(NC)"
 
-# Code Smell Detection
-smell-check: ## Detect common code smells
+# Code Smell Detection - uses new framework
+smell-check: ## Detect common code smells with unified framework
 	@echo "$(CYAN)╔════════════════════════════════════════════════════════════╗$(NC)"
 	@echo "$(CYAN)║                  Code Smell Detection                      ║$(NC)"
 	@echo "$(CYAN)╚════════════════════════════════════════════════════════════╝$(NC)"
-	@echo "$(YELLOW)Checking for long parameter lists...$(NC)"
-	@cd durable-code-app/backend && \
-		grep -E "def [a-zA-Z_]+\([^)]{60,}\)" --include="*.py" -r . && \
-		echo "⚠️  Long parameter lists found" || echo "✓ No long parameter lists"
-	@echo ""
-	@echo "$(YELLOW)Checking for feature envy...$(NC)"
-	@cd durable-code-app/backend && \
-		grep -E "(\w+\.){3,}" --include="*.py" -r . | head -3 && \
-		echo "⚠️  Possible feature envy (message chains)" || echo "✓ No obvious feature envy"
-	@echo ""
-	@echo "$(YELLOW)Checking for data clumps...$(NC)"
-	@cd durable-code-app/backend && \
-		grep -E "def.*\((.*,){4,}" --include="*.py" -r . && \
-		echo "⚠️  Methods with many parameters (possible data clumps)" || \
-		echo "✓ No obvious data clumps"
+	@echo "$(YELLOW)Checking for various code smells...$(NC)"
+	@PYTHONPATH=tools python -m design_linters \
+		--categories style,complexity \
+		--min-severity info \
+		durable-code-app
 	@echo "$(GREEN)✓ Code smell detection complete$(NC)"
 
-# Generate Design Metrics Report
+# Generate Design Metrics Report - JSON format with new framework
 design-report: ## Generate comprehensive design metrics report
 	@echo "$(CYAN)Generating Design Metrics Report...$(NC)"
 	@echo "# Design Metrics Report" > design-report.md
 	@echo "Generated: $$(date)" >> design-report.md
 	@echo "" >> design-report.md
-	@echo "## SRP Compliance" >> design-report.md
-	@python tools/design_linters/srp_analyzer.py durable-code-app --json | \
-		python -m json.tool >> design-report.md 2>/dev/null || echo "No violations" >> design-report.md
+	@echo "## Design Violations (JSON)" >> design-report.md
+	@PYTHONPATH=tools python -m design_linters \
+		--format json \
+		durable-code-app 2>/dev/null >> design-report.md || echo "[]" >> design-report.md
 	@echo "" >> design-report.md
 	@echo "## Complexity Metrics" >> design-report.md
 	@cd durable-code-app/backend && poetry run radon cc app -s -j >> ../../../design-report.md
@@ -106,17 +110,37 @@ design-report: ## Generate comprehensive design metrics report
 	@cd durable-code-app/backend && poetry run radon mi app -s >> ../../../design-report.md
 	@echo "$(GREEN)✓ Report generated: design-report.md$(NC)"
 
-# Interactive Design Review
+# List all available design rules
+list-design-rules: ## List all available design linting rules
+	@echo "$(CYAN)╔════════════════════════════════════════════════════════════╗$(NC)"
+	@echo "$(CYAN)║              Available Design Linting Rules               ║$(NC)"
+	@echo "$(CYAN)╚════════════════════════════════════════════════════════════╝$(NC)"
+	@PYTHONPATH=tools python -m design_linters --list-rules
+
+# List rule categories
+list-design-categories: ## List all rule categories
+	@echo "$(CYAN)╔════════════════════════════════════════════════════════════╗$(NC)"
+	@echo "$(CYAN)║              Design Rule Categories                       ║$(NC)"
+	@echo "$(CYAN)╚════════════════════════════════════════════════════════════╝$(NC)"
+	@PYTHONPATH=tools python -m design_linters --list-categories
+
+# Interactive Design Review - uses new framework
 design-review: ## Interactive design review with suggestions
 	@echo "$(CYAN)╔════════════════════════════════════════════════════════════╗$(NC)"
 	@echo "$(CYAN)║             Interactive Design Review                      ║$(NC)"
 	@echo "$(CYAN)╚════════════════════════════════════════════════════════════╝$(NC)"
 	@echo "$(YELLOW)Analyzing codebase for design improvements...$(NC)"
 	@echo ""
+	@PYTHONPATH=tools python -m design_linters \
+		--verbose \
+		--format text \
+		durable-code-app
+	@echo ""
 	@echo "$(YELLOW)Classes that might benefit from splitting:$(NC)"
-	@find durable-code-app -name "*.py" -exec wc -l {} \; | \
-		sort -rn | head -5 | \
-		awk '{if($$1 > 100) print "  •", $$2, "(", $$1, "lines)"}'
+	@PYTHONPATH=tools python -m design_linters \
+		--rules solid.srp.class-too-big \
+		--format text \
+		durable-code-app | grep "Line" | head -5 || echo "  No excessively large classes found"
 	@echo ""
 	@echo "$(YELLOW)Suggested refactorings:$(NC)"
 	@echo "  • Consider Extract Class for classes > 200 lines"
@@ -127,13 +151,34 @@ design-review: ## Interactive design review with suggestions
 	@echo "$(GREEN)✓ Design review complete$(NC)"
 
 # CI-specific design check (strict mode)
-ci-design-check: ## Design check for CI/CD pipeline
-	@python tools/design_linters/srp_analyzer.py durable-code-app --threshold strict --fail-on-error
+ci-design-check: ## Design check for CI/CD pipeline (strict mode)
+	@PYTHONPATH=tools python -m design_linters \
+		--strict \
+		--fail-on-error \
+		--min-severity warning \
+		durable-code-app
 	@echo "$(GREEN)✓ CI design checks passed$(NC)"
+
+# Run specific legacy mode for compatibility
+legacy-srp: ## Run SRP analyzer in legacy mode
+	@PYTHONPATH=tools python -m design_linters \
+		--legacy srp \
+		durable-code-app
+
+legacy-magic: ## Run magic number detector in legacy mode
+	@PYTHONPATH=tools python -m design_linters \
+		--legacy magic \
+		durable-code-app
 
 # Fix common design issues
 design-fix: ## Suggest fixes for design issues
 	@echo "$(CYAN)Design Issue Fix Suggestions:$(NC)"
+	@echo ""
+	@echo "$(YELLOW)Running analysis to find issues...$(NC)"
+	@PYTHONPATH=tools python -m design_linters \
+		--format text \
+		--verbose \
+		durable-code-app | grep -E "suggestion|Suggestion" | head -10
 	@echo ""
 	@echo "$(YELLOW)For SRP violations:$(NC)"
 	@echo "  1. Split classes with multiple responsibilities"
@@ -157,6 +202,17 @@ design-watch: ## Monitor design metrics over time
 		clear; \
 		echo "$(CYAN)Design Metrics Monitor - $$(date)$(NC)"; \
 		echo ""; \
-		python tools/design_linters/srp_analyzer.py durable-code-app --threshold normal; \
+		PYTHONPATH=tools python -m design_linters \
+			--categories solid \
+			--min-severity warning \
+			durable-code-app; \
 		sleep 10; \
 	done
+
+# Test the design linter framework itself
+test-design-framework: ## Run unit tests for the design linter framework
+	@echo "$(CYAN)╔════════════════════════════════════════════════════════════╗$(NC)"
+	@echo "$(CYAN)║           Testing Design Linter Framework                 ║$(NC)"
+	@echo "$(CYAN)╚════════════════════════════════════════════════════════════╝$(NC)"
+	@PYTHONPATH=tools pytest test/unit_test/tools/design_linters -v
+	@echo "$(GREEN)✓ Framework tests passed$(NC)"
