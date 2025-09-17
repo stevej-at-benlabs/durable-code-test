@@ -46,6 +46,7 @@ class PythonAnalyzer(LintAnalyzer):
         try:
             return self._parse_file_successfully(file_path)
         except SyntaxError as e:
+            logger.error("Syntax error in {}: {}", file_path, e)
             return self._handle_syntax_error(file_path, e)
         except Exception:  # pylint: disable=broad-exception-caught
             logger.exception("Error analyzing {}", file_path)
@@ -75,7 +76,7 @@ class PythonAnalyzer(LintAnalyzer):
 
     def _handle_syntax_error(self, file_path: Path, error: SyntaxError) -> LintContext:
         """Handle syntax errors during file analysis."""
-        logger.warning("Syntax error in {}: {}", file_path, error)
+        logger.error("Syntax error in {}: {}", file_path, error)
         return LintContext(
             file_path=file_path,
             file_content=None,
@@ -232,6 +233,101 @@ class LintResults:
         }
 
 
+class _FileDiscoveryService:
+    """Service for discovering files to analyze."""
+
+    def find_files_to_analyze(
+        self, directory: Path, include_patterns: list[str], exclude_patterns: list[str], recursive: bool
+    ) -> list[Path]:
+        """Find files to analyze based on patterns."""
+        import fnmatch  # pylint: disable=import-outside-toplevel
+
+        files = []
+        pattern = "**/*" if recursive else "*"
+
+        for path in directory.glob(pattern):
+            if self._should_analyze_path(path, directory, include_patterns, exclude_patterns, fnmatch=fnmatch):
+                files.append(path)
+
+        return files
+
+    def _should_analyze_path(
+        self, path: Path, directory: Path, include_patterns: list[str], exclude_patterns: list[str], *, fnmatch: Any
+    ) -> bool:
+        """Determine if a path should be analyzed based on patterns."""
+        if not path.is_file():
+            return False
+
+        relative_path = path.relative_to(directory)
+
+        if not self._matches_include_patterns(relative_path, include_patterns, fnmatch):
+            return False
+
+        return not self._matches_exclude_patterns(relative_path, exclude_patterns, fnmatch)
+
+    def _matches_include_patterns(self, relative_path: Path, include_patterns: list[str], fnmatch: Any) -> bool:
+        """Check if path matches include patterns."""
+        return any(fnmatch.fnmatch(str(relative_path), pattern) for pattern in include_patterns)
+
+    def _matches_exclude_patterns(self, relative_path: Path, exclude_patterns: list[str], fnmatch: Any) -> bool:
+        """Check if path matches exclude patterns."""
+        return any(fnmatch.fnmatch(str(relative_path), pattern) for pattern in exclude_patterns)
+
+
+class _RuleExecutionService:
+    """Service for executing linting rules."""
+
+    def execute_all_rules(
+        self, rules: list[LintRule], context: LintContext, config: dict[str, Any]
+    ) -> list[LintViolation]:
+        """Execute all applicable rules for the given context."""
+        violations = []
+        violations.extend(self.execute_file_based_rules(rules, context, config))
+
+        if context.ast_tree:
+            violations.extend(self.execute_ast_based_rules(rules, context, config))
+
+        return violations
+
+    def execute_file_based_rules(
+        self, rules: list[LintRule], context: LintContext, config: dict[str, Any]
+    ) -> list[LintViolation]:
+        """Execute file-based rules."""
+        del config  # Currently unused but part of interface
+        from .interfaces import FileBasedLintRule  # pylint: disable=import-outside-toplevel
+
+        violations = []
+        file_based_rules = [rule for rule in rules if isinstance(rule, FileBasedLintRule)]
+
+        for rule in file_based_rules:
+            violations.extend(self._execute_single_file_rule(rule, context))
+
+        return violations
+
+    def execute_ast_based_rules(
+        self, rules: list[LintRule], context: LintContext, config: dict[str, Any]
+    ) -> list[LintViolation]:
+        """Execute AST-based rules using visitor pattern."""
+        from .interfaces import ASTLintRule as ASTRule  # pylint: disable=import-outside-toplevel
+
+        ast_rules = [rule for rule in rules if isinstance(rule, ASTRule)]
+
+        if not ast_rules or not context.ast_tree:
+            return []
+
+        visitor = ContextualASTVisitor(context, ast_rules, config)
+        visitor.visit(context.ast_tree)
+        return visitor.violations
+
+    def _execute_single_file_rule(self, rule: Any, context: LintContext) -> list[LintViolation]:
+        """Execute a single file-based rule with error handling."""
+        try:
+            return rule.check(context)
+        except Exception:  # pylint: disable=broad-exception-caught
+            logger.exception("Error executing file rule {}", rule.rule_id)
+            return []
+
+
 class DefaultLintOrchestrator(LintOrchestrator):
     """Default implementation of the linting orchestrator."""
 
@@ -247,6 +343,8 @@ class DefaultLintOrchestrator(LintOrchestrator):
         self.analyzers = analyzers or {"python": PythonAnalyzer()}
         self.reporters = reporters or {}
         self.config_provider = config_provider
+        self._file_discovery = _FileDiscoveryService()
+        self._rule_execution = _RuleExecutionService()
 
     def lint_file(self, file_path: Path, config: dict[str, Any] | None = None) -> list[LintViolation]:
         """Lint a single file."""
@@ -262,23 +360,11 @@ class DefaultLintOrchestrator(LintOrchestrator):
             return []
 
         enabled_rules = self._get_enabled_rules(config)
-        return self._execute_all_rules(enabled_rules, context, config)
+        return self._rule_execution.execute_all_rules(enabled_rules, context, config)
 
     def _should_analyze_context(self, context: LintContext) -> bool:
         """Determine if context should be analyzed based on AST availability."""
         return bool(context.ast_tree or not (context.metadata or {}).get("ast_parsed", True))
-
-    def _execute_all_rules(
-        self, rules: list[LintRule], context: LintContext, config: dict[str, Any]
-    ) -> list[LintViolation]:
-        """Execute all applicable rules for the given context."""
-        violations = []
-        violations.extend(self._execute_file_based_rules(rules, context, config))
-
-        if context.ast_tree:
-            violations.extend(self._execute_ast_based_rules(rules, context, config))
-
-        return violations
 
     def lint_directory(
         self, directory_path: Path, config: dict[str, Any] | None = None, recursive: bool = True
@@ -289,7 +375,9 @@ class DefaultLintOrchestrator(LintOrchestrator):
         include_patterns = config.get("include", ["**/*.py"])
         exclude_patterns = config.get("exclude", ["__pycache__/**", ".git/**", ".venv/**"])
 
-        files_to_analyze = self._find_files_to_analyze(directory_path, include_patterns, exclude_patterns, recursive)
+        files_to_analyze = self._file_discovery.find_files_to_analyze(
+            directory_path, include_patterns, exclude_patterns, recursive
+        )
         return self._lint_file_list(files_to_analyze, config)
 
     def _lint_file_list(self, files: list[Path], config: dict[str, Any]) -> list[LintViolation]:
@@ -359,44 +447,6 @@ class DefaultLintOrchestrator(LintOrchestrator):
 
         return [rule for rule in all_rules if rule.is_enabled(config)]
 
-    def _execute_file_based_rules(
-        self, rules: list[LintRule], context: LintContext, config: dict[str, Any]
-    ) -> list[LintViolation]:
-        """Execute file-based rules."""
-        del config  # Currently unused but part of interface
-        from .interfaces import FileBasedLintRule  # pylint: disable=import-outside-toplevel
-
-        violations = []
-        file_based_rules = [rule for rule in rules if isinstance(rule, FileBasedLintRule)]
-
-        for rule in file_based_rules:
-            violations.extend(self._execute_single_file_rule(rule, context))
-
-        return violations
-
-    def _execute_single_file_rule(self, rule: Any, context: LintContext) -> list[LintViolation]:
-        """Execute a single file-based rule with error handling."""
-        try:
-            return rule.check(context)
-        except Exception:  # pylint: disable=broad-exception-caught
-            logger.exception("Error executing file rule {}", rule.rule_id)
-            return []
-
-    def _execute_ast_based_rules(
-        self, rules: list[LintRule], context: LintContext, config: dict[str, Any]
-    ) -> list[LintViolation]:
-        """Execute AST-based rules using visitor pattern."""
-        from .interfaces import ASTLintRule as ASTRule  # pylint: disable=import-outside-toplevel
-
-        ast_rules = [rule for rule in rules if isinstance(rule, ASTRule)]
-
-        if not ast_rules or not context.ast_tree:
-            return []
-
-        visitor = ContextualASTVisitor(context, ast_rules, config)
-        visitor.visit(context.ast_tree)
-        return visitor.violations
-
     def _get_default_config(self) -> dict[str, Any]:
         """Get default configuration."""
         if self.config_provider:
@@ -407,40 +457,3 @@ class DefaultLintOrchestrator(LintOrchestrator):
             "include": ["**/*.py"],
             "exclude": ["__pycache__/**", ".git/**", ".venv/**", "**/.pytest_cache/**"],
         }
-
-    def _find_files_to_analyze(
-        self, directory: Path, include_patterns: list[str], exclude_patterns: list[str], recursive: bool
-    ) -> list[Path]:
-        """Find files to analyze based on patterns."""
-        import fnmatch  # pylint: disable=import-outside-toplevel
-
-        files = []
-        pattern = "**/*" if recursive else "*"
-
-        for path in directory.glob(pattern):
-            if self._should_analyze_path(path, directory, include_patterns, exclude_patterns, fnmatch=fnmatch):
-                files.append(path)
-
-        return files
-
-    def _should_analyze_path(
-        self, path: Path, directory: Path, include_patterns: list[str], exclude_patterns: list[str], *, fnmatch: Any
-    ) -> bool:
-        """Determine if a path should be analyzed based on patterns."""
-        if not path.is_file():
-            return False
-
-        relative_path = path.relative_to(directory)
-
-        if not self._matches_include_patterns(relative_path, include_patterns, fnmatch):
-            return False
-
-        return not self._matches_exclude_patterns(relative_path, exclude_patterns, fnmatch)
-
-    def _matches_include_patterns(self, relative_path: Path, include_patterns: list[str], fnmatch: Any) -> bool:
-        """Check if path matches include patterns."""
-        return any(fnmatch.fnmatch(str(relative_path), pattern) for pattern in include_patterns)
-
-    def _matches_exclude_patterns(self, relative_path: Path, exclude_patterns: list[str], fnmatch: Any) -> bool:
-        """Check if path matches exclude patterns."""
-        return any(fnmatch.fnmatch(str(relative_path), pattern) for pattern in exclude_patterns)

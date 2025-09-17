@@ -91,23 +91,36 @@ def parse_ignore_directives(file_content: str, context: "LintContext") -> None:
     lines = file_content.split("\n")
 
     for line_num, line in enumerate(lines, 1):
-        # File-level ignores (check first 10 lines only)
-        if line_num <= 10 and "# design-lint: ignore-file[" in line:
-            pattern = _extract_ignore_pattern(line, "ignore-file")
-            if pattern:
-                context.file_ignores.append(pattern)
+        _process_file_level_ignore(line_num, line, context)
+        _process_line_level_ignore(line_num, line, context)
+        _process_ignore_next_line(line_num, line, context)
 
-        # Line-level ignores
-        if "# design-lint: ignore[" in line:
-            pattern = _extract_ignore_pattern(line, "ignore")
-            if pattern:
-                if line_num not in context.line_ignores:
-                    context.line_ignores[line_num] = []
-                context.line_ignores[line_num].append(pattern)
 
-        # Ignore next line directives
-        if "# design-lint: ignore-next-line" in line:
-            context.ignore_next_line.add(line_num + 1)  # Next line
+def _process_file_level_ignore(line_num: int, line: str, context: "LintContext") -> None:
+    """Process file-level ignore directives."""
+    if line_num > 10 or "# design-lint: ignore-file[" not in line:
+        return
+    pattern = _extract_ignore_pattern(line, "ignore-file")
+    if pattern:
+        context.file_ignores.append(pattern)
+
+
+def _process_line_level_ignore(line_num: int, line: str, context: "LintContext") -> None:
+    """Process line-level ignore directives."""
+    if "# design-lint: ignore[" not in line:
+        return
+    pattern = _extract_ignore_pattern(line, "ignore")
+    if not pattern:
+        return
+    if line_num not in context.line_ignores:
+        context.line_ignores[line_num] = []
+    context.line_ignores[line_num].append(pattern)
+
+
+def _process_ignore_next_line(line_num: int, line: str, context: "LintContext") -> None:
+    """Process ignore-next-line directives."""
+    if "# design-lint: ignore-next-line" in line:
+        context.ignore_next_line.add(line_num + 1)  # Next line
 
 
 def should_ignore_node(node: ast.AST, file_content: str, rule_id: str) -> bool:
@@ -251,6 +264,55 @@ class LintRule(ABC):
         )
 
 
+class _ASTRuleNodeVisitor(ast.NodeVisitor):
+    """Helper visitor class to reduce nesting in ASTLintRule.check()."""
+
+    def __init__(self, rule: "ASTLintRule", context: "LintContext") -> None:
+        """Initialize visitor with rule and context."""
+        self.rule = rule
+        self.context = context
+        self.violations: list[LintViolation] = []
+
+    def visit(self, node: ast.AST) -> None:
+        """Visit node and execute rule checks."""
+        if self.context.node_stack is None:
+            raise RuntimeError("Node stack should be initialized")
+        self.context.node_stack.append(node)
+
+        # Track current context
+        old_function = self.context.current_function
+        old_class = self.context.current_class
+
+        update_context_for_node(self.context, node)
+
+        try:
+            self._check_node_if_applicable(node)
+            self.generic_visit(node)
+        finally:
+            self._restore_context_and_stack(node, old_function, old_class)
+
+    def _check_node_if_applicable(self, node: ast.AST) -> None:
+        """Check node if rule conditions are met."""
+        if not self.rule.should_check_node(node, self.context):
+            return
+        if not self.context.file_content:
+            return
+        if should_ignore_node(node, self.context.file_content, self.rule.rule_id):
+            return
+        self.violations.extend(self.rule.check_node(node, self.context))
+
+    def _restore_context_and_stack(self, node: ast.AST, old_function: str | None, old_class: str | None) -> None:
+        """Restore context stack and function/class tracking."""
+        if self.context.node_stack is None:
+            raise RuntimeError("Node stack should be initialized")
+        self.context.node_stack.pop()
+        # Only restore if we changed them
+        if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
+            self.context.current_function = old_function
+        elif isinstance(node, ast.ClassDef):
+            self.context.current_class = old_class
+
+
 class ASTLintRule(LintRule):
     """Base class for rules that analyze AST nodes."""
 
@@ -267,52 +329,17 @@ class ASTLintRule(LintRule):
         if context.file_content and has_file_level_ignore(context.file_content, self.rule_id):
             return violations
 
-        if context.ast_tree:
-            # Initialize node stack if not already set
-            if context.node_stack is None:
-                context.node_stack = []
+        if not context.ast_tree:
+            return violations
 
-            # Use a visitor to maintain node stack
-            class NodeVisitor(ast.NodeVisitor):
-                def __init__(self, rule: "ASTLintRule", ctx: "LintContext") -> None:
-                    self.rule = rule
-                    self.context = ctx
-                    self.violations: list[LintViolation] = []
+        # Initialize node stack if not already set
+        if context.node_stack is None:
+            context.node_stack = []
 
-                def visit(self, node: ast.AST) -> None:
-                    if self.context.node_stack is None:
-                        raise RuntimeError("Node stack should be initialized")
-                    self.context.node_stack.append(node)
-
-                    # Track current context
-                    old_function = self.context.current_function
-                    old_class = self.context.current_class
-
-                    update_context_for_node(self.context, node)
-
-                    try:
-                        # Check if this node should be ignored
-                        if (
-                            self.rule.should_check_node(node, self.context)
-                            and self.context.file_content
-                            and not should_ignore_node(node, self.context.file_content, self.rule.rule_id)
-                        ):
-                            self.violations.extend(self.rule.check_node(node, self.context))
-                        self.generic_visit(node)
-                    finally:
-                        if self.context.node_stack is None:
-                            raise RuntimeError("Node stack should be initialized")
-                        self.context.node_stack.pop()
-                        # Only restore if we changed them
-                        if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
-                            self.context.current_function = old_function
-                        elif isinstance(node, ast.ClassDef):
-                            self.context.current_class = old_class
-
-            visitor = NodeVisitor(self, context)
-            visitor.visit(context.ast_tree)
-            violations = visitor.violations
-        return violations
+        # Use a visitor to maintain node stack
+        visitor = _ASTRuleNodeVisitor(self, context)
+        visitor.visit(context.ast_tree)
+        return visitor.violations
 
     def should_check_node(self, node: ast.AST, context: "LintContext") -> bool:  # pylint: disable=unused-argument
         """Determine if this node should be checked by this rule."""

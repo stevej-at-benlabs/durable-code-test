@@ -146,7 +146,7 @@ class RuleDiscoveryService:
         try:
             return self._discover_from_module(module_name, registry)
         except (ImportError, AttributeError, ValueError) as e:
-            logger.warning("Error importing module {}: {}", module_name, e)
+            logger.error("Error importing module {}: {}", module_name, e)
             return 0
 
     def _discover_from_module(self, module_path: str, registry: RuleRegistry) -> int:
@@ -156,7 +156,7 @@ class RuleDiscoveryService:
         try:
             module = importlib.import_module(module_path)
         except (ImportError, AttributeError) as e:
-            logger.warning("Error processing module {}: {}", module_path, e)
+            logger.error("Error processing module {}: {}", module_path, e)
             return 0
 
         # Look for rule classes in the module
@@ -177,7 +177,7 @@ class RuleDiscoveryService:
             logger.debug("Discovered rule: {}", rule_instance.rule_id)
             return 1
         except (TypeError, AttributeError, ValueError) as e:
-            logger.warning("Error instantiating rule {}: {}", name, e)
+            logger.error("Error instantiating rule {}: {}", name, e)
             return 0
 
     def _is_rule_class(self, obj: Any) -> bool:
@@ -201,7 +201,7 @@ class RuleDiscoveryService:
                 count = self._discover_from_file(py_file, registry)
                 discovered_count += count
             except (ImportError, AttributeError, OSError) as e:
-                logger.warning("Error discovering from {}: {}", py_file, e)
+                logger.error("Error discovering from {}: {}", py_file, e)
 
         return discovered_count
 

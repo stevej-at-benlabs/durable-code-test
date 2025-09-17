@@ -128,24 +128,28 @@ class ConfigurationLoader:
 class ModeManager:
     """Handles mode-specific configuration overrides."""
 
-    def apply_mode_overrides(self, config: dict[str, Any], args: argparse.Namespace) -> None:
+    @staticmethod
+    def apply_mode_overrides(config: dict[str, Any], args: argparse.Namespace) -> None:
         """Apply mode-specific configuration overrides."""
         if args.strict:
-            self.apply_strictness_mode(config)
+            ModeManager.apply_strictness_mode(config)
         if args.legacy:
-            self.apply_legacy_mode(config, args.legacy)
+            ModeManager.apply_legacy_mode(config, args.legacy)
 
-    def apply_strictness_mode(self, config: dict[str, Any]) -> None:
+    @staticmethod
+    def apply_strictness_mode(config: dict[str, Any]) -> None:
         """Apply strict mode configuration."""
-        strict_config = self.get_strict_config()
+        strict_config = ModeManager.get_strict_config()
         config.update(strict_config)
 
-    def apply_legacy_mode(self, config: dict[str, Any], legacy_tool: str) -> None:
+    @staticmethod
+    def apply_legacy_mode(config: dict[str, Any], legacy_tool: str) -> None:
         """Apply legacy mode configuration."""
-        legacy_config = self.get_legacy_config(legacy_tool)
+        legacy_config = ModeManager.get_legacy_config(legacy_tool)
         config.update(legacy_config)
 
-    def get_strict_config(self) -> dict[str, Any]:
+    @staticmethod
+    def get_strict_config() -> dict[str, Any]:
         """Get strict mode configuration."""
         return {
             "min_severity": "warning",
@@ -156,7 +160,8 @@ class ModeManager:
             },
         }
 
-    def get_lenient_config(self) -> dict[str, Any]:
+    @staticmethod
+    def get_lenient_config() -> dict[str, Any]:
         """Get lenient mode configuration."""
         return {
             "min_severity": "error",
@@ -167,7 +172,8 @@ class ModeManager:
             },
         }
 
-    def get_legacy_config(self, legacy_tool: str) -> dict[str, Any]:
+    @staticmethod
+    def get_legacy_config(legacy_tool: str) -> dict[str, Any]:
         """Get configuration for legacy tool compatibility."""
         legacy_configs = {
             "srp": {"categories": ["solid.srp"], "format": "text"},
@@ -372,7 +378,7 @@ class DesignLinterCLI:
         try:
             return self._execute_cli_workflow(args)
         except KeyboardInterrupt:
-            logger.warning("Linting interrupted by user")
+            logger.error("Linting interrupted by user")
             return self.EXIT_CODE_INTERRUPTED
         except Exception as e:  # pylint: disable=broad-exception-caught
             logger.exception("Unhandled exception in CLI execution")
