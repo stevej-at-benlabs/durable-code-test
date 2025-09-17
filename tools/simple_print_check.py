@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+# design-lint: ignore-file[logging.*,style.*]
+# This file intentionally contains print statements for testing the linter
 
 from typing import Any
 
