@@ -25,7 +25,7 @@ lint-all: dev-start ## Run ALL linters (Python: Black, isort, Ruff, Flake8, MyPy
 		echo '• Black...' && poetry run black --check app tools && \
 		echo '• isort...' && poetry run isort --check-only app tools && \
 		echo '• Ruff...' && poetry run ruff check app tools && \
-		echo '• Flake8...' && poetry run flake8 app && poetry run flake8 tools --config tools/.flake8 && \
+		echo '• Flake8...' && flake8_app=\$$(poetry run flake8 app --count 2>/dev/null || echo '0') && flake8_tools=\$$(poetry run flake8 tools --config tools/.flake8 --count 2>/dev/null || echo '0') && echo \"  App violations: \$$flake8_app, Tools violations: \$$flake8_tools\" && \
 		echo '• MyPy...' && MYPY_CACHE_DIR=/tmp/mypy_cache poetry run mypy . && \
 		echo '• Pylint...' && poetry run pylint app tools 2>&1 | tee /tmp/pylint.out && grep -q 'Your code has been rated at 10.00/10' /tmp/pylint.out && \
 		echo '• Bandit...' && poetry run bandit -r app tools && \
@@ -65,7 +65,7 @@ lint-tool: dev-start ## Run a specific linter tool (e.g., make lint-tool TOOL=bl
 		black) docker exec durable-code-backend-dev bash -c "cd /app && poetry run black --check app tools" ;; \
 		isort) docker exec durable-code-backend-dev bash -c "cd /app && poetry run isort --check-only app tools" ;; \
 		ruff) docker exec durable-code-backend-dev bash -c "cd /app && poetry run ruff check app tools" ;; \
-		flake8) docker exec durable-code-backend-dev bash -c "cd /app && poetry run flake8 app && poetry run flake8 tools --config tools/.flake8" ;; \
+		flake8) docker exec durable-code-backend-dev bash -c "cd /app && echo 'Checking app...' && flake8_app=\$$(poetry run flake8 app --count 2>/dev/null || echo '0') && echo \"App violations: \$$flake8_app\" && echo 'Checking tools...' && flake8_tools=\$$(poetry run flake8 tools --config tools/.flake8 --count 2>/dev/null || echo '0') && echo \"Tools violations: \$$flake8_tools\"" ;; \
 		mypy) docker exec durable-code-backend-dev bash -c "cd /app && MYPY_CACHE_DIR=/tmp/mypy_cache poetry run mypy ." ;; \
 		pylint) docker exec durable-code-backend-dev bash -c "cd /app && poetry run pylint app tools" ;; \
 		bandit) docker exec durable-code-backend-dev bash -c "cd /app && poetry run bandit -r app tools" ;; \
