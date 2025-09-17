@@ -16,6 +16,10 @@ import ast
 
 from design_linters.framework.interfaces import ASTLintRule, LintContext, LintViolation, Severity
 
+# Configuration constants
+COMPLEX_MESSAGE_MAX_LENGTH = 100
+COMPLEX_MESSAGE_MAX_WORDS = 15
+
 # Constants for message truncation
 MAX_LOG_MESSAGE_DISPLAY_LENGTH = 50
 
@@ -99,44 +103,122 @@ class LoguruImportRule(ASTLintRule):
         return isinstance(node, (ast.Import, ast.ImportFrom))
 
     def check_node(self, node: ast.AST, context: LintContext) -> list[LintViolation]:
-        violations = []
-
         if isinstance(node, ast.ImportFrom) and node.module == "loguru":
-            # Check for recommended import pattern
-            for alias in node.names:
-                if alias.name != "logger":
-                    violations.append(
-                        self.create_violation(
-                            context,
-                            node,
-                            message=f"Import loguru.{alias.name} not recommended",
-                            description="The recommended pattern is to import only 'logger' from loguru",
-                            suggestion="Use: from loguru import logger",
-                            violation_context={"imported_name": alias.name},
-                        )
-                    )
+            return self._check_import_from_loguru(node, context)
 
-        elif isinstance(node, ast.Import):
-            for alias in node.names:
-                if alias.name == "loguru":
-                    violations.append(
-                        self.create_violation(
-                            context,
-                            node,
-                            message="Use 'from loguru import logger' instead of 'import loguru'",
-                            description=(
-                                "Importing logger directly is more convenient and follows loguru best practices"
-                            ),
-                            suggestion="Use: from loguru import logger",
-                            violation_context={"import_type": "full_module"},
-                        )
-                    )
+        if isinstance(node, ast.Import):
+            return self._check_import_loguru(node, context)
 
+        return []
+
+    def _check_import_from_loguru(self, node: ast.ImportFrom, context: LintContext) -> list[LintViolation]:
+        """Check for recommended import pattern from loguru."""
+        violations = []
+        for alias in node.names:
+            if alias.name != "logger":
+                violations.append(
+                    self.create_violation(
+                        context,
+                        node,
+                        message=f"Import loguru.{alias.name} not recommended",
+                        description="The recommended pattern is to import only 'logger' from loguru",
+                        suggestion="Use: from loguru import logger",
+                        violation_context={"imported_name": alias.name},
+                    )
+                )
         return violations
+
+    def _check_import_loguru(self, node: ast.Import, context: LintContext) -> list[LintViolation]:
+        """Check for direct loguru import patterns."""
+        violations = []
+        for alias in node.names:
+            if alias.name == "loguru":
+                violations.append(
+                    self.create_violation(
+                        context,
+                        node,
+                        message="Use 'from loguru import logger' instead of 'import loguru'",
+                        description=("Importing logger directly is more convenient and follows loguru best practices"),
+                        suggestion="Use: from loguru import logger",
+                        violation_context={"import_type": "full_module"},
+                    )
+                )
+        return violations
+
+
+class LoggingFormatAnalyzer:
+    """Helper class for analyzing logging format patterns."""
+
+    def __init__(self):
+        """Initialize the analyzer with pattern detection methods."""
+        self._format_checkers = [
+            self._is_f_string,
+            self._is_format_call,
+            self._is_percent_formatting,
+        ]
+
+    def uses_string_formatting(self, node: ast.Call) -> bool:
+        """Check if the log call uses string formatting instead of structured logging."""
+        if not node.args:
+            return False
+
+        first_arg = node.args[0]
+        return any(checker(first_arg) for checker in self._format_checkers)
+
+    def has_complex_message(self, node: ast.Call) -> bool:
+        """Check if the log call has a complex message that would benefit from context."""
+        if not node.args:
+            return False
+
+        first_arg = node.args[0]
+        if not isinstance(first_arg, ast.Constant) or not isinstance(first_arg.value, str):
+            return False
+
+        message = first_arg.value
+        return self._is_message_complex(message)
+
+    def _is_f_string(self, node: ast.AST) -> bool:
+        """Check if node is an f-string."""
+        return isinstance(node, ast.JoinedStr)
+
+    def _is_format_call(self, node: ast.AST) -> bool:
+        """Check if node is a .format() call."""
+        return isinstance(node, ast.Call) and isinstance(node.func, ast.Attribute) and node.func.attr == "format"
+
+    def _is_percent_formatting(self, node: ast.AST) -> bool:
+        """Check if node uses % formatting."""
+        return isinstance(node, ast.BinOp) and isinstance(node.op, ast.Mod)
+
+    def _is_message_complex(self, message: str) -> bool:
+        """Check if message meets complexity criteria."""
+        # Much higher thresholds to reduce noise - only flag genuinely complex messages
+        return (
+            len(message) > COMPLEX_MESSAGE_MAX_LENGTH
+            or message.count(" ") > COMPLEX_MESSAGE_MAX_WORDS
+            or self._has_action_words(message)
+        )
+
+    def _has_action_words(self, message: str) -> bool:
+        """Check if message contains action-related words that suggest measurable context."""
+        # Only flag specific patterns that strongly suggest missing context
+        action_patterns = [
+            "processing completed",
+            "operation failed",
+            "request failed",
+            "task completed",
+            "job finished",
+        ]
+        message_lower = message.lower()
+        return any(pattern in message_lower for pattern in action_patterns)
 
 
 class StructuredLoggingRule(ASTLintRule):
     """Rule to encourage structured logging with loguru."""
+
+    def __init__(self):
+        """Initialize with format analyzer."""
+        super().__init__()
+        self._format_analyzer = LoggingFormatAnalyzer()
 
     @property
     def rule_id(self) -> str:
@@ -185,7 +267,7 @@ class StructuredLoggingRule(ASTLintRule):
 
     def _check_string_formatting(self, node: ast.Call, context: LintContext, method_name: str) -> list[LintViolation]:
         """Check for string formatting issues."""
-        if not self._uses_string_formatting(node):
+        if not self._format_analyzer.uses_string_formatting(node):
             return []
 
         return [
@@ -201,7 +283,7 @@ class StructuredLoggingRule(ASTLintRule):
 
     def _check_complex_messages(self, node: ast.Call, context: LintContext, method_name: str) -> list[LintViolation]:
         """Check for complex messages that need context."""
-        if not self._has_complex_message(node):
+        if not self._format_analyzer.has_complex_message(node):
             return []
 
         return [
@@ -223,56 +305,6 @@ class StructuredLoggingRule(ASTLintRule):
             and node.func.value.id == "logger"
             and node.func.attr in ["debug", "info", "warning", "error", "critical", "success"]
         )
-
-    def _uses_string_formatting(self, node: ast.Call) -> bool:
-        """Check if the log call uses string formatting instead of structured logging."""
-        if not node.args:
-            return False
-
-        first_arg = node.args[0]
-        return self._is_f_string(first_arg) or self._is_format_call(first_arg) or self._is_percent_formatting(first_arg)
-
-    def _is_f_string(self, node: ast.AST) -> bool:
-        """Check if node is an f-string."""
-        return isinstance(node, ast.JoinedStr)
-
-    def _is_format_call(self, node: ast.AST) -> bool:
-        """Check if node is a .format() call."""
-        return isinstance(node, ast.Call) and isinstance(node.func, ast.Attribute) and node.func.attr == "format"
-
-    def _is_percent_formatting(self, node: ast.AST) -> bool:
-        """Check if node is % formatting."""
-        return isinstance(node, ast.BinOp) and isinstance(node.op, ast.Mod)
-
-    def _has_complex_message(self, node: ast.Call) -> bool:
-        """Check if the log message is complex and could benefit from context variables."""
-        if not node.args or node.keywords:
-            return False
-
-        first_arg = node.args[0]
-        if not isinstance(first_arg, ast.Constant) or not isinstance(first_arg.value, str):
-            return False
-
-        message = first_arg.value
-        return self._is_message_complex(message)
-
-    def _is_message_complex(self, message: str) -> bool:
-        """Check if message meets complexity criteria."""
-        # Much higher thresholds to reduce noise - only flag genuinely complex messages
-        return len(message) > 100 or message.count(" ") > 15 or self._has_action_words(message)
-
-    def _has_action_words(self, message: str) -> bool:
-        """Check if message contains action-related words that suggest measurable context."""
-        # Only flag specific patterns that strongly suggest missing context
-        action_patterns = [
-            "processing completed",
-            "operation failed",
-            "request failed",
-            "task completed",
-            "job finished",
-        ]
-        message_lower = message.lower()
-        return any(pattern in message_lower for pattern in action_patterns)
 
 
 class LogLevelConsistencyRule(ASTLintRule):

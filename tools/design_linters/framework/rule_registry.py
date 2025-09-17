@@ -201,7 +201,7 @@ class RuleDiscoveryService:
                 count = self._discover_from_file(py_file, registry)
                 discovered_count += count
             except (ImportError, AttributeError, OSError) as e:
-                logger.debug("Error discovering from {}: {}", py_file, e)
+                logger.error("Error discovering from {}: {}", py_file, e)
 
         return discovered_count
 

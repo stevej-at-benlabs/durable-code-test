@@ -25,6 +25,13 @@ from loguru import logger
 from .framework import LintOrchestrator, LintViolation, Severity, create_orchestrator
 from .framework.reporters import ReporterFactory
 
+# Configuration constants for CLI behavior
+MAX_METHODS_STRICT = 10
+MAX_LINES_STRICT = 200
+MAX_METHODS_LENIENT = 25
+MAX_LINES_LENIENT = 500
+DEFAULT_LINE_SEPARATOR_LENGTH = 40
+
 
 class ArgumentParser:
     """Handles command-line argument parsing and configuration management."""
@@ -156,7 +163,7 @@ class ModeManager:
             "fail_on_error": True,
             "rules": {
                 "solid.srp.too-many-methods": {"max_methods": 10},
-                "solid.srp.class-too-big": {"max_lines": 200},
+                "solid.srp.class-too-big": {"max_lines": MAX_LINES_STRICT},
             },
         }
 
@@ -167,8 +174,8 @@ class ModeManager:
             "min_severity": "error",
             "fail_on_error": False,
             "rules": {
-                "solid.srp.too-many-methods": {"max_methods": 25},
-                "solid.srp.class-too-big": {"max_lines": 500},
+                "solid.srp.too-many-methods": {"max_methods": MAX_METHODS_LENIENT},
+                "solid.srp.class-too-big": {"max_lines": MAX_LINES_LENIENT},
             },
         }
 
@@ -248,7 +255,7 @@ class RuleListManager:
     def list_rules(self, orchestrator: "LintOrchestrator") -> None:
         """List all available rules grouped by category."""
         print("📋 Available Linting Rules")
-        print("=" * 40)
+        print("=" * DEFAULT_LINE_SEPARATOR_LENGTH)
         rules = orchestrator.get_rule_registry().get_all_rules()
         for rule in rules:
             print(f"  • {rule.rule_id}: {rule.rule_name}")
@@ -256,7 +263,7 @@ class RuleListManager:
     def list_categories(self, orchestrator: "LintOrchestrator") -> None:
         """List all available categories with rule counts."""
         print("📁 Available Rule Categories")
-        print("=" * 40)
+        print("=" * DEFAULT_LINE_SEPARATOR_LENGTH)
         rules = orchestrator.get_rule_registry().get_all_rules()
         categories = set()
         for rule in rules:

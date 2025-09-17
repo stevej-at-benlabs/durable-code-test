@@ -18,6 +18,9 @@ from typing import Any
 from ..utils.severity_helpers import get_severity_icon
 from .interfaces import LintReporter, LintViolation, Severity
 
+# Configuration constants
+FILE_PATH_SEPARATOR_OFFSET = 3
+
 # from datetime import datetime  # Future use
 # from pathlib import Path  # Future use
 
@@ -46,7 +49,7 @@ class TextReporter(LintReporter):
 
         for file_path, file_violations in violations_by_file.items():
             lines.append(f"📁 {file_path}")
-            lines.append("─" * (len(str(file_path)) + 3))
+            lines.append("─" * (len(str(file_path)) + FILE_PATH_SEPARATOR_OFFSET))
 
             for violation in sorted(file_violations, key=lambda v: v.line):
                 lines.append(self._format_violation(violation))

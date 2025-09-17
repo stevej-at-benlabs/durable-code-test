@@ -18,6 +18,9 @@ from typing import cast
 
 from design_linters.framework.interfaces import ASTLintRule, LintContext, LintViolation, Severity
 
+# Configuration constants
+MIN_METHODS_FOR_COHESION_CHECK = 5
+
 
 class TooManyMethodsRule(ASTLintRule):
     """Rule to detect classes with too many methods."""
@@ -292,9 +295,10 @@ class LowCohesionRule(ASTLintRule):
         if not cohesion_analysis["can_calculate"]:
             return []
 
-        # Skip small utility classes (less than 5 methods) - these are often legitimate service classes
+        # Skip small utility classes (less than MIN_METHODS_FOR_COHESION_CHECK methods)
+        # These are often legitimate service classes
         methods = [n for n in node.body if isinstance(n, ast.FunctionDef)]
-        if len(methods) < 5:
+        if len(methods) < MIN_METHODS_FOR_COHESION_CHECK:
             return []
 
         # Skip framework pattern classes that are expected to have low cohesion

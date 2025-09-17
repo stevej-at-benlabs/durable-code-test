@@ -17,6 +17,15 @@ from loguru import logger
 # Import the new framework
 from ..framework import create_orchestrator
 
+# Configuration constants for demo
+SOLID_SEPARATOR_LENGTH = 50
+EXTENSIBILITY_SEPARATOR_LENGTH = 35
+USAGE_SEPARATOR_LENGTH = 30
+VIOLATION_SEPARATOR_LENGTH = 40
+TESTING_SEPARATOR_LENGTH = 20
+MAIN_SEPARATOR_LENGTH = 55
+MAX_METHODS_EXAMPLE = 10
+
 # Example rules are available but not directly imported
 # from ..rules.solid.srp_rules import (
 #     TooManyMethodsRule,
@@ -29,7 +38,7 @@ def demonstrate_solid_compliance() -> None:
     """Demonstrate how the new framework addresses SOLID violations."""
 
     logger.info("🎯 SOLID Violations Fixed by New Framework:")
-    logger.info("=" * 50)
+    logger.info("=" * SOLID_SEPARATOR_LENGTH)
 
     # 1. Single Responsibility Principle (SRP) ✅
     logger.success("\n✅ SRP Compliance:")
@@ -69,7 +78,7 @@ def demonstrate_extensibility() -> None:
     """Show how easy it is to extend the framework."""
 
     logger.success("\n🔌 Framework Extensibility Demo:")
-    logger.info("=" * 35)
+    logger.info("=" * EXTENSIBILITY_SEPARATOR_LENGTH)
 
     # Create orchestrator with dependency injection
     orchestrator = create_orchestrator()
@@ -91,7 +100,9 @@ def demonstrate_extensibility() -> None:
     logger.info("📄 Multiple output formats: {}", ", ".join(formats))
 
     # Configuration-driven
-    config = {"rules": {"solid.srp.too-many-methods": {"enabled": True, "config": {"max_methods": 10}}}}
+    config = {
+        "rules": {"solid.srp.too-many-methods": {"enabled": True, "config": {"max_methods": MAX_METHODS_EXAMPLE}}}
+    }
     logger.info("⚙️ Rules are configurable without code changes")
     logger.info("   Example config has {} rule configurations", len(config["rules"]))
 
@@ -100,7 +111,7 @@ def demonstrate_usage_example() -> None:
     """Show practical usage of the framework."""
 
     logger.success("\n🚀 Practical Usage Example:")
-    logger.info("=" * 30)
+    logger.info("=" * USAGE_SEPARATOR_LENGTH)
 
     # Simple one-liner for common use case
     # from ..framework import lint_files  # Available in framework
@@ -125,7 +136,7 @@ def show_violation_improvements() -> None:
     """Show how violations were addressed."""
 
     logger.success("\n🔧 Specific SOLID Violations Fixed:")
-    logger.info("=" * 40)
+    logger.info("=" * VIOLATION_SEPARATOR_LENGTH)
 
     improvements = [
         {
@@ -155,7 +166,7 @@ def demonstrate_testing_benefits() -> None:
     """Show how the new architecture improves testability."""
 
     logger.success("\n🧪 Testing Benefits:")
-    logger.info("=" * 20)
+    logger.info("=" * TESTING_SEPARATOR_LENGTH)
 
     benefits = [
         "Each rule can be tested in isolation",
@@ -171,7 +182,7 @@ def demonstrate_testing_benefits() -> None:
 
 if __name__ == "__main__":
     logger.success("🎉 Design Linter Framework - SOLID Compliance Demo")
-    logger.info("=" * 55)
+    logger.info("=" * MAIN_SEPARATOR_LENGTH)
 
     demonstrate_solid_compliance()
     demonstrate_extensibility()
@@ -179,7 +190,7 @@ if __name__ == "__main__":
     show_violation_improvements()
     demonstrate_testing_benefits()
 
-    logger.info("\n" + "=" * 55)
+    logger.info("\n" + "=" * MAIN_SEPARATOR_LENGTH)
     logger.success("✨ The framework now perfectly follows SOLID principles!")
     logger.success("🔌 Easy to extend, test, and maintain")
     logger.success("🚀 Ready for production use")

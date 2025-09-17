@@ -97,52 +97,92 @@ class MagicNumberContextAnalyzer:
 class MagicNumberSuggestionGenerator:
     """Helper class for generating magic number constant suggestions."""
 
-    def generate_constant_suggestion(self, value: Any, context: LintContext) -> str:
-        """Generate a suggestion for naming a magic number constant."""
-        if not hasattr(value, "__int__") and not hasattr(value, "__float__"):
-            return self._get_generic_suggestion(value)
-
-        common_suggestion = self._get_common_pattern_suggestion(value)
-        if common_suggestion != f"VALUE_{value}":
-            return common_suggestion
-
-        if context.node_stack and len(context.node_stack) > 1:
-            parent = context.node_stack[-2]
-            if isinstance(parent, ast.Call) and isinstance(parent.func, ast.Name):
-                function_name = parent.func.id
-                context_suggestion = self._get_context_based_suggestion(value, function_name)
-                if context_suggestion != f"VALUE_{value}":
-                    return context_suggestion
-
-        return self._get_generic_suggestion(value)
-
-    def _get_generic_suggestion(self, value: Any) -> str:
-        return f"CONSTANT_{str(value).replace('.', '_').replace('-', 'NEGATIVE_')}"
-
-    def _get_common_pattern_suggestion(self, value: Any) -> str:
-        time_constants = {
+    def __init__(self):
+        """Initialize with common patterns and caching for suggestions."""
+        self._time_constants = {
             60: "SECONDS_PER_MINUTE",
             3600: "SECONDS_PER_HOUR",
             24: "HOURS_PER_DAY",
             365: "DAYS_PER_YEAR",
             1000: "MILLISECONDS_PER_SECOND",
         }
+        self._suggestion_cache = {}
+        self._pattern_matchers = [
+            self._check_specific_patterns,
+            self._check_size_patterns,
+        ]
 
-        if value in time_constants:
-            return time_constants[value]
+    def generate_constant_suggestion(self, value: Any, context: LintContext) -> str:
+        """Generate a suggestion for naming a magic number constant."""
+        if not self._is_numeric_value(value):
+            return self._get_generic_suggestion(value)
+
+        cache_key = self._create_cache_key(value, context)
+        cached_result = self._get_cached_suggestion(cache_key)
+        if cached_result:
+            return cached_result
+
+        suggestion = self._generate_new_suggestion(value, context)
+        self._cache_suggestion(cache_key, suggestion)
+        return suggestion
+
+    def _is_numeric_value(self, value: Any) -> bool:
+        """Check if value is numeric."""
+        return hasattr(value, "__int__") or hasattr(value, "__float__")
+
+    def _create_cache_key(self, value: Any, context: LintContext) -> tuple:
+        """Create cache key for suggestion lookup."""
+        return (value, str(context.file_path or ""))
+
+    def _get_cached_suggestion(self, cache_key: tuple) -> str | None:
+        """Get cached suggestion if available."""
+        return self._suggestion_cache.get(cache_key)
+
+    def _cache_suggestion(self, cache_key: tuple, suggestion: str) -> None:
+        """Cache the suggestion for future use."""
+        self._suggestion_cache[cache_key] = suggestion
+
+    def _generate_new_suggestion(self, value: Any, context: LintContext) -> str:
+        """Generate a new suggestion based on patterns and context."""
+        common_suggestion = self._get_common_pattern_suggestion(value)
+        if common_suggestion != f"VALUE_{value}":
+            return common_suggestion
+
+        context_suggestion = self._try_context_based_suggestion(value, context)
+        if context_suggestion != f"VALUE_{value}":
+            return context_suggestion
+
+        return self._get_generic_suggestion(value)
+
+    def _try_context_based_suggestion(self, value: Any, context: LintContext) -> str:
+        """Try to generate suggestion based on context."""
+        if not context.node_stack or len(context.node_stack) <= 1:
+            return f"VALUE_{value}"
+
+        parent = context.node_stack[-2]
+        if isinstance(parent, ast.Call) and isinstance(parent.func, ast.Name):
+            function_name = parent.func.id
+            return self._get_context_based_suggestion(value, function_name)
+
+        return f"VALUE_{value}"
+
+    def _get_generic_suggestion(self, value: Any) -> str:
+        return f"CONSTANT_{str(value).replace('.', '_').replace('-', 'NEGATIVE_')}"
+
+    def _get_common_pattern_suggestion(self, value: Any) -> str:
+        if value in self._time_constants:
+            return self._time_constants[value]
 
         return f"VALUE_{value}"
 
     def _get_context_based_suggestion(self, value: Any, function_name: str) -> str:
         lower_func_name = function_name.lower()
 
-        specific_suggestion = self._check_specific_patterns(value, lower_func_name)
-        if specific_suggestion != f"VALUE_{value}":
-            return specific_suggestion
-
-        size_suggestion = self._check_size_patterns(value, lower_func_name)
-        if size_suggestion != f"VALUE_{value}":
-            return size_suggestion
+        # Use pattern matchers from instance variable
+        for matcher in self._pattern_matchers:
+            suggestion = matcher(value, lower_func_name)
+            if suggestion != f"VALUE_{value}":
+                return suggestion
 
         return f"VALUE_{value}"
 
