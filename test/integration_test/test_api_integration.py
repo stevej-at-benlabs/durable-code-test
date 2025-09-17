@@ -22,7 +22,7 @@ client = TestClient(app)
 
 
 @pytest.mark.integration
-def test_api_integration():
+def test_api_integration() -> None:
     """Test basic API integration."""
     # Test root endpoint
     response = client.get("/")
@@ -39,7 +39,7 @@ def test_api_integration():
     os.getenv("TESTING") != "true",
     reason="Integration tests only run in CI environment"
 )
-def test_database_connection():
+def test_database_connection() -> None:
     """Test database connectivity in integration environment."""
     # This would test actual database connections
     # For now, just verify the environment is set up

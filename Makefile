@@ -150,56 +150,13 @@ install-hooks: ## Install pre-commit hooks
 	@echo "$(GREEN)✓ Pre-commit hooks installed!$(NC)"
 	@echo "$(YELLOW)Hooks will run automatically on git commit$(NC)"
 
-# Testing and quality targets
-test: dev-start ## Run all tests with coverage (starts dev containers if needed)
-	@echo "$(CYAN)Running tests with coverage...$(NC)"
-	@echo "$(YELLOW)Backend tests with coverage:$(NC)"
-	@docker exec -u appuser durable-code-backend-dev bash -c "cd /tmp && PYTHONPATH=/app/tools/design_linters:/app/tools pytest /app/test --cov=app --cov-report=term --cov-report=term:skip-covered --tb=short" || echo "$(YELLOW)Backend tests failed$(NC)"
-	@echo "$(YELLOW)Frontend tests with coverage:$(NC)"
-	@cd durable-code-app/frontend && npm run test:coverage || echo "$(YELLOW)Frontend tests failed or not available$(NC)"
+pre-commit: lint-all-staged ## Run pre-commit checks on staged files only
+	@echo "$(GREEN)✅ Ready to commit!$(NC)"
 
-test-quick: dev-start ## Run all tests without coverage (faster)
-	@echo "$(CYAN)Running tests (no coverage)...$(NC)"
-	@echo "$(YELLOW)Backend tests:$(NC)"
-	@docker exec durable-code-backend-dev bash -c "cd /app && PYTHONPATH=/app/tools/design_linters:/app/tools pytest" || echo "$(YELLOW)Backend tests failed$(NC)"
-	@echo "$(YELLOW)Frontend tests:$(NC)"
-	@cd durable-code-app/frontend && npm run test:run || echo "$(YELLOW)Frontend tests failed or not available$(NC)"
 
-test-frontend: ## Run frontend tests only
-	@echo "$(CYAN)Running frontend tests...$(NC)"
-	@cd durable-code-app/frontend && npm run test:run
-
-test-frontend-coverage: ## Run frontend tests with coverage
-	@echo "$(CYAN)Running frontend tests with coverage...$(NC)"
-	@cd durable-code-app/frontend && npm run test:coverage
-
-test-frontend-watch: ## Run frontend tests in watch mode
-	@echo "$(CYAN)Running frontend tests in watch mode...$(NC)"
-	@cd durable-code-app/frontend && npm run test:watch
-
-test-links: ## Run link validation tests
-	@echo "$(CYAN)Running link validation tests...$(NC)"
-	@cd durable-code-app/frontend && npm run test:links
-
-# Include comprehensive linting targets
+# Include comprehensive linting and testing targets
 -include Makefile.lint
--include Makefile.design
-
-lint: ## Run basic linters
-	@echo "$(CYAN)Running linters...$(NC)"
-	@echo "$(YELLOW)Backend linting:$(NC)"
-	@docker exec durable-code-backend-dev /home/appuser/.local/bin/ruff check /app/app --cache-dir /tmp/ruff-cache || echo "$(YELLOW)Backend container not running$(NC)"
-	@echo "$(YELLOW)Frontend linting:$(NC)"
-	@docker exec durable-code-frontend-dev npm run lint || echo "$(YELLOW)Frontend container not running$(NC)"
-	@echo "$(YELLOW)Print statement check (including tests):$(NC)"
-	@python tools/design_linters/print_statement_linter.py --path . --recursive --no-skip-tests || echo "$(GREEN)✓ No print statements found$(NC)"
-
-format: ## Format code
-	@echo "$(CYAN)Formatting code...$(NC)"
-	@echo "$(YELLOW)Backend formatting:$(NC)"
-	@docker exec durable-code-backend-dev /home/appuser/.local/bin/black /app/app || echo "$(YELLOW)Backend container not running$(NC)"
-	@echo "$(YELLOW)Frontend formatting:$(NC)"
-	@docker exec durable-code-frontend-dev npm run format || echo "$(YELLOW)Frontend container not running$(NC)"
+-include Makefile.test
 
 # Dependency management
 check-deps: ## Check for outdated dependencies

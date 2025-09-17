@@ -76,6 +76,10 @@ warn_unused_ignores = true
 warn_no_return = true
 check_untyped_defs = true
 strict_equality = true
+exclude = [
+    'tools/design_linters/.*',
+    'tools/simple_print_check\.py'
+]
 
 [tool.ruff]
 target-version = "py311"

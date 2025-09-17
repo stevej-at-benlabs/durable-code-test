@@ -14,8 +14,6 @@
 # Interfaces: Backend on port 8001, Frontend on port 3000
 # Implementation: Multi-stage builds with production optimizations
 
-version: '3.8'
-
 services:
   backend:
     build:

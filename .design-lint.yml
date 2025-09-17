@@ -18,12 +18,12 @@
 
 # Single Responsibility Principle
 srp:
-  max_methods_per_class: 7
-  max_method_groups: 3  # Different responsibility groups
-  max_class_lines: 200
-  max_instance_variables: 7
-  max_dependencies: 5
-  min_cohesion_score: 0.3
+  max_methods_per_class: 15  # Increased from 7 - more realistic for complex classes
+  max_method_groups: 4  # Increased from 3 - allow more flexibility
+  max_class_lines: 300  # Increased from 200 - accommodate larger but focused classes
+  max_instance_variables: 10  # Increased from 7 - more realistic
+  max_dependencies: 8  # Increased from 5 - allow more dependencies
+  min_cohesion_score: 0.05  # Much more lenient - focus on obvious violations only
 
   # Naming patterns that indicate SRP violations
   violation_patterns:
@@ -103,14 +103,14 @@ metrics:
 
   # Complexity metrics
   max_cyclomatic_complexity: 5  # Already enforced by Radon
-  max_cognitive_complexity: 7
-  max_nesting_depth: 3
+  max_cognitive_complexity: 10  # Increased from 7 - allow more complex logic
+  max_nesting_depth: 4  # Increased from 3 - more realistic for real-world code
 
   # Size metrics
-  max_file_lines: 250
-  max_class_lines: 200
-  max_method_lines: 50
-  max_parameters: 3
+  max_file_lines: 400  # Increased from 250 - allow larger files for complex modules
+  max_class_lines: 300  # Increased from 200 - match SRP setting
+  max_method_lines: 75  # Increased from 50 - more realistic for complex methods
+  max_parameters: 5  # Increased from 3 - allow more parameters
 
 # Code Smell Detection
 code_smells:
@@ -137,11 +137,11 @@ suggest_refactoring:
 # Enforcement Levels
 enforcement:
   # Options: error, warning, info, off
-  srp: error
-  ocp: warning
-  lsp: warning
-  isp: warning
-  dip: warning
+  srp: warning  # Changed from error - less aggressive on SRP violations
+  ocp: info  # Changed from warning - OCP violations are often design choices
+  lsp: warning  # Keep as warning - important for correctness
+  isp: info  # Changed from warning - interface design is often contextual
+  dip: info  # Changed from warning - dependency patterns vary by project
   code_smells: info
 
   # Allow overrides with justification

@@ -13,8 +13,6 @@
 # Interfaces: Backend on port 8000, Frontend on port 5173 (Vite dev server)
 # Implementation: Volume mounts for source code, development server configurations
 
-version: '3.8'
-
 services:
   backend-dev:
     build:

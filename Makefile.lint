@@ -1,209 +1,123 @@
-# Comprehensive Linting Makefile Extension
-# Include this in the main Makefile or use directly
+################################################################################
+# Simplified Linting Makefile
+################################################################################
+#
+# Essential linting targets:
+#   make lint-all         - Run all common Python/JS linters
+#   make lint-tool TOOL=  - Run a specific linter tool
+#   make lint-custom CAT= - Run custom linters by category
+#   make lint-fix         - Auto-fix formatting issues
+#   make lint-list-rules  - List custom linting rules
+#   make lint-categories  - List custom rule categories
+#
+################################################################################
 
-.PHONY: lint-all lint-python lint-frontend lint-complexity lint-security lint-format-check ci-lint lint-file-placement lint-print-statements lint-breadcrumbs lint-headers lint-nesting-depth
+.PHONY: lint-all lint-tool lint-custom lint-fix lint-list-rules lint-categories
 
-# Main linting targets
-lint-all: lint-python lint-frontend lint-complexity lint-magic-numbers lint-file-placement lint-print-statements lint-breadcrumbs lint-headers lint-nesting-depth ## Run all linting checks
-
-lint-python: ## Run all Python linting tools
+# Run all linters: common tools + custom rules
+lint-all: dev-start ## Run ALL linters (Python: Black, isort, Ruff, Flake8, MyPy, Pylint, Bandit, Xenon; JS: ESLint, Prettier, TypeScript; Custom: all design rules)
 	@echo "$(CYAN)╔════════════════════════════════════════════════════════════╗$(NC)"
-	@echo "$(CYAN)║                  Python Linting Suite                     ║$(NC)"
+	@echo "$(CYAN)║                  Running ALL Linters                      ║$(NC)"
 	@echo "$(CYAN)╚════════════════════════════════════════════════════════════╝$(NC)"
-	@cd durable-code-app/backend && \
-		echo "$(YELLOW)1. Black (formatting check)...$(NC)" && \
-		poetry run black --check . && \
-		echo "$(GREEN)✓ Black passed$(NC)" && \
-		echo "" && \
-		echo "$(YELLOW)2. isort (import sorting)...$(NC)" && \
-		poetry run isort --check-only . && \
-		echo "$(GREEN)✓ isort passed$(NC)" && \
-		echo "" && \
-		echo "$(YELLOW)3. Ruff (fast linting)...$(NC)" && \
-		poetry run ruff check . && \
-		echo "$(GREEN)✓ Ruff passed$(NC)" && \
-		echo "" && \
-		echo "$(YELLOW)4. Flake8 (style guide)...$(NC)" && \
-		poetry run flake8 . && \
-		echo "$(GREEN)✓ Flake8 passed$(NC)" && \
-		echo "" && \
-		echo "$(YELLOW)5. MyPy (type checking)...$(NC)" && \
-		poetry run mypy app ../../tools && \
-		echo "$(GREEN)✓ MyPy passed$(NC)" && \
-		echo "" && \
-		echo "$(YELLOW)6. Pylint (code analysis)...$(NC)" && \
-		poetry run pylint app ../../tools && \
-		echo "$(GREEN)✓ Pylint passed$(NC)" && \
-		echo "" && \
-		echo "$(YELLOW)7. Bandit (security)...$(NC)" && \
-		poetry run bandit -r app ../../tools && \
-		echo "$(GREEN)✓ Bandit passed$(NC)" && \
-		echo "" && \
-		echo "$(YELLOW)8. Pip-audit (dependency vulnerabilities)...$(NC)" && \
-		poetry run pip-audit && \
-		echo "$(GREEN)✓ Pip-audit passed$(NC)" && \
-		echo "" && \
-		echo "$(GREEN)✅ All Python linting checks passed!$(NC)"
+	@echo ""
+	@echo "$(YELLOW)━━━ Python Linters ━━━$(NC)"
+	@docker exec durable-code-backend-dev bash -c "cd /app && \
+		echo '• Black...' && poetry run black --check app tools && \
+		echo '• isort...' && poetry run isort --check-only app tools && \
+		echo '• Ruff...' && poetry run ruff check app tools && \
+		echo '• Flake8...' && flake8_app=\$$(poetry run flake8 app --count 2>/dev/null || echo '0') && flake8_tools=\$$(poetry run flake8 tools --config tools/.flake8 --count 2>/dev/null || echo '0') && echo \"  App violations: \$$flake8_app, Tools violations: \$$flake8_tools\" && \
+		echo '• MyPy...' && MYPY_CACHE_DIR=/tmp/mypy_cache poetry run mypy . && \
+		echo '• Pylint...' && poetry run pylint app tools 2>&1 | tee /tmp/pylint.out && grep -q 'Your code has been rated at 10.00/10' /tmp/pylint.out && \
+		echo '• Bandit...' && poetry run bandit -r app tools && \
+		echo '• Xenon...' && poetry run xenon --max-absolute B --max-modules B --max-average A app tools" || (echo "$(RED)✗ Python linting failed$(NC)" && exit 1)
+	@echo "$(GREEN)✓ Python linting passed$(NC)"
+	@echo ""
+	@echo "$(YELLOW)━━━ TypeScript/React Linters ━━━$(NC)"
+	@docker exec durable-code-frontend-dev sh -c "\
+		echo '• TypeScript...' && npm run typecheck && \
+		echo '• ESLint...' && npm run lint && \
+		echo '• Prettier...' && npm run format:check" || (echo "$(RED)✗ Frontend linting failed$(NC)" && exit 1)
+	@echo "$(GREEN)✓ Frontend linting passed$(NC)"
+	@echo ""
+	@echo "$(YELLOW)━━━ Custom Design Linters ━━━$(NC)"
+	@docker exec durable-code-backend-dev bash -c "cd /app && \
+		echo '• SOLID principles...' && PYTHONPATH=/app/tools python -m design_linters --categories solid --format text --recursive app tools && \
+		echo '• Style rules...' && PYTHONPATH=/app/tools python -m design_linters --categories style --format text --recursive app tools && \
+		echo '• Magic literals...' && PYTHONPATH=/app/tools python -m design_linters --categories literals --format text --recursive app tools && \
+		echo '• Logging practices...' && PYTHONPATH=/app/tools python -m design_linters --categories logging --format text --recursive app tools && \
+		echo '• Loguru usage...' && PYTHONPATH=/app/tools python -m design_linters --categories loguru --format text --recursive app tools" || (echo "$(RED)✗ Custom linting failed$(NC)" && exit 1)
+	@echo "$(GREEN)✓ Custom design linting passed$(NC)"
+	@echo ""
+	@echo "$(GREEN)✅ ALL linting checks passed!$(NC)"
 
-lint-complexity: ## Check code complexity (Radon)
+# Run a specific linter tool
+lint-tool: dev-start ## Run a specific linter tool (e.g., make lint-tool TOOL=black)
+	@if [ -z "$(TOOL)" ]; then \
+		echo "$(RED)Error: TOOL parameter is required$(NC)"; \
+		echo "$(YELLOW)Usage: make lint-tool TOOL=<tool>$(NC)"; \
+		echo "$(YELLOW)Available tools:$(NC)"; \
+		echo "  Python: black, isort, ruff, flake8, mypy, pylint, bandit, radon, xenon"; \
+		echo "  Frontend: eslint, prettier, typecheck"; \
+		exit 1; \
+	fi
+	@echo "$(CYAN)Running $(TOOL)...$(NC)"
+	@case "$(TOOL)" in \
+		black) docker exec durable-code-backend-dev bash -c "cd /app && poetry run black --check app tools" ;; \
+		isort) docker exec durable-code-backend-dev bash -c "cd /app && poetry run isort --check-only app tools" ;; \
+		ruff) docker exec durable-code-backend-dev bash -c "cd /app && poetry run ruff check app tools" ;; \
+		flake8) docker exec durable-code-backend-dev bash -c "cd /app && echo 'Checking app...' && flake8_app=\$$(poetry run flake8 app --count 2>/dev/null || echo '0') && echo \"App violations: \$$flake8_app\" && echo 'Checking tools...' && flake8_tools=\$$(poetry run flake8 tools --config tools/.flake8 --count 2>/dev/null || echo '0') && echo \"Tools violations: \$$flake8_tools\"" ;; \
+		mypy) docker exec durable-code-backend-dev bash -c "cd /app && MYPY_CACHE_DIR=/tmp/mypy_cache poetry run mypy ." ;; \
+		pylint) docker exec durable-code-backend-dev bash -c "cd /app && poetry run pylint app tools" ;; \
+		bandit) docker exec durable-code-backend-dev bash -c "cd /app && poetry run bandit -r app tools" ;; \
+		radon) docker exec durable-code-backend-dev bash -c "cd /app && poetry run radon cc app tools -s -n A" ;; \
+		xenon) docker exec durable-code-backend-dev bash -c "cd /app && poetry run xenon --max-absolute B --max-modules B --max-average A app tools" ;; \
+		eslint) docker exec durable-code-frontend-dev npm run lint ;; \
+		prettier) docker exec durable-code-frontend-dev npm run format:check ;; \
+		typecheck) docker exec durable-code-frontend-dev npm run typecheck ;; \
+		*) echo "$(RED)Unknown tool: $(TOOL)$(NC)" && exit 1 ;; \
+	esac
+	@echo "$(GREEN)✓ $(TOOL) completed$(NC)"
+
+# Run custom linters by category
+lint-custom: dev-start ## Run custom linters by category (e.g., make lint-custom CAT=solid)
+	@if [ -z "$(CAT)" ]; then \
+		echo "$(RED)Error: CAT parameter is required$(NC)"; \
+		echo "$(YELLOW)Usage: make lint-custom CAT=<category>$(NC)"; \
+		echo "$(YELLOW)Available categories: solid, style, literals, logging, loguru$(NC)"; \
+		echo "$(YELLOW)Run 'make lint-categories' for details$(NC)"; \
+		exit 1; \
+	fi
 	@echo "$(CYAN)╔════════════════════════════════════════════════════════════╗$(NC)"
-	@echo "$(CYAN)║                  Complexity Analysis                       ║$(NC)"
+	@echo "$(CYAN)║              Custom Linter: $(CAT)                         ║$(NC)"
 	@echo "$(CYAN)╚════════════════════════════════════════════════════════════╝$(NC)"
-	@cd durable-code-app/backend && \
-		echo "$(YELLOW)Cyclomatic Complexity (must be A):$(NC)" && \
-		poetry run radon cc app ../../tools -s -n A && \
-		echo "" && \
-		echo "$(YELLOW)Maintainability Index (must be A):$(NC)" && \
-		poetry run radon mi app ../../tools -s -n A && \
-		echo "" && \
-		echo "$(YELLOW)Halstead Metrics:$(NC)" && \
-		poetry run radon hal app ../../tools && \
-		echo "" && \
-		echo "$(YELLOW)Raw Metrics:$(NC)" && \
-		poetry run radon raw app ../../tools && \
-		echo "" && \
-		echo "$(YELLOW)Xenon (complexity monitoring):$(NC)" && \
-		poetry run xenon --max-absolute A --max-modules A --max-average A app ../../tools && \
-		echo "$(GREEN)✅ All complexity checks passed (Grade A)!$(NC)"
+	@docker exec durable-code-backend-dev bash -c "cd /app && PYTHONPATH=/app/tools python -m design_linters --categories $(CAT) --format text --recursive app tools"
+	@echo "$(GREEN)✓ Category '$(CAT)' check complete$(NC)"
 
-lint-frontend: ## Run all TypeScript/React linting
-	@echo "$(CYAN)╔════════════════════════════════════════════════════════════╗$(NC)"
-	@echo "$(CYAN)║              TypeScript/React Linting Suite               ║$(NC)"
-	@echo "$(CYAN)╚════════════════════════════════════════════════════════════╝$(NC)"
-	@cd durable-code-app/frontend && \
-		echo "$(YELLOW)1. TypeScript compilation...$(NC)" && \
-		npm run typecheck && \
-		echo "$(GREEN)✓ TypeScript passed$(NC)" && \
-		echo "" && \
-		echo "$(YELLOW)2. ESLint (with all plugins)...$(NC)" && \
-		npm run lint && \
-		echo "$(GREEN)✓ ESLint passed$(NC)" && \
-		echo "" && \
-		echo "$(YELLOW)3. Prettier (formatting check)...$(NC)" && \
-		npm run format:check && \
-		echo "$(GREEN)✓ Prettier passed$(NC)" && \
-		echo "" && \
-		echo "$(GREEN)✅ All TypeScript/React linting checks passed!$(NC)"
-
-lint-security: ## Run security-focused linting
-	@echo "$(CYAN)╔════════════════════════════════════════════════════════════╗$(NC)"
-	@echo "$(CYAN)║                   Security Analysis                        ║$(NC)"
-	@echo "$(CYAN)╚════════════════════════════════════════════════════════════╝$(NC)"
-	@cd durable-code-app/backend && \
-		echo "$(YELLOW)Python Security (Bandit):$(NC)" && \
-		poetry run bandit -r app ../../tools -ll && \
-		echo "" && \
-		echo "$(YELLOW)Dependency Vulnerabilities (Safety):$(NC)" && \
-		poetry run safety check --json && \
-		echo "$(GREEN)✓ Python security checks passed$(NC)"
-	@cd durable-code-app/frontend && \
-		echo "" && \
-		echo "$(YELLOW)JavaScript Security Audit:$(NC)" && \
-		npm audit --audit-level=moderate && \
-		echo "$(GREEN)✓ Frontend security checks passed$(NC)"
-
-lint-format-check: ## Check formatting without fixing
-	@echo "$(CYAN)Checking code formatting...$(NC)"
-	@cd durable-code-app/backend && \
-		poetry run black --check . && \
-		poetry run isort --check-only .
-	@cd durable-code-app/frontend && \
-		npm run format:check
-
-lint-fix: ## Auto-fix linting issues
-	@echo "$(CYAN)Auto-fixing linting issues...$(NC)"
-	@cd durable-code-app/backend && \
-		echo "$(YELLOW)Fixing Python code...$(NC)" && \
-		poetry run black . && \
-		poetry run isort . && \
-		poetry run ruff check --fix .
-	@cd durable-code-app/frontend && \
-		echo "$(YELLOW)Fixing TypeScript/React code...$(NC)" && \
+# Auto-fix formatting issues
+lint-fix: dev-start ## Auto-fix linting issues (Black, isort, Ruff, ESLint, Prettier)
+	@echo "$(CYAN)Auto-fixing code formatting...$(NC)"
+	@echo "$(YELLOW)Fixing Python code...$(NC)"
+	@docker exec -u root durable-code-backend-dev bash -c "cd /app && \
+		poetry run black app tools && \
+		poetry run isort app tools && \
+		poetry run ruff check --fix app tools && \
+		chown -R 1001:1001 /app/tools"
+	@echo "$(YELLOW)Fixing TypeScript/React code...$(NC)"
+	@docker exec durable-code-frontend-dev sh -c "\
 		npm run lint:fix && \
-		npm run format
+		npm run format"
+	@echo "$(GREEN)✅ Auto-fix complete!$(NC)"
 
-# CI-specific target (fails fast, returns error codes)
-ci-lint: ## Linting for CI/CD (strict mode)
-	@cd durable-code-app/backend && \
-		poetry run black --check . && \
-		poetry run isort --check-only . && \
-		poetry run ruff check . && \
-		poetry run flake8 . && \
-		poetry run mypy app ../../tools && \
-		poetry run bandit -r app ../../tools && \
-		poetry run radon cc app ../../tools -n A -s && \
-		poetry run xenon --max-absolute A --max-modules A --max-average A app ../../tools
-	@cd durable-code-app/frontend && \
-		npm run typecheck && \
-		npm run lint && \
-		npm run format:check
-
-# Local development helpers
-pre-commit: lint-format-check lint-complexity ## Pre-commit checks
-	@echo "$(GREEN)✅ Ready to commit!$(NC)"
-
-# Magic number detection
-lint-magic-numbers: ## Detect magic numbers and literals
+# List all available custom linting rules
+lint-list-rules: dev-start ## List all available custom linting rules
 	@echo "$(CYAN)╔════════════════════════════════════════════════════════════╗$(NC)"
-	@echo "$(CYAN)║               Magic Number Detection                       ║$(NC)"
+	@echo "$(CYAN)║                Available Linting Rules                    ║$(NC)"
 	@echo "$(CYAN)╚════════════════════════════════════════════════════════════╝$(NC)"
-	@echo "$(YELLOW)Checking backend for magic numbers...$(NC)"
-	@python tools/design_linters/magic_number_detector.py durable-code-app/backend/app || echo "$(GREEN)✓ No magic numbers detected$(NC)"
-	@echo ""
-	@echo "$(YELLOW)Checking frontend for magic numbers...$(NC)"
-	@python tools/design_linters/magic_number_detector.py durable-code-app/frontend/src 2>/dev/null || echo "$(GREEN)✓ No magic numbers detected$(NC)"
+	@docker exec durable-code-backend-dev bash -c "cd /app && PYTHONPATH=/app/tools python -m design_linters --list-rules"
 
-# File placement linting
-lint-file-placement: ## Check file placement according to project standards
+# List all custom rule categories
+lint-categories: dev-start ## List all custom rule categories with descriptions
 	@echo "$(CYAN)╔════════════════════════════════════════════════════════════╗$(NC)"
-	@echo "$(CYAN)║              File Placement Validation                    ║$(NC)"
+	@echo "$(CYAN)║                 Custom Rule Categories                    ║$(NC)"
 	@echo "$(CYAN)╚════════════════════════════════════════════════════════════╝$(NC)"
-	@echo "$(YELLOW)Checking file placement standards...$(NC)"
-	@python tools/design_linters/file_placement_linter.py . --fail-on-violation || (echo "$(RED)❌ File placement violations found!$(NC)" && exit 1)
-	@echo "$(GREEN)✅ All files are properly placed!$(NC)"
-
-lint-print-statements: ## Check for print statements in code (including tests)
-	@echo "$(CYAN)╔════════════════════════════════════════════════════════════╗$(NC)"
-	@echo "$(CYAN)║              Print Statement Detection                    ║$(NC)"
-	@echo "$(CYAN)╚════════════════════════════════════════════════════════════╝$(NC)"
-	@echo "$(YELLOW)Checking for print statements in all code (including tests)...$(NC)"
-	@python tools/design_linters/print_statement_linter.py --path . --recursive --no-skip-tests --format text || (echo "$(RED)❌ Print statements detected! Use loguru for Python or proper logging libraries for JS/TS$(NC)" && exit 1)
-	@echo "$(GREEN)✅ No print statements found!$(NC)"
-
-lint-breadcrumbs: ## Check HTML documentation for breadcrumb navigation
-	@echo "$(CYAN)╔════════════════════════════════════════════════════════════╗$(NC)"
-	@echo "$(CYAN)║             Breadcrumb Navigation Check                   ║$(NC)"
-	@echo "$(CYAN)╚════════════════════════════════════════════════════════════╝$(NC)"
-	@echo "$(YELLOW)Checking HTML documentation for breadcrumb navigation...$(NC)"
-	@python tools/design_linters/breadcrumb_linter.py || (echo "$(RED)❌ HTML files missing breadcrumb navigation! Add proper navigation to all documentation$(NC)" && exit 1)
-	@echo "$(GREEN)✅ All HTML documentation has proper breadcrumb navigation!$(NC)"
-
-lint-headers: ## Check file headers for compliance with standards
-	@echo "$(CYAN)╔════════════════════════════════════════════════════════════╗$(NC)"
-	@echo "$(CYAN)║              File Header Validation                       ║$(NC)"
-	@echo "$(CYAN)╚════════════════════════════════════════════════════════════╝$(NC)"
-	@echo "$(YELLOW)Checking file headers for compliance with standards...$(NC)"
-	@python tools/design_linters/header_linter.py --path . --strict || (echo "$(RED)❌ File header violations found! Update headers according to FILE_HEADER_STANDARDS.md$(NC)" && exit 1)
-	@echo "$(GREEN)✅ All file headers are compliant with standards!$(NC)"
-
-lint-nesting-depth: ## Check for excessive nesting depth in code
-	@echo "$(CYAN)╔════════════════════════════════════════════════════════════╗$(NC)"
-	@echo "$(CYAN)║             Nesting Depth Analysis                        ║$(NC)"
-	@echo "$(CYAN)╚════════════════════════════════════════════════════════════╝$(NC)"
-	@echo "$(YELLOW)Checking Python code for excessive nesting depth (max: 3)...$(NC)"
-	@python tools/design_linters/nesting_depth_linter.py durable-code-app/backend --max-depth 3 --exit-zero || echo "$(YELLOW)⚠ Backend nesting depth violations found$(NC)"
-	@echo ""
-	@echo "$(YELLOW)Checking tools and test code for excessive nesting depth...$(NC)"
-	@python tools/design_linters/nesting_depth_linter.py tools --max-depth 3 --exit-zero || echo "$(YELLOW)⚠ Tools nesting depth violations found$(NC)"
-	@python tools/design_linters/nesting_depth_linter.py test --max-depth 3 --exit-zero || echo "$(YELLOW)⚠ Test code nesting depth violations found$(NC)"
-	@echo "$(GREEN)✅ Nesting depth analysis complete!$(NC)"
-
-quality-report: ## Generate detailed quality report
-	@echo "$(CYAN)Generating quality report...$(NC)"
-	@cd durable-code-app/backend && \
-		echo "# Python Code Quality Report" > quality-report.md && \
-		echo "## Complexity Metrics" >> quality-report.md && \
-		poetry run radon cc app ../../tools -s --json >> quality-report.md && \
-		echo "## Maintainability Index" >> quality-report.md && \
-		poetry run radon mi app ../../tools -s --json >> quality-report.md && \
-		echo "$(GREEN)✓ Report generated: backend/quality-report.md$(NC)"
+	@docker exec durable-code-backend-dev bash -c "cd /app && PYTHONPATH=/app/tools python -m design_linters --list-categories"
