@@ -13,9 +13,11 @@ Implementation: Rule-based architecture with loguru pattern detection
 """
 
 import ast
-from typing import List, Set, Dict, Any, Optional
 
-from ...framework.interfaces import ASTLintRule, LintViolation, LintContext, Severity
+from design_linters.framework.interfaces import ASTLintRule, LintContext, LintViolation, Severity
+
+# Constants for message truncation
+MAX_LOG_MESSAGE_DISPLAY_LENGTH = 50
 
 
 class UseLoguruRule(ASTLintRule):
@@ -38,40 +40,35 @@ class UseLoguruRule(ASTLintRule):
         return Severity.INFO
 
     @property
-    def categories(self) -> Set[str]:
+    def categories(self) -> set[str]:
         return {"logging", "loguru", "best-practices"}
 
     def should_check_node(self, node: ast.AST, context: LintContext) -> bool:
         # Check for standard logging imports
         return isinstance(node, (ast.Import, ast.ImportFrom))
 
-    def check_node(self, node: ast.AST, context: LintContext) -> List[LintViolation]:
+    def check_node(self, node: ast.AST, context: LintContext) -> list[LintViolation]:
         violations = []
 
         if isinstance(node, ast.Import):
             for alias in node.names:
-                if alias.name == 'logging':
-                    violations.append(self._create_violation(node, context, 'logging'))
+                if alias.name == "logging":
+                    violations.append(self._create_violation(node, context, "logging"))
 
-        elif isinstance(node, ast.ImportFrom):
-            if node.module == 'logging':
-                violations.append(self._create_violation(node, context, 'logging'))
+        elif isinstance(node, ast.ImportFrom) and node.module == "logging":
+            violations.append(self._create_violation(node, context, "logging"))
 
         return violations
 
-    def _create_violation(self, node: ast.AST, context: LintContext,
-                         logging_type: str) -> LintViolation:
+    def _create_violation(self, node: ast.AST, context: LintContext, logging_type: str) -> LintViolation:
         """Create a violation for standard logging usage."""
-        return LintViolation(
-            rule_id=self.rule_id,
-            file_path=str(context.file_path),
-            line=node.lineno,
-            column=node.col_offset,
-            severity=self.severity,
+        return self.create_violation(
+            context,
+            node,
             message=f"Consider using loguru instead of standard {logging_type}",
             description="Loguru provides better functionality, easier configuration, and more intuitive API",
             suggestion="Replace with: from loguru import logger",
-            context={'logging_type': logging_type}
+            violation_context={"logging_type": logging_type},
         )
 
 
@@ -95,45 +92,45 @@ class LoguruImportRule(ASTLintRule):
         return Severity.WARNING
 
     @property
-    def categories(self) -> Set[str]:
+    def categories(self) -> set[str]:
         return {"logging", "loguru", "imports"}
 
     def should_check_node(self, node: ast.AST, context: LintContext) -> bool:
         return isinstance(node, (ast.Import, ast.ImportFrom))
 
-    def check_node(self, node: ast.AST, context: LintContext) -> List[LintViolation]:
+    def check_node(self, node: ast.AST, context: LintContext) -> list[LintViolation]:
         violations = []
 
-        if isinstance(node, ast.ImportFrom) and node.module == 'loguru':
+        if isinstance(node, ast.ImportFrom) and node.module == "loguru":
             # Check for recommended import pattern
             for alias in node.names:
-                if alias.name != 'logger':
-                    violations.append(LintViolation(
-                        rule_id=self.rule_id,
-                        file_path=str(context.file_path),
-                        line=node.lineno,
-                        column=node.col_offset,
-                        severity=self.severity,
-                        message=f"Import loguru.{alias.name} not recommended",
-                        description="The recommended pattern is to import only 'logger' from loguru",
-                        suggestion="Use: from loguru import logger",
-                        context={'imported_name': alias.name}
-                    ))
+                if alias.name != "logger":
+                    violations.append(
+                        self.create_violation(
+                            context,
+                            node,
+                            message=f"Import loguru.{alias.name} not recommended",
+                            description="The recommended pattern is to import only 'logger' from loguru",
+                            suggestion="Use: from loguru import logger",
+                            violation_context={"imported_name": alias.name},
+                        )
+                    )
 
         elif isinstance(node, ast.Import):
             for alias in node.names:
-                if alias.name == 'loguru':
-                    violations.append(LintViolation(
-                        rule_id=self.rule_id,
-                        file_path=str(context.file_path),
-                        line=node.lineno,
-                        column=node.col_offset,
-                        severity=self.severity,
-                        message="Use 'from loguru import logger' instead of 'import loguru'",
-                        description="Importing logger directly is more convenient and follows loguru best practices",
-                        suggestion="Use: from loguru import logger",
-                        context={'import_type': 'full_module'}
-                    ))
+                if alias.name == "loguru":
+                    violations.append(
+                        self.create_violation(
+                            context,
+                            node,
+                            message="Use 'from loguru import logger' instead of 'import loguru'",
+                            description=(
+                                "Importing logger directly is more convenient and follows loguru best practices"
+                            ),
+                            suggestion="Use: from loguru import logger",
+                            violation_context={"import_type": "full_module"},
+                        )
+                    )
 
         return violations
 
@@ -158,59 +155,74 @@ class StructuredLoggingRule(ASTLintRule):
         return Severity.INFO
 
     @property
-    def categories(self) -> Set[str]:
+    def categories(self) -> set[str]:
         return {"logging", "loguru", "observability"}
 
     def should_check_node(self, node: ast.AST, context: LintContext) -> bool:
         # Check for logger method calls
-        return (isinstance(node, ast.Call) and
-                isinstance(node.func, ast.Attribute) and
-                isinstance(node.func.value, ast.Name) and
-                node.func.value.id == 'logger')
+        return (
+            isinstance(node, ast.Call)
+            and isinstance(node.func, ast.Attribute)
+            and isinstance(node.func.value, ast.Name)
+            and node.func.value.id == "logger"
+        )
 
-    def check_node(self, node: ast.Call, context: LintContext) -> List[LintViolation]:
+    def check_node(self, node: ast.AST, context: LintContext) -> list[LintViolation]:
+        if not isinstance(node, ast.Call):
+            raise TypeError("StructuredLoggingRule should only receive ast.Call nodes")
         if not self._is_logger_call(node):
             return []
 
-        violations = []
+        if not isinstance(node.func, ast.Attribute):
+            raise TypeError("Expected attribute access")
         method_name = node.func.attr
 
-        # Check if using f-strings or format() instead of structured logging
-        if self._uses_string_formatting(node):
-            violations.append(LintViolation(
-                rule_id=self.rule_id,
-                file_path=str(context.file_path),
-                line=node.lineno,
-                column=node.col_offset,
-                severity=self.severity,
-                message=f"Use structured logging instead of string formatting in logger.{method_name}()",
-                description="Structured logging provides better searchability and parsing capabilities",
-                suggestion="Use: logger.info('User logged in', user_id=user_id, ip=ip) instead of f-strings",
-                context={'method': method_name, 'issue': 'string_formatting'}
-            ))
-
-        # Check for complex log messages that could benefit from context
-        if self._has_complex_message(node):
-            violations.append(LintViolation(
-                rule_id=self.rule_id,
-                file_path=str(context.file_path),
-                line=node.lineno,
-                column=node.col_offset,
-                severity=self.severity,
-                message=f"Consider adding context variables to logger.{method_name}() call",
-                description="Adding context variables makes logs more searchable and parseable",
-                suggestion="Add context: logger.info('Operation completed', duration=elapsed, status=result)",
-                context={'method': method_name, 'issue': 'missing_context'}
-            ))
+        violations = []
+        violations.extend(self._check_string_formatting(node, context, method_name))
+        violations.extend(self._check_complex_messages(node, context, method_name))
 
         return violations
 
+    def _check_string_formatting(self, node: ast.Call, context: LintContext, method_name: str) -> list[LintViolation]:
+        """Check for string formatting issues."""
+        if not self._uses_string_formatting(node):
+            return []
+
+        return [
+            self.create_violation(
+                context,
+                node,
+                message=f"Use structured logging instead of string formatting in logger.{method_name}()",
+                description="Structured logging provides better searchability and parsing capabilities",
+                suggestion="Use: logger.info('User logged in', user_id=user_id, ip=ip) instead of f-strings",
+                violation_context={"method": method_name, "issue": "string_formatting"},
+            )
+        ]
+
+    def _check_complex_messages(self, node: ast.Call, context: LintContext, method_name: str) -> list[LintViolation]:
+        """Check for complex messages that need context."""
+        if not self._has_complex_message(node):
+            return []
+
+        return [
+            self.create_violation(
+                context,
+                node,
+                message=f"Consider adding context variables to logger.{method_name}() call",
+                description="Adding context variables makes logs more searchable and parseable",
+                suggestion="Add context: logger.info('Operation completed', duration=elapsed, status=result)",
+                violation_context={"method": method_name, "issue": "missing_context"},
+            )
+        ]
+
     def _is_logger_call(self, node: ast.Call) -> bool:
         """Check if this is a loguru logger method call."""
-        return (isinstance(node.func, ast.Attribute) and
-                isinstance(node.func.value, ast.Name) and
-                node.func.value.id == 'logger' and
-                node.func.attr in ['debug', 'info', 'warning', 'error', 'critical', 'success'])
+        return (
+            isinstance(node.func, ast.Attribute)
+            and isinstance(node.func.value, ast.Name)
+            and node.func.value.id == "logger"
+            and node.func.attr in ["debug", "info", "warning", "error", "critical", "success"]
+        )
 
     def _uses_string_formatting(self, node: ast.Call) -> bool:
         """Check if the log call uses string formatting instead of structured logging."""
@@ -218,44 +230,40 @@ class StructuredLoggingRule(ASTLintRule):
             return False
 
         first_arg = node.args[0]
+        return self._is_f_string(first_arg) or self._is_format_call(first_arg) or self._is_percent_formatting(first_arg)
 
-        # Check for f-strings
-        if isinstance(first_arg, ast.JoinedStr):
-            return True
+    def _is_f_string(self, node: ast.AST) -> bool:
+        """Check if node is an f-string."""
+        return isinstance(node, ast.JoinedStr)
 
-        # Check for .format() calls
-        if (isinstance(first_arg, ast.Call) and
-            isinstance(first_arg.func, ast.Attribute) and
-            first_arg.func.attr == 'format'):
-            return True
+    def _is_format_call(self, node: ast.AST) -> bool:
+        """Check if node is a .format() call."""
+        return isinstance(node, ast.Call) and isinstance(node.func, ast.Attribute) and node.func.attr == "format"
 
-        # Check for % formatting
-        if isinstance(first_arg, ast.BinOp) and isinstance(first_arg.op, ast.Mod):
-            return True
-
-        return False
+    def _is_percent_formatting(self, node: ast.AST) -> bool:
+        """Check if node is % formatting."""
+        return isinstance(node, ast.BinOp) and isinstance(node.op, ast.Mod)
 
     def _has_complex_message(self, node: ast.Call) -> bool:
         """Check if the log message is complex and could benefit from context variables."""
-        if not node.args:
-            return False
-
-        # If there are keyword arguments, structured logging is already being used
-        if node.keywords:
+        if not node.args or node.keywords:
             return False
 
         first_arg = node.args[0]
+        if not isinstance(first_arg, ast.Constant) or not isinstance(first_arg.value, str):
+            return False
 
-        # Check for string literals with multiple sentences or complex content
-        if isinstance(first_arg, ast.Constant) and isinstance(first_arg.value, str):
-            message = first_arg.value
-            # Heuristics for complex messages
-            if (len(message) > 50 or
-                message.count(' ') > 5 or
-                any(word in message.lower() for word in ['completed', 'failed', 'started', 'finished', 'processing'])):
-                return True
+        message = first_arg.value
+        return self._is_message_complex(message)
 
-        return False
+    def _is_message_complex(self, message: str) -> bool:
+        """Check if message meets complexity criteria."""
+        return len(message) > 50 or message.count(" ") > 5 or self._has_action_words(message)
+
+    def _has_action_words(self, message: str) -> bool:
+        """Check if message contains action-related words."""
+        action_words = ["completed", "failed", "started", "finished", "processing"]
+        return any(word in message.lower() for word in action_words)
 
 
 class LogLevelConsistencyRule(ASTLintRule):
@@ -278,74 +286,97 @@ class LogLevelConsistencyRule(ASTLintRule):
         return Severity.INFO
 
     @property
-    def categories(self) -> Set[str]:
+    def categories(self) -> set[str]:
         return {"logging", "loguru", "consistency"}
 
     def should_check_node(self, node: ast.AST, context: LintContext) -> bool:
-        return (isinstance(node, ast.Call) and
-                isinstance(node.func, ast.Attribute) and
-                isinstance(node.func.value, ast.Name) and
-                node.func.value.id == 'logger')
+        return (
+            isinstance(node, ast.Call)
+            and isinstance(node.func, ast.Attribute)
+            and isinstance(node.func.value, ast.Name)
+            and node.func.value.id == "logger"
+        )
 
-    def check_node(self, node: ast.Call, context: LintContext) -> List[LintViolation]:
+    def check_node(self, node: ast.AST, context: LintContext) -> list[LintViolation]:
+        if not isinstance(node, ast.Call):
+            raise TypeError("LogLevelConsistencyRule should only receive ast.Call nodes")
         if not self._is_logger_call(node):
             return []
 
-        violations = []
+        if not isinstance(node.func, ast.Attribute):
+            raise TypeError("Expected attribute access")
         method_name = node.func.attr
 
-        if node.args and isinstance(node.args[0], ast.Constant):
-            message = node.args[0].value
-            if isinstance(message, str):
-                suggested_level = self._suggest_log_level(message)
+        return self._check_log_level_consistency(node, context, method_name)
 
-                if suggested_level and suggested_level != method_name:
-                    violations.append(LintViolation(
-                        rule_id=self.rule_id,
-                        file_path=str(context.file_path),
-                        line=node.lineno,
-                        column=node.col_offset,
-                        severity=self.severity,
-                        message=f"Message suggests '{suggested_level}' level but using '{method_name}'",
-                        description=f"Log message content suggests using logger.{suggested_level}() instead",
-                        suggestion=f"Consider using logger.{suggested_level}() for this message",
-                        context={
-                            'current_level': method_name,
-                            'suggested_level': suggested_level,
-                            'message': message[:50] + '...' if len(message) > 50 else message
-                        }
-                    ))
+    def _check_log_level_consistency(
+        self, node: ast.Call, context: LintContext, method_name: str
+    ) -> list[LintViolation]:
+        """Check if log level matches message content."""
+        if not self._has_string_message(node):
+            return []
 
-        return violations
+        message = node.args[0].value  # type: ignore
+        suggested_level = self._suggest_log_level(message)
+
+        if not suggested_level or suggested_level == method_name:
+            return []
+
+        return self._create_level_mismatch_violation(node, context, method_name, suggested_level, message=message)
+
+    def _has_string_message(self, node: ast.Call) -> bool:
+        """Check if node has a string message as first argument."""
+        return bool(node.args and isinstance(node.args[0], ast.Constant) and isinstance(node.args[0].value, str))
+
+    def _create_level_mismatch_violation(
+        self, node: ast.Call, context: LintContext, current_level: str, suggested_level: str, *, message: str
+    ) -> list[LintViolation]:
+        """Create violation for log level mismatch."""
+        truncated_message = (
+            message[:MAX_LOG_MESSAGE_DISPLAY_LENGTH] + "..."
+            if len(message) > MAX_LOG_MESSAGE_DISPLAY_LENGTH
+            else message
+        )
+
+        return [
+            self.create_violation(
+                context,
+                node,
+                message=f"Message suggests '{suggested_level}' level but using '{current_level}'",
+                description=f"Log message content suggests using logger.{suggested_level}() instead",
+                suggestion=f"Consider using logger.{suggested_level}() for this message",
+                violation_context={
+                    "current_level": current_level,
+                    "suggested_level": suggested_level,
+                    "message": truncated_message,
+                },
+            )
+        ]
 
     def _is_logger_call(self, node: ast.Call) -> bool:
         """Check if this is a loguru logger method call."""
-        return (isinstance(node.func, ast.Attribute) and
-                isinstance(node.func.value, ast.Name) and
-                node.func.value.id == 'logger' and
-                node.func.attr in ['debug', 'info', 'warning', 'error', 'critical', 'success'])
+        return (
+            isinstance(node.func, ast.Attribute)
+            and isinstance(node.func.value, ast.Name)
+            and node.func.value.id == "logger"
+            and node.func.attr in ["debug", "info", "warning", "error", "critical", "success"]
+        )
 
-    def _suggest_log_level(self, message: str) -> Optional[str]:
+    def _suggest_log_level(self, message: str) -> str | None:
         """Suggest appropriate log level based on message content."""
         message_lower = message.lower()
 
-        # Error indicators
-        if any(word in message_lower for word in ['error', 'exception', 'failed', 'failure', 'crash', 'fatal']):
-            return 'error'
+        level_indicators = {
+            "error": ["error", "exception", "failed", "failure", "crash", "fatal"],
+            "warning": ["warning", "warn", "deprecated", "fallback", "retry"],
+            "success": ["success", "completed successfully", "finished successfully"],
+            "debug": ["debug", "trace", "dump", "variable", "state"],
+        }
 
-        # Warning indicators
-        if any(word in message_lower for word in ['warning', 'warn', 'deprecated', 'fallback', 'retry']):
-            return 'warning'
+        for level, indicators in level_indicators.items():
+            if any(word in message_lower for word in indicators):
+                return level
 
-        # Success indicators (loguru-specific)
-        if any(word in message_lower for word in ['success', 'completed successfully', 'finished successfully']):
-            return 'success'
-
-        # Debug indicators
-        if any(word in message_lower for word in ['debug', 'trace', 'dump', 'variable', 'state']):
-            return 'debug'
-
-        # Info is default for most cases
         return None
 
 
@@ -369,64 +400,87 @@ class LoguruConfigurationRule(ASTLintRule):
         return Severity.WARNING
 
     @property
-    def categories(self) -> Set[str]:
+    def categories(self) -> set[str]:
         return {"logging", "loguru", "configuration"}
 
     def should_check_node(self, node: ast.AST, context: LintContext) -> bool:
         # Check for logger.add() calls
-        return (isinstance(node, ast.Call) and
-                isinstance(node.func, ast.Attribute) and
-                isinstance(node.func.value, ast.Name) and
-                node.func.value.id == 'logger' and
-                node.func.attr == 'add')
+        return (
+            isinstance(node, ast.Call)
+            and isinstance(node.func, ast.Attribute)
+            and isinstance(node.func.value, ast.Name)
+            and node.func.value.id == "logger"
+            and node.func.attr == "add"
+        )
 
-    def check_node(self, node: ast.Call, context: LintContext) -> List[LintViolation]:
+    def check_node(self, node: ast.AST, context: LintContext) -> list[LintViolation]:
+        if not isinstance(node, ast.Call):
+            raise TypeError("LoguruConfigurationRule should only receive ast.Call nodes")
+
         violations = []
+        violations.extend(self._check_sink_argument(node, context))
+        violations.extend(self._check_configuration_options(node, context))
 
-        # Check for proper sink configuration
-        if not node.args:
-            violations.append(LintViolation(
-                rule_id=self.rule_id,
-                file_path=str(context.file_path),
-                line=node.lineno,
-                column=node.col_offset,
-                severity=self.severity,
+        return violations
+
+    def _check_sink_argument(self, node: ast.Call, context: LintContext) -> list[LintViolation]:
+        """Check for proper sink configuration."""
+        if node.args:
+            return []
+
+        return [
+            self.create_violation(
+                context,
+                node,
                 message="logger.add() called without sink argument",
                 description="loguru.add() requires a sink argument (file, handler, etc.)",
                 suggestion="Specify a sink: logger.add('app.log') or logger.add(sys.stderr)",
-                context={'issue': 'missing_sink'}
-            ))
-            return violations
+                violation_context={"issue": "missing_sink"},
+            )
+        ]
 
-        # Check for recommended configuration options
+    def _check_configuration_options(self, node: ast.Call, context: LintContext) -> list[LintViolation]:
+        """Check for recommended configuration options."""
+        if not node.args:
+            return []
+
+        if not self._is_file_sink(node.args[0]):
+            return []
+
         keyword_args = {kw.arg for kw in node.keywords}
+        return self._create_missing_option_violations(node, context, keyword_args)
 
+    def _is_file_sink(self, sink_arg: ast.AST) -> bool:
+        """Check if sink argument is a file sink."""
+        return (
+            isinstance(sink_arg, ast.Constant)
+            and isinstance(sink_arg.value, str)
+            and not sink_arg.value.startswith("<")
+        )
+
+    def _create_missing_option_violations(
+        self, node: ast.Call, context: LintContext, keyword_args: set
+    ) -> list[LintViolation]:
+        """Create violations for missing configuration options."""
         recommended_options = {
-            'level': 'Specify log level for better control',
-            'format': 'Use custom format for better readability',
-            'rotation': 'Enable log rotation for file sinks',
-            'retention': 'Set log retention policy'
+            "level": "Specify log level for better control",
+            "format": "Use custom format for better readability",
+            "rotation": "Enable log rotation for file sinks",
+            "retention": "Set log retention policy",
         }
 
-        # Only suggest these for file sinks (not stderr/stdout)
-        first_arg = node.args[0]
-        is_file_sink = (isinstance(first_arg, ast.Constant) and
-                       isinstance(first_arg.value, str) and
-                       not first_arg.value.startswith('<'))
-
-        if is_file_sink:
-            for option, description in recommended_options.items():
-                if option not in keyword_args:
-                    violations.append(LintViolation(
-                        rule_id=self.rule_id,
-                        file_path=str(context.file_path),
-                        line=node.lineno,
-                        column=node.col_offset,
-                        severity=Severity.INFO,
-                        message=f"Consider adding '{option}' parameter to logger.add()",
-                        description=description,
-                        suggestion=f"Add {option} parameter for better log management",
-                        context={'missing_option': option, 'sink_type': 'file'}
-                    ))
+        violations = []
+        for option, description in recommended_options.items():
+            if option not in keyword_args:
+                violation = self.create_violation(
+                    context,
+                    node,
+                    message=f"Consider adding '{option}' parameter to logger.add()",
+                    description=description,
+                    suggestion=f"Add {option} parameter for better log management",
+                    violation_context={"missing_option": option, "sink_type": "file"},
+                )
+                violation.severity = Severity.INFO
+                violations.append(violation)
 
         return violations

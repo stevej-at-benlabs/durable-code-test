@@ -1,0 +1,28 @@
+{
+  "hooks": {
+    "post-write": {
+      "command": "/home/stevejackson/Projects/durable-code-test/scripts/lint-and-request-fix.sh {{file_path}}",
+      "description": "Lint file after writing and request Claude to fix any issues",
+      "enabled": true,
+      "blocking": true,
+      "output_mode": "always",
+      "timeout": 30000
+    },
+    "post-edit": {
+      "command": "/home/stevejackson/Projects/durable-code-test/scripts/lint-and-request-fix.sh {{file_path}}",
+      "description": "Lint file after editing and request Claude to fix any issues",
+      "enabled": true,
+      "blocking": true,
+      "output_mode": "always",
+      "timeout": 30000
+    },
+    "post-multi-edit": {
+      "command": "/home/stevejackson/Projects/durable-code-test/scripts/lint-and-request-fix.sh {{file_path}}",
+      "description": "Lint file after multi-editing and request Claude to fix any issues",
+      "enabled": true,
+      "blocking": true,
+      "output_mode": "always",
+      "timeout": 30000
+    }
+  }
+}

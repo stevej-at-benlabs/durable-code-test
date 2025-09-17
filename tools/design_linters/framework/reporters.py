@@ -13,11 +13,13 @@ Implementation: Strategy pattern for different output formats
 """
 
 import json
-from typing import List, Dict, Any, Optional
-from datetime import datetime
-from pathlib import Path
+from typing import Any
 
+from ..utils.severity_helpers import get_severity_icon
 from .interfaces import LintReporter, LintViolation, Severity
+
+# from datetime import datetime  # Future use
+# from pathlib import Path  # Future use
 
 
 class TextReporter(LintReporter):
@@ -28,11 +30,10 @@ class TextReporter(LintReporter):
         self.show_context = show_context
         self.show_suggestions = show_suggestions
 
-    def generate_report(self, violations: List[LintViolation],
-                       metadata: Optional[Dict[str, Any]] = None) -> str:
+    def generate_report(self, violations: list[LintViolation], metadata: dict[str, Any] | None = None) -> str:
         """Generate human-readable text report."""
         if not violations:
-            return "✅ No linting violations found!"
+            return self._generate_no_violations_report(metadata)
 
         lines = []
 
@@ -57,46 +58,72 @@ class TextReporter(LintReporter):
 
         return "\n".join(lines)
 
-    def get_supported_formats(self) -> List[str]:
+    def get_supported_formats(self) -> list[str]:
         """Get supported output formats."""
-        return ['text', 'txt']
+        return ["text", "txt"]
 
-    def _generate_header(self, violations: List[LintViolation],
-                        metadata: Optional[Dict[str, Any]]) -> str:
+    def _generate_header(self, violations: list[LintViolation], metadata: dict[str, Any] | None) -> str:
         """Generate report header."""
-        total = len(violations)
-        by_severity = self._count_by_severity(violations)
+        header_parts = self._build_basic_header_parts(violations)
 
-        header_parts = [
-            f"🔍 Design Linting Report",
+        if metadata:
+            header_parts.extend(self._build_metadata_parts(metadata))
+
+        severity_breakdown = self._build_severity_breakdown(violations)
+        if severity_breakdown:
+            header_parts.append(severity_breakdown)
+
+        return "\n".join(header_parts)
+
+    def _build_basic_header_parts(self, violations: list[LintViolation]) -> list[str]:
+        """Build the basic header parts with title and violation count."""
+        total = len(violations)
+        return [
+            "🔍 Design Linting Report",
             f"📊 Found {total} violation{'s' if total != 1 else ''}",
         ]
 
-        if metadata:
-            if 'timestamp' in metadata:
-                header_parts.append(f"🕒 Generated: {metadata['timestamp']}")
-            if 'files_analyzed' in metadata:
-                header_parts.append(f"📄 Files analyzed: {metadata['files_analyzed']}")
+    def _build_metadata_parts(self, metadata: dict[str, Any]) -> list[str]:
+        """Build header parts from metadata."""
+        parts = []
 
+        if "timestamp" in metadata:
+            parts.append(f"🕒 Generated: {metadata['timestamp']}")
+
+        if "files_analyzed" in metadata:
+            parts.append(f"📄 Files analyzed: {metadata['files_analyzed']}")
+
+        return parts
+
+    def _build_severity_breakdown(self, violations: list[LintViolation]) -> str:
+        """Build the severity breakdown section."""
+        by_severity = self._count_by_severity(violations)
+        severity_parts = self._format_severity_counts(by_severity)
+
+        return f"📈 Breakdown: {', '.join(severity_parts)}" if severity_parts else ""
+
+    def _format_severity_counts(self, by_severity: dict[Severity, int]) -> list[str]:
+        """Format severity counts into readable strings."""
         severity_parts = []
+
         if by_severity.get(Severity.ERROR, 0) > 0:
             severity_parts.append(f"❌ {by_severity[Severity.ERROR]} errors")
+
         if by_severity.get(Severity.WARNING, 0) > 0:
             severity_parts.append(f"⚠️ {by_severity[Severity.WARNING]} warnings")
+
         if by_severity.get(Severity.INFO, 0) > 0:
             severity_parts.append(f"ℹ️ {by_severity[Severity.INFO]} info")
 
-        if severity_parts:
-            header_parts.append(f"📈 Breakdown: {', '.join(severity_parts)}")
-
-        return "\n".join(header_parts)
+        return severity_parts
 
     def _format_violation(self, violation: LintViolation) -> str:
         """Format a single violation for text output."""
         severity_icon = self._get_severity_icon(violation.severity)
 
-        main_line = (f"  {severity_icon} Line {violation.line}:{violation.column} "
-                    f"[{violation.rule_id}] {violation.message}")
+        main_line = (
+            f"  {severity_icon} Line {violation.line}:{violation.column} " f"[{violation.rule_id}] {violation.message}"
+        )
 
         lines = [main_line]
 
@@ -110,16 +137,11 @@ class TextReporter(LintReporter):
 
     def _get_severity_icon(self, severity: Severity) -> str:
         """Get icon for severity level."""
-        icons = {
-            Severity.ERROR: "❌",
-            Severity.WARNING: "⚠️",
-            Severity.INFO: "ℹ️"
-        }
-        return icons.get(severity, "❓")
+        return get_severity_icon(severity)
 
-    def _group_by_file(self, violations: List[LintViolation]) -> Dict[str, List[LintViolation]]:
+    def _group_by_file(self, violations: list[LintViolation]) -> dict[str, list[LintViolation]]:
         """Group violations by file path."""
-        groups = {}
+        groups: dict[str, list[LintViolation]] = {}
         for violation in violations:
             file_path = violation.file_path
             if file_path not in groups:
@@ -127,17 +149,17 @@ class TextReporter(LintReporter):
             groups[file_path].append(violation)
         return groups
 
-    def _count_by_severity(self, violations: List[LintViolation]) -> Dict[Severity, int]:
+    def _count_by_severity(self, violations: list[LintViolation]) -> dict[Severity, int]:
         """Count violations by severity."""
         counts = {Severity.ERROR: 0, Severity.WARNING: 0, Severity.INFO: 0}
         for violation in violations:
             counts[violation.severity] += 1
         return counts
 
-    def _generate_summary(self, violations: List[LintViolation]) -> str:
+    def _generate_summary(self, violations: list[LintViolation]) -> str:
         """Generate summary statistics."""
-        total_files = len(set(v.file_path for v in violations))
-        total_rules = len(set(v.rule_id for v in violations))
+        total_files = len({v.file_path for v in violations})
+        total_rules = len({v.rule_id for v in violations})
         by_severity = self._count_by_severity(violations)
 
         summary_lines = [
@@ -152,6 +174,23 @@ class TextReporter(LintReporter):
 
         return "\n".join(summary_lines)
 
+    def _generate_no_violations_report(self, metadata: dict[str, Any] | None) -> str:
+        """Generate report when no violations are found."""
+        lines = ["✅ No design violations found!"]
+
+        if metadata:
+            files_analyzed = metadata.get("files_analyzed", 0)
+            timestamp = metadata.get("timestamp", "")
+
+            lines.append("")
+            lines.append("📊 Analysis Summary:")
+            lines.append(f"  • Files analyzed: {files_analyzed}")
+
+            if timestamp:
+                lines.append(f"  • Analysis completed: {timestamp.split('T')[0]}")
+
+        return "\n".join(lines)
+
 
 class JSONReporter(LintReporter):
     """JSON output reporter for programmatic consumption."""
@@ -160,29 +199,27 @@ class JSONReporter(LintReporter):
         """Initialize JSON reporter."""
         self.pretty_print = pretty_print
 
-    def generate_report(self, violations: List[LintViolation],
-                       metadata: Optional[Dict[str, Any]] = None) -> str:
+    def generate_report(self, violations: list[LintViolation], metadata: dict[str, Any] | None = None) -> str:
         """Generate JSON report."""
         report_data = {
-            'metadata': metadata or {},
-            'summary': self._generate_summary(violations),
-            'violations': [v.to_dict() for v in violations]
+            "metadata": metadata or {},
+            "summary": self._generate_summary(violations),
+            "violations": [v.to_dict() for v in violations],
         }
 
         if self.pretty_print:
             return json.dumps(report_data, indent=2, default=str)
-        else:
-            return json.dumps(report_data, default=str)
+        return json.dumps(report_data, default=str)
 
-    def get_supported_formats(self) -> List[str]:
+    def get_supported_formats(self) -> list[str]:
         """Get supported output formats."""
-        return ['json']
+        return ["json"]
 
-    def _generate_summary(self, violations: List[LintViolation]) -> Dict[str, Any]:
+    def _generate_summary(self, violations: list[LintViolation]) -> dict[str, Any]:
         """Generate summary statistics."""
-        by_severity = {}
-        by_rule = {}
-        by_file = {}
+        by_severity: dict[str, int] = {}
+        by_rule: dict[str, int] = {}
+        by_file: dict[str, int] = {}
 
         for violation in violations:
             # Count by severity
@@ -196,20 +233,19 @@ class JSONReporter(LintReporter):
             by_file[violation.file_path] = by_file.get(violation.file_path, 0) + 1
 
         return {
-            'total_violations': len(violations),
-            'total_files': len(by_file),
-            'total_rules_triggered': len(by_rule),
-            'by_severity': by_severity,
-            'by_rule': by_rule,
-            'by_file': by_file
+            "total_violations": len(violations),
+            "total_files": len(by_file),
+            "total_rules_triggered": len(by_rule),
+            "by_severity": by_severity,
+            "by_rule": by_rule,
+            "by_file": by_file,
         }
 
 
 class SARIFReporter(LintReporter):
     """SARIF (Static Analysis Results Interchange Format) reporter."""
 
-    def generate_report(self, violations: List[LintViolation],
-                       metadata: Optional[Dict[str, Any]] = None) -> str:
+    def generate_report(self, violations: list[LintViolation], metadata: dict[str, Any] | None = None) -> str:
         """Generate SARIF format report."""
         sarif_data = {
             "$schema": "https://raw.githubusercontent.com/oasis-tcs/sarif-spec/master/Schemata/sarif-schema-2.1.0.json",
@@ -219,23 +255,23 @@ class SARIFReporter(LintReporter):
                     "tool": {
                         "driver": {
                             "name": "design-linters",
-                            "version": metadata.get('version', '1.0.0') if metadata else '1.0.0',
+                            "version": metadata.get("version", "1.0.0") if metadata else "1.0.0",
                             "informationUri": "https://github.com/your-org/design-linters",
-                            "rules": self._generate_rule_definitions(violations)
+                            "rules": self._generate_rule_definitions(violations),
                         }
                     },
-                    "results": [self._violation_to_sarif(v) for v in violations]
+                    "results": [self._violation_to_sarif(v) for v in violations],
                 }
-            ]
+            ],
         }
 
         return json.dumps(sarif_data, indent=2)
 
-    def get_supported_formats(self) -> List[str]:
+    def get_supported_formats(self) -> list[str]:
         """Get supported output formats."""
-        return ['sarif']
+        return ["sarif"]
 
-    def _generate_rule_definitions(self, violations: List[LintViolation]) -> List[Dict[str, Any]]:
+    def _generate_rule_definitions(self, violations: list[LintViolation]) -> list[dict[str, Any]]:
         """Generate SARIF rule definitions."""
         rules_seen = {}
         for violation in violations:
@@ -244,13 +280,11 @@ class SARIFReporter(LintReporter):
                     "id": violation.rule_id,
                     "shortDescription": {"text": violation.message},
                     "fullDescription": {"text": violation.description},
-                    "defaultConfiguration": {
-                        "level": self._severity_to_sarif_level(violation.severity)
-                    }
+                    "defaultConfiguration": {"level": self._severity_to_sarif_level(violation.severity)},
                 }
         return list(rules_seen.values())
 
-    def _violation_to_sarif(self, violation: LintViolation) -> Dict[str, Any]:
+    def _violation_to_sarif(self, violation: LintViolation) -> dict[str, Any]:
         """Convert violation to SARIF result format."""
         return {
             "ruleId": violation.rule_id,
@@ -260,30 +294,22 @@ class SARIFReporter(LintReporter):
                 {
                     "physicalLocation": {
                         "artifactLocation": {"uri": violation.file_path},
-                        "region": {
-                            "startLine": violation.line,
-                            "startColumn": violation.column
-                        }
+                        "region": {"startLine": violation.line, "startColumn": violation.column},
                     }
                 }
-            ]
+            ],
         }
 
     def _severity_to_sarif_level(self, severity: Severity) -> str:
         """Convert our severity to SARIF level."""
-        mapping = {
-            Severity.ERROR: "error",
-            Severity.WARNING: "warning",
-            Severity.INFO: "note"
-        }
+        mapping = {Severity.ERROR: "error", Severity.WARNING: "warning", Severity.INFO: "note"}
         return mapping.get(severity, "note")
 
 
 class GitHubActionsReporter(LintReporter):
     """Reporter for GitHub Actions workflow annotations."""
 
-    def generate_report(self, violations: List[LintViolation],
-                       metadata: Optional[Dict[str, Any]] = None) -> str:
+    def generate_report(self, violations: list[LintViolation], metadata: dict[str, Any] | None = None) -> str:
         """Generate GitHub Actions annotations format."""
         annotations = []
 
@@ -291,25 +317,23 @@ class GitHubActionsReporter(LintReporter):
             annotation_type = self._severity_to_gh_type(violation.severity)
             file_path = violation.file_path
 
-            annotation = (f"::{annotation_type} file={file_path},"
-                         f"line={violation.line},col={violation.column},"
-                         f"title={violation.rule_id}::{violation.message}")
+            annotation = (
+                f"::{annotation_type} file={file_path},"
+                f"line={violation.line},col={violation.column},"
+                f"title={violation.rule_id}::{violation.message}"
+            )
 
             annotations.append(annotation)
 
         return "\n".join(annotations)
 
-    def get_supported_formats(self) -> List[str]:
+    def get_supported_formats(self) -> list[str]:
         """Get supported output formats."""
-        return ['github', 'gh-actions']
+        return ["github", "gh-actions"]
 
     def _severity_to_gh_type(self, severity: Severity) -> str:
         """Convert severity to GitHub Actions annotation type."""
-        mapping = {
-            Severity.ERROR: "error",
-            Severity.WARNING: "warning",
-            Severity.INFO: "notice"
-        }
+        mapping = {Severity.ERROR: "error", Severity.WARNING: "warning", Severity.INFO: "notice"}
         return mapping.get(severity, "notice")
 
 
@@ -317,24 +341,36 @@ class ReporterFactory:
     """Factory for creating appropriate reporters."""
 
     @staticmethod
-    def create_reporter(format_name: str, **kwargs) -> LintReporter:
+    def create_reporter(format_name: str, **kwargs: Any) -> LintReporter:
         """Create reporter for specified format."""
         format_map = {
-            'text': TextReporter,
-            'txt': TextReporter,
-            'json': JSONReporter,
-            'sarif': SARIFReporter,
-            'github': GitHubActionsReporter,
-            'gh-actions': GitHubActionsReporter,
+            "text": TextReporter,
+            "txt": TextReporter,
+            "json": JSONReporter,
+            "sarif": SARIFReporter,
+            "github": GitHubActionsReporter,
+            "gh-actions": GitHubActionsReporter,
         }
 
         reporter_class = format_map.get(format_name.lower())
         if not reporter_class:
             raise ValueError(f"Unsupported format: {format_name}")
 
-        return reporter_class(**kwargs)
+        # Type assertion for MyPy
+        reporter_instance: LintReporter = reporter_class(**kwargs)
+        return reporter_instance
 
     @staticmethod
-    def get_available_formats() -> List[str]:
+    def get_available_formats() -> list[str]:
         """Get list of available output formats."""
-        return ['text', 'json', 'sarif', 'github']
+        return ["text", "json", "sarif", "github"]
+
+    @staticmethod
+    def get_standard_reporters() -> dict[str, "LintReporter"]:
+        """Get dictionary of standard reporter instances."""
+        return {
+            "text": TextReporter(),
+            "json": JSONReporter(),
+            "sarif": SARIFReporter(),
+            "github": GitHubActionsReporter(),
+        }

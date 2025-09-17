@@ -12,14 +12,8 @@ Interfaces: Uses unified framework CLI and rule system
 Implementation: Clean, extensible architecture with focused rule-based design
 """
 
-from .framework import interfaces, analyzer, rule_registry, reporters
 from .cli import main
+from .framework import analyzer, interfaces, reporters, rule_registry
 
 __version__ = "1.0.0"
-__all__ = [
-    "interfaces",
-    "analyzer",
-    "rule_registry",
-    "reporters",
-    "main"
-]
+__all__ = ["interfaces", "analyzer", "rule_registry", "reporters", "main"]

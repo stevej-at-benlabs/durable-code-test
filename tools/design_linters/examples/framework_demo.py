@@ -12,28 +12,18 @@ Interfaces: Uses framework public API
 Implementation: Shows SOLID compliance through example usage
 """
 
-from pathlib import Path
-from typing import List
-
 # Import the new framework
-from ..framework import (
-    create_orchestrator,
-    create_rule_registry,
-    LintViolation,
-    Severity,
-    TextReporter,
-    JSONReporter
-)
+from ..framework import create_orchestrator
 
-# Import example rules
-from ..rules.solid.srp_rules import (
-    TooManyMethodsRule,
-    TooManyResponsibilitiesRule,
-    LowCohesionRule
-)
+# Example rules are available but not directly imported
+# from ..rules.solid.srp_rules import (
+#     TooManyMethodsRule,
+#     TooManyResponsibilitiesRule,
+#     LowCohesionRule
+# )
 
 
-def demonstrate_solid_compliance():
+def demonstrate_solid_compliance() -> None:
     """Demonstrate how the new framework addresses SOLID violations."""
 
     print("🎯 SOLID Violations Fixed by New Framework:")
@@ -73,7 +63,7 @@ def demonstrate_solid_compliance():
     print("   • No hard-coded dependencies - all configurable")
 
 
-def demonstrate_extensibility():
+def demonstrate_extensibility() -> None:
     """Show how easy it is to extend the framework."""
 
     print("\n🔌 Framework Extensibility Demo:")
@@ -88,35 +78,30 @@ def demonstrate_extensibility():
 
     # Easy to add custom rules
     class CustomComplexityRule:
-        def rule_id(self):
+        def rule_id(self) -> str:
             return "custom.complexity.cyclomatic"
 
     print("➕ Adding custom rules is as simple as implementing LintRule interface")
+    print(f"   Example: {CustomComplexityRule().rule_id()}")
 
     # Multiple output formats supported
-    formats = ['text', 'json', 'sarif', 'github']
+    formats = ["text", "json", "sarif", "github"]
     print(f"📄 Multiple output formats: {', '.join(formats)}")
 
     # Configuration-driven
-    config = {
-        'rules': {
-            'solid.srp.too-many-methods': {
-                'enabled': True,
-                'config': {'max_methods': 10}
-            }
-        }
-    }
+    config = {"rules": {"solid.srp.too-many-methods": {"enabled": True, "config": {"max_methods": 10}}}}
     print("⚙️ Rules are configurable without code changes")
+    print(f"   Example config has {len(config['rules'])} rule configurations")
 
 
-def demonstrate_usage_example():
+def demonstrate_usage_example() -> None:
     """Show practical usage of the framework."""
 
     print("\n🚀 Practical Usage Example:")
     print("=" * 30)
 
     # Simple one-liner for common use case
-    from ..framework import lint_files
+    # from ..framework import lint_files  # Available in framework
 
     # This replaces the old monolithic approach
     print("# Old way (monolithic):")
@@ -130,8 +115,11 @@ def demonstrate_usage_example():
     print("report = lint_files(['myfile.py'], output_format='text')")
     print("# ✨ One tool, one API, all design principles!")
 
+    # Demonstrate that lint_files would be available
+    print("# The lint_files function is available from the framework module")
 
-def show_violation_improvements():
+
+def show_violation_improvements() -> None:
     """Show how violations were addressed."""
 
     print("\n🔧 Specific SOLID Violations Fixed:")
@@ -140,20 +128,20 @@ def show_violation_improvements():
     improvements = [
         {
             "violation": "SRP: srp_analyzer.py mixed AST parsing, metrics, CLI, and reporting",
-            "solution": "Split into focused classes: PythonAnalyzer, LintRule implementations, LintReporter"
+            "solution": "Split into focused classes: PythonAnalyzer, LintRule implementations, LintReporter",
         },
         {
             "violation": "OCP: Hard-coded if/elif chains for language detection and output formats",
-            "solution": "Strategy pattern with ReporterFactory and polymorphic rule execution"
+            "solution": "Strategy pattern with ReporterFactory and polymorphic rule execution",
         },
         {
             "violation": "DIP: Hard-coded imports and concrete dependencies",
-            "solution": "Dependency injection via orchestrator constructor and rule registry"
+            "solution": "Dependency injection via orchestrator constructor and rule registry",
         },
         {
             "violation": "ISP: Would need fat interfaces if extending",
-            "solution": "Focused interfaces: LintRule, LintReporter, LintAnalyzer with specific purposes"
-        }
+            "solution": "Focused interfaces: LintRule, LintReporter, LintAnalyzer with specific purposes",
+        },
     ]
 
     for i, improvement in enumerate(improvements, 1):
@@ -161,7 +149,7 @@ def show_violation_improvements():
         print(f"   ✅ {improvement['solution']}")
 
 
-def demonstrate_testing_benefits():
+def demonstrate_testing_benefits() -> None:
     """Show how the new architecture improves testability."""
 
     print("\n🧪 Testing Benefits:")
@@ -172,7 +160,7 @@ def demonstrate_testing_benefits():
         "Mock dependencies can be easily injected",
         "Reporters can be tested independently of analysis logic",
         "Configuration can be easily mocked for different scenarios",
-        "No need to parse actual files for unit testing rules"
+        "No need to parse actual files for unit testing rules",
     ]
 
     for benefit in benefits:

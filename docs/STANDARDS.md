@@ -51,21 +51,95 @@ backend/
   - Constants: UPPER_SNAKE_CASE
   - Private methods: _leading_underscore
 
-### 3. API Design Principles
+### 3. Type Annotation Requirements (MyPy Compliance)
+- **MANDATORY**: All code must be fully compatible with MyPy strict mode
+- **Function Signatures**: All functions must have complete type annotations
+  ```python
+  def process_data(items: list[str], threshold: int = 10) -> dict[str, Any]:
+      """Process data items with optional threshold."""
+      return {"processed": len(items), "threshold": threshold}
+  ```
+- **Class Attributes**: All class attributes must be typed
+  ```python
+  class DataProcessor:
+      items: list[str]
+      threshold: int
+      results: dict[str, Any] | None = None
+  ```
+- **Method Return Types**: All methods must specify return types (including `None`)
+  ```python
+  def save_data(self, data: dict[str, Any]) -> None:
+      """Save data to storage."""
+      # Implementation here
+  ```
+- **Generic Types**: Use proper generic type annotations
+  ```python
+  from typing import Generic, TypeVar
+
+  T = TypeVar('T')
+
+  class Container(Generic[T]):
+      def __init__(self, item: T) -> None:
+          self.item = item
+  ```
+- **Import Requirements**: Use absolute imports for framework interfaces
+  ```python
+  # CORRECT - Use absolute imports
+  from design_linters.framework.interfaces import ASTLintRule, LintContext
+
+  # INCORRECT - Avoid relative imports that break in different contexts
+  from ...framework.interfaces import ASTLintRule, LintContext
+  ```
+- **Logging Import Requirements**: Always use loguru, never built-in logging
+  ```python
+  # CORRECT - Use loguru for all logging
+  from loguru import logger
+
+  # INCORRECT - Never use built-in logging module
+  import logging
+  logger = logging.getLogger(__name__)
+  ```
+- **Optional Types**: Use Union or `|` syntax correctly for optional values
+  ```python
+  def process_optional(value: str | None = None) -> bool:
+      return value is not None
+  ```
+- **Type Checking**: All code must pass `mypy --strict` without warnings
+- **No `Any` Types**: Avoid `Any` type; use specific types or proper generics
+- **Protocol Usage**: Use Protocol for structural typing when appropriate
+  ```python
+  from typing import Protocol
+
+  class Drawable(Protocol):
+      def draw(self) -> None: ...
+  ```
+- **Dataclass Integration**: Use proper typing with dataclasses
+  ```python
+  from dataclasses import dataclass
+  from typing import Optional
+
+  @dataclass
+  class Config:
+      name: str
+      enabled: bool = True
+      timeout: Optional[float] = None
+  ```
+
+### 4. API Design Principles
 - RESTful conventions with proper HTTP methods
 - Version API endpoints (/api/v1/)
 - Use Pydantic models for request/response validation
 - Implement proper error handling with meaningful status codes
 - Document all endpoints with OpenAPI/Swagger
 
-### 4. Testing Requirements
+### 5. Testing Requirements
 - Minimum 80% code coverage
 - Use pytest for all tests
 - Test file naming: test_*.py
 - Use fixtures for common test data
 - Mock external dependencies
 
-### 5. Security Best Practices
+### 6. Security Best Practices
 - Never hardcode secrets
 - Use environment variables for configuration
 - Implement proper authentication/authorization
@@ -73,7 +147,7 @@ backend/
 - Use parameterized queries for database operations
 - Enable CORS with specific origins only
 
-### 6. Error Handling
+### 7. Error Handling
 - Use custom exception classes
 - Implement global exception handlers
 - Return consistent error response format:
@@ -87,11 +161,13 @@ backend/
   }
   ```
 
-### 7. Logging Standards - NO PRINT STATEMENTS
+### 8. Logging Standards - LOGURU ONLY, NO PRINT STATEMENTS
 - **PROHIBITED**: `print()` statements are strictly forbidden in production code
-- **Required Logger**: Use `loguru` for all logging needs
+- **PROHIBITED**: Built-in `logging` module is forbidden - use `loguru` instead
+- **REQUIRED**: Use `loguru` for ALL logging needs throughout the codebase
 - **Installation**: `poetry add loguru` or `pip install loguru`
 - **Import**: `from loguru import logger`
+- **Consistent Usage**: All modules, classes, and functions must use loguru logger
 - **Usage Examples**:
   ```python
   from loguru import logger
@@ -107,6 +183,10 @@ backend/
 
   # Instead of print(f"Error: {error}")
   logger.error(f"Error occurred: {error}")
+
+  # NEVER use built-in logging module
+  # WRONG: import logging; logging.getLogger(__name__).info("message")
+  # CORRECT: from loguru import logger; logger.info("message")
   ```
 - **Log Levels**:
   - `logger.trace()`: Detailed diagnostic info
@@ -128,16 +208,32 @@ backend/
       level="INFO"
   )
   ```
-- **Benefits of Loguru**:
+- **Benefits of Loguru over Built-in Logging**:
   - Structured logging with automatic formatting
   - Built-in rotation and retention
   - Better performance than print statements
   - Thread-safe and async-safe
   - Contextual information (file, function, line)
   - Easy filtering and formatting
-- **Enforcement**: The `print_statement_linter.py` tool automatically detects and reports any print statements
+  - Simpler API than Python's logging module
+  - No need for logger configuration or getLogger() calls
+  - Automatic serialization of complex objects
+- **Migration from Built-in Logging**:
+  ```python
+  # OLD (built-in logging) - DO NOT USE
+  import logging
+  logger = logging.getLogger(__name__)
+  logger.info("Message")
 
-### 8. Dependency Management
+  # NEW (loguru) - REQUIRED
+  from loguru import logger
+  logger.info("Message")
+  ```
+- **Enforcement**:
+  - The `print_statement_linter.py` tool automatically detects and reports any print statements
+  - Custom linting rules detect usage of built-in logging module
+
+### 9. Dependency Management
 - Use Poetry for dependency management
 - Pin exact versions in pyproject.toml
 - Separate dev dependencies

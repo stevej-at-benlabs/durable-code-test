@@ -13,19 +13,19 @@ Implementation: Rule-based architecture with focused responsibilities
 """
 
 from .srp_rules import (
+    ClassTooBigRule,
+    LowCohesionRule,
+    TooManyDependenciesRule,
     TooManyMethodsRule,
     TooManyResponsibilitiesRule,
-    LowCohesionRule,
-    ClassTooBigRule,
-    TooManyDependenciesRule
 )
 
 # Export all rules for discovery
 __all__ = [
     # SRP Rules
-    'TooManyMethodsRule',
-    'TooManyResponsibilitiesRule',
-    'LowCohesionRule',
-    'ClassTooBigRule',
-    'TooManyDependenciesRule',
+    "TooManyMethodsRule",
+    "TooManyResponsibilitiesRule",
+    "LowCohesionRule",
+    "ClassTooBigRule",
+    "TooManyDependenciesRule",
 ]

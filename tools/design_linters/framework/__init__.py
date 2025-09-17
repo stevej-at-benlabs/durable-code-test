@@ -12,90 +12,92 @@ Interfaces: Unified API for framework consumers
 Implementation: Plugin architecture with dependency injection support
 """
 
-# Core interfaces
-from .interfaces import (
-    LintRule,
-    ASTLintRule,
-    FileBasedLintRule,
-    LintViolation,
-    LintContext,
-    LintReporter,
-    LintAnalyzer,
-    LintOrchestrator,
-    RuleRegistry,
-    ConfigurationProvider,
-    Severity
-)
+import contextlib
+import pkgutil
+from pathlib import Path
 
-# Rule management
-from .rule_registry import (
-    DefaultRuleRegistry,
-    CategorizedRuleRegistry,
-    RuleDiscoveryService
+# Analysis and orchestration
+from .analyzer import ContextualASTVisitor, DefaultLintOrchestrator, LintResults, PythonAnalyzer
+from .interfaces import (
+    ASTLintRule,
+    ConfigurationProvider,
+    FileBasedLintRule,
+    LintAnalyzer,
+    LintContext,
+    LintOrchestrator,
+    LintReporter,
+    LintRule,
+    LintViolation,
+    RuleRegistry,
+    Severity,
 )
 
 # Reporting system
-from .reporters import (
-    TextReporter,
-    JSONReporter,
-    SARIFReporter,
-    GitHubActionsReporter,
-    ReporterFactory
-)
+from .reporters import GitHubActionsReporter, JSONReporter, ReporterFactory, SARIFReporter, TextReporter
 
-# Analysis and orchestration
-from .analyzer import (
-    PythonAnalyzer,
-    DefaultLintOrchestrator,
-    ContextualASTVisitor,
-    LintResults
-)
+# Rule management
+from .rule_registry import CategorizedRuleRegistry, DefaultRuleRegistry, RuleDiscoveryService
+
+# Core interfaces
+
 
 # Main public API
 __all__ = [
     # Core interfaces
-    'LintRule',
-    'ASTLintRule',
-    'FileBasedLintRule',
-    'LintViolation',
-    'LintContext',
-    'LintReporter',
-    'LintAnalyzer',
-    'LintOrchestrator',
-    'RuleRegistry',
-    'Severity',
-
+    "LintRule",
+    "ASTLintRule",
+    "FileBasedLintRule",
+    "LintViolation",
+    "LintContext",
+    "LintReporter",
+    "LintAnalyzer",
+    "LintOrchestrator",
+    "RuleRegistry",
+    "Severity",
+    "ConfigurationProvider",
     # Rule management
-    'DefaultRuleRegistry',
-    'CategorizedRuleRegistry',
-    'RuleDiscoveryService',
-
+    "DefaultRuleRegistry",
+    "CategorizedRuleRegistry",
+    "RuleDiscoveryService",
     # Reporting
-    'TextReporter',
-    'JSONReporter',
-    'SARIFReporter',
-    'GitHubActionsReporter',
-    'ReporterFactory',
-
+    "TextReporter",
+    "JSONReporter",
+    "SARIFReporter",
+    "GitHubActionsReporter",
+    "ReporterFactory",
     # Analysis
-    'PythonAnalyzer',
-    'DefaultLintOrchestrator',
-    'LintResults',
-
+    "ContextualASTVisitor",
+    "PythonAnalyzer",
+    "DefaultLintOrchestrator",
+    "LintResults",
     # Factory functions
-    'create_orchestrator',
-    'create_rule_registry',
-    'discover_rules'
+    "create_orchestrator",
+    "create_rule_registry",
+    "discover_rules",
 ]
 
 
-def create_orchestrator(rule_packages: list[str] = None,
-                       config: dict = None) -> LintOrchestrator:
+def _discover_rule_packages() -> list[str]:
+    """Dynamically discover all rule packages in the rules directory."""
+    import tools.design_linters.rules as rules_module  # pylint: disable=import-outside-toplevel
+
+    rule_packages = []
+
+    # Walk through all subdirectories in the rules package
+    if hasattr(rules_module, "__path__"):
+        for _, package_name, is_pkg in pkgutil.iter_modules(rules_module.__path__):
+            if is_pkg:  # Only include packages, not individual modules
+                rule_packages.append(f"tools.design_linters.rules.{package_name}")
+
+    return rule_packages
+
+
+def create_orchestrator(rule_packages: list[str] | None = None) -> LintOrchestrator:
     """Create a fully configured linter orchestrator.
 
     Args:
-        rule_packages: List of package names to discover rules from
-        config: Configuration dictionary for rules and analysis
+        rule_packages: List of package names to discover rules from.
+                      If None, will auto-discover from known rule packages.
 
     Returns:
         Configured LintOrchestrator instance
@@ -103,30 +105,24 @@ def create_orchestrator(rule_packages: list[str] = None,
     # Create rule registry and discover rules
     registry = DefaultRuleRegistry()
 
-    if rule_packages:
-        discovery = RuleDiscoveryService()
-        for package in rule_packages:
-            try:
-                discovery.discover_from_package(package, registry)
-            except ImportError:
-                pass  # Package not available, skip
+    # Auto-discover from all rule packages if no specific packages provided
+    if rule_packages is None:
+        rule_packages = _discover_rule_packages()
+
+    discovery = RuleDiscoveryService()
+    for package in rule_packages:
+        with contextlib.suppress(ImportError):
+            discovery.discover_from_package(package, registry)
 
     # Create analyzers
-    analyzers = {'python': PythonAnalyzer()}
+    analyzers: dict[str, LintAnalyzer] = {"python": PythonAnalyzer()}
 
     # Create reporters
-    reporters = {
-        'text': TextReporter(),
-        'json': JSONReporter(),
-        'sarif': SARIFReporter(),
-        'github': GitHubActionsReporter()
-    }
+    from .reporters import ReporterFactory as Factory  # pylint: disable=import-outside-toplevel
 
-    return DefaultLintOrchestrator(
-        rule_registry=registry,
-        analyzers=analyzers,
-        reporters=reporters
-    )
+    reporters = Factory.get_standard_reporters()
+
+    return DefaultLintOrchestrator(rule_registry=registry, analyzers=analyzers, reporters=reporters)
 
 
 def create_rule_registry(auto_discover: bool = True) -> RuleRegistry:
@@ -143,17 +139,15 @@ def create_rule_registry(auto_discover: bool = True) -> RuleRegistry:
     if auto_discover:
         # Try to discover rules from known rule packages
         known_packages = [
-            'tools.design_linters.rules.solid',
-            'tools.design_linters.rules.complexity',
-            'tools.design_linters.rules.style'
+            "tools.design_linters.rules.solid",  # design-lint: ignore[literals.magic-string]
+            "tools.design_linters.rules.complexity",  # design-lint: ignore[literals.magic-string]
+            "tools.design_linters.rules.style",  # design-lint: ignore[literals.magic-string]
         ]
 
         discovery = RuleDiscoveryService()
         for package in known_packages:
-            try:
+            with contextlib.suppress(ImportError):
                 discovery.discover_from_package(package, registry)
-            except ImportError:
-                pass  # Package not available, skip
 
     return registry
 
@@ -172,20 +166,20 @@ def discover_rules(*package_paths: str) -> int:
 
     total_discovered = 0
     for package_path in package_paths:
-        try:
+        with contextlib.suppress(ImportError):
             count = discovery.discover_from_package(package_path, registry)
             total_discovered += count
-        except ImportError:
-            pass
 
     return total_discovered
 
 
 # Convenience function for quick linting
-def lint_files(file_paths: list[str],
-              rule_packages: list[str] = None,
-              output_format: str = 'text',
-              config: dict = None) -> str:
+def lint_files(
+    file_paths: list[str],
+    rule_packages: list[str] | None = None,
+    output_format: str = "text",
+    config: dict[str, str] | None = None,
+) -> str:
     """Convenience function to lint files and get formatted output.
 
     Args:
@@ -197,9 +191,7 @@ def lint_files(file_paths: list[str],
     Returns:
         Formatted linting report
     """
-    from pathlib import Path
-
-    orchestrator = create_orchestrator(rule_packages, config)
+    orchestrator = create_orchestrator(rule_packages)
     all_violations = []
 
     for file_path in file_paths:

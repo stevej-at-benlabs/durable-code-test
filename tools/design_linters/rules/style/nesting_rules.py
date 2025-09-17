@@ -12,9 +12,13 @@ Implementation: Rule-based architecture with depth tracking
 """
 
 import ast
-from typing import List, Set, Dict, Any
 
-from ...framework.interfaces import ASTLintRule, LintViolation, LintContext, Severity
+from design_linters.framework.interfaces import ASTLintRule, LintContext, LintViolation, Severity
+
+# Default configuration constants
+DEFAULT_MAX_NESTING_DEPTH = 4
+DEFAULT_MAX_FUNCTION_LINES = 75  # More realistic for complex functions
+DEFAULT_MAX_DEEP_FUNCTION_NESTING = 4  # More realistic for real-world code
 
 
 class ExcessiveNestingRule(ASTLintRule):
@@ -37,44 +41,57 @@ class ExcessiveNestingRule(ASTLintRule):
         return Severity.WARNING
 
     @property
-    def categories(self) -> Set[str]:
+    def categories(self) -> set[str]:
         return {"style", "complexity", "readability"}
 
     def should_check_node(self, node: ast.AST, context: LintContext) -> bool:
         return isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef))
 
-    def check_node(self, node: ast.FunctionDef, context: LintContext) -> List[LintViolation]:
+    def check_node(self, node: ast.AST, context: LintContext) -> list[LintViolation]:
+        if not isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
+            raise TypeError("ExcessiveNestingRule should only receive function nodes")
         config = self.get_configuration(context.metadata or {})
-        max_depth = config.get('max_nesting_depth', 4)
+        max_depth = config.get("max_nesting_depth", DEFAULT_MAX_NESTING_DEPTH)
 
         max_found_depth = self._calculate_max_nesting_depth(node)
 
         if max_found_depth > max_depth:
-            return [LintViolation(
-                rule_id=self.rule_id,
-                file_path=str(context.file_path),
-                line=node.lineno,
-                column=node.col_offset,
-                severity=self.severity,
-                message=f"Function '{node.name}' has excessive nesting depth ({max_found_depth})",
-                description=f"Maximum nesting depth of {max_found_depth} exceeds limit of {max_depth}",
-                suggestion="Consider extracting nested logic into separate functions or using early returns",
-                context={'function_name': node.name, 'depth': max_found_depth, 'max_allowed': max_depth}
-            )]
+            return [
+                self.create_violation(
+                    context,
+                    node,
+                    message=f"Function '{node.name}' has excessive nesting depth ({max_found_depth})",
+                    description=f"Maximum nesting depth of {max_found_depth} exceeds limit of {max_depth}",
+                    suggestion="Consider extracting nested logic into separate functions or using early returns",
+                    violation_context={"function_name": node.name, "depth": max_found_depth, "max_allowed": max_depth},
+                )
+            ]
 
         return []
 
-    def _calculate_max_nesting_depth(self, node: ast.FunctionDef) -> int:
+    def _calculate_max_nesting_depth(self, node: ast.AST) -> int:
         """Calculate the maximum nesting depth in a function."""
         max_depth = 0
 
-        def visit_node(n: ast.AST, current_depth: int = 0):
+        def visit_node(n: ast.AST, current_depth: int = 0) -> None:
             nonlocal max_depth
             max_depth = max(max_depth, current_depth)
 
             # Nodes that increase nesting depth
-            if isinstance(n, (ast.If, ast.For, ast.While, ast.With, ast.AsyncWith,
-                             ast.Try, ast.ExceptHandler, ast.Match, ast.match_case)):
+            if isinstance(
+                n,
+                (
+                    ast.If,
+                    ast.For,
+                    ast.While,
+                    ast.With,
+                    ast.AsyncWith,
+                    ast.Try,
+                    ast.ExceptHandler,
+                    ast.Match,
+                    ast.match_case,
+                ),
+            ):
                 current_depth += 1
 
             # Visit children
@@ -82,6 +99,8 @@ class ExcessiveNestingRule(ASTLintRule):
                 visit_node(child, current_depth)
 
         # Start visiting from function body
+        if not isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
+            raise TypeError("Expected function node")
         for stmt in node.body:
             visit_node(stmt, 1)  # Start at depth 1 for function body
 
@@ -108,16 +127,18 @@ class DeepFunctionRule(ASTLintRule):
         return Severity.INFO
 
     @property
-    def categories(self) -> Set[str]:
+    def categories(self) -> set[str]:
         return {"style", "complexity", "maintainability"}
 
     def should_check_node(self, node: ast.AST, context: LintContext) -> bool:
         return isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef))
 
-    def check_node(self, node: ast.FunctionDef, context: LintContext) -> List[LintViolation]:
+    def check_node(self, node: ast.AST, context: LintContext) -> list[LintViolation]:
+        if not isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
+            raise TypeError("DeepFunctionRule should only receive function nodes")
         config = self.get_configuration(context.metadata or {})
-        max_lines = config.get('max_function_lines', 50)
-        max_depth = config.get('max_nesting_depth', 3)
+        max_lines = config.get("max_function_lines", DEFAULT_MAX_FUNCTION_LINES)
+        max_depth = config.get("max_nesting_depth", DEFAULT_MAX_DEEP_FUNCTION_NESTING)
 
         violations = []
 
@@ -126,46 +147,43 @@ class DeepFunctionRule(ASTLintRule):
             line_count = node.end_lineno - node.lineno
 
             if line_count > max_lines:
-                violations.append(LintViolation(
-                    rule_id=self.rule_id,
-                    file_path=str(context.file_path),
-                    line=node.lineno,
-                    column=node.col_offset,
-                    severity=self.severity,
-                    message=f"Function '{node.name}' is too long ({line_count} lines)",
-                    description=f"Function length of {line_count} lines exceeds recommended limit of {max_lines}",
-                    suggestion="Consider breaking this function into smaller, focused functions",
-                    context={'function_name': node.name, 'length': line_count, 'issue': 'length'}
-                ))
+                violations.append(
+                    self.create_violation(
+                        context,
+                        node,
+                        message=f"Function '{node.name}' is too long ({line_count} lines)",
+                        description=(f"Function length of {line_count} lines exceeds recommended limit of {max_lines}"),
+                        suggestion="Consider breaking this function into smaller, focused functions",
+                        violation_context={"function_name": node.name, "length": line_count, "issue": "length"},
+                    )
+                )
 
         # Check nesting depth
         nesting_depth = self._calculate_max_nesting_depth(node)
         if nesting_depth > max_depth:
-            violations.append(LintViolation(
-                rule_id=self.rule_id,
-                file_path=str(context.file_path),
-                line=node.lineno,
-                column=node.col_offset,
-                severity=self.severity,
-                message=f"Function '{node.name}' has deep nesting ({nesting_depth} levels)",
-                description=f"Nesting depth of {nesting_depth} exceeds recommended limit of {max_depth}",
-                suggestion="Consider using early returns or extracting nested logic into helper functions",
-                context={'function_name': node.name, 'depth': nesting_depth, 'issue': 'nesting'}
-            ))
+            violations.append(
+                self.create_violation(
+                    context,
+                    node,
+                    message=f"Function '{node.name}' has deep nesting ({nesting_depth} levels)",
+                    description=(f"Nesting depth of {nesting_depth} exceeds recommended limit of {max_depth}"),
+                    suggestion="Consider using early returns or extracting nested logic into helper functions",
+                    violation_context={"function_name": node.name, "depth": nesting_depth, "issue": "nesting"},
+                )
+            )
 
         return violations
 
-    def _calculate_max_nesting_depth(self, node: ast.FunctionDef) -> int:
+    def _calculate_max_nesting_depth(self, node: ast.AST) -> int:
         """Calculate the maximum nesting depth in a function."""
         max_depth = 0
 
-        def visit_node(n: ast.AST, current_depth: int = 0):
+        def visit_node(n: ast.AST, current_depth: int = 0) -> None:
             nonlocal max_depth
             max_depth = max(max_depth, current_depth)
 
             # Nodes that increase nesting depth
-            if isinstance(n, (ast.If, ast.For, ast.While, ast.With, ast.AsyncWith,
-                             ast.Try, ast.ExceptHandler)):
+            if isinstance(n, (ast.If, ast.For, ast.While, ast.With, ast.AsyncWith, ast.Try, ast.ExceptHandler)):
                 current_depth += 1
 
             # Visit children
@@ -173,6 +191,8 @@ class DeepFunctionRule(ASTLintRule):
                 visit_node(child, current_depth)
 
         # Start visiting from function body
+        if not isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
+            raise TypeError("Expected function node")
         for stmt in node.body:
             visit_node(stmt, 1)
 

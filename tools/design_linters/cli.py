@@ -13,63 +13,26 @@ Implementation: Uses framework orchestrator with automatic rule discovery
 """
 
 import argparse
+import datetime
+import json
 import sys
-import logging
+import traceback
 from pathlib import Path
-from typing import List, Dict, Any, Optional
+from typing import Any
 
-from .framework import (
-    create_orchestrator,
-    create_rule_registry,
-    LintViolation,
-    Severity,
-    ReporterFactory
-)
+from loguru import logger
+
+from .framework import LintOrchestrator, LintViolation, Severity, create_orchestrator
+from .framework.reporters import ReporterFactory
 
 
-class DesignLinterCLI:
-    """Unified command-line interface for design linting."""
+class ArgumentParser:
+    """Handles command-line argument parsing and configuration management."""
 
-    def __init__(self):
-        """Initialize CLI with framework components."""
-        self.orchestrator = None
-        self.logger = logging.getLogger(__name__)
-
-    def run(self, args: Optional[List[str]] = None) -> int:
-        """Run the CLI with provided arguments."""
-        if args is None:
-            args = sys.argv[1:]
-
-        try:
-            parsed_args = self._parse_arguments(args)
-            self._setup_logging(parsed_args.verbose)
-
-            # Initialize orchestrator with rule discovery
-            self.orchestrator = self._create_orchestrator(parsed_args)
-
-            # Execute linting
-            violations = self._execute_linting(parsed_args)
-
-            # Generate and output report
-            self._output_results(violations, parsed_args)
-
-            # Return appropriate exit code
-            return self._determine_exit_code(violations, parsed_args)
-
-        except KeyboardInterrupt:
-            print("\n❌ Linting interrupted by user", file=sys.stderr)
-            return 130
-        except Exception as e:
-            print(f"❌ Error during linting: {e}", file=sys.stderr)
-            if parsed_args.verbose if 'parsed_args' in locals() else False:
-                import traceback
-                traceback.print_exc()
-            return 1
-
-    def _parse_arguments(self, args: List[str]) -> argparse.Namespace:
+    def parse_arguments(self, args: list[str]) -> argparse.Namespace:
         """Parse command-line arguments."""
         parser = argparse.ArgumentParser(
-            description='Unified Design Linter - Check code for SOLID principles and style violations',
+            description="Unified Design Linter - Check code for SOLID principles and style violations",
             formatter_class=argparse.RawDescriptionHelpFormatter,
             epilog="""
 Examples:
@@ -87,340 +50,401 @@ Examples:
 
   # Backward compatibility
   design-linter myfile.py --legacy srp  # Same as old srp_analyzer.py
-            """
+            """,
         )
 
         # Input files/directories
         parser.add_argument(
-            'paths',
-            nargs='*',
-            help='Files or directories to lint (default: current directory)'
-        )
-
-        # Rule selection
-        parser.add_argument(
-            '--rules',
-            help='Comma-separated list of rule IDs to run (default: all enabled rules)'
-        )
-
-        parser.add_argument(
-            '--exclude-rules',
-            help='Comma-separated list of rule IDs to exclude'
-        )
-
-        parser.add_argument(
-            '--categories',
-            help='Comma-separated list of rule categories to run (e.g., solid,style,literals)'
+            "paths",
+            nargs="*",
+            help="Files or directories to lint (default: current directory)",
         )
 
         # Output format
         parser.add_argument(
-            '--format',
-            choices=['text', 'json', 'sarif', 'github'],
-            default='text',
-            help='Output format (default: text)'
+            "--format", choices=["text", "json", "sarif", "github"], default="text", help="Output format"
         )
 
-        parser.add_argument(
-            '--output',
-            help='Output file (default: stdout)'
-        )
+        # Verbosity
+        parser.add_argument("-v", "--verbose", action="store_true", help="Verbose output")
+
+        # Rule management
+        parser.add_argument("--list-rules", action="store_true", help="List all available rules")
+        parser.add_argument("--list-categories", action="store_true", help="List all rule categories")
+
+        # Rule filtering
+        parser.add_argument("--rules", help="Comma-separated list of specific rules to run")
+        parser.add_argument("--exclude", help="Comma-separated list of rules to exclude")
+        parser.add_argument("--categories", help="Comma-separated list of categories to include")
 
         # Severity filtering
         parser.add_argument(
-            '--min-severity',
-            choices=['error', 'warning', 'info'],
-            default='info',
-            help='Minimum severity level to report (default: info)'
+            "--min-severity",
+            choices=["error", "warning", "info"],
+            default="info",
+            help="Minimum severity level to report",
         )
+
+        # Output options
+        parser.add_argument("--output", "-o", help="Output file (default: stdout)")
+        parser.add_argument("--no-color", action="store_true", help="Disable colored output")
+
+        # Execution modes
+        parser.add_argument("--strict", action="store_true", help="Use strict checking mode")
+        parser.add_argument("--legacy", help="Backward compatibility mode (srp, magic-numbers, etc.)")
+        parser.add_argument("--fail-on-error", action="store_true", help="Exit with non-zero on any errors")
 
         # Configuration
-        parser.add_argument(
-            '--config',
-            help='Configuration file path'
-        )
-
-        parser.add_argument(
-            '--strict',
-            action='store_true',
-            help='Use strict rule configuration'
-        )
-
-        parser.add_argument(
-            '--lenient',
-            action='store_true',
-            help='Use lenient rule configuration'
-        )
-
-        # Backward compatibility
-        parser.add_argument(
-            '--legacy',
-            choices=['srp', 'magic', 'print', 'nesting', 'header'],
-            help='Run in legacy mode (backward compatibility with old linters)'
-        )
-
-        # Utility options
-        parser.add_argument(
-            '--list-rules',
-            action='store_true',
-            help='List all available rules and exit'
-        )
-
-        parser.add_argument(
-            '--list-categories',
-            action='store_true',
-            help='List all available rule categories and exit'
-        )
-
-        # Control options
-        parser.add_argument(
-            '--fail-on-error',
-            action='store_true',
-            help='Exit with non-zero code if errors are found'
-        )
-
-        parser.add_argument(
-            '--recursive',
-            action='store_true',
-            default=True,
-            help='Recursively lint directories (default: True)'
-        )
-
-        parser.add_argument(
-            '--verbose', '-v',
-            action='store_true',
-            help='Verbose output'
-        )
+        parser.add_argument("--config", help="Path to configuration file")
+        parser.add_argument("--recursive", "-r", action="store_true", help="Recursively lint directories")
 
         return parser.parse_args(args)
 
-    def _setup_logging(self, verbose: bool):
-        """Setup logging configuration."""
-        level = logging.DEBUG if verbose else logging.WARNING
-        logging.basicConfig(
-            format='%(levelname)s: %(message)s',
-            level=level
-        )
 
-    def _create_orchestrator(self, args: argparse.Namespace):
-        """Create and configure the linting orchestrator."""
-        # Discover rules from known packages
-        rule_packages = [
-            'design_linters.rules.solid',
-            'design_linters.rules.literals',
-            'design_linters.rules.style',
-            'design_linters.rules.logging'
-        ]
+class ConfigurationLoader:
+    """Handles loading configuration from files and defaults."""
 
-        # Load configuration
-        config = self._load_configuration(args)
+    def get_default_config(self) -> dict[str, Any]:
+        """Get default configuration."""
+        return {"format": "text", "recursive": True, "min_severity": "info"}
 
-        # Create orchestrator with rule discovery
-        orchestrator = create_orchestrator(rule_packages, config)
+    def load_config_file(self, config_path: str) -> dict[str, Any]:
+        """Load configuration from file."""
+        try:
+            with open(config_path, encoding="utf-8") as f:
+                data = json.load(f)
+                return data if isinstance(data, dict) else {}
+        except (FileNotFoundError, json.JSONDecodeError) as e:
+            logger.error("Failed to load config file {}: {}", config_path, e)
+            raise ValueError(f"Failed to load config file {config_path}: {e}") from e
 
-        if args.list_rules:
-            self._list_rules(orchestrator)
-            sys.exit(0)
+    def apply_config_file(self, config: dict[str, Any], args: argparse.Namespace) -> None:
+        """Apply configuration from file if provided."""
+        if args.config:
+            file_config = self.load_config_file(args.config)
+            config.update(file_config)
 
-        if args.list_categories:
-            self._list_categories(orchestrator)
-            sys.exit(0)
 
-        return orchestrator
+class ModeManager:
+    """Handles mode-specific configuration overrides."""
 
-    def _load_configuration(self, args: argparse.Namespace) -> Dict[str, Any]:
-        """Load configuration from file and command line arguments."""
-        config = {
-            'rules': {},
-            'include': ['**/*.py'],
-            'exclude': ['__pycache__/**', '.git/**', '.venv/**']
+    def apply_mode_overrides(self, config: dict[str, Any], args: argparse.Namespace) -> None:
+        """Apply mode-specific configuration overrides."""
+        if args.strict:
+            self.apply_strictness_mode(config)
+        if args.legacy:
+            self.apply_legacy_mode(config, args.legacy)
+
+    def apply_strictness_mode(self, config: dict[str, Any]) -> None:
+        """Apply strict mode configuration."""
+        strict_config = self.get_strict_config()
+        config.update(strict_config)
+
+    def apply_legacy_mode(self, config: dict[str, Any], legacy_tool: str) -> None:
+        """Apply legacy mode configuration."""
+        legacy_config = self.get_legacy_config(legacy_tool)
+        config.update(legacy_config)
+
+    def get_strict_config(self) -> dict[str, Any]:
+        """Get strict mode configuration."""
+        return {
+            "min_severity": "warning",
+            "fail_on_error": True,
+            "rules": {
+                "solid.srp.too-many-methods": {"max_methods": 10},
+                "solid.srp.class-too-big": {"max_lines": 200},
+            },
         }
 
-        # Load from config file if specified
-        if args.config:
-            config.update(self._load_config_file(args.config))
+    def get_lenient_config(self) -> dict[str, Any]:
+        """Get lenient mode configuration."""
+        return {
+            "min_severity": "error",
+            "fail_on_error": False,
+            "rules": {
+                "solid.srp.too-many-methods": {"max_methods": 25},
+                "solid.srp.class-too-big": {"max_lines": 500},
+            },
+        }
 
-        # Apply command line overrides
-        if args.strict:
-            config.update(self._get_strict_config())
-        elif args.lenient:
-            config.update(self._get_lenient_config())
+    def get_legacy_config(self, legacy_tool: str) -> dict[str, Any]:
+        """Get configuration for legacy tool compatibility."""
+        legacy_configs = {
+            "srp": {"categories": ["solid.srp"], "format": "text"},
+            "magic": {"categories": ["literals"], "format": "text"},
+            "print": {"categories": ["style"], "rules": ["style.print-statement"]},
+        }
+        return legacy_configs.get(legacy_tool, {})
 
-        # Apply legacy mode configuration
-        if args.legacy:
-            config.update(self._get_legacy_config(args.legacy))
 
-        # Rule filtering
+class RuleFilter:
+    """Handles rule filtering and selection."""
+
+    def apply_rule_filters(self, config: dict[str, Any], args: argparse.Namespace) -> None:
+        """Apply rule filtering based on arguments."""
         if args.rules:
-            enabled_rules = args.rules.split(',')
-            config['rules'] = {rule: {'enabled': True} for rule in enabled_rules}
+            self.enable_specific_rules(config, args.rules)
+        if args.exclude:
+            self.exclude_specific_rules(config, args.exclude)
+        if args.categories:
+            self.filter_by_categories(config, args.categories)
 
-        if args.exclude_rules:
-            excluded_rules = args.exclude_rules.split(',')
-            for rule in excluded_rules:
-                config['rules'][rule] = {'enabled': False}
+    def enable_specific_rules(self, config: dict[str, Any], rules_str: str) -> None:
+        """Enable only specific rules."""
+        self.ensure_rules_dict_exists(config)
+        rules_list = [rule.strip() for rule in rules_str.split(",")]
+        for rule_id in rules_list:
+            config["rules"][rule_id] = {"enabled": True}
 
+    def exclude_specific_rules(self, config: dict[str, Any], exclude_str: str) -> None:
+        """Exclude specific rules."""
+        self.ensure_rules_dict_exists(config)
+        exclude_list = [rule.strip() for rule in exclude_str.split(",")]
+        for rule_id in exclude_list:
+            self.disable_rule(config, rule_id)
+
+    def filter_by_categories(self, config: dict[str, Any], categories_str: str) -> None:
+        """Filter rules by categories."""
+        categories_list = [cat.strip() for cat in categories_str.split(",")]
+        config["categories"] = categories_list
+
+    def ensure_rules_dict_exists(self, config: dict[str, Any]) -> None:
+        """Ensure rules dictionary exists in config."""
+        if "rules" not in config:
+            config["rules"] = {}
+
+    def disable_rule(self, config: dict[str, Any], rule_id: str) -> None:
+        """Disable a specific rule."""
+        self.ensure_rules_dict_exists(config)
+        config["rules"][rule_id] = {"enabled": False}
+
+
+class ConfigurationManager:
+    """Coordinates configuration loading, mode management, and rule filtering."""
+
+    def __init__(self) -> None:
+        self.loader = ConfigurationLoader()
+        self.mode_manager = ModeManager()
+        self.rule_filter = RuleFilter()
+
+    def load_configuration(self, args: argparse.Namespace) -> dict[str, Any]:
+        """Load and merge configuration from various sources."""
+        config = self.loader.get_default_config()
+        self.loader.apply_config_file(config, args)
+        self.mode_manager.apply_mode_overrides(config, args)
+        self.rule_filter.apply_rule_filters(config, args)
         return config
 
-    def _execute_linting(self, args: argparse.Namespace) -> List[LintViolation]:
-        """Execute linting on specified paths."""
-        paths = args.paths or ['.']
-        all_violations = []
 
-        config = self._load_configuration(args)
+class RuleListManager:
+    """Handles listing and displaying available rules and categories."""
 
-        for path_str in paths:
-            path = Path(path_str)
-
-            if path.is_file():
-                violations = self.orchestrator.lint_file(path, config)
-                all_violations.extend(violations)
-            elif path.is_dir():
-                violations = self.orchestrator.lint_directory(path, config, args.recursive)
-                all_violations.extend(violations)
-            else:
-                self.logger.warning(f"Path not found: {path}")
-
-        # Filter by severity
-        if hasattr(args, 'min_severity'):
-            all_violations = self._filter_by_severity(all_violations, args.min_severity)
-
-        return all_violations
-
-    def _output_results(self, violations: List[LintViolation], args: argparse.Namespace):
-        """Output linting results in the specified format."""
-        if not violations:
-            if args.format == 'text':
-                print("✅ No design violations found!")
-            return
-
-        # Generate report
-        report = self.orchestrator.generate_report(violations, args.format)
-
-        # Output to file or stdout
-        if args.output:
-            with open(args.output, 'w') as f:
-                f.write(report)
-            if args.verbose:
-                print(f"📁 Report written to {args.output}")
-        else:
-            print(report)
-
-    def _determine_exit_code(self, violations: List[LintViolation], args: argparse.Namespace) -> int:
-        """Determine appropriate exit code."""
-        if not args.fail_on_error:
-            return 0
-
-        error_count = sum(1 for v in violations if v.severity == Severity.ERROR)
-        return 1 if error_count > 0 else 0
-
-    def _list_rules(self, orchestrator):
-        """List all available rules."""
-        rules = orchestrator.rule_registry.get_all_rules()
-
-        print("📋 Available Rules:")
-        print("=" * 50)
-
-        by_category = {}
+    def list_rules(self, orchestrator: "LintOrchestrator") -> None:
+        """List all available rules grouped by category."""
+        print("📋 Available Linting Rules")
+        print("=" * 40)
+        rules = orchestrator.get_rule_registry().get_all_rules()
         for rule in rules:
-            for category in rule.categories or ['uncategorized']:
-                if category not in by_category:
-                    by_category[category] = []
-                by_category[category].append(rule)
+            print(f"  • {rule.rule_id}: {rule.rule_name}")
 
-        for category, category_rules in sorted(by_category.items()):
-            print(f"\n🏷️  {category.upper()}")
-            print("-" * 20)
-            for rule in sorted(category_rules, key=lambda r: r.rule_id):
-                severity_icon = self._get_severity_icon(rule.severity)
-                print(f"  {severity_icon} {rule.rule_id:<30} {rule.rule_name}")
-                if hasattr(rule, 'description'):
-                    print(f"     {rule.description}")
-
-    def _list_categories(self, orchestrator):
-        """List all available rule categories."""
-        rules = orchestrator.rule_registry.get_all_rules()
+    def list_categories(self, orchestrator: "LintOrchestrator") -> None:
+        """List all available categories with rule counts."""
+        print("📁 Available Rule Categories")
+        print("=" * 40)
+        rules = orchestrator.get_rule_registry().get_all_rules()
         categories = set()
         for rule in rules:
-            categories.update(rule.categories or ['uncategorized'])
-
-        print("🏷️  Available Categories:")
-        print("=" * 25)
+            categories.update(rule.categories or ["uncategorized"])
         for category in sorted(categories):
-            category_rules = [r for r in rules if category in (r.categories or ['uncategorized'])]
-            print(f"  • {category:<15} ({len(category_rules)} rules)")
+            count = len([r for r in rules if category in (r.categories or ["uncategorized"])])
+            print(f"  📂 {category} ({count} rules)")
 
-    def _filter_by_severity(self, violations: List[LintViolation], min_severity: str) -> List[LintViolation]:
-        """Filter violations by minimum severity level."""
-        severity_order = {'info': 0, 'warning': 1, 'error': 2}
-        min_level = severity_order.get(min_severity, 0)
 
-        return [v for v in violations if severity_order.get(v.severity.value, 0) >= min_level]
+class OutputManager:
+    """Handles output formatting and reporting."""
 
-    def _get_severity_icon(self, severity: Severity) -> str:
-        """Get icon for severity level."""
-        icons = {
-            Severity.ERROR: "❌",
-            Severity.WARNING: "⚠️",
-            Severity.INFO: "ℹ️"
-        }
-        return icons.get(severity, "❓")
+    def output_results(
+        self, violations: list[LintViolation], metadata: dict[str, Any], args: argparse.Namespace
+    ) -> None:
+        """Output linting results in the specified format."""
+        reporters = ReporterFactory.get_standard_reporters()
+        reporter = reporters[args.format]
+        report = reporter.generate_report(violations, metadata)
+        self._write_report_output(report, args)
 
-    def _load_config_file(self, config_path: str) -> Dict[str, Any]:
-        """Load configuration from file."""
-        import json
+    def _write_report_output(self, report: str, args: argparse.Namespace) -> None:
+        """Write report to output destination."""
+        if args.output:
+            self._write_report_to_file(report, args)
+        else:
+            logger.info(report)
+
+    def _write_report_to_file(self, report: str, args: argparse.Namespace) -> None:
+        """Write report to specified file."""
         try:
-            with open(config_path) as f:
-                return json.load(f)
+            with open(args.output, "w", encoding="utf-8") as f:
+                f.write(report)
+            logger.info("Report written to {}", args.output)
+        except OSError as e:
+            logger.exception("Error writing to {}: {}", args.output, e)
+
+
+class LintingExecutor:
+    """Handles the core linting execution logic."""
+
+    def __init__(self) -> None:
+        self.orchestrator: LintOrchestrator | None = None
+        self.files_analyzed: int = 0
+
+    def execute_linting(self, args: argparse.Namespace) -> tuple[list[LintViolation], dict[str, Any]]:
+        """Execute linting on specified paths and return violations with metadata."""
+        config = ConfigurationManager().load_configuration(args)
+        self.orchestrator = self._create_orchestrator(args)
+
+        paths = [Path(p) for p in args.paths] if args.paths else [Path(".")]
+        violations = self._lint_all_paths(paths, config, args)
+        filtered_violations = self._apply_severity_filter(violations, args)
+
+        metadata = self._generate_metadata(filtered_violations)
+        return filtered_violations, metadata
+
+    def _create_orchestrator(self, _args: argparse.Namespace) -> "LintOrchestrator":
+        """Create and configure the linting orchestrator."""
+        try:
+            return create_orchestrator()
         except Exception as e:
-            self.logger.warning(f"Could not load config file {config_path}: {e}")
-            return {}
+            logger.error("Failed to create orchestrator: {}", e)
+            raise
 
-    def _get_strict_config(self) -> Dict[str, Any]:
-        """Get strict rule configuration."""
+    def _lint_all_paths(
+        self, paths: list[Path], config: dict[str, Any], args: argparse.Namespace
+    ) -> list[LintViolation]:
+        """Lint all specified paths."""
+        violations = []
+        for path in paths:
+            if path.exists():
+                violations.extend(self._lint_single_path(path, config, args))
+        return violations
+
+    def _lint_single_path(self, path: Path, _config: dict[str, Any], args: argparse.Namespace) -> list[LintViolation]:
+        """Lint a single path (file or directory)."""
+        violations = []
+        if path.is_file():
+            violations.extend(self.orchestrator.lint_file(path))
+        elif path.is_dir() and args.recursive:
+            for py_file in path.rglob("*.py"):
+                violations.extend(self.orchestrator.lint_file(py_file))
+        return violations
+
+    def _apply_severity_filter(self, violations: list[LintViolation], args: argparse.Namespace) -> list[LintViolation]:
+        """Filter violations by minimum severity level."""
+        if not hasattr(args, "min_severity") or not args.min_severity:
+            return violations
+        return [v for v in violations if v.severity.value >= getattr(args, "min_severity", 0)]
+
+    def _generate_metadata(self, violations: list[LintViolation]) -> dict[str, Any]:
+        """Generate metadata about the linting results."""
         return {
-            'rules': {
-                'solid.srp.too-many-methods': {'config': {'max_methods': 8}},
-                'solid.srp.class-too-big': {'config': {'max_class_lines': 100}},
-                'literals.magic-number': {'config': {'allowed_numbers': {0, 1}}},
-            }
+            "total_violations": len(violations),
+            "files_analyzed": getattr(self, "files_analyzed", 0),
+            "timestamp": datetime.datetime.now().isoformat(),
         }
 
-    def _get_lenient_config(self) -> Dict[str, Any]:
-        """Get lenient rule configuration."""
-        return {
-            'rules': {
-                'solid.srp.too-many-methods': {'config': {'max_methods': 25}},
-                'solid.srp.class-too-big': {'config': {'max_class_lines': 500}},
-                'style.print-statement': {'enabled': False},
-            }
-        }
 
-    def _get_legacy_config(self, legacy_mode: str) -> Dict[str, Any]:
-        """Get configuration for legacy mode compatibility."""
-        legacy_configs = {
-            'srp': {
-                'rules': {rule: {'enabled': False} for rule in ['literals.magic-number', 'style.print-statement']},
-                'categories': ['solid']
-            },
-            'magic': {
-                'rules': {rule: {'enabled': False} for rule in ['solid.srp.too-many-methods', 'style.print-statement']},
-                'categories': ['literals']
-            },
-            'print': {
-                'rules': {rule: {'enabled': False} for rule in ['solid.srp.too-many-methods', 'literals.magic-number']},
-                'categories': ['style']
-            }
-        }
-        return legacy_configs.get(legacy_mode, {})
+class DesignLinterCLI:
+    """Main CLI interface for the unified design linter."""
+
+    MSG_LINTING_INTERRUPTED = "❌ Linting interrupted by user"
+    EXIT_CODE_INTERRUPTED = 130
+
+    def __init__(self) -> None:
+        self.argument_parser = ArgumentParser()
+        self.configuration_manager = ConfigurationManager()
+        self.rule_list_manager = RuleListManager()
+        self.output_manager = OutputManager()
+        self.linting_executor = LintingExecutor()
+
+    def run(self, args: list[str] | None = None) -> int:
+        """Run the CLI with provided arguments."""
+        if args is None:
+            args = sys.argv[1:]
+
+        try:
+            return self._execute_cli_workflow(args)
+        except KeyboardInterrupt:
+            logger.warning("Linting interrupted by user")
+            return self.EXIT_CODE_INTERRUPTED
+        except Exception as e:  # pylint: disable=broad-exception-caught
+            logger.exception("Unhandled exception in CLI execution")
+            return self._handle_cli_error(e, locals())
+
+    def _execute_cli_workflow(self, args: list[str]) -> int:
+        """Execute the main CLI workflow."""
+        parsed_args = self.argument_parser.parse_arguments(args)
+        self._setup_logging(parsed_args.verbose)
+
+        orchestrator = self._create_orchestrator(parsed_args)
+
+        # Handle special cases first
+        if parsed_args.list_rules:
+            self.rule_list_manager.list_rules(orchestrator)
+            return 0
+        if parsed_args.list_categories:
+            self.rule_list_manager.list_categories(orchestrator)
+            return 0
+
+        violations, metadata = self.linting_executor.execute_linting(parsed_args)
+        self.output_manager.output_results(violations, metadata, parsed_args)
+
+        return self._determine_exit_code(violations, parsed_args)
+
+    def _handle_cli_error(self, error: Exception, local_vars: dict) -> int:
+        """Handle CLI execution errors."""
+        logger.error("❌ Error during linting: {}", error)
+
+        should_show_traceback = self._should_show_traceback(local_vars)
+        if should_show_traceback:
+            traceback.print_exc()
+
+        return 1
+
+    def _should_show_traceback(self, local_vars: dict) -> bool:
+        """Determine if traceback should be shown."""
+        parsed_args = local_vars.get("parsed_args")
+        return bool(parsed_args and hasattr(parsed_args, "verbose") and parsed_args.verbose)
+
+    def _setup_logging(self, verbose: bool) -> None:
+        """Setup logging configuration."""
+        level = "DEBUG" if verbose else "INFO"
+        logger.remove()
+        logger.add(sys.stderr, level=level)
+
+    def _create_orchestrator(self, _args: argparse.Namespace) -> "LintOrchestrator":
+        """Create and configure the linting orchestrator."""
+        try:
+            return create_orchestrator()
+        except Exception as e:
+            logger.error("Failed to create orchestrator: {}", e)
+            raise
+
+    def _determine_exit_code(self, violations: list[LintViolation], args: argparse.Namespace) -> int:
+        """Determine appropriate exit code based on violations and settings."""
+        if not violations:
+            return 0
+
+        if args.fail_on_error:
+            error_violations = [v for v in violations if v.severity == Severity.ERROR]
+            return 1 if error_violations else 0
+
+        return 0
 
 
-def main():
+def main() -> None:
     """Main entry point for the unified design linter CLI."""
     cli = DesignLinterCLI()
     exit_code = cli.run()
     sys.exit(exit_code)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

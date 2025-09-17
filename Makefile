@@ -150,81 +150,13 @@ install-hooks: ## Install pre-commit hooks
 	@echo "$(GREEN)✓ Pre-commit hooks installed!$(NC)"
 	@echo "$(YELLOW)Hooks will run automatically on git commit$(NC)"
 
-# Testing and quality targets
-test: dev-start ## Run all tests with coverage (starts dev containers if needed)
-	@echo "$(CYAN)Running tests with coverage...$(NC)"
-	@echo "$(YELLOW)Backend and framework tests with coverage:$(NC)"
-	@docker exec durable-code-backend-dev bash -c "cd /tmp && PYTHONPATH=/app:/app/tools COVERAGE_FILE=/tmp/.coverage pytest /app/test/ --cov=/app/app --cov=/app/tools/design_linters --cov-report=term --cov-report=term:skip-covered --tb=short -v" || echo "$(YELLOW)Tests completed with some failures$(NC)"
-	@echo "$(YELLOW)Frontend tests with coverage:$(NC)"
-	@docker exec durable-code-frontend-dev npm run test:coverage || echo "$(YELLOW)Frontend tests completed$(NC)"
+pre-commit: lint-all-staged ## Run pre-commit checks on staged files only
+	@echo "$(GREEN)✅ Ready to commit!$(NC)"
 
-test-quick: dev-start ## Run all tests without coverage (faster)
-	@echo "$(CYAN)Running tests (no coverage)...$(NC)"
-	@echo "$(YELLOW)All backend and framework tests:$(NC)"
-	@docker exec durable-code-backend-dev bash -c "cd /app && PYTHONPATH=/app:/app/tools pytest test/ -v" || echo "$(YELLOW)Tests completed with some failures$(NC)"
-	@echo "$(YELLOW)Frontend tests:$(NC)"
-	@docker exec durable-code-frontend-dev npm run test:run || echo "$(YELLOW)Frontend tests completed$(NC)"
 
-test-framework: dev-start ## Run only design linter framework tests in Docker
-	@echo "$(CYAN)Running design linter framework tests...$(NC)"
-	@docker exec durable-code-backend-dev bash -c "cd /app && PYTHONPATH=/app/tools pytest test/unit_test/tools/design_linters -v --cov=tools/design_linters --cov-report=term" || echo "$(YELLOW)Framework tests have some failures (expected during development)$(NC)"
-	@echo "$(GREEN)✓ Framework tests complete$(NC)"
-
-test-integration: dev-start ## Run integration tests for design linters in Docker
-	@echo "$(CYAN)Running integration tests...$(NC)"
-	@docker exec durable-code-backend-dev bash -c "cd /app && PYTHONPATH=/app/tools pytest test/unit_test/tools/design_linters/test_cli_integration.py -v" || echo "$(YELLOW)Integration tests have some failures$(NC)"
-	@echo "$(GREEN)✓ Integration tests complete$(NC)"
-
-test-rules: dev-start ## Run tests for all linting rules in Docker
-	@echo "$(CYAN)Running rule tests...$(NC)"
-	@docker exec durable-code-backend-dev bash -c "cd /app && PYTHONPATH=/app/tools pytest test/unit_test/tools/design_linters/rules -v" || echo "$(YELLOW)Rule tests have some failures$(NC)"
-	@echo "$(GREEN)✓ Rule tests complete$(NC)"
-
-test-solid: dev-start ## Run tests for SOLID principle rules in Docker
-	@echo "$(CYAN)Running SOLID rule tests...$(NC)"
-	@docker exec durable-code-backend-dev bash -c "cd /app && PYTHONPATH=/app/tools pytest test/unit_test/tools/design_linters/rules/test_solid_rules.py -v" || echo "$(YELLOW)SOLID tests have some failures$(NC)"
-	@echo "$(GREEN)✓ SOLID tests complete$(NC)"
-
-test-logging: dev-start ## Run tests for logging rules in Docker
-	@echo "$(CYAN)Running logging rule tests...$(NC)"
-	@docker exec durable-code-backend-dev bash -c "cd /app && PYTHONPATH=/app/tools pytest test/unit_test/tools/design_linters/rules/test_logging_rules.py -v" || echo "$(YELLOW)Logging tests have some failures$(NC)"
-	@echo "$(GREEN)✓ Logging tests complete$(NC)"
-
-test-frontend: dev-start ## Run frontend tests only
-	@echo "$(CYAN)Running frontend tests...$(NC)"
-	@docker exec durable-code-frontend-dev npm run test:run
-
-test-frontend-coverage: dev-start ## Run frontend tests with coverage
-	@echo "$(CYAN)Running frontend tests with coverage...$(NC)"
-	@docker exec durable-code-frontend-dev npm run test:coverage
-
-test-frontend-watch: dev-start ## Run frontend tests in watch mode
-	@echo "$(CYAN)Running frontend tests in watch mode...$(NC)"
-	@docker exec -it durable-code-frontend-dev npm run test:watch
-
-test-links: dev-start ## Run link validation tests
-	@echo "$(CYAN)Running link validation tests...$(NC)"
-	@docker exec durable-code-frontend-dev npm run test:links
-
-# Include comprehensive linting targets
+# Include comprehensive linting and testing targets
 -include Makefile.lint
--include Makefile.design
-
-lint: ## Run basic linters with unified framework
-	@echo "$(CYAN)Running linters...$(NC)"
-	@echo "$(YELLOW)Backend linting:$(NC)"
-	@docker exec durable-code-backend-dev /home/appuser/.local/bin/ruff check /app/app --cache-dir /tmp/ruff-cache || echo "$(YELLOW)Backend container not running$(NC)"
-	@echo "$(YELLOW)Frontend linting:$(NC)"
-	@docker exec durable-code-frontend-dev npm run lint || echo "$(YELLOW)Frontend container not running$(NC)"
-	@echo "$(YELLOW)Unified design linting (style, literals, logging):$(NC)"
-	@PYTHONPATH=tools python -m design_linters --categories style,literals,logging --min-severity warning . || echo "$(GREEN)✓ No violations found$(NC)"
-
-format: ## Format code
-	@echo "$(CYAN)Formatting code...$(NC)"
-	@echo "$(YELLOW)Backend formatting:$(NC)"
-	@docker exec durable-code-backend-dev /home/appuser/.local/bin/black /app/app || echo "$(YELLOW)Backend container not running$(NC)"
-	@echo "$(YELLOW)Frontend formatting:$(NC)"
-	@docker exec durable-code-frontend-dev npm run format || echo "$(YELLOW)Frontend container not running$(NC)"
+-include Makefile.test
 
 # Dependency management
 check-deps: ## Check for outdated dependencies
