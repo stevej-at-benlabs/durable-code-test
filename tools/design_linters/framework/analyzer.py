@@ -13,10 +13,11 @@ Implementation: Visitor pattern with plugin architecture coordination
 """
 
 import ast
-import logging
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
+
+from loguru import logger
 
 from .interfaces import (
     ASTLintRule,
@@ -39,7 +40,6 @@ class PythonAnalyzer(LintAnalyzer):
 
     def __init__(self) -> None:
         """Initialize Python analyzer."""
-        self._logger = logging.getLogger(__name__)
 
     def analyze_file(self, file_path: Path) -> LintContext:
         """Analyze a Python file and return rich context."""
@@ -47,8 +47,9 @@ class PythonAnalyzer(LintAnalyzer):
             return self._parse_file_successfully(file_path)
         except SyntaxError as e:
             return self._handle_syntax_error(file_path, e)
-        except Exception as e:  # pylint: disable=broad-exception-caught
-            return self._handle_analysis_error(file_path, e)
+        except Exception:  # pylint: disable=broad-exception-caught
+            logger.exception("Error analyzing {}", file_path)
+            return self._handle_analysis_error(file_path)
 
     def _parse_file_successfully(self, file_path: Path) -> LintContext:
         """Parse a file successfully and return context."""
@@ -74,17 +75,17 @@ class PythonAnalyzer(LintAnalyzer):
 
     def _handle_syntax_error(self, file_path: Path, error: SyntaxError) -> LintContext:
         """Handle syntax errors during file analysis."""
-        self._logger.warning("Syntax error in %s: %s", file_path, error)
+        logger.warning("Syntax error in {}: {}", file_path, error)
         return LintContext(
             file_path=file_path,
             file_content=None,
             metadata={"syntax_error": str(error), "ast_parsed": False},
         )
 
-    def _handle_analysis_error(self, file_path: Path, error: Exception) -> LintContext:
+    def _handle_analysis_error(self, file_path: Path) -> LintContext:
         """Handle general errors during file analysis."""
-        self._logger.error("Error analyzing %s: %s", file_path, error)
-        return LintContext(file_path=file_path, metadata={"error": str(error), "ast_parsed": False})
+        # Error already logged with exception details in the caller
+        return LintContext(file_path=file_path, metadata={"error": "Analysis failed", "ast_parsed": False})
 
     def get_supported_extensions(self) -> set[str]:
         """Get file extensions this analyzer supports."""
@@ -192,14 +193,8 @@ class ContextualASTVisitor(ast.NodeVisitor):
 
             violations = rule.check_node(node, self.context)
             self.violations.extend(violations)
-        except Exception as e:  # pylint: disable=broad-exception-caught
-            self._log_rule_execution_error(rule, node, e)
-
-    def _log_rule_execution_error(self, rule: ASTLintRule, node: ast.AST, error: Exception) -> None:
-        """Log an error that occurred during rule execution."""
-        logging.getLogger(__name__).warning(
-            "Error executing rule %s on %s: %s", rule.rule_id, type(node).__name__, error
-        )
+        except Exception:  # pylint: disable=broad-exception-caught
+            logger.exception("Error executing rule {} on {}", rule.rule_id, type(node).__name__)
 
 
 @dataclass
@@ -252,7 +247,6 @@ class DefaultLintOrchestrator(LintOrchestrator):
         self.analyzers = analyzers or {"python": PythonAnalyzer()}
         self.reporters = reporters or {}
         self.config_provider = config_provider
-        self._logger = logging.getLogger(__name__)
 
     def lint_file(self, file_path: Path, config: dict[str, Any] | None = None) -> list[LintViolation]:
         """Lint a single file."""
@@ -260,7 +254,7 @@ class DefaultLintOrchestrator(LintOrchestrator):
 
         analyzer = self._get_analyzer_for_file(file_path)
         if not analyzer:
-            self._logger.warning("No analyzer available for %s", file_path)
+            logger.warning("No analyzer available for {}", file_path)
             return []
 
         context = analyzer.analyze_file(file_path)
@@ -310,8 +304,8 @@ class DefaultLintOrchestrator(LintOrchestrator):
         """Lint a single file with error handling."""
         try:
             return self.lint_file(file_path, config)
-        except Exception as e:  # pylint: disable=broad-exception-caught
-            self._logger.error("Error linting %s: %s", file_path, e)
+        except Exception:  # pylint: disable=broad-exception-caught
+            logger.exception("Error linting {}", file_path)
             return []
 
     def get_available_rules(self) -> list[str]:
@@ -373,16 +367,20 @@ class DefaultLintOrchestrator(LintOrchestrator):
         from .interfaces import FileBasedLintRule  # pylint: disable=import-outside-toplevel
 
         violations = []
+        file_based_rules = [rule for rule in rules if isinstance(rule, FileBasedLintRule)]
 
-        for rule in rules:
-            if isinstance(rule, FileBasedLintRule):
-                try:
-                    rule_violations = rule.check(context)
-                    violations.extend(rule_violations)
-                except Exception as e:  # pylint: disable=broad-exception-caught
-                    self._logger.warning("Error executing file rule %s: %s", rule.rule_id, e)
+        for rule in file_based_rules:
+            violations.extend(self._execute_single_file_rule(rule, context))
 
         return violations
+
+    def _execute_single_file_rule(self, rule: Any, context: LintContext) -> list[LintViolation]:
+        """Execute a single file-based rule with error handling."""
+        try:
+            return rule.check(context)
+        except Exception:  # pylint: disable=broad-exception-caught
+            logger.exception("Error executing file rule {}", rule.rule_id)
+            return []
 
     def _execute_ast_based_rules(
         self, rules: list[LintRule], context: LintContext, config: dict[str, Any]
