@@ -1,69 +1,72 @@
-# How to Run Tests
+# How to Run Unit Tests
 
-## Important: Always Check Available Make Targets First
+## Primary Method: Make Targets (Required)
+
+The project enforces Docker/Make usage per `CLAUDE.md`. **Always use make targets first.**
 
 ```bash
-# Get basic list of available commands
+# See all available test commands
 make help
 
-# Get comprehensive list of all make targets (recommended)
-make help-full
-```
+# Run all unit tests (recommended)
+make test-backend-quick
 
-## Quick Commands
-
-```bash
-# Run all tests
-make test
+# Run with coverage
+make test-backend-coverage
 
 # Run specific test categories
-make test-unit              # Unit tests only
-make test-integration       # Integration tests only
-make test-coverage         # With coverage analysis
+make test-framework    # Design linter framework tests
+make test-rules       # All linting rule tests
+make test-component COMPONENT=test/path  # Specific component
 ```
 
-> **Note**: The project uses Make targets exclusively. Always run `make help` or `make help-full` to see all available testing commands before proceeding.
+## Available Make Targets
 
-## Docker-Based Testing (Recommended)
+### Core Unit Test Commands
 
-**Why Docker**: Project enforces Docker/Make usage per `CLAUDE.md` - never run tests locally.
-
-### Complete Test Suite
+**Backend Unit Tests (Fastest):**
 ```bash
-make test
+make test-backend-quick
 ```
-**What it does**:
-- Runs all unit tests in isolated Docker environment
-- Executes integration tests
+- Runs all backend unit tests without coverage
+- Fast feedback for development cycles
+- Located in `test/unit_test/tools/design_linters/`
+
+**Backend with Coverage:**
+```bash
+make test-backend-coverage
+```
+- Includes coverage reporting
+- Identifies untested code paths
 - Generates coverage reports
-- Validates all design linter rules
 
-### Unit Tests Only
+**All Tests (Complete Suite):**
 ```bash
-make test-unit
+make test-all
 ```
-**What it does**:
-- Focuses on `test/unit_test/tools/design_linters/`
-- Fast execution for quick feedback
-- Ideal for development cycles
+- Backend + frontend tests with coverage
+- Full validation before commits
 
-### Integration Tests
-```bash
-make test-integration
-```
-**What it does**:
-- End-to-end workflow validation
-- Docker service integration testing
-- CLI interface validation
+### Specialized Test Categories
 
-### Coverage Analysis
+**Framework Tests:**
 ```bash
-make test-coverage
+make test-framework
 ```
-**What it does**:
-- Generates detailed coverage reports
-- Identifies uncovered code paths
-- Outputs to `.coverage` and HTML reports
+- Core linting framework functionality
+- Base classes and utilities
+
+**Rule Tests:**
+```bash
+make test-rules
+```
+- All individual linting rules
+- Magic numbers, SRP, logging, etc.
+
+**Specific Components:**
+```bash
+make test-component COMPONENT=test/unit_test/tools/design_linters/test_basic.py
+```
 
 ## Specific Test Execution
 
@@ -243,11 +246,11 @@ PYTHONPATH=/home/stevejackson/Projects/durable-code-test/tools python -m pytest 
 ## Best Practices
 
 ### Before Committing
-1. **Check available commands**: `make help-full`
-2. **Run local tests**: `make test-unit`
-3. **Check coverage**: `make test-coverage`
+1. **Check available commands**: `make help`
+2. **Run unit tests**: `make test-backend-quick`
+3. **Check coverage**: `make test-backend-coverage`
 4. **Run linting**: `make lint-all`
-5. **Full validation**: `make test`
+5. **Full validation**: `make test-all`
 
 ### Test Development
 1. **Write tests first** (TDD approach)
