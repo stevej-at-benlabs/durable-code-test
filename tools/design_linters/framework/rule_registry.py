@@ -14,10 +14,11 @@ Implementation: Plugin architecture with automatic discovery capabilities
 
 import importlib
 import inspect
-import logging
 import pkgutil
 from pathlib import Path
 from typing import Any
+
+from loguru import logger
 
 from .interfaces import LintRule, RuleRegistry
 
@@ -29,14 +30,13 @@ class DefaultRuleRegistry(RuleRegistry):
         """Initialize empty registry."""
         self._rules: dict[str, LintRule] = {}
         self._rules_by_category: dict[str, set[str]] = {}
-        self._logger = logging.getLogger(__name__)
 
     def register_rule(self, rule: LintRule) -> None:
         """Register a new rule."""
         rule_id = rule.rule_id
 
         if rule_id in self._rules:
-            self._logger.warning("Rule %s already registered, overriding", rule_id)
+            logger.warning("Rule {} already registered, overriding", rule_id)
 
         self._rules[rule_id] = rule
 
@@ -46,12 +46,12 @@ class DefaultRuleRegistry(RuleRegistry):
                 self._rules_by_category[category] = set()
             self._rules_by_category[category].add(rule_id)
 
-        self._logger.debug("Registered rule: %s", rule_id)
+        logger.debug("Registered rule: {}", rule_id)
 
     def unregister_rule(self, rule_id: str) -> None:
         """Unregister a rule by ID."""
         if rule_id not in self._rules:
-            self._logger.warning("Rule %s not found for unregistration", rule_id)
+            logger.warning("Rule {} not found for unregistration", rule_id)
             return
 
         rule = self._rules[rule_id]
@@ -64,7 +64,7 @@ class DefaultRuleRegistry(RuleRegistry):
                     del self._rules_by_category[category]
 
         del self._rules[rule_id]
-        self._logger.debug("Unregistered rule: %s", rule_id)
+        logger.debug("Unregistered rule: {}", rule_id)
 
     def get_rule(self, rule_id: str) -> LintRule | None:
         """Get a rule by ID."""
@@ -102,25 +102,21 @@ class DefaultRuleRegistry(RuleRegistry):
     def discover_rules(self, package_paths: list[str]) -> int:
         """Discover and register rules from package paths."""
         discovered_count = 0
-        discovery_service = RuleDiscoveryService(self._logger)
+        discovery_service = RuleDiscoveryService()
 
         for package_path in package_paths:
             try:
                 count = discovery_service.discover_from_package(package_path, self)
                 discovered_count += count
-                self._logger.info("Discovered %d rules from %s", count, package_path)
-            except Exception as e:  # pylint: disable=broad-exception-caught
-                self._logger.error("Error discovering rules from %s: %s", package_path, e)
+                logger.info("Discovered {} rules from {}", count, package_path)
+            except Exception:  # pylint: disable=broad-exception-caught
+                logger.exception("Error discovering rules from {}", package_path)
 
         return discovered_count
 
 
 class RuleDiscoveryService:
     """Service for discovering rules from packages and modules."""
-
-    def __init__(self, logger: logging.Logger | None = None):
-        """Initialize discovery service."""
-        self._logger = logger or logging.getLogger(__name__)
 
     def discover_from_package(self, package_path: str, registry: RuleRegistry) -> int:
         """Discover rules from a package and register them."""
@@ -129,26 +125,29 @@ class RuleDiscoveryService:
         try:
             # Import the package
             package = importlib.import_module(package_path)
-
-            # Walk through all modules in the package
-            if hasattr(package, "__path__"):
-                for _, module_name, _ in pkgutil.iter_modules(package.__path__):
-                    full_module_name = f"{package_path}.{module_name}"
-                    try:
-                        count = self._discover_from_module(full_module_name, registry)
-                        discovered_count += count
-                    except (ImportError, AttributeError, ValueError) as e:
-                        self._logger.warning("Error importing module %s: %s", full_module_name, e)
-            else:
-                # Single module
-                count = self._discover_from_module(package_path, registry)
-                discovered_count += count
-
-        except ImportError as e:
-            self._logger.error("Could not import package %s: %s", package_path, e)
+        except ImportError:
+            logger.exception("Could not import package {}", package_path)
             raise
 
+        # Check if it's a package or single module
+        if not hasattr(package, "__path__"):
+            # Single module - no iteration needed
+            return self._discover_from_module(package_path, registry)
+
+        # Walk through all modules in the package
+        for _, module_name, _ in pkgutil.iter_modules(package.__path__):
+            full_module_name = f"{package_path}.{module_name}"
+            discovered_count += self._try_discover_from_module(full_module_name, registry)
+
         return discovered_count
+
+    def _try_discover_from_module(self, module_name: str, registry: RuleRegistry) -> int:
+        """Try to discover rules from a module, handling errors gracefully."""
+        try:
+            return self._discover_from_module(module_name, registry)
+        except (ImportError, AttributeError, ValueError) as e:
+            logger.warning("Error importing module {}: {}", module_name, e)
+            return 0
 
     def _discover_from_module(self, module_path: str, registry: RuleRegistry) -> int:
         """Discover rules from a specific module."""
@@ -156,23 +155,30 @@ class RuleDiscoveryService:
 
         try:
             module = importlib.import_module(module_path)
-
-            # Look for rule classes in the module
-            for name, obj in inspect.getmembers(module):
-                if self._is_rule_class(obj):
-                    try:
-                        # Instantiate the rule
-                        rule_instance = obj()
-                        registry.register_rule(rule_instance)
-                        discovered_count += 1
-                        self._logger.debug("Discovered rule: %s", rule_instance.rule_id)
-                    except (TypeError, AttributeError, ValueError) as e:
-                        self._logger.warning("Error instantiating rule %s: %s", name, e)
-
         except (ImportError, AttributeError) as e:
-            self._logger.warning("Error processing module %s: %s", module_path, e)
+            logger.warning("Error processing module {}: {}", module_path, e)
+            return 0
+
+        # Look for rule classes in the module
+        for name, obj in inspect.getmembers(module):
+            if not self._is_rule_class(obj):
+                continue
+
+            discovered_count += self._try_register_rule(name, obj, registry)
 
         return discovered_count
+
+    def _try_register_rule(self, name: str, rule_class: type[LintRule], registry: RuleRegistry) -> int:
+        """Try to instantiate and register a rule, handling errors gracefully."""
+        try:
+            # Instantiate the rule
+            rule_instance = rule_class()
+            registry.register_rule(rule_instance)
+            logger.debug("Discovered rule: {}", rule_instance.rule_id)
+            return 1
+        except (TypeError, AttributeError, ValueError) as e:
+            logger.warning("Error instantiating rule {}: {}", name, e)
+            return 0
 
     def _is_rule_class(self, obj: Any) -> bool:
         """Check if an object is a valid rule class."""
@@ -195,7 +201,7 @@ class RuleDiscoveryService:
                 count = self._discover_from_file(py_file, registry)
                 discovered_count += count
             except (ImportError, AttributeError, OSError) as e:
-                self._logger.warning("Error discovering from %s: %s", py_file, e)
+                logger.warning("Error discovering from {}: {}", py_file, e)
 
         return discovered_count
 

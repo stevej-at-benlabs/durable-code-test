@@ -76,7 +76,7 @@ def demonstrate_extensibility() -> None:
 
     # Rules are automatically discovered - no manual registration needed
     available_rules = orchestrator.get_available_rules()
-    logger.info(f"📋 Automatically discovered {len(available_rules)} rules")
+    logger.info("📋 Automatically discovered {} rules", len(available_rules))
 
     # Easy to add custom rules
     class CustomComplexityRule:
@@ -84,16 +84,16 @@ def demonstrate_extensibility() -> None:
             return "custom.complexity.cyclomatic"
 
     logger.info("➕ Adding custom rules is as simple as implementing LintRule interface")
-    logger.info(f"   Example: {CustomComplexityRule().rule_id()}")
+    logger.info("   Example: {}", CustomComplexityRule().rule_id())
 
     # Multiple output formats supported
     formats = ["text", "json", "sarif", "github"]
-    logger.info(f"📄 Multiple output formats: {', '.join(formats)}")
+    logger.info("📄 Multiple output formats: {}", ", ".join(formats))
 
     # Configuration-driven
     config = {"rules": {"solid.srp.too-many-methods": {"enabled": True, "config": {"max_methods": 10}}}}
     logger.info("⚙️ Rules are configurable without code changes")
-    logger.info(f"   Example config has {len(config['rules'])} rule configurations")
+    logger.info("   Example config has {} rule configurations", len(config["rules"]))
 
 
 def demonstrate_usage_example() -> None:
@@ -109,7 +109,7 @@ def demonstrate_usage_example() -> None:
     logger.info("# Old way (monolithic):")
     logger.info("from magic_number_detector import analyze_file")
     logger.info("from srp_analyzer import analyze_file")
-    logger.info("from print_statement_linter import analyze_file")
+    logger.debug("from print_statement_linter import analyze_file")
     logger.info("# ... separate tools, different APIs, duplicate code")
 
     logger.success("\n# New way (unified framework):")
@@ -147,8 +147,8 @@ def show_violation_improvements() -> None:
     ]
 
     for i, improvement in enumerate(improvements, 1):
-        logger.info(f"\n{i}. ❌ {improvement['violation']}")
-        logger.info(f"   ✅ {improvement['solution']}")
+        logger.info("\n{}. ❌ {}", i, improvement["violation"])
+        logger.info("   ✅ {}", improvement["solution"])
 
 
 def demonstrate_testing_benefits() -> None:
@@ -166,7 +166,7 @@ def demonstrate_testing_benefits() -> None:
     ]
 
     for benefit in benefits:
-        logger.info(f"   ✅ {benefit}")
+        logger.info("   ✅ {}", benefit)
 
 
 if __name__ == "__main__":

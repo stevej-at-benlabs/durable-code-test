@@ -131,14 +131,31 @@ def extract_ignore_next_line_directives(file_content: str) -> set[int]:
 
     for i, line in enumerate(lines):
         # Check for "ignore next line" pattern
-        if re.search(r"#\s*design-lint:\s*ignore-next-line", line, re.IGNORECASE):
-            # Ignore the next non-empty line
-            for j in range(i + 1, len(lines)):
-                if lines[j].strip():
-                    ignored_lines.add(j + 1)  # Convert to 1-indexed
-                    break
+        if not re.search(r"#\s*design-lint:\s*ignore-next-line", line, re.IGNORECASE):
+            continue
+
+        # Find the next non-empty line to ignore
+        next_line_num = _find_next_non_empty_line(lines, i + 1)
+        if next_line_num is not None:
+            ignored_lines.add(next_line_num)  # Already 1-indexed
 
     return ignored_lines
+
+
+def _find_next_non_empty_line(lines: list[str], start_index: int) -> int | None:
+    """Find the next non-empty line starting from the given index.
+
+    Args:
+        lines: List of lines to search
+        start_index: Index to start searching from (0-indexed)
+
+    Returns:
+        1-indexed line number of the next non-empty line, or None if not found
+    """
+    for j in range(start_index, len(lines)):
+        if lines[j].strip():
+            return j + 1  # Convert to 1-indexed
+    return None
 
 
 def has_file_level_ignore(file_content: str, rule_id: str | None = None) -> bool:
