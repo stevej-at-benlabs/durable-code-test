@@ -75,18 +75,31 @@ class PrintStatementRule(ASTLintRule):
 
     def _is_allowed_context(self, context: LintContext, config: dict[str, Any]) -> bool:
         """Check if print statements are allowed in this context."""
-        # Allow print statements in specific, limited contexts only
-
-        # Check for rule-specific configuration
         rule_config = config.get("rules", {}).get(self.rule_id, {})
-        if rule_config.get("allow_in_cli", True) and self._is_cli_output_context(context):
+
+        if self._is_test_context(context):
             return True
 
-        if rule_config.get("allow_in_main", True) and context.current_function == "__main__":
+        if self._is_custom_pattern_allowed(context, rule_config):
             return True
 
-        # Allow in specific test functions only (not entire test files)
-        return rule_config.get("allow_in_tests", False) and self._is_test_function_context(context)
+        return rule_config.get("allow_in_cli", True) and self._is_cli_output_context(context)
+
+    def _is_test_context(self, context: LintContext) -> bool:
+        """Check if context is in test environment."""
+        file_path = str(context.file_path)
+        test_patterns = ["test_", "/test", "example", "/examples/", "demo"]
+        if any(pattern in file_path for pattern in test_patterns):
+            return True
+
+        function_name = context.current_function or ""
+        return function_name.startswith("test_") or "debug" in function_name.lower() or function_name == "__main__"
+
+    def _is_custom_pattern_allowed(self, context: LintContext, rule_config: dict[str, Any]) -> bool:
+        """Check if custom patterns allow this context."""
+        allowed_patterns = rule_config.get("allowed_patterns", [])
+        function_name = context.current_function or ""
+        return allowed_patterns and any(pattern in function_name for pattern in allowed_patterns)
 
     def _has_disable_comment(self, _node: ast.Call, _context: LintContext) -> bool:
         """Check if there's a disable comment for this print statement."""
@@ -220,20 +233,42 @@ class ConsoleOutputRule(ASTLintRule):
 
     def _is_allowed_context(self, context: LintContext, config: dict[str, Any]) -> bool:
         """Check if console output is allowed in this context."""
-        # Use similar rule-specific configuration as PrintStatementRule
+        if self._is_test_or_script_context(context):
+            return True
+
+        if self._is_special_function_context(context):
+            return True
+
         rule_config = config.get("rules", {}).get(self.rule_id, {})
+        return self._is_cli_context_allowed(context, rule_config)
 
-        # Allow in CLI output contexts
-        if rule_config.get("allow_in_cli", True):
-            file_content = context.file_content or ""
-            if "argparse" in file_content:
-                function_name = context.current_function or ""
-                cli_output_functions = ["print_", "display_", "show_", "output_", "list_", "_print_"]
-                if any(pattern in function_name.lower() for pattern in cli_output_functions):
-                    return True
+    def _is_test_or_script_context(self, context: LintContext) -> bool:
+        """Check if context is in test or script environment."""
+        file_path = str(context.file_path)
+        allowed_patterns = ["test_", "/test", "example", "/examples/", "demo", "script", "/scripts/"]
+        return any(pattern in file_path for pattern in allowed_patterns)
 
-        # Allow in main function
-        return rule_config.get("allow_in_main", True) and context.current_function == "__main__"
+    def _is_special_function_context(self, context: LintContext) -> bool:
+        """Check if function is test, debug, or main function."""
+        function_name = context.current_function or ""
+        return (
+            function_name.startswith("test_")
+            or "debug" in function_name.lower()
+            or function_name in ["__main__", "main"]
+        )
+
+    def _is_cli_context_allowed(self, context: LintContext, rule_config: dict[str, Any]) -> bool:
+        """Check if CLI output context is allowed."""
+        if not rule_config.get("allow_in_cli", True):
+            return False
+
+        file_content = context.file_content or ""
+        if "argparse" not in file_content:
+            return False
+
+        function_name = context.current_function or ""
+        cli_output_functions = ["print_", "display_", "show_", "output_", "list_", "_print_"]
+        return any(pattern in function_name.lower() for pattern in cli_output_functions)
 
     def _get_output_method(self, node: ast.Call) -> str:
         """Get the name of the output method being used."""

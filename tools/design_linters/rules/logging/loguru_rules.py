@@ -17,8 +17,8 @@ import ast
 from design_linters.framework.interfaces import ASTLintRule, LintContext, LintViolation, Severity
 
 # Configuration constants
-COMPLEX_MESSAGE_MAX_LENGTH = 100
-COMPLEX_MESSAGE_MAX_WORDS = 15
+COMPLEX_MESSAGE_MAX_LENGTH = 50
+COMPLEX_MESSAGE_MAX_WORDS = 7
 
 # Constants for message truncation
 MAX_LOG_MESSAGE_DISPLAY_LENGTH = 50
@@ -200,13 +200,16 @@ class LoggingFormatAnalyzer:
 
     def _has_action_words(self, message: str) -> bool:
         """Check if message contains action-related words that suggest measurable context."""
-        # Only flag specific patterns that strongly suggest missing context
+        # Check for patterns that suggest missing context
         action_patterns = [
             "processing completed",
             "operation failed",
             "request failed",
             "task completed",
             "job finished",
+            "operation completed successfully",
+            "completed successfully",
+            "started",
         ]
         message_lower = message.lower()
         return any(pattern in message_lower for pattern in action_patterns)
@@ -305,6 +308,14 @@ class StructuredLoggingRule(ASTLintRule):
             and node.func.value.id == "logger"
             and node.func.attr in ["debug", "info", "warning", "error", "critical", "success"]
         )
+
+    def _uses_string_formatting(self, node: ast.Call) -> bool:
+        """Check if the log call uses string formatting instead of structured logging."""
+        return self._format_analyzer.uses_string_formatting(node)
+
+    def _has_complex_message(self, node: ast.Call) -> bool:
+        """Check if the log call has a complex message that would benefit from context."""
+        return self._format_analyzer.has_complex_message(node)
 
 
 class LogLevelConsistencyRule(ASTLintRule):
@@ -408,7 +419,7 @@ class LogLevelConsistencyRule(ASTLintRule):
         message_lower = message.lower()
 
         level_indicators = {
-            "error": ["error", "exception", "crash", "fatal"],  # Removed "failed", "failure"
+            "error": ["error", "exception", "crash", "fatal", "failed", "failure"],
             "warning": ["warning", "warn", "deprecated", "fallback", "retry"],
             "success": ["success", "completed successfully", "finished successfully"],
             "debug": [
@@ -418,7 +429,7 @@ class LogLevelConsistencyRule(ASTLintRule):
                 "variable",
                 "state",
                 "skipped",
-            ],  # Removed "failed", "failure" - these can be errors in important contexts
+            ],
         }
 
         for level, indicators in level_indicators.items():

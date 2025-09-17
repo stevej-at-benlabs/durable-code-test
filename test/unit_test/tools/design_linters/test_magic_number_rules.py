@@ -177,14 +177,15 @@ class TestMagicNumberRule(unittest.TestCase):
     def test_is_acceptable_context_small_int_in_range(self):
         """Test small integers are acceptable in range contexts."""
         # Set up context with range function in node stack
+        node = ast.Constant(value=5)
         range_node = ast.Call(
             func=ast.Name(id='range', ctx=ast.Load()),
-            args=[ast.Constant(value=5)],
+            args=[node],
             keywords=[]
         )
-        self.context.node_stack = [range_node]
-
-        node = ast.Constant(value=5)
+        # Need at least 3 nodes for range context detection (dummy, range, constant)
+        dummy_node = ast.Module(body=[], type_ignores=[])
+        self.context.node_stack = [dummy_node, range_node, node]
         config = {'max_acceptable_small_int': 10}
 
         result = self.rule._is_acceptable_context(node, self.context, config)
@@ -193,14 +194,13 @@ class TestMagicNumberRule(unittest.TestCase):
     def test_is_acceptable_context_math_operation(self):
         """Test numbers are acceptable in mathematical operations."""
         # Set up context with binary operation in node stack
+        node = ast.Constant(value=42)
         binop_node = ast.BinOp(
             left=ast.Name(id='x', ctx=ast.Load()),
             op=ast.Add(),
-            right=ast.Constant(value=42)
+            right=node
         )
-        self.context.node_stack = [binop_node]
-
-        node = ast.Constant(value=42)
+        self.context.node_stack = [binop_node, node]
         config = {}
 
         result = self.rule._is_acceptable_context(node, self.context, config)
@@ -228,10 +228,10 @@ class TestMagicNumberRule(unittest.TestCase):
             args=[constant_node],
             keywords=[]
         )
-        # The stack should have nodes in order, with parents after current node
-        # For _is_in_range_context to find the range call at index -2, we need at least 3 nodes
+        # The stack should have nodes in order, with current node at the end
+        # For _is_in_range_context to find the range call at index -2, we need the range call as parent
         dummy_node = ast.Module(body=[], type_ignores=[])
-        self.context.node_stack = [dummy_node, constant_node, range_node]
+        self.context.node_stack = [dummy_node, range_node, constant_node]
 
         result = self.rule._is_in_range_context(self.context)
         self.assertTrue(result)
@@ -246,7 +246,7 @@ class TestMagicNumberRule(unittest.TestCase):
         )
         # Need at least 3 nodes for the algorithm to find the enumerate call at index -2
         dummy_node = ast.Module(body=[], type_ignores=[])
-        self.context.node_stack = [dummy_node, constant_node, enum_node]
+        self.context.node_stack = [dummy_node, enum_node, constant_node]
 
         result = self.rule._is_in_range_context(self.context)
         self.assertTrue(result)
@@ -594,6 +594,7 @@ class TestMagicNumberRuleIntegration(unittest.TestCase):
                 context = LintContext(
                     file_path=file_path,
                     ast_tree=tree,
+                    file_content=code,
                     node_stack=[]
                 )
 
@@ -622,7 +623,7 @@ class TestMagicNumberRuleIntegration(unittest.TestCase):
         code = "result = x + 42 * 2"
         tree = ast.parse(code)
         context = LintContext(
-            file_path=Path('/test.py'),
+            file_path=Path('/src/main.py'),
             ast_tree=tree,
             node_stack=[]
         )
@@ -653,8 +654,9 @@ class TestMagicComplexRuleIntegration(unittest.TestCase):
             with self.subTest(code=code):
                 tree = ast.parse(code)
                 context = LintContext(
-                    file_path=Path('/test.py'),
+                    file_path=Path('/src/main.py'),
                     ast_tree=tree,
+                    file_content=code,
                     node_stack=[]
                 )
 
@@ -666,8 +668,9 @@ class TestMagicComplexRuleIntegration(unittest.TestCase):
         code = "result = (2+3j) * (1-1j)"
         tree = ast.parse(code)
         context = LintContext(
-            file_path=Path('/test.py'),
+            file_path=Path('/src/main.py'),
             ast_tree=tree,
+            file_content=code,
             node_stack=[]
         )
 

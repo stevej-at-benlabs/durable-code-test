@@ -1,0 +1,221 @@
+"""
+Purpose: {{ENDPOINT_PURPOSE}} API endpoint for the durable code application
+Scope: {{ENDPOINT_SCOPE}} functionality with proper validation and error handling
+Overview: This module provides {{ENDPOINT_DESCRIPTION}}. It follows FastAPI best practices
+    with comprehensive input validation, structured error responses, proper HTTP status codes,
+    and detailed API documentation. Includes security considerations and performance optimizations.
+Dependencies: FastAPI, Pydantic models, application business logic, authentication
+Exports: {{ENDPOINT_FUNCTION_NAME}} endpoint function and related models
+Interfaces: REST API endpoint with OpenAPI documentation
+Implementation: FastAPI route with comprehensive validation and error handling
+"""
+
+from datetime import datetime
+from typing import Any, Dict, List, Optional
+from fastapi import APIRouter, Depends, HTTPException, Query, Path, status
+from fastapi.responses import JSONResponse
+from pydantic import BaseModel, Field, validator
+from loguru import logger
+
+# Import your application dependencies
+# from ..auth import get_current_user
+# from ..models import UserModel
+# from ..services import YourService
+
+# API Router for this endpoint group
+router = APIRouter(
+    prefix="/{{API_PREFIX}}",
+    tags=["{{API_TAG}}"],
+    responses={
+        status.HTTP_404_NOT_FOUND: {"description": "Resource not found"},
+        status.HTTP_422_UNPROCESSABLE_ENTITY: {"description": "Validation error"},
+        status.HTTP_500_INTERNAL_SERVER_ERROR: {"description": "Internal server error"},
+    },
+)
+
+
+# Pydantic Models
+class {{REQUEST_MODEL_NAME}}(BaseModel):
+    """Request model for {{ENDPOINT_NAME}} endpoint."""
+
+    {{REQUEST_FIELDS}}
+
+    @validator('{{VALIDATION_FIELD}}')
+    def validate_{{VALIDATION_FIELD}}(cls, value):
+        """Validate {{VALIDATION_FIELD}} field."""
+        {{VALIDATION_LOGIC}}
+        return value
+
+    class Config:
+        """Pydantic model configuration."""
+        schema_extra = {
+            "example": {
+                {{EXAMPLE_REQUEST}}
+            }
+        }
+
+
+class {{RESPONSE_MODEL_NAME}}(BaseModel):
+    """Response model for {{ENDPOINT_NAME}} endpoint."""
+
+    {{RESPONSE_FIELDS}}
+
+    class Config:
+        """Pydantic model configuration."""
+        schema_extra = {
+            "example": {
+                {{EXAMPLE_RESPONSE}}
+            }
+        }
+
+
+class {{ERROR_MODEL_NAME}}(BaseModel):
+    """Error response model."""
+
+    error: str = Field(..., description="Error message")
+    error_code: str = Field(..., description="Error code for client handling")
+    timestamp: datetime = Field(default_factory=datetime.now, description="Error timestamp")
+    request_id: Optional[str] = Field(None, description="Request ID for tracing")
+
+
+# Dependency functions
+async def validate_{{DEPENDENCY_NAME}}(
+    {{DEPENDENCY_PARAM}}: {{DEPENDENCY_TYPE}} = {{DEPENDENCY_SOURCE}}
+) -> {{DEPENDENCY_RETURN_TYPE}}:
+    """Validate and process {{DEPENDENCY_NAME}}."""
+    {{DEPENDENCY_LOGIC}}
+    return {{DEPENDENCY_RETURN}}
+
+
+# API Endpoints
+@router.{{HTTP_METHOD}}(
+    "/{{ENDPOINT_PATH}}",
+    response_model={{RESPONSE_MODEL_NAME}},
+    status_code=status.HTTP_{{SUCCESS_STATUS_CODE}},
+    summary="{{ENDPOINT_SUMMARY}}",
+    description="{{ENDPOINT_DESCRIPTION}}",
+    responses={
+        status.HTTP_{{ERROR_STATUS_CODE}}: {"model": {{ERROR_MODEL_NAME}}, "description": "{{ERROR_DESCRIPTION}}"},
+    },
+)
+async def {{ENDPOINT_FUNCTION_NAME}}(
+    {{ENDPOINT_PARAMETERS}}
+    # current_user: UserModel = Depends(get_current_user),  # Uncomment if auth needed
+) -> {{RESPONSE_MODEL_NAME}}:
+    """
+    {{ENDPOINT_DOCSTRING}}
+
+    Args:
+        {{PARAMETER_DOCS}}
+
+    Returns:
+        {{RETURN_DOCS}}
+
+    Raises:
+        HTTPException: {{EXCEPTION_DOCS}}
+    """
+    try:
+        logger.info("Processing {{ENDPOINT_NAME}} request: {}", {{LOG_CONTEXT}})
+
+        # Input validation and preprocessing
+        {{INPUT_PROCESSING}}
+
+        # Business logic
+        {{BUSINESS_LOGIC}}
+
+        # Response preparation
+        response_data = {{RESPONSE_MODEL_NAME}}(
+            {{RESPONSE_CONSTRUCTION}}
+        )
+
+        logger.info("{{ENDPOINT_NAME}} request completed successfully")
+        return response_data
+
+    except ValueError as e:
+        logger.warning("Validation error in {{ENDPOINT_NAME}}: {}", str(e))
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail={{ERROR_MODEL_NAME}}(
+                error=str(e),
+                error_code="VALIDATION_ERROR",
+                request_id="{{REQUEST_ID_LOGIC}}"
+            ).dict()
+        )
+    except {{SPECIFIC_EXCEPTION}} as e:
+        logger.error("{{SPECIFIC_ERROR_MESSAGE}}: {}", str(e))
+        raise HTTPException(
+            status_code=status.HTTP_{{ERROR_STATUS_CODE}},
+            detail={{ERROR_MODEL_NAME}}(
+                error="{{USER_FRIENDLY_ERROR}}",
+                error_code="{{ERROR_CODE}}",
+                request_id="{{REQUEST_ID_LOGIC}}"
+            ).dict()
+        )
+    except Exception as e:
+        logger.exception("Unexpected error in {{ENDPOINT_NAME}}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail={{ERROR_MODEL_NAME}}(
+                error="Internal server error",
+                error_code="INTERNAL_ERROR",
+                request_id="{{REQUEST_ID_LOGIC}}"
+            ).dict()
+        )
+
+
+# Additional utility endpoints if needed
+@router.get(
+    "/{{UTILITY_ENDPOINT_PATH}}",
+    response_model=List[Dict[str, Any]],
+    summary="{{UTILITY_SUMMARY}}",
+    description="{{UTILITY_DESCRIPTION}}",
+)
+async def {{UTILITY_FUNCTION_NAME}}(
+    {{UTILITY_PARAMETERS}}
+) -> List[Dict[str, Any]]:
+    """{{UTILITY_DOCSTRING}}"""
+    try:
+        {{UTILITY_LOGIC}}
+        return {{UTILITY_RESPONSE}}
+    except Exception as e:
+        logger.exception("Error in {{UTILITY_FUNCTION_NAME}}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to retrieve {{UTILITY_RESOURCE}}"
+        )
+
+
+# Health check for this module
+@router.get("/health", include_in_schema=False)
+async def {{MODULE_NAME}}_health_check():
+    """Health check endpoint for {{MODULE_NAME}} module."""
+    return {"status": "healthy", "module": "{{MODULE_NAME}}", "timestamp": datetime.now()}
+
+
+# Template usage instructions:
+# 1. Replace {{ENDPOINT_PURPOSE}} with endpoint's purpose
+# 2. Replace {{ENDPOINT_SCOPE}} with scope description
+# 3. Replace {{ENDPOINT_DESCRIPTION}} with detailed description
+# 4. Replace {{ENDPOINT_FUNCTION_NAME}} with function name
+# 5. Replace {{API_PREFIX}} with API path prefix (e.g., "/api/v1")
+# 6. Replace {{API_TAG}} with OpenAPI tag name
+# 7. Replace {{REQUEST_MODEL_NAME}} with request model class name
+# 8. Replace {{RESPONSE_MODEL_NAME}} with response model class name
+# 9. Replace {{ERROR_MODEL_NAME}} with error model class name
+# 10. Replace {{REQUEST_FIELDS}} with Pydantic field definitions
+# 11. Replace {{RESPONSE_FIELDS}} with Pydantic field definitions
+# 12. Replace {{VALIDATION_FIELD}} with field to validate
+# 13. Replace {{VALIDATION_LOGIC}} with validation implementation
+# 14. Replace {{EXAMPLE_REQUEST}} with example request data
+# 15. Replace {{EXAMPLE_RESPONSE}} with example response data
+# 16. Replace {{DEPENDENCY_NAME}} with dependency function name
+# 17. Replace {{HTTP_METHOD}} with HTTP method (get, post, put, delete)
+# 18. Replace {{ENDPOINT_PATH}} with endpoint path
+# 19. Replace {{SUCCESS_STATUS_CODE}} with success HTTP status
+# 20. Replace {{ERROR_STATUS_CODE}} with error HTTP status
+# 21. Replace {{ENDPOINT_SUMMARY}} with brief summary
+# 22. Replace {{ENDPOINT_PARAMETERS}} with function parameters
+# 23. Replace {{ENDPOINT_DOCSTRING}} with detailed docstring
+# 24. Replace {{BUSINESS_LOGIC}} with main business logic
+# 25. Replace {{RESPONSE_CONSTRUCTION}} with response creation
+# 26. Replace all other {{PLACEHOLDER}} values appropriately

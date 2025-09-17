@@ -1,0 +1,279 @@
+/**
+ * Purpose: {{COMPONENT_PURPOSE}} React component for the durable code application
+ * Scope: {{COMPONENT_SCOPE}} component with {{COMPONENT_FUNCTIONALITY}}
+ * Overview: {{COMPONENT_DESCRIPTION}}. This component follows React best practices
+ *     with proper TypeScript typing, performance optimization, accessibility features,
+ *     and comprehensive error handling. Includes responsive design and modern hooks.
+ * Dependencies: React, TypeScript, CSS modules, utility hooks
+ * Exports: {{COMPONENT_NAME}} component (default export), {{COMPONENT_NAME}}Props interface
+ * Props/Interfaces: {{PROPS_DESCRIPTION}}
+ * State/Behavior: {{STATE_DESCRIPTION}}
+ */
+
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
+import type { ReactElement, ReactNode } from 'react';
+import styles from './{{COMPONENT_NAME}}.module.css';
+
+// Type definitions
+interface {{COMPONENT_NAME}}Props {
+  {{PROPS_DEFINITION}}
+  className?: string;
+  children?: ReactNode;
+  onError?: (error: Error) => void;
+}
+
+interface {{STATE_INTERFACE}} {
+  {{STATE_PROPERTIES}}
+}
+
+interface {{DATA_INTERFACE}} {
+  {{DATA_PROPERTIES}}
+}
+
+// Constants
+const {{CONSTANTS}} = {
+  {{CONSTANT_VALUES}}
+};
+
+// Default props
+const DEFAULT_PROPS: Partial<{{COMPONENT_NAME}}Props> = {
+  {{DEFAULT_PROP_VALUES}}
+};
+
+/**
+ * {{COMPONENT_NAME}} component
+ *
+ * @param props - Component props
+ * @returns Rendered component
+ */
+export function {{COMPONENT_NAME}}({
+  {{DESTRUCTURED_PROPS}},
+  className = '',
+  children,
+  onError,
+  ...restProps
+}: {{COMPONENT_NAME}}Props): ReactElement {
+  // State management
+  const [state, setState] = useState<{{STATE_INTERFACE}}>({
+    {{INITIAL_STATE}}
+  });
+
+  const [{{DATA_STATE}}, set{{DATA_STATE_SETTER}}] = useState<{{DATA_INTERFACE}}[]>([]);
+  const [loading, setLoading] = useState<boolean>(false);
+  const [error, setError] = useState<Error | null>(null);
+
+  // Refs
+  const {{REF_NAME}} = useRef<{{REF_TYPE}} | null>(null);
+  const isMountedRef = useRef<boolean>(true);
+
+  // Memoized values
+  const {{MEMOIZED_VALUE}} = useMemo(() => {
+    {{MEMOIZATION_LOGIC}}
+  }, [{{MEMOIZATION_DEPENDENCIES}}]);
+
+  const componentClasses = useMemo(() => {
+    return [
+      styles.{{COMPONENT_STYLE_CLASS}},
+      className,
+      state.{{STATE_CONDITION}} && styles.{{CONDITIONAL_CLASS}},
+      loading && styles.loading,
+      error && styles.error,
+    ].filter(Boolean).join(' ');
+  }, [className, state.{{STATE_CONDITION}}, loading, error]);
+
+  // Event handlers
+  const handle{{EVENT_NAME}} = useCallback(({{EVENT_PARAMS}}) => {
+    try {
+      {{EVENT_LOGIC}}
+    } catch (err) {
+      const error = err instanceof Error ? err : new Error('Unknown error');
+      setError(error);
+      onError?.(error);
+    }
+  }, [{{EVENT_DEPENDENCIES}}]);
+
+  const handle{{ASYNC_EVENT_NAME}} = useCallback(async ({{ASYNC_EVENT_PARAMS}}) => {
+    if (!isMountedRef.current) return;
+
+    setLoading(true);
+    setError(null);
+
+    try {
+      {{ASYNC_EVENT_LOGIC}}
+    } catch (err) {
+      if (!isMountedRef.current) return;
+
+      const error = err instanceof Error ? err : new Error('Unknown error');
+      setError(error);
+      onError?.(error);
+    } finally {
+      if (isMountedRef.current) {
+        setLoading(false);
+      }
+    }
+  }, [{{ASYNC_EVENT_DEPENDENCIES}}]);
+
+  // Effects
+  useEffect(() => {
+    {{MOUNT_EFFECT_LOGIC}}
+
+    return () => {
+      isMountedRef.current = false;
+      {{CLEANUP_LOGIC}}
+    };
+  }, []);
+
+  useEffect(() => {
+    {{DEPENDENCY_EFFECT_LOGIC}}
+  }, [{{EFFECT_DEPENDENCIES}}]);
+
+  // Error boundary-like behavior
+  useEffect(() => {
+    if (error) {
+      console.error(`Error in ${{{COMPONENT_NAME}}.name}:`, error);
+    }
+  }, [error]);
+
+  // Render helpers
+  const render{{HELPER_NAME}} = useCallback(() => {
+    {{RENDER_HELPER_LOGIC}}
+  }, [{{RENDER_HELPER_DEPENDENCIES}}]);
+
+  const render{{LIST_NAME}} = useCallback(() => {
+    if ({{DATA_STATE}}.length === 0) {
+      return (
+        <div className={styles.emptyState}>
+          <p>{{EMPTY_STATE_MESSAGE}}</p>
+        </div>
+      );
+    }
+
+    return (
+      <div className={styles.{{LIST_CONTAINER_CLASS}}>
+        {{{DATA_STATE}}.map((item, index) => (
+          <div
+            key={item.{{ITEM_KEY}} || index}
+            className={styles.{{ITEM_CLASS}}}
+            onClick={() => handle{{ITEM_CLICK}}(item)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                handle{{ITEM_CLICK}}(item);
+              }
+            }}
+            role="button"
+            tabIndex={0}
+            aria-label={`{{ITEM_ARIA_LABEL}} ${item.{{ITEM_LABEL}}}`}
+          >
+            {{ITEM_CONTENT}}
+          </div>
+        ))}
+      </div>
+    );
+  }, [{{DATA_STATE}}, handle{{ITEM_CLICK}}]);
+
+  // Loading state
+  if (loading && {{LOADING_CONDITION}}) {
+    return (
+      <div className={`${styles.{{COMPONENT_STYLE_CLASS}}} ${styles.loading}`}>
+        <div className={styles.loadingSpinner} aria-label="Loading..." />
+        <p>{{LOADING_MESSAGE}}</p>
+      </div>
+    );
+  }
+
+  // Error state
+  if (error && {{ERROR_CONDITION}}) {
+    return (
+      <div className={`${styles.{{COMPONENT_STYLE_CLASS}}} ${styles.error}`}>
+        <div className={styles.errorIcon} aria-label="Error" />
+        <h3>{{ERROR_TITLE}}</h3>
+        <p>{error.message}</p>
+        <button
+          className={styles.retryButton}
+          onClick={() => {
+            setError(null);
+            {{RETRY_LOGIC}}
+          }}
+          type="button"
+        >
+          {{RETRY_BUTTON_TEXT}}
+        </button>
+      </div>
+    );
+  }
+
+  // Main render
+  return (
+    <div
+      className={componentClasses}
+      ref={{REF_NAME}}
+      role="{{COMPONENT_ROLE}}"
+      aria-label="{{COMPONENT_ARIA_LABEL}}"
+      {...restProps}
+    >
+      {/* Header section */}
+      <div className={styles.header}>
+        <h2 className={styles.title}>{{COMPONENT_TITLE}}</h2>
+        {{{HEADER_CONTENT}}}
+      </div>
+
+      {/* Main content */}
+      <div className={styles.content}>
+        {{MAIN_CONTENT}}
+
+        {children && (
+          <div className={styles.childrenContainer}>
+            {children}
+          </div>
+        )}
+      </div>
+
+      {/* Footer section */}
+      <div className={styles.footer}>
+        {{FOOTER_CONTENT}}
+      </div>
+    </div>
+  );
+}
+
+// Set default props
+{{COMPONENT_NAME}}.defaultProps = DEFAULT_PROPS;
+
+// Display name for debugging
+{{COMPONENT_NAME}}.displayName = '{{COMPONENT_NAME}}';
+
+export default {{COMPONENT_NAME}};
+
+// Export types for external use
+export type { {{COMPONENT_NAME}}Props, {{STATE_INTERFACE}}, {{DATA_INTERFACE}} };
+
+// Template usage instructions:
+// 1. Replace {{COMPONENT_PURPOSE}} with component's purpose
+// 2. Replace {{COMPONENT_SCOPE}} with scope description
+// 3. Replace {{COMPONENT_FUNCTIONALITY}} with functionality description
+// 4. Replace {{COMPONENT_DESCRIPTION}} with detailed description
+// 5. Replace {{COMPONENT_NAME}} with PascalCase component name
+// 6. Replace {{PROPS_DESCRIPTION}} with props interface description
+// 7. Replace {{STATE_DESCRIPTION}} with state behavior description
+// 8. Replace {{PROPS_DEFINITION}} with TypeScript props interface
+// 9. Replace {{STATE_INTERFACE}} with state interface name
+// 10. Replace {{STATE_PROPERTIES}} with state interface properties
+// 11. Replace {{DATA_INTERFACE}} with data interface name
+// 12. Replace {{DATA_PROPERTIES}} with data interface properties
+// 13. Replace {{CONSTANTS}} with constants object name
+// 14. Replace {{CONSTANT_VALUES}} with constant definitions
+// 15. Replace {{DEFAULT_PROP_VALUES}} with default prop values
+// 16. Replace {{DESTRUCTURED_PROPS}} with destructured prop names
+// 17. Replace {{INITIAL_STATE}} with initial state values
+// 18. Replace {{DATA_STATE}} with data state variable name
+// 19. Replace {{DATA_STATE_SETTER}} with data setter function name
+// 20. Replace {{REF_NAME}} with ref variable name
+// 21. Replace {{REF_TYPE}} with ref element type
+// 22. Replace {{MEMOIZED_VALUE}} with memoized value name
+// 23. Replace {{MEMOIZATION_LOGIC}} with memoization calculation
+// 24. Replace {{MEMOIZATION_DEPENDENCIES}} with dependency array
+// 25. Replace {{COMPONENT_STYLE_CLASS}} with main CSS class
+// 26. Replace {{EVENT_NAME}} with event handler name
+// 27. Replace {{EVENT_PARAMS}} with event parameters
+// 28. Replace {{EVENT_LOGIC}} with event handling logic
+// 29. Replace all other {{PLACEHOLDER}} values appropriately

@@ -201,9 +201,7 @@ class RuleDiscoveryService:
                 count = self._discover_from_file(py_file, registry)
                 discovered_count += count
             except (ImportError, AttributeError, OSError) as e:
-                logger.debug(
-                    "Skipped rule discovery from {}: {}", py_file, e
-                )  # noqa: logging.exception-logging,logging.log-level-consistency
+                logger.debug("Skipped rule discovery from {}: {}", py_file, e)  # noqa
 
         return discovered_count
 

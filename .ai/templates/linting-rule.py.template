@@ -1,0 +1,86 @@
+#!/usr/bin/env python3
+"""
+Purpose: {{RULE_PURPOSE}} linting rule for the design linter framework
+Scope: {{RULE_SCOPE}} rule implementation with configurable parameters
+Overview: This module implements a {{RULE_TYPE}} rule that checks for {{RULE_DESCRIPTION}}.
+    It follows the pluggable framework pattern and provides configurable violation detection
+    with proper severity levels and contextual error messages.
+Dependencies: Framework interfaces, AST analysis, rule base classes
+Exports: {{RULE_CLASS_NAME}} rule implementation
+Interfaces: Implements BaseRule interface from framework
+Implementation: AST-based analysis with configurable thresholds and clear violation reporting
+"""
+
+from typing import Any
+import ast
+from pathlib import Path
+
+from ..framework.interfaces import BaseRule, LintViolation, Severity
+from ..utils.context_helpers import extract_context_lines
+
+
+class {{RULE_CLASS_NAME}}(BaseRule):
+    """{{RULE_DESCRIPTION}} detection rule."""
+
+    def __init__(self, config: dict[str, Any] | None = None):
+        """Initialize the rule with configuration."""
+        super().__init__(config)
+        self.rule_id = "{{RULE_CATEGORY}}.{{RULE_NAME}}"
+        self.rule_name = "{{RULE_DISPLAY_NAME}}"
+        self.description = "{{RULE_DESCRIPTION}}"
+        self.categories = ["{{RULE_CATEGORY}}"]
+
+        # Configuration parameters
+        self.{{CONFIG_PARAM}} = self.config.get("{{CONFIG_PARAM}}", {{DEFAULT_VALUE}})
+
+    def check_node(self, node: ast.AST, file_path: Path, source_lines: list[str]) -> list[LintViolation]:
+        """Check AST node for rule violations."""
+        violations = []
+
+        # Implement your rule logic here
+        if isinstance(node, {{TARGET_NODE_TYPE}}):
+            if self._violates_rule(node):
+                violation = self._create_violation(node, file_path, source_lines)
+                violations.append(violation)
+
+        return violations
+
+    def _violates_rule(self, node: {{TARGET_NODE_TYPE}}) -> bool:
+        """Check if the node violates the rule."""
+        # Implement specific violation logic
+        return {{VIOLATION_CONDITION}}
+
+    def _create_violation(self, node: {{TARGET_NODE_TYPE}}, file_path: Path, source_lines: list[str]) -> LintViolation:
+        """Create a violation object for the detected issue."""
+        context_lines = extract_context_lines(source_lines, node.lineno, context_size=2)
+
+        return LintViolation(
+            rule_id=self.rule_id,
+            rule_name=self.rule_name,
+            description=self.description,
+            file_path=file_path,
+            line_number=node.lineno,
+            column_number=getattr(node, 'col_offset', 0),
+            severity=Severity.{{SEVERITY_LEVEL}},
+            message=f"{{VIOLATION_MESSAGE_TEMPLATE}}",
+            context_lines=context_lines,
+            suggestion="{{SUGGESTION_TEXT}}"
+        )
+
+
+# Template usage instructions:
+# 1. Replace {{RULE_PURPOSE}} with rule's purpose (e.g., "Magic number detection")
+# 2. Replace {{RULE_SCOPE}} with scope (e.g., "Literals category")
+# 3. Replace {{RULE_TYPE}} with type (e.g., "style", "solid", "security")
+# 4. Replace {{RULE_DESCRIPTION}} with description
+# 5. Replace {{RULE_CLASS_NAME}} with PascalCase class name
+# 6. Replace {{RULE_CATEGORY}} with category (e.g., "literals", "solid", "style")
+# 7. Replace {{RULE_NAME}} with kebab-case rule name
+# 8. Replace {{RULE_DISPLAY_NAME}} with human-readable name
+# 9. Replace {{CONFIG_PARAM}} with configuration parameter name
+# 10. Replace {{DEFAULT_VALUE}} with default configuration value
+# 11. Replace {{TARGET_NODE_TYPE}} with AST node type to check
+# 12. Replace {{VIOLATION_CONDITION}} with condition logic
+# 13. Replace {{SEVERITY_LEVEL}} with ERROR, WARNING, or INFO
+# 14. Replace {{VIOLATION_MESSAGE_TEMPLATE}} with error message template
+# 15. Replace {{SUGGESTION_TEXT}} with helpful suggestion text

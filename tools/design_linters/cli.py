@@ -248,6 +248,10 @@ class ConfigurationManager:
         self.rule_filter.apply_rule_filters(config, args)
         return config
 
+    def _filter_by_categories(self, config: dict[str, Any], categories_str: str) -> None:
+        """Filter rules by categories. Delegates to RuleFilter.filter_by_categories."""
+        self.rule_filter.filter_by_categories(config, categories_str)
+
 
 class RuleListManager:
     """Handles listing and displaying available rules and categories."""

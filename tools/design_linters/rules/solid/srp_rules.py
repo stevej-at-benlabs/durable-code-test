@@ -206,7 +206,10 @@ class CohesionAnalyzer:
 
     def calculate_cohesion(self, methods: list[ast.FunctionDef], instance_vars: set[str]) -> float:
         """Calculate cohesion score using LCOM metric."""
-        method_var_usage = self._build_method_var_usage_map(methods, instance_vars)
+        # Filter out __init__ and other special methods for cohesion calculation
+        business_methods = [m for m in methods if not m.name.startswith("__")]
+
+        method_var_usage = self._build_method_var_usage_map(business_methods, instance_vars)
         method_names = list(method_var_usage.keys())
 
         if len(method_names) < 2:
@@ -361,6 +364,19 @@ class LowCohesionRule(ASTLintRule):
         # Interface/abstract base classes - these define contracts, not implementations
         interface_patterns = ["Reporter", "Analyzer", "Registry", "Context", "Interface"]
         return any(pattern in class_name for pattern in interface_patterns)
+
+    # Expose methods expected by tests
+    def _extract_instance_variables(self, node: ast.ClassDef) -> set[str]:
+        """Extract instance variables from a class."""
+        return self._cohesion_analyzer.extract_instance_variables(node)
+
+    def _find_used_instance_vars(self, method: ast.FunctionDef, instance_vars: set[str]) -> set[str]:
+        """Find instance variables used by a method."""
+        return self._cohesion_analyzer._find_used_instance_vars(method, instance_vars)
+
+    def _calculate_cohesion(self, methods: list[ast.FunctionDef], instance_vars: set[str]) -> float:
+        """Calculate cohesion score using LCOM metric."""
+        return self._cohesion_analyzer.calculate_cohesion(methods, instance_vars)
 
 
 class ClassTooBigRule(ASTLintRule):
