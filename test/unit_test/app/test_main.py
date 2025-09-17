@@ -19,21 +19,21 @@ from app.main import app
 client = TestClient(app)
 
 
-def test_read_root():
+def test_read_root() -> None:
     """Test the root endpoint returns correct response."""
     response = client.get("/")
     assert response.status_code == 200
     assert response.json() == {"message": "Welcome to Durable Code API"}
 
 
-def test_health_check():
+def test_health_check() -> None:
     """Test the health check endpoint."""
     response = client.get("/health")
     assert response.status_code == 200
     assert response.json() == {"status": "healthy"}
 
 
-def test_cors_headers():
+def test_cors_headers() -> None:
     """Test that CORS headers are properly set."""
     response = client.get("/")
     assert response.status_code == 200

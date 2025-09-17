@@ -26,7 +26,7 @@ lint-all: dev-start ## Run ALL linters (Python: Black, isort, Ruff, Flake8, MyPy
 		echo '• isort...' && poetry run isort --check-only app tools && \
 		echo '• Ruff...' && poetry run ruff check app tools && \
 		echo '• Flake8...' && poetry run flake8 app && poetry run flake8 tools --config tools/.flake8 && \
-		echo '• MyPy...' && poetry run mypy app tools && \
+		echo '• MyPy...' && MYPY_CACHE_DIR=/tmp/mypy_cache poetry run mypy . && \
 		echo '• Pylint...' && poetry run pylint app tools 2>&1 | tee /tmp/pylint.out && grep -q 'Your code has been rated at 10.00/10' /tmp/pylint.out && \
 		echo '• Bandit...' && poetry run bandit -r app tools && \
 		echo '• Xenon...' && poetry run xenon --max-absolute B --max-modules B --max-average A app tools" || (echo "$(RED)✗ Python linting failed$(NC)" && exit 1)
@@ -66,7 +66,7 @@ lint-tool: dev-start ## Run a specific linter tool (e.g., make lint-tool TOOL=bl
 		isort) docker exec durable-code-backend-dev bash -c "cd /app && poetry run isort --check-only app tools" ;; \
 		ruff) docker exec durable-code-backend-dev bash -c "cd /app && poetry run ruff check app tools" ;; \
 		flake8) docker exec durable-code-backend-dev bash -c "cd /app && poetry run flake8 app && poetry run flake8 tools --config tools/.flake8" ;; \
-		mypy) docker exec durable-code-backend-dev bash -c "cd /app && poetry run mypy app tools" ;; \
+		mypy) docker exec durable-code-backend-dev bash -c "cd /app && MYPY_CACHE_DIR=/tmp/mypy_cache poetry run mypy ." ;; \
 		pylint) docker exec durable-code-backend-dev bash -c "cd /app && poetry run pylint app tools" ;; \
 		bandit) docker exec durable-code-backend-dev bash -c "cd /app && poetry run bandit -r app tools" ;; \
 		radon) docker exec durable-code-backend-dev bash -c "cd /app && poetry run radon cc app tools -s -n A" ;; \
