@@ -45,6 +45,7 @@ export function DemoTab(): ReactElement {
   const dataBufferRef = useRef<number[]>([]);
   const animationFrameRef = useRef<number>();
   const frameCountRef = useRef<number>(0);
+  const drawWaveformRef = useRef<() => void>();
 
   const [state, setState] = useState<OscilloscopeState>({
     isConnected: false,
@@ -110,7 +111,7 @@ export function DemoTab(): ReactElement {
   );
 
   // Draw waveform on canvas
-  const drawWaveform = useCallback(() => {
+  const drawWaveform = () => {
     const canvas = canvasRef.current;
     if (!canvas) return;
 
@@ -179,8 +180,15 @@ export function DemoTab(): ReactElement {
     // Increment frame counter
     frameCountRef.current++;
 
-    animationFrameRef.current = requestAnimationFrame(drawWaveform);
-  }, [state, stats, drawGrid, frameCountRef]);
+    animationFrameRef.current = requestAnimationFrame(() => {
+      if (drawWaveformRef.current) {
+        drawWaveformRef.current();
+      }
+    });
+  };
+
+  // Store the latest drawWaveform function
+  drawWaveformRef.current = drawWaveform;
 
   // Connect to WebSocket
   const connectWebSocket = useCallback(() => {
