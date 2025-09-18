@@ -131,8 +131,7 @@ function HomePage() {
     Demo: {
       title: 'Demo',
       icon: '◉',
-      description:
-        'Built entirely by AI while the human went to dinner! <10 min build + 15 min human review. Fully linted & tested.',
+      description: 'Real-time oscilloscope demonstration with WebSocket streaming',
       component: DemoTab,
     },
   };
@@ -222,17 +221,18 @@ function HomePage() {
 
               <div className="principle-card">
                 <div className="principle-number">2</div>
-                <h3>Contractor-Level Context</h3>
+                <h3>Maximum Context</h3>
                 <p>
-                  AI needs the same context you'd give a new contractor: project
-                  structure, business domain, coding standards, dependencies, and goals.
-                  This context must be provided every session.
+                  AI needs the same context you'd give a new contractor, plus access to
+                  external resources: database schemas, API docs, infrastructure setup,
+                  Notion pages, and architectural decisions. More context equals better
+                  output.
                 </p>
                 <div className="principle-examples">
-                  <span className="example-tag">.ai/index.md</span>
-                  <span className="example-tag">README</span>
-                  <span className="example-tag">Standards</span>
-                  <span className="example-tag">Domain</span>
+                  <span className="example-tag">Database Schema</span>
+                  <span className="example-tag">API Docs</span>
+                  <span className="example-tag">Infra Setup</span>
+                  <span className="example-tag">Architecture</span>
                 </div>
               </div>
 
@@ -289,8 +289,8 @@ function HomePage() {
                 <h3>Defensive Validation</h3>
                 <p>
                   Always verify AI output through automated tests, linting, type
-                  checking, and builds. Trust but verify - use CI/CD pipelines to catch
-                  issues before they reach production.
+                  checking, and builds. Never trust, always verify - use CI/CD pipelines
+                  to catch issues before they reach production.
                 </p>
                 <div className="principle-examples">
                   <span className="example-tag">CI/CD</span>
@@ -329,6 +329,23 @@ function HomePage() {
                   <span className="example-tag">API Docs</span>
                   <span className="example-tag">Comments</span>
                   <span className="example-tag">Examples</span>
+                </div>
+              </div>
+
+              <div className="principle-card">
+                <div className="principle-number">9</div>
+                <h3>Lightweight Look-ups</h3>
+                <p>
+                  Provide quick-access indices and metadata that AI can rapidly parse.
+                  Tables of contents, file headers, and structured navigation enable
+                  efficient codebase understanding without excessive context
+                  consumption.
+                </p>
+                <div className="principle-examples">
+                  <span className="example-tag">.ai/index.json</span>
+                  <span className="example-tag">File Headers</span>
+                  <span className="example-tag">TOC</span>
+                  <span className="example-tag">Metadata</span>
                 </div>
               </div>
             </div>

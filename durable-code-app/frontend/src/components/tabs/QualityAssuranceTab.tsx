@@ -18,35 +18,14 @@ export function QualityAssuranceTab(): ReactElement {
   return (
     <div className="tab-content qa-content">
       <div className="qa-hero">
-        <div className="qa-hero-icon">🛡️</div>
-        <h3 className="qa-title">Bulletproof Code Quality</h3>
+        <h3 className="qa-title">
+          <span className="title-icon">🛡️</span>
+          Bulletproof Code Quality
+        </h3>
         <p className="qa-subtitle">
           Comprehensive automated testing, custom linting, and AI-powered validation to
           ensure your code meets the highest standards
         </p>
-      </div>
-
-      <div className="qa-metrics">
-        <div className="metric-card">
-          <div className="metric-value">99.9%</div>
-          <div className="metric-label">Uptime</div>
-          <div className="metric-trend">↑ 0.3%</div>
-        </div>
-        <div className="metric-card">
-          <div className="metric-value">95%</div>
-          <div className="metric-label">Coverage</div>
-          <div className="metric-trend">↑ 5%</div>
-        </div>
-        <div className="metric-card">
-          <div className="metric-value">0</div>
-          <div className="metric-label">Critical Bugs</div>
-          <div className="metric-trend">→ 0</div>
-        </div>
-        <div className="metric-card">
-          <div className="metric-value">A+</div>
-          <div className="metric-label">Code Grade</div>
-          <div className="metric-trend">↑ 1</div>
-        </div>
       </div>
 
       <div className="linters-showcase">
@@ -55,14 +34,14 @@ export function QualityAssuranceTab(): ReactElement {
             <span className="showcase-icon">🔍</span>
             Custom Linters
           </h4>
-          <div className="showcase-badge">4 Active</div>
+          <div className="showcase-badge">18+ Active</div>
         </div>
 
         <div className="linter-cards">
           <div className="linter-card">
             <div className="linter-icon">🔢</div>
             <h5>Magic Number Detection</h5>
-            <p>Identifies hardcoded values that should be constants</p>
+            <p>Identifies hardcoded values and complex literals</p>
             <div className="linter-stats">
               <span className="stat-item">
                 <span className="stat-icon">⚠️</span> 12 found
@@ -75,8 +54,8 @@ export function QualityAssuranceTab(): ReactElement {
 
           <div className="linter-card">
             <div className="linter-icon">📁</div>
-            <h5>File Placement</h5>
-            <p>Ensures files are in correct directories</p>
+            <h5>File Organization</h5>
+            <p>Ensures proper module structure and placement</p>
             <div className="linter-stats">
               <span className="stat-item">
                 <span className="stat-icon">⚠️</span> 3 found
@@ -89,8 +68,8 @@ export function QualityAssuranceTab(): ReactElement {
 
           <div className="linter-card">
             <div className="linter-icon">🖨️</div>
-            <h5>Print Statements</h5>
-            <p>Prevents debug statements in production</p>
+            <h5>Print & Console Output</h5>
+            <p>Detects print statements and console methods</p>
             <div className="linter-stats">
               <span className="stat-item">
                 <span className="stat-icon">⚠️</span> 5 found
@@ -102,15 +81,43 @@ export function QualityAssuranceTab(): ReactElement {
           </div>
 
           <div className="linter-card">
-            <div className="linter-icon">📝</div>
-            <h5>Naming Conventions</h5>
-            <p>Validates variable and function names</p>
+            <div className="linter-icon">📊</div>
+            <h5>Logging Standards</h5>
+            <p>Enforces structured logging with Loguru</p>
             <div className="linter-stats">
               <span className="stat-item">
-                <span className="stat-icon">⚠️</span> 7 found
+                <span className="stat-icon">⚠️</span> 9 found
               </span>
               <span className="stat-item">
-                <span className="stat-icon">✔️</span> 6 fixed
+                <span className="stat-icon">✔️</span> 7 fixed
+              </span>
+            </div>
+          </div>
+
+          <div className="linter-card">
+            <div className="linter-icon">🏗️</div>
+            <h5>SOLID Principles</h5>
+            <p>Validates SRP, class size, and dependencies</p>
+            <div className="linter-stats">
+              <span className="stat-item">
+                <span className="stat-icon">⚠️</span> 6 found
+              </span>
+              <span className="stat-item">
+                <span className="stat-icon">✔️</span> 4 fixed
+              </span>
+            </div>
+          </div>
+
+          <div className="linter-card">
+            <div className="linter-icon">🎯</div>
+            <h5>Code Complexity</h5>
+            <p>Detects excessive nesting and deep functions</p>
+            <div className="linter-stats">
+              <span className="stat-item">
+                <span className="stat-icon">⚠️</span> 4 found
+              </span>
+              <span className="stat-item">
+                <span className="stat-icon">✔️</span> 3 fixed
               </span>
             </div>
           </div>

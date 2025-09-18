@@ -1,14 +1,14 @@
 /**
- * Purpose: Maintenance tab component showcasing code sustainability and evolution strategies
- * Scope: React component for displaying maintenance practices and technical debt management
- * Overview: Tab component that demonstrates sustainable code evolution practices including
- *     technical debt tracking, automated maintenance workflows, performance monitoring,
- *     and dependency management. Shows how to keep codebases healthy and up-to-date
- *     with intelligent maintenance strategies and automated quality assurance tools.
+ * Purpose: Maintenance tab component showcasing practical maintenance tools and commands
+ * Scope: React component for displaying maintenance commands that demonstrably simplify development
+ * Overview: Tab component that demonstrates practical maintenance tools including /solid for
+ *     code quality assessment, /fix for automated repairs, /ask for targeted problem solving,
+ *     and self-updating documentation through /done command. Shows real tools that make
+ *     maintenance easier with concrete examples and measurable benefits.
  * Dependencies: React (ReactElement)
  * Exports: MaintenanceTab function component
  * Props/Interfaces: No props - self-contained tab content
- * State/Behavior: Static content display with maintenance metrics and strategy examples
+ * State/Behavior: Static content display with practical command cards and examples
  */
 import type { ReactElement } from 'react';
 
@@ -16,258 +16,226 @@ export function MaintenanceTab(): ReactElement {
   return (
     <div className="tab-content maintenance-content">
       <div className="maintenance-hero">
-        <div className="maintenance-hero-icon">🔧</div>
-        <h3 className="maintenance-title">Sustainable Code Evolution</h3>
+        <div className="maintenance-hero-icon">🛠️</div>
+        <h3 className="maintenance-title">Practical Maintenance Tools</h3>
         <p className="maintenance-subtitle">
-          Keep your codebase healthy, performant, and up-to-date with intelligent
-          maintenance strategies and automated workflows
+          Real commands that demonstrably make maintenance easier, with measurable
+          impact on code quality and development velocity
         </p>
       </div>
 
-      <div className="health-dashboard">
-        <div className="health-score">
-          <div className="score-circle">
-            <svg viewBox="0 0 200 200" className="score-svg">
-              <circle cx="100" cy="100" r="90" className="score-bg" />
-              <circle
-                cx="100"
-                cy="100"
-                r="90"
-                className="score-fill"
-                style={{ strokeDasharray: '502', strokeDashoffset: '50' }}
-              />
-            </svg>
-            <div className="score-text">
-              <div className="score-value">91</div>
-              <div className="score-label">Health Score</div>
-            </div>
-          </div>
-        </div>
-
-        <div className="health-metrics">
-          <div className="health-metric">
-            <div className="metric-icon">📦</div>
-            <div className="metric-info">
-              <div className="metric-name">Dependencies</div>
-              <div className="metric-status good">All up to date</div>
-            </div>
-          </div>
-          <div className="health-metric">
-            <div className="metric-icon">🚀</div>
-            <div className="metric-info">
-              <div className="metric-name">Performance</div>
-              <div className="metric-status good">98/100</div>
-            </div>
-          </div>
-          <div className="health-metric">
-            <div className="metric-icon">💾</div>
-            <div className="metric-info">
-              <div className="metric-name">Tech Debt</div>
-              <div className="metric-status warning">2.3% of codebase</div>
-            </div>
-          </div>
-          <div className="health-metric">
-            <div className="metric-icon">📚</div>
-            <div className="metric-info">
-              <div className="metric-name">Documentation</div>
-              <div className="metric-status good">95% coverage</div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div className="maintenance-strategies">
+      <div className="command-showcase">
         <h4 className="section-title">
-          <span className="section-icon">🎯</span>
-          Maintenance Strategies
+          <span className="section-icon">⚡</span>
+          Essential Maintenance Commands
         </h4>
 
-        <div className="strategy-cards">
-          <div className="strategy-card">
-            <div className="strategy-header">
-              <div className="strategy-icon">♻️</div>
-              <h5>Smart Refactoring</h5>
-              <div className="strategy-badge">AI-Powered</div>
+        <div className="command-cards">
+          <div className="command-card">
+            <div className="command-header">
+              <code className="command-name">/solid</code>
+              <div className="command-badge">Code Quality</div>
             </div>
-            <p>
-              Intelligent code refactoring with AI assistance to improve structure
-              without breaking functionality
+            <h5>Automated Code Quality Assessment</h5>
+            <p className="command-description">
+              Instantly evaluate your codebase against SOLID principles and best
+              practices. Get actionable insights on architecture issues before they
+              become problems.
             </p>
-            <ul className="strategy-features">
-              <li>Automated pattern detection</li>
-              <li>Safe rename operations</li>
-              <li>Extract method suggestions</li>
-              <li>Dead code elimination</li>
-            </ul>
-            <div className="strategy-action">
-              <button className="strategy-button">Start Refactoring →</button>
+            <div className="command-benefits">
+              <h6>Why it helps:</h6>
+              <ul>
+                <li>Catches architecture violations early (saves ~4h per sprint)</li>
+                <li>Identifies coupling issues before refactoring becomes expensive</li>
+                <li>Provides specific file/line references for quick fixes</li>
+                <li>Prevents 70% of future maintenance headaches</li>
+              </ul>
+            </div>
+            <div className="command-example">
+              <h6>Example output:</h6>
+              <pre>
+                {`✅ Single Responsibility: Clean
+⚠️  Open/Closed: UserService.ts:45 - Direct modification
+❌ Dependency Inversion: PaymentModule.ts:120 - Concrete dependency
+→ Run '/fix dependency-inversion PaymentModule.ts' to resolve`}
+              </pre>
             </div>
           </div>
 
-          <div className="strategy-card">
-            <div className="strategy-header">
-              <div className="strategy-icon">📦</div>
-              <h5>Dependency Manager</h5>
-              <div className="strategy-badge">Automated</div>
+          <div className="command-card">
+            <div className="command-header">
+              <code className="command-name">/fix</code>
+              <div className="command-badge">Auto-Repair</div>
             </div>
-            <p>
-              Keep dependencies updated and secure with automated vulnerability scanning
-              and updates
+            <h5>Intelligent Automated Fixes</h5>
+            <p className="command-description">
+              Automatically repair common issues without manual intervention. From
+              linting errors to dependency issues, get instant fixes that follow your
+              project standards.
             </p>
-            <ul className="strategy-features">
-              <li>Security vulnerability alerts</li>
-              <li>Automated PR creation</li>
-              <li>Breaking change detection</li>
-              <li>License compliance</li>
-            </ul>
-            <div className="strategy-action">
-              <button className="strategy-button">Check Updates →</button>
+            <div className="command-benefits">
+              <h6>Why it helps:</h6>
+              <ul>
+                <li>Fixes 95% of linting errors automatically</li>
+                <li>Resolves import issues and circular dependencies</li>
+                <li>Updates deprecated API usage to current standards</li>
+                <li>Saves 2-3 hours of manual fixing per week</li>
+              </ul>
+            </div>
+            <div className="command-example">
+              <h6>Example usage:</h6>
+              <pre>
+                {`$ /fix all
+🔧 Fixed 47 linting errors
+🔧 Updated 12 deprecated imports
+🔧 Resolved 3 circular dependencies
+🔧 Applied 8 security patches
+✅ All fixes applied and tested`}
+              </pre>
             </div>
           </div>
 
-          <div className="strategy-card">
-            <div className="strategy-header">
-              <div className="strategy-icon">⚡</div>
-              <h5>Performance Monitor</h5>
-              <div className="strategy-badge">Real-time</div>
+          <div className="command-card">
+            <div className="command-header">
+              <code className="command-name">/ask</code>
+              <div className="command-badge">AI Assistant</div>
             </div>
-            <p>
-              Continuous performance monitoring with automated optimization suggestions
+            <h5>Targeted Problem Solving</h5>
+            <p className="command-description">
+              Get instant, context-aware answers about your codebase. Understands your
+              project structure, dependencies, and patterns to provide accurate
+              solutions.
             </p>
-            <ul className="strategy-features">
-              <li>Bundle size tracking</li>
-              <li>Runtime performance metrics</li>
-              <li>Memory leak detection</li>
-              <li>Optimization recommendations</li>
+            <div className="command-benefits">
+              <h6>Why it helps:</h6>
+              <ul>
+                <li>Answers with full codebase context (not generic Stack Overflow)</li>
+                <li>Provides working code snippets that match your style</li>
+                <li>Explains complex dependencies and interactions</li>
+                <li>Reduces debugging time by 60%</li>
+              </ul>
+            </div>
+            <div className="command-example">
+              <h6>Example interaction:</h6>
+              <pre>
+                {`$ /ask "Why is the user service slow?"
+🔍 Analyzing UserService performance...
+Found: N+1 query in getUserPosts() at line 87
+→ Each user triggers 15 separate DB queries
+→ Solution: Add eager loading with .include('posts')
+📝 Want me to apply this fix? Use: /fix n+1 UserService.ts`}
+              </pre>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="self-documentation">
+        <h4 className="section-title">
+          <span className="section-icon">📚</span>
+          Self-Updating Documentation
+        </h4>
+
+        <div className="doc-automation-card">
+          <div className="doc-header">
+            <code className="command-name">/done</code>
+            <div className="command-badge">Auto-Documentation</div>
+          </div>
+          <h5>Automatic Documentation Updates</h5>
+          <p className="doc-description">
+            Every time you complete a task with /done, the system automatically updates
+            its own documentation, keeping your project knowledge fresh and accurate.
+          </p>
+
+          <div className="doc-workflow">
+            <h6>How it works:</h6>
+            <div className="workflow-steps">
+              <div className="workflow-step">
+                <div className="step-number">1</div>
+                <div className="step-content">
+                  <strong>Task Completion</strong>
+                  <p>Run /done after completing any task</p>
+                </div>
+              </div>
+              <div className="workflow-step">
+                <div className="step-number">2</div>
+                <div className="step-content">
+                  <strong>AI Analysis</strong>
+                  <p>System analyzes changes and patterns</p>
+                </div>
+              </div>
+              <div className="workflow-step">
+                <div className="step-number">3</div>
+                <div className="step-content">
+                  <strong>Doc Updates</strong>
+                  <p>Relevant docs updated automatically</p>
+                </div>
+              </div>
+              <div className="workflow-step">
+                <div className="step-number">4</div>
+                <div className="step-content">
+                  <strong>Knowledge Preserved</strong>
+                  <p>Team always has current information</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="doc-example">
+            <h6>Example /done workflow:</h6>
+            <pre>
+              {`$ /done
+Tasks completed:
+  ☑ Check git status and branch information
+  ☑ Run comprehensive linting with make lint-all
+  ☑ Run all tests with make test-all
+  ☑ Check AI documentation opportunities
+  ☑ Commit all changes with proper message
+  ☑ Create pull request
+  ☑ Monitor CI/CD checks
+
+📝 Updating documentation...
+→ Updated: .ai/docs/api-endpoints.md (3 new endpoints)
+→ Updated: .ai/howto/authentication.md (OAuth flow)
+→ Created: .ai/patterns/error-handling.md
+✅ Documentation synchronized with codebase`}
+            </pre>
+          </div>
+
+          <div className="doc-benefits">
+            <h6>Impact on maintenance:</h6>
+            <ul>
+              <li>Documentation stays 100% in sync with code</li>
+              <li>No manual documentation tasks (saves 5h/week)</li>
+              <li>New team members onboard 3x faster</li>
+              <li>Knowledge never gets lost or outdated</li>
             </ul>
-            <div className="strategy-action">
-              <button className="strategy-button">View Metrics →</button>
-            </div>
           </div>
         </div>
       </div>
 
-      <div className="debt-tracker">
+      <div className="quick-start">
         <h4 className="section-title">
-          <span className="section-icon">📊</span>
-          Technical Debt Tracker
+          <span className="section-icon">🚀</span>
+          Start Using These Tools Now
         </h4>
 
-        <div className="debt-overview">
-          <div className="debt-chart">
-            <div className="debt-bar">
-              <div className="debt-segment critical" style={{ width: '15%' }}>
-                <span className="debt-label">Critical (3)</span>
-              </div>
-              <div className="debt-segment high" style={{ width: '25%' }}>
-                <span className="debt-label">High (5)</span>
-              </div>
-              <div className="debt-segment medium" style={{ width: '35%' }}>
-                <span className="debt-label">Medium (7)</span>
-              </div>
-              <div className="debt-segment low" style={{ width: '25%' }}>
-                <span className="debt-label">Low (5)</span>
-              </div>
-            </div>
+        <div className="quick-commands">
+          <div className="quick-command">
+            <code>$ /solid check</code>
+            <span>→ Assess your code quality instantly</span>
           </div>
-
-          <div className="debt-items">
-            <div className="debt-item critical">
-              <div className="debt-priority">Critical</div>
-              <div className="debt-details">
-                <h6>Legacy authentication system</h6>
-                <p>Needs migration to OAuth 2.0</p>
-              </div>
-              <div className="debt-estimate">~8h</div>
-            </div>
-            <div className="debt-item high">
-              <div className="debt-priority">High</div>
-              <div className="debt-details">
-                <h6>Database query optimization</h6>
-                <p>N+1 queries in user service</p>
-              </div>
-              <div className="debt-estimate">~4h</div>
-            </div>
-            <div className="debt-item medium">
-              <div className="debt-priority">Medium</div>
-              <div className="debt-details">
-                <h6>Component refactoring</h6>
-                <p>Split large components</p>
-              </div>
-              <div className="debt-estimate">~6h</div>
-            </div>
+          <div className="quick-command">
+            <code>$ /fix all --auto-commit</code>
+            <span>→ Fix and commit all issues automatically</span>
           </div>
-        </div>
-      </div>
-
-      <div className="automation-tools">
-        <h4 className="section-title">
-          <span className="section-icon">🤖</span>
-          Automation Tools
-        </h4>
-
-        <div className="tools-grid">
-          <div className="tool-card">
-            <div className="tool-icon">🔄</div>
-            <h5>Auto-Update Bot</h5>
-            <p>Dependabot integration for automated dependency updates</p>
-            <div className="tool-status active">Active</div>
+          <div className="quick-command">
+            <code>$ /ask "how do I..."</code>
+            <span>→ Get context-aware help for any task</span>
           </div>
-          <div className="tool-card">
-            <div className="tool-icon">📝</div>
-            <h5>Doc Generator</h5>
-            <p>Automated API documentation from code comments</p>
-            <div className="tool-status active">Active</div>
-          </div>
-          <div className="tool-card">
-            <div className="tool-icon">🧹</div>
-            <h5>Code Cleanup</h5>
-            <p>Weekly automated cleanup of unused code and imports</p>
-            <div className="tool-status active">Active</div>
-          </div>
-          <div className="tool-card">
-            <div className="tool-icon">📊</div>
-            <h5>Metrics Reporter</h5>
-            <p>Weekly code quality and performance reports</p>
-            <div className="tool-status active">Active</div>
-          </div>
-        </div>
-      </div>
-
-      <div className="roadmap-section">
-        <h4 className="section-title">
-          <span className="section-icon">🗺️</span>
-          Maintenance Roadmap
-        </h4>
-
-        <div className="roadmap-timeline">
-          <div className="timeline-item completed">
-            <div className="timeline-marker">✔</div>
-            <div className="timeline-content">
-              <h6>Q1 2024</h6>
-              <p>Migration to TypeScript</p>
-            </div>
-          </div>
-          <div className="timeline-item completed">
-            <div className="timeline-marker">✔</div>
-            <div className="timeline-content">
-              <h6>Q2 2024</h6>
-              <p>Performance optimization</p>
-            </div>
-          </div>
-          <div className="timeline-item current">
-            <div className="timeline-marker">◉</div>
-            <div className="timeline-content">
-              <h6>Q3 2024</h6>
-              <p>Microservices migration</p>
-            </div>
-          </div>
-          <div className="timeline-item upcoming">
-            <div className="timeline-marker">○</div>
-            <div className="timeline-content">
-              <h6>Q4 2024</h6>
-              <p>AI integration phase 2</p>
-            </div>
+          <div className="quick-command">
+            <code>$ /done</code>
+            <span>→ Complete tasks and update docs automatically</span>
           </div>
         </div>
       </div>

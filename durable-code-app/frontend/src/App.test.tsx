@@ -87,7 +87,7 @@ describe('App Component', () => {
 
       expect(screen.getByText('Fundamental AI Principles')).toBeInTheDocument();
       expect(screen.getByText('Immediate Feedback Loops')).toBeInTheDocument();
-      expect(screen.getByText('Contractor-Level Context')).toBeInTheDocument();
+      expect(screen.getByText('Maximum Context')).toBeInTheDocument();
       expect(screen.getByText('Clear Success Criteria')).toBeInTheDocument();
     });
 
@@ -254,7 +254,7 @@ describe('App Component', () => {
 
       // Check that AI principles are displayed
       expect(screen.getByText('Immediate Feedback Loops')).toBeInTheDocument();
-      expect(screen.getByText('Contractor-Level Context')).toBeInTheDocument();
+      expect(screen.getByText('Maximum Context')).toBeInTheDocument();
       expect(screen.getByText('Clear Success Criteria')).toBeInTheDocument();
       expect(screen.getByText('Modular Task Decomposition')).toBeInTheDocument();
     });

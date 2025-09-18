@@ -88,6 +88,16 @@ export function InfrastructureTab(): ReactElement {
           </p>
           <div className="card-badge">Critical</div>
         </div>
+
+        <div className="infrastructure-card feature-card">
+          <div className="card-icon">📑</div>
+          <h4>Lightweight Look-ups</h4>
+          <p>
+            Quick-access indices and metadata that AI can rapidly parse -
+            .ai/index.json, file headers, and structured navigation
+          </p>
+          <div className="card-badge">Critical</div>
+        </div>
       </div>
 
       <div className="folder-structure-section">
