@@ -3,6 +3,49 @@
   padding: 0;
 }
 
+/* Demo Tab Styles */
+.demo-tab .content-card {
+  background: linear-gradient(135deg, #f9f3e9 0%, #f0e6d2 100%);
+  border: 2px solid rgba(139, 100, 61, 0.2);
+  border-radius: 12px;
+  padding: 1.5rem;
+  margin-bottom: 2rem;
+  box-shadow:
+    0 3px 8px rgba(60, 36, 20, 0.1),
+    inset 0 1px 0 rgba(244, 232, 208, 0.6);
+}
+
+.demo-tab .content-card h2 {
+  font-size: 1.5rem;
+  color: #3c2414;
+  margin-bottom: 1.5rem;
+  margin-top: 1rem;
+  font-weight: 700;
+  font-family: 'Georgia', serif;
+  text-shadow: 0 1px 2px rgba(60, 36, 20, 0.3);
+  padding-bottom: 0.75rem;
+  border-bottom: 2px solid rgba(139, 100, 61, 0.3);
+}
+
+.demo-tab .content-card h3 {
+  font-size: 1.25rem;
+  color: #3c2414;
+  margin-top: 2rem;
+  margin-bottom: 1rem;
+  font-weight: 600;
+  font-family: 'Georgia', serif;
+  text-shadow: 0 1px 1px rgba(60, 36, 20, 0.2);
+}
+
+.demo-tab .documentation-section {
+  margin-top: 3rem;
+}
+
+.demo-tab .content-grid {
+  display: grid;
+  gap: 2rem;
+}
+
 .qa-hero {
   text-align: center;
   padding: 3rem 2rem;

@@ -59,9 +59,7 @@ class OscilloscopeCommand(BaseModel):
     offset: float | None = Field(DEFAULT_OFFSET, ge=-10.0, le=10.0, description="DC offset")
 
     @validator("frequency")
-    def validate_frequency(
-        cls, value: float | None
-    ) -> float | None:  # noqa: N805, E0213  # pylint: disable=no-self-argument
+    def validate_frequency(cls, value: float | None) -> float | None:  # noqa: N805  # pylint: disable=no-self-argument
         """Validate frequency is within reasonable range."""
         if value is not None and (value < 0.1 or value > 100):
             raise ValueError("Frequency must be between 0.1 and 100 Hz")
@@ -108,7 +106,7 @@ class WaveformGenerator:
 
     def _generate_noise_value(self) -> float:
         """Generate a single white noise sample."""
-        return self.amplitude * (2 * random.random() - 1)  # noqa: S311
+        return self.amplitude * (2 * random.random() - 1)  # noqa: S311  # nosec B311
 
     def generate_samples(self, num_samples: int) -> list[float]:  # noqa: C901
         """Generate waveform samples based on current configuration."""
@@ -143,25 +141,49 @@ async def _handle_command(
     command: OscilloscopeCommand, generator: WaveformGenerator, streaming: bool
 ) -> tuple[bool, str]:
     """Handle incoming WebSocket commands."""
-    if command.command == "start":
-        generator.configure(
-            wave_type=command.wave_type or WaveType.SINE,
-            frequency=command.frequency or DEFAULT_FREQUENCY,
-            amplitude=command.amplitude or DEFAULT_AMPLITUDE,
-            offset=command.offset or DEFAULT_OFFSET,
-        )
-        return True, f"Started streaming {command.wave_type} wave"
-    if command.command == "stop":
-        return False, "Stopped streaming"
-    if command.command == "configure":
-        generator.configure(
-            wave_type=command.wave_type or generator.wave_type,
-            frequency=command.frequency or generator.frequency,
-            amplitude=command.amplitude or generator.amplitude,
-            offset=command.offset or generator.offset,
-        )
-        return streaming, f"Configured to {command.wave_type} wave"
+    handlers = {
+        "start": _handle_start_command,
+        "stop": _handle_stop_command,
+        "configure": _handle_configure_command,
+    }
+
+    handler = handlers.get(command.command)
+    if handler:
+        return handler(command, generator, streaming)
     return streaming, "Unknown command"
+
+
+def _handle_start_command(
+    command: OscilloscopeCommand, generator: WaveformGenerator, streaming: bool  # pylint: disable=unused-argument
+) -> tuple[bool, str]:
+    """Handle start command."""
+    generator.configure(
+        wave_type=command.wave_type or WaveType.SINE,
+        frequency=command.frequency or DEFAULT_FREQUENCY,
+        amplitude=command.amplitude or DEFAULT_AMPLITUDE,
+        offset=command.offset or DEFAULT_OFFSET,
+    )
+    return True, f"Started streaming {command.wave_type} wave"
+
+
+def _handle_stop_command(
+    command: OscilloscopeCommand, generator: WaveformGenerator, streaming: bool  # pylint: disable=unused-argument
+) -> tuple[bool, str]:
+    """Handle stop command."""
+    return False, "Stopped streaming"
+
+
+def _handle_configure_command(
+    command: OscilloscopeCommand, generator: WaveformGenerator, streaming: bool
+) -> tuple[bool, str]:
+    """Handle configure command."""
+    generator.configure(
+        wave_type=command.wave_type or generator.wave_type,
+        frequency=command.frequency or generator.frequency,
+        amplitude=command.amplitude or generator.amplitude,
+        offset=command.offset or generator.offset,
+    )
+    return streaming, f"Configured to {command.wave_type} wave"
 
 
 async def _process_command(websocket: WebSocket, generator: WaveformGenerator, streaming: bool) -> bool:

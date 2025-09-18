@@ -383,11 +383,10 @@ export function DemoTab(): ReactElement {
     <div className="tab-content demo-tab">
       <div className="tab-header">
         <div className="tab-title-section">
-          <h1 className="tab-title">
-            Oscilloscope Demo
-          </h1>
+          <h1 className="tab-title">Oscilloscope Demo</h1>
           <p className="tab-subtitle">
-            Built entirely by AI while the human went to dinner! Less than 10 minutes to build, followed by 15 minutes of human review. Fully linted and tested.
+            Built entirely by AI while the human went to dinner! Less than 10 minutes to
+            build, followed by 15 minutes of human review. Fully linted and tested.
           </p>
         </div>
       </div>
