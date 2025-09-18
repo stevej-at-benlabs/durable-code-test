@@ -130,8 +130,9 @@ function HomePage() {
     },
     Demo: {
       title: 'Demo',
-      icon: '📡',
-      description: 'Interactive oscilloscope demonstration with real-time streaming',
+      icon: '◉',
+      description:
+        'Built entirely by AI while the human went to dinner! <10 min build + 15 min human review. Fully linted & tested.',
       component: DemoTab,
     },
   };

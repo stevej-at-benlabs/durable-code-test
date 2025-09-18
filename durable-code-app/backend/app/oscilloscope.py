@@ -59,7 +59,9 @@ class OscilloscopeCommand(BaseModel):
     offset: float | None = Field(DEFAULT_OFFSET, ge=-10.0, le=10.0, description="DC offset")
 
     @validator("frequency")
-    def validate_frequency(cls, value: float | None) -> float | None:  # noqa: N805, E0213
+    def validate_frequency(
+        cls, value: float | None
+    ) -> float | None:  # noqa: N805, E0213  # pylint: disable=no-self-argument
         """Validate frequency is within reasonable range."""
         if value is not None and (value < 0.1 or value > 100):
             raise ValueError("Frequency must be between 0.1 and 100 Hz")
