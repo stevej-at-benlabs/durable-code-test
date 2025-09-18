@@ -100,7 +100,15 @@ body::before {
   top: 0;
   left: 0;
   background-image:
-    linear-gradient(90deg, transparent 0%, rgba(139, 100, 61, 0.08) 20%, transparent 40%, rgba(101, 67, 33, 0.06) 60%, transparent 80%, rgba(139, 100, 61, 0.08) 100%),
+    linear-gradient(
+      90deg,
+      transparent 0%,
+      rgba(139, 100, 61, 0.08) 20%,
+      transparent 40%,
+      rgba(101, 67, 33, 0.06) 60%,
+      transparent 80%,
+      rgba(139, 100, 61, 0.08) 100%
+    ),
     radial-gradient(ellipse at 30% 70%, rgba(160, 120, 85, 0.05) 0%, transparent 50%);
   pointer-events: none;
 }
@@ -195,44 +203,44 @@ body::before {
 
 .project-info,
 .project-scope {
-  background: linear-gradient(145deg, rgba(244, 232, 208, 0.15) 0%, rgba(232, 213, 183, 0.1) 100%);
+  background: linear-gradient(135deg, #f9f3e9 0%, #f0e6d2 100%);
   border: 2px solid rgba(139, 100, 61, 0.3);
-  border-radius: 8px;
-  padding: 0.75rem 1rem;
+  border-radius: 12px;
+  padding: 1.25rem 1.5rem;
   backdrop-filter: blur(5px);
   transition: all 0.3s ease;
   box-shadow:
-    inset 0 1px 0 rgba(244, 232, 208, 0.2),
-    0 2px 4px rgba(60, 36, 20, 0.2);
+    0 6px 15px rgba(60, 36, 20, 0.15),
+    inset 0 1px 0 rgba(244, 232, 208, 0.6);
 }
 
 .project-info:hover,
 .project-scope:hover {
-  transform: translateY(-2px);
-  background: linear-gradient(145deg, rgba(244, 232, 208, 0.25) 0%, rgba(232, 213, 183, 0.2) 100%);
-  border-color: rgba(139, 100, 61, 0.5);
+  transform: translateY(-4px);
+  border-color: #d4af37;
   box-shadow:
-    inset 0 1px 0 rgba(244, 232, 208, 0.3),
-    0 6px 20px rgba(60, 36, 20, 0.3),
-    0 0 0 1px rgba(139, 100, 61, 0.2);
+    0 15px 35px rgba(60, 36, 20, 0.25),
+    inset 0 1px 0 rgba(244, 232, 208, 0.8),
+    0 0 0 2px rgba(212, 175, 55, 0.2);
 }
 
 .project-info h3,
 .project-scope h3 {
-  color: #f4e8d0;
-  font-size: 0.95rem;
-  margin-bottom: 0.35rem;
+  color: #3c2414;
+  font-size: 1.1rem;
+  margin-bottom: 0.5rem;
   font-weight: 700;
+  font-family: 'Georgia', serif;
   text-transform: uppercase;
-  letter-spacing: 0.1em;
-  text-shadow: 0 1px 2px rgba(60, 36, 20, 0.6);
+  letter-spacing: 0.05em;
+  text-shadow: 0 1px 2px rgba(60, 36, 20, 0.3);
 }
 
 .project-info p {
-  color: #d4c5a0;
-  line-height: 1.6;
-  font-size: 0.9rem;
-  text-shadow: 0 1px 1px rgba(60, 36, 20, 0.3);
+  color: #654321;
+  line-height: 1.7;
+  font-size: 0.95rem;
+  text-shadow: none;
 }
 
 .project-scope ul {
@@ -241,22 +249,23 @@ body::before {
 }
 
 .project-scope li {
-  color: #d4c5a0;
-  padding: 0.2rem 0;
-  padding-left: 1.25rem;
+  color: #654321;
+  padding: 0.3rem 0;
+  padding-left: 1.5rem;
   position: relative;
-  font-size: 0.85rem;
-  line-height: 1.5;
-  text-shadow: 0 1px 1px rgba(60, 36, 20, 0.3);
+  font-size: 0.9rem;
+  line-height: 1.6;
+  text-shadow: none;
 }
 
 .project-scope li:before {
-  content: '⚜';
+  content: '✦';
   position: absolute;
   left: 0;
   color: #d4af37;
   font-weight: bold;
-  text-shadow: 0 0 3px rgba(212, 175, 55, 0.5);
+  font-size: 0.9rem;
+  text-shadow: 0 0 3px rgba(212, 175, 55, 0.3);
 }
 
 /* Main content */
@@ -339,7 +348,11 @@ body::before {
 }
 
 .tab-button:hover {
-  background: linear-gradient(180deg, rgba(244, 232, 208, 0.15) 0%, rgba(232, 213, 183, 0.1) 100%);
+  background: linear-gradient(
+    180deg,
+    rgba(244, 232, 208, 0.15) 0%,
+    rgba(232, 213, 183, 0.1) 100%
+  );
   color: #f4e8d0;
   transform: translateY(-1px);
   text-shadow: 0 0 4px rgba(244, 232, 208, 0.3);
@@ -352,7 +365,11 @@ body::before {
 .tab-button.active {
   color: #f4e8d0;
   border-bottom-color: transparent;
-  background: linear-gradient(180deg, rgba(244, 232, 208, 0.2) 0%, rgba(232, 213, 183, 0.15) 100%);
+  background: linear-gradient(
+    180deg,
+    rgba(244, 232, 208, 0.2) 0%,
+    rgba(232, 213, 183, 0.15) 100%
+  );
   text-shadow: 0 0 6px rgba(244, 232, 208, 0.4);
 }
 
@@ -980,8 +997,11 @@ body::before {
   left: 0;
   width: 100%;
   height: 100%;
-  background-image:
-    radial-gradient(circle at 30% 50%, rgba(139, 100, 61, 0.05) 0%, transparent 50%);
+  background-image: radial-gradient(
+    circle at 30% 50%,
+    rgba(139, 100, 61, 0.05) 0%,
+    transparent 50%
+  );
   pointer-events: none;
 }
 

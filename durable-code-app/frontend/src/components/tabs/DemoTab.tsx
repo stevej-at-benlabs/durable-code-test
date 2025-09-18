@@ -66,44 +66,47 @@ export function DemoTab(): ReactElement {
   });
 
   // Draw grid on canvas
-  const drawGrid = useCallback((ctx: CanvasRenderingContext2D, width: number, height: number) => {
-    ctx.strokeStyle = '#2a2a2a';
-    ctx.lineWidth = 1;
+  const drawGrid = useCallback(
+    (ctx: CanvasRenderingContext2D, width: number, height: number) => {
+      ctx.strokeStyle = '#2a2a2a';
+      ctx.lineWidth = 1;
 
-    // Draw vertical grid lines (10 divisions)
-    for (let i = 0; i <= 10; i++) {
-      const x = (i * width) / 10;
+      // Draw vertical grid lines (10 divisions)
+      for (let i = 0; i <= 10; i++) {
+        const x = (i * width) / 10;
+        ctx.beginPath();
+        ctx.moveTo(x, 0);
+        ctx.lineTo(x, height);
+        ctx.stroke();
+      }
+
+      // Draw horizontal grid lines (8 divisions)
+      for (let i = 0; i <= 8; i++) {
+        const y = (i * height) / 8;
+        ctx.beginPath();
+        ctx.moveTo(0, y);
+        ctx.lineTo(width, y);
+        ctx.stroke();
+      }
+
+      // Draw center lines
+      ctx.strokeStyle = '#3a3a3a';
+      ctx.lineWidth = 2;
+
+      // Center horizontal
       ctx.beginPath();
-      ctx.moveTo(x, 0);
-      ctx.lineTo(x, height);
+      ctx.moveTo(0, height / 2);
+      ctx.lineTo(width, height / 2);
       ctx.stroke();
-    }
 
-    // Draw horizontal grid lines (8 divisions)
-    for (let i = 0; i <= 8; i++) {
-      const y = (i * height) / 8;
+      // Center vertical
       ctx.beginPath();
-      ctx.moveTo(0, y);
-      ctx.lineTo(width, y);
+      ctx.moveTo(width / 2, 0);
+      ctx.lineTo(width / 2, height);
       ctx.stroke();
-    }
-
-    // Draw center lines
-    ctx.strokeStyle = '#3a3a3a';
-    ctx.lineWidth = 2;
-
-    // Center horizontal
-    ctx.beginPath();
-    ctx.moveTo(0, height / 2);
-    ctx.lineTo(width, height / 2);
-    ctx.stroke();
-
-    // Center vertical
-    ctx.beginPath();
-    ctx.moveTo(width / 2, 0);
-    ctx.lineTo(width / 2, height);
-    ctx.stroke();
-  }, []);
+    },
+    [],
+  );
 
   // Draw waveform on canvas
   const drawWaveform = useCallback(() => {
@@ -139,7 +142,7 @@ export function DemoTab(): ReactElement {
 
         // Map value to canvas coordinates
         const x = i * pixelStep;
-        const y = height / 2 - (value * height / (4 * state.voltScale));
+        const y = height / 2 - (value * height) / (4 * state.voltScale);
 
         if (i === 0) {
           ctx.moveTo(x, y);
@@ -155,7 +158,8 @@ export function DemoTab(): ReactElement {
         ctx.lineWidth = 1;
         ctx.setLineDash([5, 5]);
         ctx.beginPath();
-        const triggerY = height / 2 - (state.triggerLevel * height / (4 * state.voltScale));
+        const triggerY =
+          height / 2 - (state.triggerLevel * height) / (4 * state.voltScale);
         ctx.moveTo(0, triggerY);
         ctx.lineTo(width, triggerY);
         ctx.stroke();
@@ -168,7 +172,7 @@ export function DemoTab(): ReactElement {
     ctx.font = '12px monospace';
     ctx.fillText(`${state.timeScale} ms/div`, 10, 20);
     ctx.fillText(`${state.voltScale} V/div`, 10, 35);
-    ctx.fillText(`Freq: ${state.frequency} Hz`, 10, 50);
+    ctx.fillText(`Freq: ${state.frequency.toFixed(1)} Hz`, 10, 50);
     ctx.fillText(`FPS: ${stats.fps}`, width - 80, 20);
 
     animationFrameRef.current = requestAnimationFrame(drawWaveform);
@@ -184,12 +188,12 @@ export function DemoTab(): ReactElement {
 
     ws.onopen = () => {
       console.log('WebSocket connected');
-      setState(prev => ({ ...prev, isConnected: true }));
+      setState((prev) => ({ ...prev, isConnected: true }));
     };
 
     ws.onclose = () => {
       console.log('WebSocket disconnected');
-      setState(prev => ({ ...prev, isConnected: false, isStreaming: false }));
+      setState((prev) => ({ ...prev, isConnected: false, isStreaming: false }));
     };
 
     ws.onerror = (error) => {
@@ -203,13 +207,12 @@ export function DemoTab(): ReactElement {
         // Update buffer with new samples
         if (!state.isPaused) {
           const maxBufferSize = 2000;
-          dataBufferRef.current = [
-            ...dataBufferRef.current,
-            ...data.samples
-          ].slice(-maxBufferSize);
+          dataBufferRef.current = [...dataBufferRef.current, ...data.samples].slice(
+            -maxBufferSize,
+          );
 
           // Update stats
-          setStats(prev => ({
+          setStats((prev) => ({
             ...prev,
             dataRate: data.sample_rate,
             bufferSize: dataBufferRef.current.length,
@@ -239,55 +242,80 @@ export function DemoTab(): ReactElement {
       amplitude: state.amplitude,
       offset: state.offset,
     });
-    setState(prev => ({ ...prev, isStreaming: true }));
+    setState((prev) => ({ ...prev, isStreaming: true }));
   }, [state, sendCommand]);
 
   // Stop streaming
   const stopStreaming = useCallback(() => {
     sendCommand({ command: 'stop' });
-    setState(prev => ({ ...prev, isStreaming: false }));
+    setState((prev) => ({ ...prev, isStreaming: false }));
   }, [sendCommand]);
 
   // Update wave parameters
-  const updateWaveform = useCallback((waveType: 'sine' | 'square' | 'noise') => {
-    setState(prev => ({ ...prev, waveType }));
-    if (state.isStreaming) {
-      sendCommand({
-        command: 'configure',
-        wave_type: waveType,
-        frequency: state.frequency,
-        amplitude: state.amplitude,
-        offset: state.offset,
-      });
-    }
-  }, [state, sendCommand]);
+  const updateWaveform = useCallback(
+    (waveType: 'sine' | 'square' | 'noise') => {
+      setState((prev) => ({ ...prev, waveType }));
+      if (state.isStreaming) {
+        sendCommand({
+          command: 'configure',
+          wave_type: waveType,
+          frequency: state.frequency,
+          amplitude: state.amplitude,
+          offset: state.offset,
+        });
+      }
+    },
+    [state, sendCommand],
+  );
 
   // Handle parameter changes
-  const handleFrequencyChange = useCallback((value: number) => {
-    setState(prev => ({ ...prev, frequency: value }));
-    if (state.isStreaming) {
-      sendCommand({
-        command: 'configure',
-        wave_type: state.waveType,
-        frequency: value,
-        amplitude: state.amplitude,
-        offset: state.offset,
-      });
-    }
-  }, [state, sendCommand]);
+  const handleFrequencyChange = useCallback(
+    (value: number) => {
+      setState((prev) => ({ ...prev, frequency: value }));
+      if (state.isStreaming) {
+        sendCommand({
+          command: 'configure',
+          wave_type: state.waveType,
+          frequency: value,
+          amplitude: state.amplitude,
+          offset: state.offset,
+        });
+      }
+    },
+    [state, sendCommand],
+  );
 
-  const handleAmplitudeChange = useCallback((value: number) => {
-    setState(prev => ({ ...prev, amplitude: value }));
-    if (state.isStreaming) {
-      sendCommand({
-        command: 'configure',
-        wave_type: state.waveType,
-        frequency: state.frequency,
-        amplitude: value,
-        offset: state.offset,
-      });
-    }
-  }, [state, sendCommand]);
+  const handleAmplitudeChange = useCallback(
+    (value: number) => {
+      setState((prev) => ({ ...prev, amplitude: value }));
+      if (state.isStreaming) {
+        sendCommand({
+          command: 'configure',
+          wave_type: state.waveType,
+          frequency: state.frequency,
+          amplitude: value,
+          offset: state.offset,
+        });
+      }
+    },
+    [state, sendCommand],
+  );
+
+  const handleOffsetChange = useCallback(
+    (value: number) => {
+      setState((prev) => ({ ...prev, offset: value }));
+      if (state.isStreaming) {
+        sendCommand({
+          command: 'configure',
+          wave_type: state.waveType,
+          frequency: state.frequency,
+          amplitude: state.amplitude,
+          offset: value,
+        });
+      }
+    },
+    [state, sendCommand],
+  );
 
   // Initialize canvas and WebSocket
   useEffect(() => {
@@ -309,7 +337,7 @@ export function DemoTab(): ReactElement {
       const currentTime = performance.now();
       const deltaTime = currentTime - lastTime;
       const fps = Math.round((frameCount * 1000) / deltaTime);
-      setStats(prev => ({ ...prev, fps }));
+      setStats((prev) => ({ ...prev, fps }));
       frameCount = 0;
       lastTime = currentTime;
     }, 1000);
@@ -347,7 +375,9 @@ export function DemoTab(): ReactElement {
             <span className="tab-icon">📡</span>
             Oscilloscope Demo
           </h1>
-          <p className="tab-subtitle">Real-time waveform visualization with WebSocket streaming</p>
+          <p className="tab-subtitle">
+            Real-time waveform visualization with WebSocket streaming
+          </p>
         </div>
       </div>
 
@@ -372,7 +402,10 @@ export function DemoTab(): ReactElement {
 
               {/* Control Panel */}
               <div className="control-panel" style={{ marginTop: '20px' }}>
-                <div className="control-row" style={{ display: 'flex', gap: '10px', marginBottom: '15px' }}>
+                <div
+                  className="control-row"
+                  style={{ display: 'flex', gap: '10px', marginBottom: '15px' }}
+                >
                   <button
                     onClick={startStreaming}
                     disabled={!state.isConnected || state.isStreaming}
@@ -404,7 +437,9 @@ export function DemoTab(): ReactElement {
                     ⏹ Stop
                   </button>
                   <button
-                    onClick={() => setState(prev => ({ ...prev, isPaused: !prev.isPaused }))}
+                    onClick={() =>
+                      setState((prev) => ({ ...prev, isPaused: !prev.isPaused }))
+                    }
                     className="control-button"
                     style={{
                       padding: '10px 20px',
@@ -418,7 +453,7 @@ export function DemoTab(): ReactElement {
                     {state.isPaused ? '⏸ Paused' : '⏸ Pause'}
                   </button>
                   <button
-                    onClick={() => dataBufferRef.current = []}
+                    onClick={() => (dataBufferRef.current = [])}
                     className="control-button"
                     style={{
                       padding: '10px 20px',
@@ -483,7 +518,14 @@ export function DemoTab(): ReactElement {
                 </div>
 
                 {/* Parameter Controls */}
-                <div className="parameter-controls" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '15px' }}>
+                <div
+                  className="parameter-controls"
+                  style={{
+                    display: 'grid',
+                    gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+                    gap: '15px',
+                  }}
+                >
                   <div className="control-group">
                     <label>Frequency (Hz): {state.frequency}</label>
                     <input
@@ -492,7 +534,9 @@ export function DemoTab(): ReactElement {
                       max="100"
                       step="0.1"
                       value={state.frequency}
-                      onChange={(e) => handleFrequencyChange(parseFloat(e.target.value))}
+                      onChange={(e) =>
+                        handleFrequencyChange(parseFloat(e.target.value))
+                      }
                       style={{ width: '100%' }}
                     />
                   </div>
@@ -504,7 +548,9 @@ export function DemoTab(): ReactElement {
                       max="10"
                       step="0.1"
                       value={state.amplitude}
-                      onChange={(e) => handleAmplitudeChange(parseFloat(e.target.value))}
+                      onChange={(e) =>
+                        handleAmplitudeChange(parseFloat(e.target.value))
+                      }
                       style={{ width: '100%' }}
                     />
                   </div>
@@ -516,7 +562,12 @@ export function DemoTab(): ReactElement {
                       max="100"
                       step="1"
                       value={state.timeScale}
-                      onChange={(e) => setState(prev => ({ ...prev, timeScale: parseInt(e.target.value) }))}
+                      onChange={(e) =>
+                        setState((prev) => ({
+                          ...prev,
+                          timeScale: parseInt(e.target.value),
+                        }))
+                      }
                       style={{ width: '100%' }}
                     />
                   </div>
@@ -528,7 +579,12 @@ export function DemoTab(): ReactElement {
                       max="10"
                       step="0.1"
                       value={state.voltScale}
-                      onChange={(e) => setState(prev => ({ ...prev, voltScale: parseFloat(e.target.value) }))}
+                      onChange={(e) =>
+                        setState((prev) => ({
+                          ...prev,
+                          voltScale: parseFloat(e.target.value),
+                        }))
+                      }
                       style={{ width: '100%' }}
                     />
                   </div>
@@ -540,7 +596,12 @@ export function DemoTab(): ReactElement {
                       max="5"
                       step="0.1"
                       value={state.triggerLevel}
-                      onChange={(e) => setState(prev => ({ ...prev, triggerLevel: parseFloat(e.target.value) }))}
+                      onChange={(e) =>
+                        setState((prev) => ({
+                          ...prev,
+                          triggerLevel: parseFloat(e.target.value),
+                        }))
+                      }
                       style={{ width: '100%' }}
                     />
                   </div>
@@ -552,7 +613,7 @@ export function DemoTab(): ReactElement {
                       max="10"
                       step="0.1"
                       value={state.offset}
-                      onChange={(e) => setState(prev => ({ ...prev, offset: parseFloat(e.target.value) }))}
+                      onChange={(e) => handleOffsetChange(parseFloat(e.target.value))}
                       style={{ width: '100%' }}
                     />
                   </div>
@@ -560,17 +621,25 @@ export function DemoTab(): ReactElement {
               </div>
 
               {/* Status Information */}
-              <div className="status-panel" style={{ marginTop: '20px', padding: '10px', background: '#2a2a2a', borderRadius: '5px' }}>
+              <div
+                className="status-panel"
+                style={{
+                  marginTop: '20px',
+                  padding: '10px',
+                  background: '#2a2a2a',
+                  borderRadius: '5px',
+                }}
+              >
                 <h3>Connection Status</h3>
                 <div style={{ display: 'flex', gap: '20px' }}>
                   <span>
-                    Connection: {' '}
+                    Connection:{' '}
                     <span style={{ color: state.isConnected ? '#00ff00' : '#ff4444' }}>
                       {state.isConnected ? '● Connected' : '○ Disconnected'}
                     </span>
                   </span>
                   <span>
-                    Streaming: {' '}
+                    Streaming:{' '}
                     <span style={{ color: state.isStreaming ? '#00ff00' : '#666' }}>
                       {state.isStreaming ? '● Active' : '○ Inactive'}
                     </span>
@@ -587,9 +656,9 @@ export function DemoTab(): ReactElement {
             <div className="content-card">
               <h2>About This Demo</h2>
               <p>
-                This interactive oscilloscope demonstrates real-time data streaming using WebSockets
-                and canvas-based visualization. The backend generates waveforms in real-time and
-                streams them to the frontend for display.
+                This interactive oscilloscope demonstrates real-time data streaming
+                using WebSockets and canvas-based visualization. The backend generates
+                waveforms in real-time and streams them to the frontend for display.
               </p>
 
               <h3>Features</h3>
@@ -618,8 +687,8 @@ export function DemoTab(): ReactElement {
       <div className="tab-footer">
         <div className="footer-content">
           <p className="footer-note">
-            This oscilloscope demo showcases real-time data streaming and visualization capabilities
-            of the durable code framework.
+            This oscilloscope demo showcases real-time data streaming and visualization
+            capabilities of the durable code framework.
           </p>
         </div>
       </div>

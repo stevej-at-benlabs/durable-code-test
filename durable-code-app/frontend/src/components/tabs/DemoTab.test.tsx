@@ -54,9 +54,11 @@ class MockWebSocket {
 
   simulateMessage(data: Record<string, unknown>) {
     if (this.onmessage) {
-      this.onmessage(new MessageEvent('message', {
-        data: JSON.stringify(data)
-      }));
+      this.onmessage(
+        new MessageEvent('message', {
+          data: JSON.stringify(data),
+        }),
+      );
     }
   }
 }
@@ -98,7 +100,9 @@ describe('DemoTab Component', () => {
     HTMLCanvasElement.prototype.getContext = vi.fn(() => mockCanvasContext);
 
     // Mock requestAnimationFrame
-    global.requestAnimationFrame = vi.fn((cb) => setTimeout(cb, 0)) as typeof requestAnimationFrame;
+    global.requestAnimationFrame = vi.fn((cb) =>
+      setTimeout(cb, 0),
+    ) as typeof requestAnimationFrame;
     global.cancelAnimationFrame = vi.fn();
   });
 
@@ -112,7 +116,9 @@ describe('DemoTab Component', () => {
     it('should render the component with title', () => {
       render(<DemoTab />);
       expect(screen.getByText('Oscilloscope Demo')).toBeInTheDocument();
-      expect(screen.getByText('Real-time waveform visualization with WebSocket streaming')).toBeInTheDocument();
+      expect(
+        screen.getByText('Real-time waveform visualization with WebSocket streaming'),
+      ).toBeInTheDocument();
     });
 
     it('should render control buttons', () => {
@@ -161,7 +167,7 @@ describe('DemoTab Component', () => {
 
       await waitFor(() => {
         expect(global.WebSocket).toHaveBeenCalledWith(
-          expect.stringContaining('/api/oscilloscope/stream')
+          expect.stringContaining('/api/oscilloscope/stream'),
         );
       });
     });
@@ -207,7 +213,7 @@ describe('DemoTab Component', () => {
 
       await waitFor(() => {
         const sentMessage = mockWebSocket.sentMessages.find(
-          msg => msg.command === 'start'
+          (msg) => msg.command === 'start',
         );
         expect(sentMessage).toBeDefined();
         expect(sentMessage.wave_type).toBe('sine');
@@ -232,7 +238,7 @@ describe('DemoTab Component', () => {
 
       await waitFor(() => {
         const sentMessage = mockWebSocket.sentMessages.find(
-          msg => msg.command === 'stop'
+          (msg) => msg.command === 'stop',
         );
         expect(sentMessage).toBeDefined();
       });
@@ -274,7 +280,7 @@ describe('DemoTab Component', () => {
 
       await waitFor(() => {
         const configMessage = mockWebSocket.sentMessages.find(
-          msg => msg.command === 'configure' && msg.wave_type === 'sine'
+          (msg) => msg.command === 'configure' && msg.wave_type === 'sine',
         );
         expect(configMessage).toBeDefined();
       });
@@ -295,7 +301,7 @@ describe('DemoTab Component', () => {
 
       await waitFor(() => {
         const configMessage = mockWebSocket.sentMessages.find(
-          msg => msg.command === 'configure' && msg.wave_type === 'square'
+          (msg) => msg.command === 'configure' && msg.wave_type === 'square',
         );
         expect(configMessage).toBeDefined();
       });
@@ -316,7 +322,7 @@ describe('DemoTab Component', () => {
 
       await waitFor(() => {
         const configMessage = mockWebSocket.sentMessages.find(
-          msg => msg.command === 'configure' && msg.wave_type === 'noise'
+          (msg) => msg.command === 'configure' && msg.wave_type === 'noise',
         );
         expect(configMessage).toBeDefined();
       });
@@ -339,7 +345,7 @@ describe('DemoTab Component', () => {
 
       await waitFor(() => {
         const configMessage = mockWebSocket.sentMessages.find(
-          msg => msg.command === 'configure' && msg.frequency === 25
+          (msg) => msg.command === 'configure' && msg.frequency === 25,
         );
         expect(configMessage).toBeDefined();
       });
@@ -360,7 +366,7 @@ describe('DemoTab Component', () => {
 
       await waitFor(() => {
         const configMessage = mockWebSocket.sentMessages.find(
-          msg => msg.command === 'configure' && msg.amplitude === 2.5
+          (msg) => msg.command === 'configure' && msg.amplitude === 2.5,
         );
         expect(configMessage).toBeDefined();
       });
@@ -384,8 +390,8 @@ describe('DemoTab Component', () => {
         parameters: {
           frequency: 10,
           amplitude: 1,
-          offset: 0
-        }
+          offset: 0,
+        },
       };
 
       mockWebSocket.simulateMessage(testData);
@@ -412,8 +418,8 @@ describe('DemoTab Component', () => {
         parameters: {
           frequency: 10,
           amplitude: 1,
-          offset: 0
-        }
+          offset: 0,
+        },
       };
 
       mockWebSocket.simulateMessage(testData);
@@ -442,7 +448,7 @@ describe('DemoTab Component', () => {
       expect(mockCanvasContext.fillText).toHaveBeenCalledWith(
         expect.stringContaining('ms/div'),
         expect.any(Number),
-        expect.any(Number)
+        expect.any(Number),
       );
     });
   });
