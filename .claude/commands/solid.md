@@ -1,14 +1,40 @@
 ---
-description: Check code for SOLID principle violations using AI agents that work in parallel
+description: Generate a pragmatic SOLID principles report focusing on essential violations - no code changes, read-only analysis
 argument-hint: [optional: "all code" for full codebase analysis]
 ---
 
-Check code for SOLID principle violations using AI agents that work in parallel to analyze each principle independently, with language-aware adaptations for dynamically typed languages like Python.
+Generate a **pragmatic SOLID principles compliance report** that focuses on violations that actually matter. This command uses AI agents working in parallel to identify genuine maintainability issues while filtering out theoretical violations that don't impact real-world development.
+
+## 🎯 Pragmatic Philosophy: Focus on What Matters
+
+This command has been designed to **avoid pedantic violations** and focus on **real maintainability issues**:
+
+- **Higher Thresholds**: 20+ methods for SRP (not 15), 5+ branches for OCP (not 3)
+- **Modern Patterns**: Recognizes that React components, service coordinators, and config objects follow different rules
+- **Language Awareness**: Python duck typing, TypeScript discriminated unions, and framework patterns are respected
+- **Practical Impact**: Only flags violations that would actually cause problems in production or testing
+- **No Over-Engineering**: Avoids suggesting abstractions for simple cases
+
+## 🔒 HEADLESS MODE - NO PERMISSIONS REQUIRED
+
+**This command runs in read-only report mode:**
+- ✅ **No code modifications** - Only generates analysis reports
+- ✅ **No permissions needed** - Runs completely autonomously
+- ✅ **Safe to run unattended** - User can start and walk away
+- ✅ **No interactive prompts** - Fully automated execution
+- ✅ **Report-only output** - Results saved to `.reports/` directory
 
 ## Command Overview
-The `/solid` command performs comprehensive SOLID principle analysis using specialized AI agents. It can operate in two modes:
+The `/solid` command performs comprehensive SOLID principle analysis using specialized AI agents. It operates in **report-only mode** and can analyze code in two scopes:
 - **Current branch**: Analyzes only files changed in the current branch (default)
 - **All code**: Comprehensive analysis of the entire codebase (when "all code" is specified)
+
+**Important**: This is a diagnostic tool only. It will:
+1. Read and analyze your code
+2. Generate detailed violation reports
+3. Save reports to the `.reports/` directory
+4. Never modify any source files
+5. Never require user interaction or permissions
 
 ## Language-Specific Adaptations
 The command automatically adapts its analysis based on the programming language:
@@ -39,219 +65,363 @@ The command automatically adapts its analysis based on the programming language:
 - **DIP**: Focus on import structure and configuration, not type abstractions
 
 ## AI Agent Architecture
-This command launches 5 specialized AI agents in parallel, each focusing on one SOLID principle:
+This command launches 5 specialized AI agents in parallel, each focusing on one SOLID principle with **pragmatic, real-world thresholds** to avoid false positives.
 
 ### 1. Single Responsibility Principle (SRP) Agent
-- **Focus**: Classes/modules with multiple responsibilities
-- **Detection**: Functions/classes doing unrelated tasks
-- **Tools**: Code analysis, pattern detection
-- **Output**: List of violations with refactoring suggestions
+- **Focus**: Classes/modules with multiple unrelated responsibilities
+- **Detection Thresholds**:
+  - Classes with 20+ public methods (not 15)
+  - Components handling 4+ completely unrelated domains
+  - Mixing business logic with infrastructure in the same class
+- **What We DON'T Flag**:
+  - React components managing their own state, effects, and rendering
+  - Service classes coordinating related operations
+  - Test classes with setup/teardown methods
+  - CLI commands that parse and execute
+- **Output**: Only significant SRP violations that genuinely impact maintainability
 
 ### 2. Open/Closed Principle (OCP) Agent
-- **Focus**: Code that violates open for extension, closed for modification
-- **Detection**:
-  - **Python**: Focuses on if/elif chains based on attributes, missing use of protocols/ABCs
-  - **Other**: Hard-coded conditionals, type checking, direct instantiation
-- **Tools**: Pattern analysis, abstraction detection
-- **Output**: Areas needing abstraction or polymorphism (respecting duck typing in Python)
+- **Focus**: Code requiring modification for common extensions
+- **Detection Thresholds**:
+  - If/elif chains with 5+ branches for type dispatch
+  - Frequently modified switch statements for new cases
+  - Hard-coded production URLs or endpoints
+- **What We DON'T Flag**:
+  - UI configuration objects (tabs, routes, menus)
+  - Enum/string switches under 5 cases
+  - Type guards and runtime type checking
+  - Factory methods with type selection
+- **Output**: Only OCP violations that actually impede extensibility
 
 ### 3. Liskov Substitution Principle (LSP) Agent
-- **Focus**: Behavioral substitutability rather than strict type substitutability
+- **Focus**: Actual behavioral contract violations
 - **Detection**:
-  - **Python**: Focus on behavioral contracts and duck typing compatibility
-  - **Other**: Overridden methods that change behavior contracts
-- **Tools**: Behavioral analysis, protocol verification
-- **Output**: Behavioral incompatibilities and protocol violations
-- **Note**: In Python, emphasizes "if it walks like a duck" principle
+  - Methods that completely change expected behavior
+  - Required parameters with different meanings
+  - Fundamentally different side effects
+- **What We DON'T Flag**:
+  - Minor return type extensions with optional fields
+  - Empty vs undefined return differences
+  - Additional optional parameters
+  - Interface extensions that maintain base behavior
+- **Output**: Only true behavioral incompatibilities
 
 ### 4. Interface Segregation Principle (ISP) Agent
-- **Focus**: Method dependencies and protocol segregation
-- **Detection**:
-  - **Python**: Large protocols/ABCs, objects with many unrelated methods
-  - **Other**: Large interfaces, unused interface methods
-- **Tools**: Protocol analysis, method grouping
-- **Output**: Protocol/interface splitting recommendations
-- **Note**: In Python, focuses on protocols and ABC usage rather than strict interfaces
+- **Focus**: Genuinely oversized interfaces forcing unused dependencies
+- **Detection Thresholds**:
+  - Interfaces with 10+ unrelated methods
+  - Clients forced to depend on 5+ unused methods
+  - Clear method groupings serving different client types
+- **What We DON'T Flag**:
+  - React component props with up to 10 properties
+  - Service interfaces with related methods
+  - State interfaces combining related concerns
+  - Configuration interfaces
+- **Output**: Only interfaces that truly need segregation
 
 ### 5. Dependency Inversion Principle (DIP) Agent
-- **Focus**: Dependencies on abstractions rather than concretions
+- **Focus**: Dependencies that actually impair testing and flexibility
 - **Detection**:
-  - **Python**: Hard-coded imports, missing dependency injection, tight coupling
-  - **Other**: Direct instantiation, concrete dependencies
-- **Tools**: Import analysis, coupling detection
-- **Output**: Dependency injection opportunities (considering Python's module system)
-- **Note**: In Python, emphasizes dependency injection and configurable imports
+  - Business logic directly instantiating infrastructure
+  - Hard-coded production URLs/endpoints
+  - Circular dependencies between modules
+  - Missing DI where testing is impaired
+- **What We DON'T Flag**:
+  - Browser APIs in frontend components
+  - Standard library imports
+  - Framework-specific imports
+  - Test utilities and fixtures
+  - Development/demo code dependencies
+- **Output**: Only DIP violations that matter for testing and deployment
 
-## Command Execution Flow
+## Command Execution Flow - Fully Autonomous
+
+### 🤖 Headless Execution Characteristics
+- **Zero User Interaction**: Command runs start-to-finish without prompts
+- **No Permission Dialogs**: All operations are read-only
+- **Background-Safe**: Can be run in CI/CD or scheduled tasks
+- **Walk-Away Operation**: Start the command and leave - it will complete autonomously
+- **Report Generation Only**: Results written to files, no code changes
 
 ### Mode 1: Current Branch Analysis (Default)
 ```bash
 # Usage: /solid
-# Analyzes only files changed in current branch
+# Generates report for files changed in current branch
+# NO PERMISSIONS REQUIRED - READ-ONLY OPERATION
 ```
 
-1. **Git Analysis**: Identify changed files in current branch vs main
-2. **Agent Deployment**: Launch 5 SOLID agents in parallel
-3. **Focused Analysis**: Each agent analyzes only the changed files
-4. **Report Generation**: Combine findings into unified report
-5. **Actionable Recommendations**: Specific fixes for violations found
+1. **Git Analysis**: Identify changed files in current branch vs main (read-only)
+2. **Agent Deployment**: Launch 5 SOLID agents in parallel (autonomous)
+3. **Focused Analysis**: Each agent analyzes only the changed files (read-only)
+4. **Report Generation**: Combine findings into unified report file
+5. **Save Results**: Write report to `.reports/` directory (creates dir if needed)
+6. **Complete**: Exit with summary of report location
 
 ### Mode 2: Comprehensive Analysis
 ```bash
 # Usage: /solid all code
-# Analyzes entire codebase
+# Generates report for entire codebase
+# NO PERMISSIONS REQUIRED - READ-ONLY OPERATION
 ```
 
-1. **Codebase Scan**: Identify all relevant source files
-2. **Agent Deployment**: Launch 5 SOLID agents in parallel
-3. **Full Analysis**: Each agent analyzes entire codebase
+1. **Codebase Scan**: Identify all relevant source files (read-only)
+2. **Agent Deployment**: Launch 5 SOLID agents in parallel (autonomous)
+3. **Full Analysis**: Each agent analyzes entire codebase (read-only)
 4. **Comprehensive Report**: Complete SOLID compliance assessment
-5. **Priority Recommendations**: Ranked list of critical violations
+5. **Save Results**: Write reports to `.reports/` directory
+6. **Complete**: Exit with summary of report locations
 
 ## Agent Prompts and Tasks
 
 ### SRP Agent Task
 ```
-Analyze the provided code files for Single Responsibility Principle violations.
+Analyze the provided code files for Single Responsibility Principle violations using PRAGMATIC thresholds.
+
+CRITICAL: Only flag SIGNIFICANT violations that genuinely impact maintainability.
+
+VIOLATION THRESHOLDS:
+- Classes with 20+ public methods (not just many methods)
+- Components handling 4+ completely unrelated domains
+- Clear mixing of business logic with infrastructure/persistence
+- Files over 500 lines handling multiple unrelated concerns
+
+ACCEPTABLE PATTERNS (DO NOT FLAG):
+- UI components managing their own state, effects, and rendering
+- Service classes coordinating related operations (e.g., WebSocket + processing)
+- Test classes with setup/teardown/assertion methods together
+- CLI commands that parse arguments and execute
+- Data classes with validation and transformation methods
+- Utility modules with related helper functions
 
 LANGUAGE-SPECIFIC FOCUS:
 
 For Python:
-- Modules doing too many things (Python modules are first-class organizational units)
-- Classes that could be split into functions (not everything needs to be a class in Python)
-- Functions with side effects mixed with calculations
-- Consider Python's functional programming capabilities
-- Note: Simple data classes with related methods are often acceptable
+- Focus on modules with unrelated function groups (not just many functions)
+- Don't flag classes that could be functions unless they're overly complex
+- Simple data classes with methods are fine
+- Consider that Python modules are valid organizational units
 
-For Statically Typed Languages:
-- Classes with multiple unrelated methods
-- Functions doing multiple unrelated tasks
-- Modules mixing different concerns
-- Methods with multiple reasons to change
+For JavaScript/TypeScript:
+- React components under 200 lines are generally acceptable
+- Hooks combining related logic are single responsibility
+- Don't flag components for having render + event handlers + effects
 
-For each violation found:
-1. Identify the specific class/function/module
-2. List the different responsibilities
-3. Suggest how to split (consider modules, functions, or classes as appropriate)
-4. Provide language-idiomatic refactoring recommendations
+For each SIGNIFICANT violation:
+1. Explain why this specifically impacts maintainability
+2. Count the number of truly unrelated responsibilities
+3. Only suggest splitting if responsibilities are genuinely unrelated
+4. Provide practical, not theoretical, refactoring suggestions
 
-Return a structured report with file paths, line numbers, and specific recommendations.
+Return only violations that would provide real value if fixed.
 ```
 
 ### OCP Agent Task
 ```
-Analyze the provided code files for Open/Closed Principle violations.
+Analyze the provided code files for Open/Closed Principle violations using PRAGMATIC thresholds.
+
+CRITICAL: Focus on code that FREQUENTLY requires modification, not just any conditional logic.
+
+VIOLATION THRESHOLDS:
+- If/elif chains with 5+ branches for type/behavior dispatch
+- Switch statements modified 3+ times in recent history for new cases
+- Hard-coded production URLs, API endpoints, or external service configurations
+- Type checking that forces code modification for every new type
+
+ACCEPTABLE PATTERNS (DO NOT FLAG):
+- UI configuration objects (tabs, routes, navigation menus)
+- Enum/string switches with fewer than 5 cases
+- Type guards and discriminated unions in TypeScript
+- Factory methods with type selection
+- Configuration-driven behavior (where config is external)
+- isinstance() checks for validation or error handling
+- Strategy selection based on user input or configuration
 
 LANGUAGE-SPECIFIC FOCUS:
 
 For Python:
-- If/elif chains that check object attributes or string values
-- Missing use of protocols, ABCs, or duck typing patterns
-- Functions that would need modification to handle new cases
-- Consider that Python uses duck typing - focus on behavior rather than strict types
-- Note: isinstance() checks are sometimes appropriate in Python (e.g., for runtime validation)
+- If/elif chains are acceptable for 3-4 cases (Pythonic simplicity)
+- Duck typing often makes OCP less relevant - don't over-engineer
+- Simple string/enum checking is fine for small sets
 
-For Statically Typed Languages:
-- Hard-coded if/else or switch statements based on type
-- Direct type checking
-- Methods that need modification when new types are added
-- Missing abstraction layers
+For JavaScript/TypeScript:
+- Discriminated unions with switch statements are good patterns
+- Type guards are necessary and acceptable
+- Configuration objects for UI are meant to be modified
 
-For each violation found:
-1. Identify the violation pattern
-2. Explain why it violates OCP in the context of the language
-3. Suggest appropriate abstraction strategies (protocols/ABCs for Python, interfaces for others)
-4. Provide language-idiomatic refactoring examples
+For each SIGNIFICANT violation:
+1. Verify this code actually changes frequently (not just theoretically)
+2. Count how many branches/cases exist
+3. Only suggest abstraction if it would genuinely improve maintainability
+4. Avoid suggesting over-engineering for simple cases
 
-Return a structured report with specific extension points and abstraction recommendations.
+Return only violations where abstraction would provide clear value.
 ```
 
 ### LSP Agent Task
 ```
-Analyze the provided code files for Liskov Substitution Principle violations.
+Analyze the provided code files for Liskov Substitution Principle violations focusing on ACTUAL behavioral problems.
+
+CRITICAL: Only flag violations that would cause runtime errors or unexpected behavior in production.
+
+VIOLATION CRITERIA:
+- Methods that completely change or ignore expected behavior
+- Required parameters that have fundamentally different meanings
+- Return values that break calling code expectations
+- Side effects that are completely different (not just additional)
+- Throwing exceptions where parent class doesn't
+
+ACCEPTABLE PATTERNS (DO NOT FLAG):
+- Extending return types with additional optional fields
+- Empty vs null vs undefined differences (unless they break callers)
+- Additional optional parameters in overrides
+- Subclasses that add extra functionality while preserving base behavior
+- NotImplementedError for genuinely optional methods
+- Covariant return types that maintain compatibility
+- Additional logging or metrics (non-functional additions)
 
 LANGUAGE-SPECIFIC FOCUS:
 
 For Python:
-- Focus on behavioral compatibility rather than strict type substitution
-- Check if objects implementing the same protocol/interface behave consistently
-- Look for duck-typed objects that don't fully implement expected behavior
-- Consider that Python allows for more flexible substitution patterns
-- NotImplementedError is often acceptable for optional protocol methods
+- Duck typing means behavioral compatibility matters more than inheritance
+- Focus on protocol violations that would cause AttributeError
+- Don't flag if the substitution works in practice
+- Consider that Python is dynamic - runtime behavior matters most
 
-For Statically Typed Languages:
-- Subclasses that strengthen preconditions
-- Subclasses that weaken postconditions
-- Overridden methods that change expected behavior
-- Inheritance hierarchies that break substitutability
+For JavaScript/TypeScript:
+- Prototype chains and mixins have different rules than classical inheritance
+- Optional chaining and null coalescing handle many potential issues
+- Focus on actual breaking changes, not type system warnings
 
-For each violation found:
-1. Identify the substitutability issue
-2. Explain the behavioral incompatibility
-3. Suggest protocol compliance or composition alternatives
-4. Provide language-appropriate implementation examples
+For each TRUE violation:
+1. Demonstrate how this would break existing code
+2. Show the specific scenario where substitution fails
+3. Only suggest changes if they prevent actual runtime issues
+4. Consider if composition would be more appropriate than inheritance
 
-Return a structured report focusing on behavioral compatibility.
+Return only violations that could cause actual bugs in production.
 ```
 
 ### ISP Agent Task
 ```
-Analyze the provided code files for Interface Segregation Principle violations.
+Analyze the provided code files for Interface Segregation Principle violations using PRACTICAL thresholds.
+
+CRITICAL: Only flag interfaces that force significant unused dependencies on clients.
+
+VIOLATION THRESHOLDS:
+- Interfaces/protocols with 10+ unrelated methods
+- Clients forced to depend on 5+ methods they never use
+- Clear clusters of methods serving completely different client types
+- Interfaces mixing multiple unrelated domains (e.g., auth + data + UI)
+
+ACCEPTABLE PATTERNS (DO NOT FLAG):
+- Component props interfaces with up to 10 properties
+- Service interfaces where methods are cohesive
+- State/context interfaces that group related data
+- Configuration interfaces (these are meant to be comprehensive)
+- Builder/fluent interfaces with many methods
+- Test fixtures and mocks
+- Framework-required interfaces (e.g., React component interfaces)
 
 LANGUAGE-SPECIFIC FOCUS:
 
 For Python:
-- Large Protocol or ABC definitions with many unrelated methods
-- Classes with many public methods that different clients use differently
-- Objects passed to functions where only a subset of methods is used
-- Consider that Python's duck typing naturally supports ISP
-- Focus on logical method grouping rather than strict interface enforcement
+- Protocols with 3-6 methods are usually fine
+- Duck typing means clients naturally use only what they need
+- Don't flag ABCs unless they're genuinely bloated (10+ unrelated methods)
+- Consider that Python's dynamic nature already provides ISP benefits
 
-For Statically Typed Languages:
-- Large interfaces with many unrelated methods
-- Classes forced to implement unused interface methods
-- Clients depending on methods they don't use
-- Fat interfaces that could be split
+For JavaScript/TypeScript:
+- Props interfaces for components are naturally large - this is fine
+- Optional properties don't violate ISP
+- Intersection types and extends are good patterns
+- Don't flag unless implementation is forced to handle unused methods
 
-For each violation found:
-1. Identify the oversized interface/protocol/class
-2. Group related methods by their cohesion
-3. Suggest protocol/interface splitting strategies
-4. Show how clients would use smaller, focused protocols
+For each SIGNIFICANT violation:
+1. Count how many unrelated method groups exist
+2. Show which clients use which subset of methods
+3. Only suggest splitting if it would reduce coupling significantly
+4. Consider if the interface is intentionally comprehensive (e.g., facades)
 
-Return a structured report with segregation recommendations appropriate to the language.
+Return only violations where interface splitting would measurably improve the design.
 ```
 
 ### DIP Agent Task
 ```
-Analyze the provided code files for Dependency Inversion Principle violations.
+Analyze the provided code files for Dependency Inversion Principle violations that ACTUALLY impair testing or deployment flexibility.
+
+CRITICAL: Focus on dependencies that genuinely need to be configurable, not all direct imports.
+
+VIOLATION CRITERIA:
+- Business logic directly instantiating infrastructure services
+- Hard-coded production URLs, API endpoints, or database connections
+- Circular dependencies between modules
+- Service instantiation without factories where multiple implementations exist
+- Tight coupling that prevents unit testing
+
+ACCEPTABLE PATTERNS (DO NOT FLAG):
+- Browser APIs in frontend components (WebSocket, fetch, localStorage)
+- Standard library imports in any language
+- Framework imports (React, FastAPI, Express, etc.)
+- Utility/helper function imports
+- Type/interface/protocol imports
+- Development tools and test utilities
+- Single-implementation services (no need for abstraction)
+- Constructor injection that's already in place
 
 LANGUAGE-SPECIFIC FOCUS:
 
 For Python:
-- Hard-coded imports of concrete implementations in high-level modules
-- Missing use of dependency injection patterns
-- Configuration that's tightly coupled to implementations
-- Consider Python's module system and import mechanics
-- Note: Some direct imports are acceptable in Python (e.g., standard library)
-- Focus on configurable dependencies and testability
+- Module-level imports of standard library are fine
+- Consider existing dependency injection (constructor parameters)
+- Don't flag if testability isn't actually impaired
+- Simple scripts don't need DI
 
-For Statically Typed Languages:
-- High-level modules importing low-level modules directly
-- Direct instantiation of concrete classes
-- Hardcoded dependencies
-- Missing abstraction layers
+For JavaScript/TypeScript:
+- Direct use of browser APIs is normal and acceptable
+- Node.js built-in modules are fine to import directly
+- Consider that frontend apps often use module bundlers for DI
+- React context and hooks are forms of dependency injection
 
-For each violation found:
-1. Identify the problematic dependency
-2. Explain how it limits flexibility and testing
-3. Suggest dependency injection or configuration patterns
-4. Provide language-idiomatic examples (e.g., Python's __init__ injection)
+For each TRUE violation:
+1. Explain specifically how this impairs testing or deployment
+2. Verify that multiple implementations would actually be useful
+3. Only suggest DI if it provides real benefits
+4. Avoid over-engineering for hypothetical flexibility
 
-Return a structured report with practical dependency inversion strategies.
+Return only violations that demonstrably impact testing or deployment.
 ```
 
 ## Report Generation
+
+### Severity Classification
+The agents use pragmatic severity levels focused on actual impact:
+
+#### 🔴 High Severity (Must Fix)
+- **SRP**: Classes with 20+ methods or 500+ lines mixing unrelated domains
+- **OCP**: If/elif chains with 5+ branches that change frequently
+- **LSP**: Behavioral violations that would cause runtime errors
+- **ISP**: Interfaces forcing 5+ unused methods on clients
+- **DIP**: Hard-coded production URLs/endpoints or circular dependencies
+
+#### 🟡 Medium Severity (Should Consider)
+- **SRP**: Classes with 15-19 methods or components doing 3 related-but-distinct tasks
+- **OCP**: 4-5 branch conditionals that might need extension
+- **LSP**: Behavioral differences that could surprise users
+- **ISP**: Interfaces with 7-9 methods where some clients use subsets
+- **DIP**: Direct instantiation where DI would improve testing
+
+#### 🟢 Low Severity (Nice to Have)
+- **SRP**: Minor cohesion issues within related functionality
+- **OCP**: 3-branch conditionals that rarely change
+- **LSP**: Minor contract differences that don't break functionality
+- **ISP**: Slightly large but cohesive interfaces
+- **DIP**: Direct imports that don't impact testing
+
+#### ℹ️ Informational (Not Violations)
+- Pattern observations that might be intentional
+- Framework-specific conventions
+- Trade-offs made for simplicity
+- Performance optimizations
 
 ### Report Storage
 - **Small Reports** (< 50 violations): Displayed directly in the terminal
@@ -347,29 +517,59 @@ The results are automatically added to the Building tab visualization showing:
 
 ## Language-Specific Examples
 
-### Python vs Java: Different Approaches to SOLID
+### Pragmatic vs Over-Zealous Analysis
 
-#### Example: Open/Closed Principle
-**Java (Traditional Approach):**
-```java
-// Violation - needs modification for new types
-if (shape instanceof Circle) {
-    return Math.PI * shape.radius * shape.radius;
-} else if (shape instanceof Square) {
-    return shape.side * shape.side;
-}
+#### Example 1: React Component (SRP)
+```typescript
+// ❌ OVER-ZEALOUS: "Component has 8 methods - violates SRP!"
+// ✅ PRAGMATIC: This is a normal React component pattern
+export const DashboardComponent: React.FC = () => {
+    const [data, setData] = useState();
+    const handleClick = () => { /* ... */ };
+    const handleSubmit = () => { /* ... */ };
+    const renderHeader = () => { /* ... */ };
+    const renderContent = () => { /* ... */ };
+
+    useEffect(() => { /* fetch data */ }, []);
+
+    return <div>{/* Component JSX */}</div>;
+};
 ```
 
-**Python (Pragmatic Approach):**
-```python
-# Not necessarily a violation in Python - duck typing is idiomatic
-if shape.shape_type == "circle":
-    return math.pi * shape.radius ** 2
-elif shape.shape_type == "square":
-    return shape.side ** 2
+#### Example 2: Configuration Object (OCP)
+```typescript
+// ❌ OVER-ZEALOUS: "Hard-coded configuration violates OCP!"
+// ✅ PRAGMATIC: UI configuration is meant to be explicit
+const tabs = [
+    { id: 'home', label: 'Home', component: HomeTab },
+    { id: 'settings', label: 'Settings', component: SettingsTab },
+    { id: 'profile', label: 'Profile', component: ProfileTab }
+];
+```
 
-# Better Python approach using duck typing:
-return shape.calculate_area()  # Each shape knows how to calculate its area
+#### Example 3: Service with Multiple Operations (SRP)
+```python
+# ❌ OVER-ZEALOUS: "Class handles WebSocket AND data processing!"
+# ✅ PRAGMATIC: These are related concerns in a cohesive service
+class RealtimeDataService:
+    def connect_websocket(self): ...
+    def process_message(self, msg): ...
+    def transform_data(self, data): ...
+    def emit_update(self, update): ...
+```
+
+#### Example 4: Type Checking (OCP)
+```python
+# ❌ OVER-ZEALOUS: "If/elif chain violates OCP!"
+# ✅ PRAGMATIC: 3 cases is fine - don't over-engineer
+if record_type == "user":
+    return process_user(data)
+elif record_type == "product":
+    return process_product(data)
+elif record_type == "order":
+    return process_order(data)
+
+# Only flag if 5+ cases that change frequently
 ```
 
 #### Example: Liskov Substitution Principle
@@ -400,62 +600,75 @@ class Square:
 # They're substitutable for area calculation even without inheritance
 ```
 
-## Usage Examples
+## Usage Examples - Headless Report Generation
 
-### Example 1: Quick Branch Check
+### Example 1: Quick Branch Check (Walk-Away Mode)
 ```bash
 # User runs: /solid
-# System Response:
+# Then walks away - no interaction needed
+# System Response (fully autonomous):
+"🔒 Starting HEADLESS SOLID analysis (report-only mode)..."
+"📊 No permissions required - running autonomously"
 "Analyzing current branch for SOLID violations..."
-"Launching 5 AI agents in parallel..."
+"Launching 5 AI agents in parallel (read-only analysis)..."
 "✓ SRP Agent: 3 violations found"
 "✓ OCP Agent: 1 violation found"
 "✓ LSP Agent: 0 violations found"
 "✓ ISP Agent: 2 violations found"
 "✓ DIP Agent: 1 violation found"
-"Report generated with 7 total violations"
+"📁 Report saved: .reports/solid-analysis-2024-01-15-143022.md"
+"✅ Analysis complete - 7 violations documented (no code modified)"
+"View report: cat .reports/solid-analysis-2024-01-15-143022.md"
 ```
 
-### Example 2: Comprehensive Analysis
+### Example 2: Comprehensive Analysis (Unattended Execution)
 ```bash
 # User runs: /solid all code
-# System Response:
+# Can immediately leave - runs without supervision
+# System Response (fully autonomous):
+"🔒 Starting HEADLESS SOLID analysis (report-only mode)..."
+"📊 No permissions required - running autonomously"
 "Analyzing entire codebase for SOLID violations..."
-"Scanning 247 files across all modules..."
+"Scanning 247 files across all modules (read-only)..."
 "Launching 5 AI agents for comprehensive analysis..."
 "✓ SRP Agent: Analyzed 247 files, 23 violations"
 "✓ OCP Agent: Analyzed 247 files, 8 violations"
 "✓ LSP Agent: Analyzed 247 files, 2 violations"
 "✓ ISP Agent: Analyzed 247 files, 12 violations"
 "✓ DIP Agent: Analyzed 247 files, 15 violations"
-"Comprehensive report generated with 60 total violations"
-"📁 Full report saved to: .reports/solid-analysis-2024-01-15-143022.md"
-"📊 Individual principle reports also saved to .reports/"
-"Code quality grade: B+ (significant improvement from last scan)"
+"📁 Reports generated (no code modified):"
+"  - Main: .reports/solid-analysis-2024-01-15-143022.md"
+"  - Individual principle reports saved to .reports/"
+"✅ Analysis complete - Code quality grade: B+"
+"View report: cat .reports/solid-analysis-2024-01-15-143022.md"
 ```
 
-### Example 3: Large Report Handling
+### Example 3: Large Report Handling (Background Safe)
 ```bash
 # User runs: /solid all code (on large codebase)
-# System Response:
+# Perfect for CI/CD or scheduled tasks
+# System Response (fully autonomous):
+"🔒 Starting HEADLESS SOLID analysis (report-only mode)..."
+"📊 No permissions required - running autonomously"
 "Analyzing entire codebase for SOLID violations..."
-"Scanning 1,247 files across all modules..."
+"Scanning 1,247 files across all modules (read-only)..."
 "Launching 5 AI agents for comprehensive analysis..."
+"Processing... (safe to run in background)"
 "✓ SRP Agent: Analyzed 1,247 files, 156 violations"
 "✓ OCP Agent: Analyzed 1,247 files, 89 violations"
 "✓ LSP Agent: Analyzed 1,247 files, 23 violations"
 "✓ ISP Agent: Analyzed 1,247 files, 67 violations"
 "✓ DIP Agent: Analyzed 1,247 files, 112 violations"
-"⚠️ Large report detected (447 total violations)"
-"📁 Reports saved to .reports/ directory:"
+"📁 Reports generated (no code modified):"
 "  - solid-analysis-2024-01-15-143022.md (main report)"
 "  - solid-srp-2024-01-15-143022.md (156 violations)"
 "  - solid-ocp-2024-01-15-143022.md (89 violations)"
 "  - solid-lsp-2024-01-15-143022.md (23 violations)"
 "  - solid-isp-2024-01-15-143022.md (67 violations)"
 "  - solid-dip-2024-01-15-143022.md (112 violations)"
-"📊 Summary: 447 violations | Grade: C+ | Top priority: SRP (156)"
-"Run 'cat .reports/solid-analysis-2024-01-15-143022.md' to view full report"
+"✅ Analysis complete - 447 violations documented"
+"📊 Summary: Grade C+ | Top priority: SRP (156)"
+"View: cat .reports/solid-analysis-2024-01-15-143022.md"
 ```
 
 ## Error Handling
@@ -524,6 +737,32 @@ code .reports/solid-analysis-*.md
 grep -n "high" .reports/solid-*.md
 ```
 
+## Safety and Autonomy Guarantees
+
+### 🔒 This Command is Completely Safe
+- **Read-Only Operation**: Never modifies source code
+- **No Permissions Required**: No dialogs or confirmations needed
+- **No User Interaction**: Runs start-to-finish autonomously
+- **Report Generation Only**: Only creates report files in `.reports/`
+- **Background Safe**: Can run in CI/CD pipelines or cron jobs
+- **Walk-Away Execution**: Start it and leave - it handles everything
+
+### Ideal Use Cases for Headless Mode
+1. **Pre-meeting Reports**: Run before code reviews to have violations ready
+2. **Scheduled Audits**: Set up weekly/monthly SOLID compliance checks
+3. **CI/CD Integration**: Add to build pipelines for automatic reporting
+4. **Background Analysis**: Run while working on other tasks
+5. **Remote Execution**: SSH in, start command, disconnect safely
+
+### What Happens When You Run /solid
+1. Command starts immediately (no permission prompts)
+2. Agents analyze code in parallel (read-only)
+3. Reports are generated automatically
+4. Files saved to `.reports/` directory
+5. Summary displayed with file locations
+6. Command exits cleanly
+7. You read reports at your convenience
+
 ## Notes
 - Agents run in parallel for maximum speed
 - Results are cached for 1 hour to avoid redundant analysis
@@ -532,3 +771,4 @@ grep -n "high" .reports/solid-*.md
 - Reports directory (`.reports/`) is automatically created and gitignored
 - Large reports (≥50 violations) are automatically saved to files
 - Individual principle reports saved when violations exceed 20 per principle
+- **HEADLESS MODE**: No permissions, no interactions, no code changes - just reports
