@@ -68,7 +68,7 @@ export function QualityAssuranceTab(): ReactElement {
                 <span className="stat-icon">⚠️</span> 12 found
               </span>
               <span className="stat-item">
-                <span className="stat-icon">✅</span> 8 fixed
+                <span className="stat-icon">✔️</span> 8 fixed
               </span>
             </div>
           </div>
@@ -82,7 +82,7 @@ export function QualityAssuranceTab(): ReactElement {
                 <span className="stat-icon">⚠️</span> 3 found
               </span>
               <span className="stat-item">
-                <span className="stat-icon">✅</span> 3 fixed
+                <span className="stat-icon">✔️</span> 3 fixed
               </span>
             </div>
           </div>
@@ -96,7 +96,7 @@ export function QualityAssuranceTab(): ReactElement {
                 <span className="stat-icon">⚠️</span> 5 found
               </span>
               <span className="stat-item">
-                <span className="stat-icon">✅</span> 5 fixed
+                <span className="stat-icon">✔️</span> 5 fixed
               </span>
             </div>
           </div>
@@ -110,7 +110,7 @@ export function QualityAssuranceTab(): ReactElement {
                 <span className="stat-icon">⚠️</span> 7 found
               </span>
               <span className="stat-item">
-                <span className="stat-icon">✅</span> 6 fixed
+                <span className="stat-icon">✔️</span> 6 fixed
               </span>
             </div>
           </div>
@@ -145,7 +145,7 @@ export function QualityAssuranceTab(): ReactElement {
 
         <div className="pipeline-stages">
           <div className="stage-card">
-            <div className="stage-status success">✓</div>
+            <div className="stage-status success">✔</div>
             <div className="stage-content">
               <h5>Build</h5>
               <p>Compile & Bundle</p>
@@ -156,7 +156,7 @@ export function QualityAssuranceTab(): ReactElement {
           <div className="stage-connector"></div>
 
           <div className="stage-card">
-            <div className="stage-status success">✓</div>
+            <div className="stage-status success">✔</div>
             <div className="stage-content">
               <h5>Test</h5>
               <p>Unit & Integration</p>
@@ -167,7 +167,7 @@ export function QualityAssuranceTab(): ReactElement {
           <div className="stage-connector"></div>
 
           <div className="stage-card">
-            <div className="stage-status success">✓</div>
+            <div className="stage-status success">✔</div>
             <div className="stage-content">
               <h5>Analyze</h5>
               <p>SOLID & Patterns</p>
@@ -178,7 +178,7 @@ export function QualityAssuranceTab(): ReactElement {
           <div className="stage-connector"></div>
 
           <div className="stage-card">
-            <div className="stage-status success">✓</div>
+            <div className="stage-status success">✔</div>
             <div className="stage-content">
               <h5>Deploy</h5>
               <p>Production Ready</p>

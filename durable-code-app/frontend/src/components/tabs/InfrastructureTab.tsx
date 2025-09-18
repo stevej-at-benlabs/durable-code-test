@@ -18,7 +18,7 @@ export function InfrastructureTab(): ReactElement {
       <div className="infrastructure-hero">
         <h3 className="infrastructure-title">
           <span className="title-icon">🏗️</span>
-          Rigid Infrastructure: The Foundation for AI at Scale
+          Rigid Infrastructure: The Foundation for AI
         </h3>
         <p className="infrastructure-subtitle">
           AI collaboration at scale requires uncompromising infrastructure discipline.
@@ -608,48 +608,6 @@ export function InfrastructureTab(): ReactElement {
               <li>✅ Architecture principles validated</li>
               <li>✅ Comprehensive documentation reference</li>
             </ul>
-          </div>
-        </div>
-      </div>
-
-      <div style={{ marginTop: '3rem' }}></div>
-
-      <div className="rigid-infrastructure-section">
-        <h4 className="section-title">
-          <span className="section-icon">🏗️</span>
-          Why Rigid Infrastructure Matters for AI at Scale
-        </h4>
-        <div className="practices-grid">
-          <div className="practice-card">
-            <div className="practice-icon">🎯</div>
-            <h5>Predictable Outcomes</h5>
-            <p>
-              AI assistants produce consistent, high-quality code when guardrails are
-              enforced
-            </p>
-          </div>
-          <div className="practice-card">
-            <div className="practice-icon">🔒</div>
-            <h5>Quality Gates</h5>
-            <p>
-              Pre-commit hooks and linting prevent AI hallucinations from entering the
-              codebase
-            </p>
-          </div>
-          <div className="practice-card">
-            <div className="practice-icon">📐</div>
-            <h5>Template Consistency</h5>
-            <p>
-              Structured templates ensure AI generates code following project patterns
-            </p>
-          </div>
-          <div className="practice-card">
-            <div className="practice-icon">🔄</div>
-            <h5>Feedback Loops</h5>
-            <p>
-              Automated testing and linting provide immediate feedback on AI-generated
-              code
-            </p>
           </div>
         </div>
       </div>

@@ -118,7 +118,7 @@ function HomePage() {
     },
     'Quality Assurance': {
       title: 'Quality Assurance',
-      icon: '✅',
+      icon: '🛡️',
       description: 'Automated testing, linting, and CI/CD for code quality',
       component: QualityAssuranceTab,
     },

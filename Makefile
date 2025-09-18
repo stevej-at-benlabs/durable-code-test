@@ -157,6 +157,7 @@ pre-commit: lint-all-staged ## Run pre-commit checks on staged files only
 # Include comprehensive linting and testing targets
 -include Makefile.lint
 -include Makefile.test
+-include Makefile.gh
 
 # Dependency management
 check-deps: ## Check for outdated dependencies

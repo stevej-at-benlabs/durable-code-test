@@ -1,5 +1,0 @@
-# Python dependencies for OCP violation checker
-anthropic>=0.39.0
-httpx>=0.25.2
-pydantic>=2.5.3
-typing-extensions>=4.9.0

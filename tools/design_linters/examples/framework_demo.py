@@ -42,36 +42,36 @@ def demonstrate_solid_compliance() -> None:
 
     # 1. Single Responsibility Principle (SRP) ✅
     logger.success("\n✅ SRP Compliance:")
-    logger.info("   • Each rule has single responsibility (TooManyMethodsRule, LowCohesionRule, etc.)")
-    logger.info("   • Reporters only handle formatting (TextReporter, JSONReporter)")
-    logger.info("   • Analyzers only handle code analysis (PythonAnalyzer)")
-    logger.info("   • Registry only manages rule discovery and registration")
+    logger.info("   • Each rule has single responsibility", examples=["TooManyMethodsRule", "LowCohesionRule"])
+    logger.info("   • Reporters only handle formatting", reporters=["TextReporter", "JSONReporter"])
+    logger.info("   • Analyzers only handle code analysis", analyzer="PythonAnalyzer")
+    logger.info("   • Registry only manages rule discovery and registration", component="Registry")
 
     # 2. Open/Closed Principle (OCP) ✅
     logger.success("\n✅ OCP Compliance:")
-    logger.info("   • New rules can be added without modifying existing code")
-    logger.info("   • New reporters can be added via ReporterFactory")
-    logger.info("   • Rule discovery automatically finds new rules")
-    logger.info("   • No if/elif chains - uses polymorphism and strategy patterns")
+    logger.info("   • New rules can be added without modifying existing code", extensibility="rules")
+    logger.info("   • New reporters can be added via factory", factory="ReporterFactory")
+    logger.info("   • Rule discovery automatically finds new rules", feature="auto-discovery")
+    logger.info("   • No if/elif chains - uses patterns", patterns=["polymorphism", "strategy"])
 
     # 3. Liskov Substitution Principle (LSP) ✅
     logger.success("\n✅ LSP Compliance:")
-    logger.info("   • All rules implement LintRule interface consistently")
-    logger.info("   • Reporters are fully substitutable via common interface")
-    logger.info("   • Analyzers can be swapped without breaking orchestrator")
+    logger.info("   • All rules implement interface consistently", interface="LintRule")
+    logger.info("   • Reporters are fully substitutable", interface="common")
+    logger.info("   • Analyzers can be swapped without breaking", component="orchestrator")
 
     # 4. Interface Segregation Principle (ISP) ✅
     logger.success("\n✅ ISP Compliance:")
-    logger.info("   • LintRule, LintReporter, LintAnalyzer are focused interfaces")
-    logger.info("   • ASTLintRule vs FileBasedLintRule separation")
-    logger.info("   • No fat interfaces - each interface has specific purpose")
+    logger.info("   • Focused interfaces", interfaces=["LintRule", "LintReporter", "LintAnalyzer"])
+    logger.info("   • Rule type separation", types=["ASTLintRule", "FileBasedLintRule"])
+    logger.info("   • No fat interfaces", principle="specific-purpose")
 
     # 5. Dependency Inversion Principle (DIP) ✅
     logger.success("\n✅ DIP Compliance:")
-    logger.info("   • Orchestrator depends on abstractions (interfaces)")
-    logger.info("   • Rules are injected via registry (dependency injection)")
-    logger.info("   • Configuration is provided through interface")
-    logger.info("   • No hard-coded dependencies - all configurable")
+    logger.info("   • Orchestrator depends on abstractions", abstraction="interfaces")
+    logger.info("   • Rules are injected via registry", pattern="dependency-injection")
+    logger.info("   • Configuration provided through interface", type="interface-based")
+    logger.info("   • No hard-coded dependencies", flexibility="configurable")
 
 
 def demonstrate_extensibility() -> None:
@@ -191,6 +191,6 @@ if __name__ == "__main__":
     demonstrate_testing_benefits()
 
     logger.info("\n" + "=" * MAIN_SEPARATOR_LENGTH)
-    logger.success("✨ The framework now perfectly follows SOLID principles!")
+    logger.success("✨ The framework now perfectly follows SOLID principles!", principles="SOLID")
     logger.success("🔌 Easy to extend, test, and maintain")
     logger.success("🚀 Ready for production use")
