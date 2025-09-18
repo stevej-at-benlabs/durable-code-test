@@ -170,26 +170,27 @@ class FileOrganizationRule(ASTLintRule):
         path_str = str(file_path)
 
         for pattern, allowed_dirs in self.placement_rules.items():
-            if re.search(pattern, filename):
-                # Check if file is in one of the allowed directories
-                is_allowed = False
-                for allowed_dir in allowed_dirs:
-                    if allowed_dir in path_str:
-                        is_allowed = True
-                        break
+            if not re.search(pattern, filename):
+                continue
 
-                if not is_allowed and len(file_path.parts) > 1:  # Don't double-report root files
-                    violation = LintViolation(
-                        rule_id=self.rule_id,
-                        file_path=str(file_path),
-                        line=1,
-                        column=0,
-                        severity=self.severity,
-                        message=f"File '{filename}' is not in an expected directory",
-                        description=f"Files matching pattern '{pattern}' should be in: {', '.join(allowed_dirs)}",
-                        suggestion=f"Move to one of: {', '.join(allowed_dirs)}",
-                    )
-                    violations.append(violation)
+            # Check if file is in one of the allowed directories
+            is_allowed = any(allowed_dir in path_str for allowed_dir in allowed_dirs)
+
+            # Skip if allowed or if root file (already reported)
+            if is_allowed or len(file_path.parts) <= 1:
+                continue
+
+            violation = LintViolation(
+                rule_id=self.rule_id,
+                file_path=str(file_path),
+                line=1,
+                column=0,
+                severity=self.severity,
+                message=f"File '{filename}' is not in an expected directory",
+                description=f"Files matching pattern '{pattern}' should be in: {', '.join(allowed_dirs)}",
+                suggestion=f"Move to one of: {', '.join(allowed_dirs)}",
+            )
+            violations.append(violation)
 
         return violations
 

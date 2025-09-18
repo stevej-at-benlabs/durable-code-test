@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Feature Metadata - AI-Assisted Development Planning</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 2rem;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 3rem;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        h1 {
+            color: #2d3748;
+            margin-bottom: 1rem;
+            font-size: 2.5rem;
+        }
+
+        h2 {
+            color: #4a5568;
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+            font-size: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .important-note {
+            background: #fef5e7;
+            border: 2px solid #f39c12;
+            border-radius: 10px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .important-note h3 {
+            color: #e67e22;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .code-block {
+            background: #2d3748;
+            color: #e2e8f0;
+            padding: 1rem;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            margin: 1rem 0;
+            overflow-x: auto;
+        }
+
+        .metadata-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+
+        .metadata-section {
+            background: #f7fafc;
+            border-radius: 10px;
+            padding: 1.5rem;
+            border: 1px solid #e2e8f0;
+        }
+
+        .metadata-section h3 {
+            color: #2d3748;
+            margin-bottom: 1rem;
+            font-size: 1.2rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .metadata-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.75rem 0;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .metadata-item:last-child {
+            border-bottom: none;
+        }
+
+        .metadata-label {
+            font-weight: 600;
+            color: #4a5568;
+        }
+
+        .metadata-value {
+            color: #718096;
+            text-align: right;
+        }
+
+        .metadata-value a {
+            color: #667eea;
+            text-decoration: none;
+        }
+
+        .metadata-value a:hover {
+            text-decoration: underline;
+        }
+
+        .team-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .team-member {
+            padding: 0.5rem;
+            background: white;
+            border-radius: 6px;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .team-member .avatar {
+            width: 32px;
+            height: 32px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        .status-development {
+            background: #bee3f8;
+            color: #2c5282;
+        }
+
+        .status-planning {
+            background: #fbd38d;
+            color: #744210;
+        }
+
+        .status-released {
+            background: #c6f6d5;
+            color: #22543d;
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: #667eea;
+            text-decoration: none;
+            margin-bottom: 2rem;
+            padding: 0.5rem 1rem;
+            border: 2px solid #667eea;
+            border-radius: 8px;
+            transition: all 0.2s;
+        }
+
+        .back-link:hover {
+            background: #667eea;
+            color: white;
+        }
+
+        .notes-section {
+            background: #edf2f7;
+            padding: 1.5rem;
+            border-radius: 10px;
+            margin-top: 2rem;
+        }
+
+        .notes-section h3 {
+            color: #2d3748;
+            margin-bottom: 1rem;
+        }
+
+        .notes-section p {
+            color: #4a5568;
+            line-height: 1.6;
+            margin-bottom: 1rem;
+        }
+
+        .notes-section ul {
+            list-style-position: inside;
+            color: #4a5568;
+            line-height: 1.8;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="/#Planning" class="back-link">
+            <span>←</span>
+            <span>Back to Planning Tab</span>
+        </a>
+
+        <h1>Feature Metadata</h1>
+
+        <div class="important-note">
+            <h3>📌 Repository Path Configuration</h3>
+            <p><strong>The Repository Path Env field tells the progress tracking system which environment variable contains the path to your local repository clone.</strong></p>
+
+            <p style="margin-top: 1rem;">This allows the system to:</p>
+            <ul style="margin-left: 2rem; margin-top: 0.5rem;">
+                <li>Access the git repository to analyze commits</li>
+                <li>Track PRs and development activity</li>
+                <li>Generate accurate progress reports</li>
+            </ul>
+
+            <p style="margin-top: 1rem;"><strong>Example Configuration:</strong></p>
+            <div class="code-block">
+# In your .env file:
+DURABLE_CODE_PATH=/home/stevejackson/Projects/durable-code-test</div>
+            <p style="margin-top: 1rem;">The Docker container will mount this repository and use it for progress tracking.</p>
+        </div>
+
+        <div class="metadata-grid">
+            <div class="metadata-section">
+                <h3>📋 Project Links</h3>
+                <div class="metadata-item">
+                    <span class="metadata-label">Notion Page:</span>
+                    <span class="metadata-value">
+                        <a href="https://notion.so/durable-code-planning">Documentation</a>
+                    </span>
+                </div>
+                <div class="metadata-item">
+                    <span class="metadata-label">Slack Channel:</span>
+                    <span class="metadata-value">
+                        <a href="https://slack.com/channels/ai-development">#ai-development</a>
+                    </span>
+                </div>
+                <div class="metadata-item">
+                    <span class="metadata-label">Repository:</span>
+                    <span class="metadata-value">
+                        <a href="https://github.com/stevejackson/durable-code-test">GitHub</a>
+                    </span>
+                </div>
+                <div class="metadata-item">
+                    <span class="metadata-label">Repository Path Env:</span>
+                    <span class="metadata-value">
+                        <code>DURABLE_CODE_PATH</code>
+                    </span>
+                </div>
+            </div>
+
+            <div class="metadata-section">
+                <h3>📅 Timeline</h3>
+                <div class="metadata-item">
+                    <span class="metadata-label">Start Date:</span>
+                    <span class="metadata-value">January 14, 2025</span>
+                </div>
+                <div class="metadata-item">
+                    <span class="metadata-label">Target Release:</span>
+                    <span class="metadata-value">February 28, 2025</span>
+                </div>
+                <div class="metadata-item">
+                    <span class="metadata-label">Current Sprint:</span>
+                    <span class="metadata-value">Sprint 2</span>
+                </div>
+                <div class="metadata-item">
+                    <span class="metadata-label">Days Remaining:</span>
+                    <span class="metadata-value">42</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="metadata-grid">
+            <div class="metadata-section">
+                <h3>👥 Team Members</h3>
+                <ul class="team-list">
+                    <li class="team-member">
+                        <span class="avatar">SJ</span>
+                        <span>Steve Jackson - @stevejackson</span>
+                    </li>
+                    <li class="team-member">
+                        <span class="avatar">AI</span>
+                        <span>Claude AI Assistant - @claude-ai</span>
+                    </li>
+                    <li class="team-member">
+                        <span class="avatar">DT</span>
+                        <span>Development Team - @dev-team</span>
+                    </li>
+                </ul>
+            </div>
+
+            <div class="metadata-section">
+                <h3>🏷️ Status</h3>
+                <div class="metadata-item">
+                    <span class="metadata-label">Current Phase:</span>
+                    <span class="metadata-value">
+                        <span class="status-badge status-development">Development</span>
+                    </span>
+                </div>
+                <div class="metadata-item">
+                    <span class="metadata-label">Feature Flag:</span>
+                    <span class="metadata-value">
+                        <code>ai_planning_features</code>
+                    </span>
+                </div>
+                <div class="metadata-item">
+                    <span class="metadata-label">Flag Status:</span>
+                    <span class="metadata-value">Enabled (Dev)</span>
+                </div>
+                <div class="metadata-item">
+                    <span class="metadata-label">Completion:</span>
+                    <span class="metadata-value">65%</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="notes-section">
+            <h3>📝 Project Notes</h3>
+            <p>This planning feature integrates AI-assisted development workflows with traditional project planning methodologies. The system provides comprehensive tools for modern software development.</p>
+
+            <p><strong>Key Features:</strong></p>
+            <ul>
+                <li>Automated progress tracking through git commit analysis</li>
+                <li>AI-enhanced code review processes</li>
+                <li>Interactive planning diagrams and visualizations</li>
+                <li>Comprehensive testing strategies for AI-generated code</li>
+                <li>Linting and code quality enforcement via Make targets</li>
+            </ul>
+
+            <p style="margin-top: 1rem;"><strong>Integration Points:</strong></p>
+            <ul>
+                <li>Docker-based development environment for consistency</li>
+                <li>Claude AI for intelligent code generation and review</li>
+                <li>Design linters for automated code quality enforcement</li>
+                <li>Automated testing through Make targets</li>
+                <li>Git-based progress tracking and metrics</li>
+            </ul>
+        </div>
+    </div>
+</body>
+</html>

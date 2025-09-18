@@ -1940,6 +1940,119 @@ body::before {
   font-family: 'Fira Code', monospace;
 }
 
+/* AI Templates Section */
+.ai-templates-showcase {
+  margin-bottom: 3rem;
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.05) 0%,
+    rgba(255, 255, 255, 0.02) 100%
+  );
+  border-radius: 24px;
+  padding: 2.5rem;
+  border: 1px solid rgba(139, 100, 61, 0.1);
+}
+
+.templates-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1.25rem;
+}
+
+.template-card {
+  background: linear-gradient(135deg, #fefcf8 0%, #faf6ed 100%);
+  border-radius: 12px;
+  padding: 1.5rem;
+  border: 2px solid rgba(139, 100, 61, 0.15);
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(60, 36, 20, 0.08);
+  cursor: pointer;
+}
+
+.template-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 20px rgba(60, 36, 20, 0.15);
+  background: linear-gradient(135deg, #fff 0%, #faf6ed 100%);
+  border-color: rgba(139, 100, 61, 0.3);
+}
+
+.template-icon {
+  font-size: 2rem;
+  margin-bottom: 0.75rem;
+  display: block;
+}
+
+.template-card h5 {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #8b5a3c;
+  margin-bottom: 0.5rem;
+  font-family: 'Fira Code', monospace;
+}
+
+.template-card p {
+  font-size: 0.875rem;
+  color: #64748b;
+  line-height: 1.4;
+  margin: 0;
+}
+
+/* How-To Guides Section */
+.howto-guides-showcase {
+  margin-bottom: 3rem;
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.05) 0%,
+    rgba(255, 255, 255, 0.02) 100%
+  );
+  border-radius: 24px;
+  padding: 2.5rem;
+  border: 1px solid rgba(139, 100, 61, 0.1);
+}
+
+.howto-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 1.25rem;
+}
+
+.howto-card {
+  background: linear-gradient(135deg, #fefcf8 0%, #faf6ed 100%);
+  border-radius: 12px;
+  padding: 1.5rem;
+  border: 2px solid rgba(139, 100, 61, 0.15);
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(60, 36, 20, 0.08);
+  cursor: pointer;
+}
+
+.howto-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 20px rgba(60, 36, 20, 0.15);
+  background: linear-gradient(135deg, #fff 0%, #faf6ed 100%);
+  border-color: rgba(139, 100, 61, 0.3);
+}
+
+.howto-icon {
+  font-size: 2rem;
+  margin-bottom: 0.75rem;
+  display: block;
+}
+
+.howto-card h5 {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #8b5a3c;
+  margin-bottom: 0.5rem;
+}
+
+.howto-card p {
+  font-size: 0.875rem;
+  color: #64748b;
+  line-height: 1.4;
+  margin: 0;
+}
+
 /* Standards Section */
 .standards-section {
   margin-bottom: 3rem;

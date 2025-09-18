@@ -34,6 +34,18 @@ DEFAULT_AMPLITUDE = 1.0
 DEFAULT_OFFSET = 0.0
 PI_TIMES_TWO = 2 * math.pi
 
+# Validation constants
+MIN_FREQUENCY = 0.1  # Minimum frequency in Hz
+MAX_FREQUENCY = 100.0  # Maximum frequency in Hz
+MIN_AMPLITUDE = 0.1  # Minimum amplitude
+MAX_AMPLITUDE = 10.0  # Maximum amplitude
+MIN_OFFSET = -10.0  # Minimum DC offset
+MAX_OFFSET = 10.0  # Maximum DC offset
+
+# Timing constants
+COMMAND_TIMEOUT = 0.01  # Timeout for receiving commands in seconds
+IDLE_SLEEP_DURATION = 0.1  # Sleep duration when not streaming in seconds
+
 # API Router for oscilloscope endpoints
 router = APIRouter(
     prefix="/api/oscilloscope",
@@ -54,15 +66,17 @@ class OscilloscopeCommand(BaseModel):
 
     command: str = Field(..., description="Command type (start, stop, configure)")
     wave_type: WaveType | None = Field(WaveType.SINE, description="Type of waveform")
-    frequency: float | None = Field(DEFAULT_FREQUENCY, ge=0.1, le=100.0, description="Frequency in Hz")
-    amplitude: float | None = Field(DEFAULT_AMPLITUDE, ge=0.1, le=10.0, description="Wave amplitude")
-    offset: float | None = Field(DEFAULT_OFFSET, ge=-10.0, le=10.0, description="DC offset")
+    frequency: float | None = Field(
+        DEFAULT_FREQUENCY, ge=MIN_FREQUENCY, le=MAX_FREQUENCY, description="Frequency in Hz"
+    )
+    amplitude: float | None = Field(DEFAULT_AMPLITUDE, ge=MIN_AMPLITUDE, le=MAX_AMPLITUDE, description="Wave amplitude")
+    offset: float | None = Field(DEFAULT_OFFSET, ge=MIN_OFFSET, le=MAX_OFFSET, description="DC offset")
 
     @validator("frequency")
     def validate_frequency(cls, value: float | None) -> float | None:  # noqa: N805  # pylint: disable=no-self-argument
         """Validate frequency is within reasonable range."""
-        if value is not None and (value < 0.1 or value > 100):
-            raise ValueError("Frequency must be between 0.1 and 100 Hz")
+        if value is not None and (value < MIN_FREQUENCY or value > MAX_FREQUENCY):
+            raise ValueError(f"Frequency must be between {MIN_FREQUENCY} and {MAX_FREQUENCY} Hz")
         return value
 
 
@@ -108,32 +122,37 @@ class WaveformGenerator:
         """Generate a single white noise sample."""
         return self.amplitude * (2 * random.random() - 1)  # noqa: S311  # nosec B311
 
-    def generate_samples(self, num_samples: int) -> list[float]:  # noqa: C901
+    def _get_sample_value(self, t: float) -> float:
+        """Get a single sample value based on wave type."""
+        if self.wave_type == WaveType.SINE:
+            return self._generate_sine_value(t)
+        if self.wave_type == WaveType.SQUARE:
+            return self._generate_square_value(t)
+        if self.wave_type == WaveType.NOISE:
+            return self._generate_noise_value()
+        return 0.0
+
+    def _update_phase_for_continuity(self, num_samples: int, dt: float) -> None:
+        """Update phase to maintain waveform continuity."""
+        if self.wave_type == WaveType.NOISE:
+            return
+
+        self.phase += PI_TIMES_TWO * self.frequency * num_samples * dt
+        # Keep phase in reasonable range
+        if self.phase > PI_TIMES_TWO:
+            self.phase -= PI_TIMES_TWO
+
+    def generate_samples(self, num_samples: int) -> list[float]:
         """Generate waveform samples based on current configuration."""
-        samples = []
         dt = 1.0 / SAMPLE_RATE
+        samples = []
 
         for i in range(num_samples):
             t = i * dt
-
-            if self.wave_type == WaveType.SINE:
-                value = self._generate_sine_value(t)
-            elif self.wave_type == WaveType.SQUARE:
-                value = self._generate_square_value(t)
-            elif self.wave_type == WaveType.NOISE:
-                value = self._generate_noise_value()
-            else:
-                value = 0.0
-
+            value = self._get_sample_value(t)
             samples.append(value + self.offset)
 
-        # Update phase for continuity
-        if self.wave_type != WaveType.NOISE:
-            self.phase += PI_TIMES_TWO * self.frequency * num_samples * dt
-            # Keep phase in reasonable range
-            if self.phase > PI_TIMES_TWO:
-                self.phase -= PI_TIMES_TWO
-
+        self._update_phase_for_continuity(num_samples, dt)
         return samples
 
 
@@ -189,7 +208,7 @@ def _handle_configure_command(
 async def _process_command(websocket: WebSocket, generator: WaveformGenerator, streaming: bool) -> bool:
     """Process incoming WebSocket commands."""
     try:
-        message = await asyncio.wait_for(websocket.receive_text(), timeout=0.01)
+        message = await asyncio.wait_for(websocket.receive_text(), timeout=COMMAND_TIMEOUT)
         try:
             data = json.loads(message)
             command = OscilloscopeCommand(**data)
@@ -198,8 +217,9 @@ async def _process_command(websocket: WebSocket, generator: WaveformGenerator, s
         except (json.JSONDecodeError, ValueError) as e:
             logger.error("Invalid command received", error=str(e), exc_info=True)
             await websocket.send_json({"error": str(e)})
-    except TimeoutError:
-        pass  # Timeout is expected when no commands received, no need to log
+    except TimeoutError:  # design-lint: ignore[logging.exception-logging]
+        # Timeout is expected when no commands received - no logging needed
+        pass
     return streaming
 
 
@@ -245,10 +265,10 @@ async def oscilloscope_stream(websocket: WebSocket) -> None:  # noqa: C901
                 await _send_data(websocket, generator)
                 await asyncio.sleep(BUFFER_SIZE / SAMPLE_RATE)
             else:
-                await asyncio.sleep(0.1)
+                await asyncio.sleep(IDLE_SLEEP_DURATION)
 
     except WebSocketDisconnect:
-        logger.info("Oscilloscope WebSocket connection closed", connection_type="websocket")
+        logger.debug("Oscilloscope WebSocket connection closed", connection_type="websocket")
     except Exception as e:  # pylint: disable=broad-exception-caught
         logger.exception("Error in oscilloscope stream", error=str(e))
         with contextlib.suppress(Exception):

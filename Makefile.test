@@ -87,7 +87,7 @@ test-frontend-coverage: dev-start ## Run frontend tests with coverage (Jest/Vite
 	@echo "$(CYAN)║            Frontend Tests with Coverage                   ║$(NC)"
 	@echo "$(CYAN)╚════════════════════════════════════════════════════════════╝$(NC)"
 	@echo "$(YELLOW)Running frontend tests with coverage...$(NC)"
-	@docker exec durable-code-frontend-dev npm run test:coverage || echo "$(YELLOW)Frontend tests completed$(NC)"
+	@docker exec durable-code-frontend-dev npm run test:coverage
 	@echo "$(GREEN)✓ Frontend coverage tests complete$(NC)"
 
 # Frontend tests in watch mode (Jest/Vitest --watch)

@@ -26,6 +26,60 @@ export function PlanningTab(): ReactElement {
 
       <div className="planning-links">
         <div className="link-card">
+          <span className="link-icon">📑</span>
+          <h4>Feature Index</h4>
+          <p>Complete index of all planning documents and artifacts</p>
+          <a href="/planning/feature-index.html" className="card-link">
+            View Index →
+          </a>
+        </div>
+
+        <div className="link-card">
+          <span className="link-icon">📊</span>
+          <h4>Feature Metadata</h4>
+          <p>Project configuration, team members, and timeline details</p>
+          <a href="/planning/metadata.html" className="card-link">
+            View Metadata →
+          </a>
+        </div>
+
+        <div className="link-card">
+          <span className="link-icon">📈</span>
+          <h4>Progress Tracking</h4>
+          <p>Current status, weekly updates, and milestone tracking</p>
+          <a href="/planning/progress.html" className="card-link">
+            View Progress →
+          </a>
+        </div>
+
+        <div className="link-card">
+          <span className="link-icon">🚀</span>
+          <h4>Rollout Plan</h4>
+          <p>Deployment strategy, feature flags, and phased release schedule</p>
+          <a href="/planning/rollout-plan.html" className="card-link">
+            View Rollout →
+          </a>
+        </div>
+
+        <div className="link-card">
+          <span className="link-icon">🔧</span>
+          <h4>Technical Specification</h4>
+          <p>Architecture overview, API endpoints, and integration details</p>
+          <a href="/planning/technical-spec.html" className="card-link">
+            View Spec →
+          </a>
+        </div>
+
+        <div className="link-card">
+          <span className="link-icon">✅</span>
+          <h4>Testing Plan</h4>
+          <p>Test scenarios, QA checklist, and validation criteria</p>
+          <a href="/planning/testing-plan.html" className="card-link">
+            View Testing →
+          </a>
+        </div>
+
+        <div className="link-card">
           <span className="link-icon">🔄</span>
           <h4>Development Flow</h4>
           <p>

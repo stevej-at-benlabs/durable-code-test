@@ -20,8 +20,8 @@ export function BuildingTab(): ReactElement {
         <div className="hero-icon">⚡</div>
         <h3 className="building-title">AI-Powered Code Generation</h3>
         <p className="building-subtitle">
-          Accelerate development with intelligent boilerplate generation and automated
-          tooling
+          Build complete applications without writing a single line of code - powered by
+          AI-driven development and intelligent automation
         </p>
       </div>
 
@@ -31,7 +31,7 @@ export function BuildingTab(): ReactElement {
             <span className="cli-icon">⚡</span>
             Slash Commands
           </h4>
-          <div className="cli-badge">3 Available</div>
+          <div className="cli-badge">4 Available</div>
         </div>
 
         <div className="command-cards">
@@ -68,6 +68,19 @@ export function BuildingTab(): ReactElement {
             <code className="command-syntax">$ /done [with merge]</code>
             <p className="command-desc">
               Complete workflow with optional auto-merge after all checks pass
+            </p>
+          </div>
+
+          <div className="command-card">
+            <div className="command-header">
+              <span className="command-icon">❓</span>
+              <span className="command-type">Analysis</span>
+            </div>
+            <code className="command-syntax">
+              $ /ask How does the authentication work?
+            </code>
+            <p className="command-desc">
+              Ask questions and get AI-powered insights about your codebase
             </p>
           </div>
         </div>
@@ -220,125 +233,95 @@ export function BuildingTab(): ReactElement {
         </div>
       </div>
 
-      <div className="features-showcase">
+      <div className="ai-templates-showcase">
         <h4 className="section-title">
-          <span className="section-icon">✨</span>
-          Powerful Features
+          <span className="section-icon">📄</span>
+          AI Templates (.ai/templates)
         </h4>
-        <div className="features-grid">
-          <div className="feature-card">
-            <div className="feature-icon">🎯</div>
-            <h5>Smart Detection</h5>
-            <p>Automatically detects file type and generates appropriate boilerplate</p>
+        <div className="templates-grid">
+          <div className="template-card">
+            <div className="template-icon">🔧</div>
+            <h5>linting-rule.py</h5>
+            <p>Create custom design linting rules for code quality enforcement</p>
           </div>
-          <div className="feature-card">
-            <div className="feature-icon">🔄</div>
-            <h5>Convention Aware</h5>
-            <p>Follows your project's existing patterns and naming conventions</p>
+          <div className="template-card">
+            <div className="template-icon">⚛️</div>
+            <h5>react-component.tsx</h5>
+            <p>Generate React components with proper typing and structure</p>
           </div>
-          <div className="feature-card">
-            <div className="feature-icon">🛡️</div>
-            <h5>Error Handling</h5>
-            <p>Built-in error handling and logging best practices</p>
+          <div className="template-card">
+            <div className="template-icon">🗂️</div>
+            <h5>web-tab.tsx</h5>
+            <p>Build new web application tabs with consistent UI patterns</p>
           </div>
-          <div className="feature-card">
-            <div className="feature-icon">📦</div>
-            <h5>Import Management</h5>
-            <p>Automatically includes necessary imports and dependencies</p>
+          <div className="template-card">
+            <div className="template-icon">🚀</div>
+            <h5>fastapi-endpoint.py</h5>
+            <p>Scaffold FastAPI endpoints with validation and error handling</p>
           </div>
-          <div className="feature-card">
-            <div className="feature-icon">📝</div>
-            <h5>Documentation</h5>
-            <p>Generates JSDoc/docstrings with parameter descriptions</p>
+          <div className="template-card">
+            <div className="template-icon">🧪</div>
+            <h5>test-suite.py</h5>
+            <p>Create comprehensive test suites with fixtures and coverage</p>
           </div>
-          <div className="feature-card">
-            <div className="feature-icon">⚙️</div>
-            <h5>Configurable</h5>
-            <p>Customize templates and rules via configuration files</p>
+          <div className="template-card">
+            <div className="template-icon">🔌</div>
+            <h5>websocket-endpoint.py</h5>
+            <p>Implement WebSocket endpoints for real-time communication</p>
+          </div>
+          <div className="template-card">
+            <div className="template-icon">📋</div>
+            <h5>workflow.html</h5>
+            <p>Document development workflows with interactive HTML templates</p>
           </div>
         </div>
       </div>
 
-      <div className="language-support">
+      <div className="howto-guides-showcase">
         <h4 className="section-title">
-          <span className="section-icon">🌐</span>
-          Language Support
+          <span className="section-icon">📚</span>
+          How-To Guides (.ai/howto)
         </h4>
-        <div className="language-grid">
-          <div className="language-card typescript">
-            <div className="language-icon">
-              <svg viewBox="0 0 24 24" width="32" height="32">
-                <rect width="24" height="24" rx="3" fill="#3178c6" />
-                <text
-                  x="50%"
-                  y="50%"
-                  textAnchor="middle"
-                  dy=".35em"
-                  fill="white"
-                  fontSize="14"
-                  fontWeight="bold"
-                >
-                  TS
-                </text>
-              </svg>
-            </div>
-            <div className="language-name">TypeScript</div>
-            <div className="language-ext">.ts, .tsx</div>
+        <div className="howto-grid">
+          <div className="howto-card">
+            <div className="howto-icon">🐛</div>
+            <h5>Complete Debugging Guide</h5>
+            <p>
+              Comprehensive strategies for troubleshooting and debugging with AI
+              assistance
+            </p>
           </div>
-          <div className="language-card javascript">
-            <div className="language-icon">
-              <svg viewBox="0 0 24 24" width="32" height="32">
-                <rect width="24" height="24" rx="3" fill="#f7df1e" />
-                <text
-                  x="50%"
-                  y="50%"
-                  textAnchor="middle"
-                  dy=".35em"
-                  fill="black"
-                  fontSize="14"
-                  fontWeight="bold"
-                >
-                  JS
-                </text>
-              </svg>
-            </div>
-            <div className="language-name">JavaScript</div>
-            <div className="language-ext">.js, .jsx</div>
+          <div className="howto-card">
+            <div className="howto-icon">✨</div>
+            <h5>Create Custom Linter</h5>
+            <p>
+              Build your own design linting rules to enforce project-specific standards
+            </p>
           </div>
-          <div className="language-card python">
-            <div className="language-icon">🐍</div>
-            <div className="language-name">Python</div>
-            <div className="language-ext">.py</div>
+          <div className="howto-card">
+            <div className="howto-icon">🚀</div>
+            <h5>Deploy Application</h5>
+            <p>Step-by-step deployment guide for production environments</p>
           </div>
-          <div className="language-card go">
-            <div className="language-icon">
-              <svg viewBox="0 0 24 24" width="32" height="32">
-                <rect width="24" height="24" rx="3" fill="#00add8" />
-                <text
-                  x="50%"
-                  y="50%"
-                  textAnchor="middle"
-                  dy=".35em"
-                  fill="white"
-                  fontSize="14"
-                  fontWeight="bold"
-                >
-                  Go
-                </text>
-              </svg>
-            </div>
-            <div className="language-name">Go</div>
-            <div className="language-ext">.go</div>
+          <div className="howto-card">
+            <div className="howto-icon">🔀</div>
+            <h5>GitHub Merge Workflow</h5>
+            <p>Automated PR creation and merge workflows with AI validation</p>
           </div>
-          <div className="language-card rust">
-            <div className="language-icon">🦀</div>
-            <div className="language-name">Rust</div>
-            <div className="language-ext">.rs</div>
+          <div className="howto-card">
+            <div className="howto-icon">🔍</div>
+            <h5>Run Linting</h5>
+            <p>Execute comprehensive linting checks across your entire codebase</p>
           </div>
-          <div className="language-card more">
-            <div className="language-icon">➕</div>
-            <div className="language-name">More</div>
-            <div className="language-ext">20+ languages</div>
+          <div className="howto-card">
+            <div className="howto-icon">🧪</div>
+            <h5>Run Tests</h5>
+            <p>Testing strategies and commands for different test suites</p>
+          </div>
+          <div className="howto-card">
+            <div className="howto-icon">🛠️</div>
+            <h5>Setup Development</h5>
+            <p>Initialize your development environment for AI-assisted coding</p>
           </div>
         </div>
       </div>
@@ -348,7 +331,7 @@ export function BuildingTab(): ReactElement {
           <div className="standards-header">
             <h4>
               <span className="standards-icon">📋</span>
-              Development Standards
+              Development Standards (.ai/docs/STANDARDS.md)
             </h4>
             <div className="standards-badge">Essential</div>
           </div>
@@ -357,28 +340,32 @@ export function BuildingTab(): ReactElement {
               <div className="standard-icon">📏</div>
               <div className="standard-content">
                 <h5>Coding Conventions</h5>
-                <p>Consistent naming, formatting, and structure</p>
+                <p>
+                  Consistent naming, formatting, and structure per .ai/docs/STANDARDS.md
+                </p>
               </div>
             </div>
             <div className="standard-item">
               <div className="standard-icon">🏗️</div>
               <div className="standard-content">
                 <h5>Architecture Patterns</h5>
-                <p>Approved design patterns and practices</p>
+                <p>Approved design patterns and practices documented in standards</p>
               </div>
             </div>
             <div className="standard-item">
               <div className="standard-icon">✅</div>
               <div className="standard-content">
                 <h5>Quality Rules</h5>
-                <p>Linting, type safety, and documentation</p>
+                <p>
+                  Comprehensive linting, type safety, and documentation requirements
+                </p>
               </div>
             </div>
             <div className="standard-item">
               <div className="standard-icon">🚀</div>
               <div className="standard-content">
                 <h5>Best Practices</h5>
-                <p>Security, performance, and maintainability</p>
+                <p>Security, performance, and maintainability guidelines</p>
               </div>
             </div>
           </div>
