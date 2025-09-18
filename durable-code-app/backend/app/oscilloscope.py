@@ -196,10 +196,10 @@ async def _process_command(websocket: WebSocket, generator: WaveformGenerator, s
             streaming, log_msg = await _handle_command(command, generator, streaming)
             logger.info(log_msg)
         except (json.JSONDecodeError, ValueError) as e:
-            logger.warning(f"Invalid command received: {e}")
+            logger.error("Invalid command received", error=str(e), exc_info=True)
             await websocket.send_json({"error": str(e)})
     except TimeoutError:
-        pass  # No command received
+        pass  # Timeout is expected when no commands received, no need to log
     return streaming
 
 
@@ -248,9 +248,9 @@ async def oscilloscope_stream(websocket: WebSocket) -> None:  # noqa: C901
                 await asyncio.sleep(0.1)
 
     except WebSocketDisconnect:
-        logger.info("Oscilloscope WebSocket connection closed")
+        logger.info("Oscilloscope WebSocket connection closed", connection_type="websocket")
     except Exception as e:  # pylint: disable=broad-exception-caught
-        logger.exception(f"Error in oscilloscope stream: {e}")
+        logger.exception("Error in oscilloscope stream", error=str(e))
         with contextlib.suppress(Exception):
             await websocket.send_json({"error": "Internal server error"})
 

@@ -206,6 +206,11 @@ class RuleFilter:
         """Enable only specific rules."""
         self.ensure_rules_dict_exists(config)
         rules_list = [rule.strip() for rule in rules_str.split(",")]
+
+        # First, disable ALL rules by setting a default disabled state
+        config["default_rule_enabled"] = False
+
+        # Then enable only the specified rules
         for rule_id in rules_list:
             config["rules"][rule_id] = {"enabled": True}
 
@@ -343,14 +348,14 @@ class LintingExecutor:
                 violations.extend(self._lint_single_path(path, config, args))
         return violations
 
-    def _lint_single_path(self, path: Path, _config: dict[str, Any], args: argparse.Namespace) -> list[LintViolation]:
+    def _lint_single_path(self, path: Path, config: dict[str, Any], args: argparse.Namespace) -> list[LintViolation]:
         """Lint a single path (file or directory)."""
         violations = []
         if path.is_file():
-            violations.extend(self.orchestrator.lint_file(path))
+            violations.extend(self.orchestrator.lint_file(path, config))
         elif path.is_dir() and args.recursive:
             for py_file in path.rglob("*.py"):
-                violations.extend(self.orchestrator.lint_file(py_file))
+                violations.extend(self.orchestrator.lint_file(py_file, config))
         return violations
 
     def _apply_severity_filter(self, violations: list[LintViolation], args: argparse.Namespace) -> list[LintViolation]:

@@ -332,7 +332,20 @@ EOF
 ### 8. CI/CD Verification
 Monitor and ensure all automated checks pass:
 
-#### GitHub Actions Monitoring
+#### GitHub Actions Monitoring (Preferred Method - Dashboard)
+```bash
+# Use the dashboard monitor for real-time check status
+make gh-watch-checks
+
+# The dashboard provides:
+# - Real-time updates every 5 seconds
+# - Color-coded status indicators
+# - Summary statistics
+# - Non-scrolling display
+```
+
+#### Fallback Method (Manual Commands)
+If `make gh-watch-checks` is not available, use manual commands:
 ```bash
 # Watch CI/CD pipeline status
 gh pr checks $(gh pr view --json number -q .number)
@@ -342,6 +355,15 @@ gh run list --branch $(git branch --show-current)
 
 # Monitor specific check
 gh run watch $(gh run list --branch $(git branch --show-current) --json databaseId -q .[0].databaseId)
+```
+
+#### Handling Check Failures
+```bash
+# Get detailed failure logs using Make target
+make gh-check-details
+
+# Or manually if Make target unavailable
+gh run view $(gh run list --branch $(git branch --show-current) --json databaseId -q .[0].databaseId) --log-failed
 ```
 
 #### Required Checks
@@ -425,7 +447,10 @@ If any checks fail, address them systematically:
 
 #### Failed Build
 ```bash
-# Check build logs
+# Check build logs using Make target (preferred)
+make gh-check-details
+
+# Or manually if Make target unavailable
 gh run view $(gh run list --branch $(git branch --show-current) --json databaseId -q .[0].databaseId) --log-failed
 
 # Fix build issues locally
@@ -607,6 +632,10 @@ All standard criteria PLUS:
 "✅ PR created: #42 - feat: Add user authentication system"
 ""
 "🔄 Step 8/9: CI/CD verification"
+"🚀 Launching GitHub checks dashboard..."
+"make gh-watch-checks"
+""
+"[Dashboard shows real-time check status]"
 "✅ Build check passed (2m 14s)"
 "✅ Test check passed (3m 45s)"
 "✅ Quality check passed (1m 32s)"
@@ -671,10 +700,15 @@ All standard criteria PLUS:
 "✅ PR created: #42 - feat: Add user authentication system"
 ""
 "🔄 Step 8/10: CI/CD verification"
+"🚀 Launching GitHub checks dashboard..."
+"make gh-watch-checks"
+""
+"[Dashboard monitoring all checks in real-time]"
 "✅ Build check passed (2m 14s)"
 "✅ Test check passed (3m 45s)"
 "✅ Quality check passed (1m 32s)"
 "✅ Security check passed (45s)"
+"✅ Dashboard indicates: All checks passed!"
 ""
 "🔍 Step 9/10: Auto-merge validation"
 "✅ All required checks passing"

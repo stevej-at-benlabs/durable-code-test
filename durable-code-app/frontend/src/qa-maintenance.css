@@ -1,4 +1,4 @@
-/* Quality Assurance Tab Styles */
+/* Quality Assurance Tab Styles - Updated for Rustic Theme */
 .qa-content {
   padding: 0;
 }
@@ -49,7 +49,7 @@
 .qa-hero {
   text-align: center;
   padding: 3rem 2rem;
-  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  background: linear-gradient(135deg, #8b6341 0%, #654321 100%);
   border-radius: 24px;
   margin-bottom: 3rem;
   position: relative;
@@ -120,13 +120,13 @@
 .qa-metrics .metric-card:hover {
   transform: translateY(-4px);
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
-  border-color: #10b981;
+  border-color: #8b6341;
 }
 
 .metric-value {
   font-size: 2.5rem;
   font-weight: 800;
-  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  background: linear-gradient(135deg, #8b6341 0%, #654321 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -144,7 +144,7 @@
 
 .metric-trend {
   font-size: 0.875rem;
-  color: #10b981;
+  color: #8b6341;
   font-weight: 600;
 }
 
@@ -154,7 +154,7 @@
 .commands-showcase {
   margin-bottom: 3rem;
   padding: 2rem;
-  background: #f9fafb;
+  background: linear-gradient(135deg, #f9f3e9 0%, #f0e6d2 100%);
   border-radius: 24px;
 }
 
@@ -179,7 +179,7 @@
 }
 
 .showcase-badge {
-  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+  background: linear-gradient(135deg, #a0522d 0%, #8b4513 100%);
   color: white;
   padding: 0.5rem 1rem;
   border-radius: 20px;
@@ -188,7 +188,7 @@
 }
 
 .showcase-badge.success {
-  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  background: linear-gradient(135deg, #8b6341 0%, #654321 100%);
 }
 
 /* Linter Cards */
@@ -200,18 +200,23 @@
 }
 
 .linters-showcase .linter-card {
-  background: white;
+  background: linear-gradient(135deg, #fefcf8 0%, #faf6ed 100%);
   border-radius: 16px;
   padding: 1.5rem;
-  border: 1px solid #e5e7eb;
+  border: 2px solid rgba(139, 100, 61, 0.3);
   transition: all 0.3s ease;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  box-shadow:
+    0 4px 12px rgba(60, 36, 20, 0.12),
+    inset 0 1px 0 rgba(244, 232, 208, 0.6);
 }
 
 .linters-showcase .linter-card:hover {
   transform: translateY(-4px);
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
-  border-color: #10b981;
+  box-shadow:
+    0 8px 24px rgba(60, 36, 20, 0.2),
+    inset 0 1px 0 rgba(244, 232, 208, 0.8),
+    0 0 0 2px rgba(212, 175, 55, 0.2);
+  border-color: #d4af37;
 }
 
 .linters-showcase .linter-icon {
@@ -276,12 +281,12 @@
 }
 
 .action-button.primary {
-  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+  background: linear-gradient(135deg, #8b6341 0%, #654321 100%);
   color: white;
 }
 
 .action-button.secondary {
-  background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+  background: linear-gradient(135deg, #a0522d 0%, #8b4513 100%);
   color: white;
 }
 
@@ -325,7 +330,7 @@
 }
 
 .stage-status.success {
-  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  background: linear-gradient(135deg, #8b6341 0%, #654321 100%);
 }
 
 .stage-content h5 {
@@ -350,7 +355,7 @@
 .stage-connector {
   width: 40px;
   height: 2px;
-  background: linear-gradient(90deg, #10b981, #059669);
+  background: linear-gradient(90deg, #8b6341, #654321);
   position: relative;
 }
 
@@ -359,7 +364,7 @@
   position: absolute;
   right: -8px;
   top: -10px;
-  color: #10b981;
+  color: #8b6341;
   font-size: 1.25rem;
 }
 
@@ -422,13 +427,13 @@
 .command-item:hover {
   transform: translateX(4px);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  border-color: #10b981;
+  border-color: #8b6341;
 }
 
 .command-item code {
   display: block;
   background: #1f2937;
-  color: #10b981;
+  color: #d4a574;
   padding: 0.75rem;
   border-radius: 8px;
   font-family: 'Fira Code', monospace;
@@ -450,7 +455,7 @@
 .maintenance-hero {
   text-align: center;
   padding: 3rem 2rem;
-  background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+  background: linear-gradient(135deg, #7d5d3b 0%, #5d4427 100%);
   border-radius: 24px;
   margin-bottom: 3rem;
   position: relative;
@@ -507,7 +512,7 @@
   gap: 2rem;
   margin-bottom: 3rem;
   padding: 2rem;
-  background: linear-gradient(135deg, #f9fafb 0%, #f3f4f6 100%);
+  background: linear-gradient(135deg, #f9f3e9 0%, #f0e6d2 100%);
   border-radius: 24px;
 }
 
@@ -554,7 +559,7 @@
 .score-value {
   font-size: 3rem;
   font-weight: 800;
-  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  background: linear-gradient(135deg, #8b6341 0%, #654321 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -613,7 +618,7 @@
 }
 
 .metric-status.good {
-  color: #10b981;
+  color: #8b6341;
 }
 
 .metric-status.warning {
@@ -647,7 +652,7 @@
 .strategy-card:hover {
   transform: translateY(-4px);
   box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15);
-  border-color: #6366f1;
+  border-color: #8b6341;
 }
 
 .strategy-header {
@@ -670,7 +675,7 @@
 }
 
 .strategy-badge {
-  background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+  background: linear-gradient(135deg, #7d5d3b 0%, #5d4427 100%);
   color: white;
   padding: 0.25rem 0.75rem;
   border-radius: 20px;
@@ -700,10 +705,10 @@
 }
 
 .strategy-features li::before {
-  content: '✓';
+  content: '✔';
   position: absolute;
   left: 0;
-  color: #10b981;
+  color: #8b6341;
   font-weight: bold;
 }
 
@@ -712,7 +717,7 @@
 }
 
 .strategy-button {
-  background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+  background: linear-gradient(135deg, #7d5d3b 0%, #5d4427 100%);
   color: white;
   border: none;
   padding: 0.75rem 1.5rem;
@@ -724,14 +729,14 @@
 
 .strategy-button:hover {
   transform: translateY(-2px);
-  box-shadow: 0 6px 16px rgba(99, 102, 241, 0.3);
+  box-shadow: 0 6px 16px rgba(125, 93, 59, 0.3);
 }
 
 /* Technical Debt Tracker */
 .debt-tracker {
   margin-bottom: 3rem;
   padding: 2rem;
-  background: #f9fafb;
+  background: linear-gradient(135deg, #f9f3e9 0%, #f0e6d2 100%);
   border-radius: 24px;
 }
 
@@ -772,11 +777,11 @@
 }
 
 .debt-segment.medium {
-  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+  background: linear-gradient(135deg, #a0522d 0%, #8b4513 100%);
 }
 
 .debt-segment.low {
-  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  background: linear-gradient(135deg, #8b6341 0%, #654321 100%);
 }
 
 .debt-items {
@@ -818,7 +823,7 @@
 }
 
 .debt-item.medium .debt-priority {
-  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+  background: linear-gradient(135deg, #a0522d 0%, #8b4513 100%);
 }
 
 .debt-details {
@@ -868,7 +873,7 @@
 .tool-card:hover {
   transform: translateY(-4px);
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
-  border-color: #6366f1;
+  border-color: #8b6341;
 }
 
 .tool-icon {
@@ -903,8 +908,8 @@
 }
 
 .tool-status.active {
-  background: #d1fae5;
-  color: #059669;
+  background: #e8d5b7;
+  color: #654321;
 }
 
 /* Roadmap Timeline */
@@ -926,7 +931,7 @@
   left: 0;
   right: 0;
   height: 2px;
-  background: linear-gradient(90deg, #10b981, #6366f1);
+  background: linear-gradient(90deg, #8b6341, #7d5d3b);
 }
 
 .timeline-item {
@@ -952,15 +957,15 @@
 }
 
 .timeline-item.completed .timeline-marker {
-  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  background: linear-gradient(135deg, #8b6341 0%, #654321 100%);
   color: white;
-  border-color: #10b981;
+  border-color: #8b6341;
 }
 
 .timeline-item.current .timeline-marker {
-  background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+  background: linear-gradient(135deg, #7d5d3b 0%, #5d4427 100%);
   color: white;
-  border-color: #6366f1;
+  border-color: #7d5d3b;
   animation: pulse 2s ease-in-out infinite;
 }
 

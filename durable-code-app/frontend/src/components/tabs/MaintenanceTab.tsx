@@ -242,14 +242,14 @@ export function MaintenanceTab(): ReactElement {
 
         <div className="roadmap-timeline">
           <div className="timeline-item completed">
-            <div className="timeline-marker">✓</div>
+            <div className="timeline-marker">✔</div>
             <div className="timeline-content">
               <h6>Q1 2024</h6>
               <p>Migration to TypeScript</p>
             </div>
           </div>
           <div className="timeline-item completed">
-            <div className="timeline-marker">✓</div>
+            <div className="timeline-marker">✔</div>
             <div className="timeline-content">
               <h6>Q2 2024</h6>
               <p>Performance optimization</p>

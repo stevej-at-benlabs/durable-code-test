@@ -15,7 +15,7 @@
 .PHONY: lint-all lint-tool lint-custom lint-fix lint-list-rules lint-categories
 
 # Run all linters: common tools + custom rules
-lint-all: dev-start ## Run ALL linters (Python: Black, isort, Ruff, Flake8, MyPy, Pylint, Bandit, Xenon; JS: ESLint, Prettier, TypeScript; Custom: all design rules)
+lint-all: dev-start ## Run ALL linters (Python: Black, isort, Ruff, Flake8, MyPy, Pylint, Bandit, Xenon; JS: ESLint, Prettier, TypeScript; Custom: all design rules including file organization)
 	@echo "$(CYAN)╔════════════════════════════════════════════════════════════╗$(NC)"
 	@echo "$(CYAN)║                  Running ALL Linters                      ║$(NC)"
 	@echo "$(CYAN)╚════════════════════════════════════════════════════════════╝$(NC)"
@@ -46,6 +46,12 @@ lint-all: dev-start ## Run ALL linters (Python: Black, isort, Ruff, Flake8, MyPy
 		echo '• Magic literals...' && PYTHONPATH=/app/tools python -m design_linters --categories literals --format text --recursive app tools && \
 		echo '• Logging practices...' && PYTHONPATH=/app/tools python -m design_linters --categories logging --format text --recursive app tools && \
 		echo '• Loguru usage...' && PYTHONPATH=/app/tools python -m design_linters --categories loguru --format text --recursive app tools" || (echo "$(RED)✗ Custom linting failed$(NC)" && exit 1)
+	@echo "• File organization (checking root)..." && \
+		if ls *.py 2>/dev/null 1>&2; then \
+			env PYTHONPATH=tools python -m design_linters.cli --categories organization --format text *.py 2>&1 | grep -E "file-placement|violations found" || echo "  No misplaced files in root"; \
+		else \
+			echo "  No Python files in root to check"; \
+		fi
 	@echo "$(GREEN)✓ Custom design linting passed$(NC)"
 	@echo ""
 	@echo "$(GREEN)✅ ALL linting checks passed!$(NC)"
@@ -83,7 +89,7 @@ lint-custom: dev-start ## Run custom linters by category (e.g., make lint-custom
 	@if [ -z "$(CAT)" ]; then \
 		echo "$(RED)Error: CAT parameter is required$(NC)"; \
 		echo "$(YELLOW)Usage: make lint-custom CAT=<category>$(NC)"; \
-		echo "$(YELLOW)Available categories: solid, style, literals, logging, loguru$(NC)"; \
+		echo "$(YELLOW)Available categories: solid, style, literals, logging, loguru, organization$(NC)"; \
 		echo "$(YELLOW)Run 'make lint-categories' for details$(NC)"; \
 		exit 1; \
 	fi

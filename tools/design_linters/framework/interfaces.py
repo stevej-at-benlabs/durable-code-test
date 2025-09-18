@@ -230,7 +230,10 @@ class LintRule(ABC):
             return True
         rules_config = config.get("rules", {})
         rule_config = rules_config.get(self.rule_id, {})
-        return bool(rule_config.get("enabled", True))
+
+        # Check if there's a default rule enabled setting (used when specific rules are requested)
+        default_enabled = config.get("default_rule_enabled", True)
+        return bool(rule_config.get("enabled", default_enabled))
 
     def get_configuration(self, config: dict[str, Any] | None) -> dict[str, Any]:
         """Get configuration for this rule."""
