@@ -8,6 +8,8 @@ strict complexity limits and comprehensive type safety.
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+from .oscilloscope import router as oscilloscope_router
+
 # Application configuration
 API_TITLE = "Durable Code API"
 API_DESCRIPTION = "API demonstrating durable code practices"
@@ -47,6 +49,9 @@ def create_application() -> FastAPI:
 
 
 app = create_application()
+
+# Include routers
+app.include_router(oscilloscope_router)
 
 
 @app.get("/")

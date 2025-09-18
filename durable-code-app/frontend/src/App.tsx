@@ -25,13 +25,15 @@ import { PlanningTab } from './components/tabs/PlanningTab';
 import { BuildingTab } from './components/tabs/BuildingTab';
 import { QualityAssuranceTab } from './components/tabs/QualityAssuranceTab';
 import { MaintenanceTab } from './components/tabs/MaintenanceTab';
+import { DemoTab } from './components/tabs/DemoTab';
 
 type TabName =
   | 'Infrastructure'
   | 'Planning'
   | 'Building'
   | 'Quality Assurance'
-  | 'Maintenance';
+  | 'Maintenance'
+  | 'Demo';
 
 interface TabContent {
   title: string;
@@ -52,6 +54,7 @@ function HomePage() {
       'Building',
       'Quality Assurance',
       'Maintenance',
+      'Demo',
     ];
 
     // Check hash first, then return parameter, then default
@@ -124,6 +127,12 @@ function HomePage() {
       icon: '🔧',
       description: 'Ongoing maintenance and evolution strategies',
       component: MaintenanceTab,
+    },
+    Demo: {
+      title: 'Demo',
+      icon: '📡',
+      description: 'Interactive oscilloscope demonstration with real-time streaming',
+      component: DemoTab,
     },
   };
 
