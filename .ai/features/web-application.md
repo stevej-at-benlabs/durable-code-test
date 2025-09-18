@@ -31,13 +31,14 @@ A modern full-stack web application demonstrating AI-ready development practices
 
 **Location**: `durable-code-app/frontend/src/components/tabs/`
 
-Five main tabs representing different aspects of AI-ready development:
+Six main tabs representing different aspects of AI-ready development:
 
 1. **InfrastructureTab.tsx**: Development environment and tooling setup
 2. **PlanningTab.tsx**: Project planning and architectural decisions
 3. **BuildingTab.tsx**: Implementation strategies and coding practices
 4. **QualityAssuranceTab.tsx**: Testing, validation, and quality processes
 5. **MaintenanceTab.tsx**: Ongoing maintenance and optimization strategies
+6. **DemoTab.tsx**: Interactive oscilloscope demonstration with real-time WebSocket streaming
 
 #### Visual Components
 
@@ -121,6 +122,72 @@ Five main tabs representing different aspects of AI-ready development:
 - **Request Validation**: Pydantic model validation
 - **Error Handling**: Comprehensive error response system
 - **Async Support**: High-performance async request handling
+
+### Oscilloscope Demo Feature
+
+**Location**: `durable-code-app/backend/app/oscilloscope.py`
+
+#### Overview
+
+Interactive oscilloscope demonstration showcasing real-time data streaming capabilities using WebSocket connections. This feature demonstrates advanced async programming patterns and real-time data visualization.
+
+#### WebSocket Endpoints
+
+- **Stream Endpoint** (`/api/oscilloscope/stream`): Real-time waveform data streaming
+- **Health Endpoint** (`/api/oscilloscope/health`): Module health and capability information
+
+#### Waveform Generation
+
+**Supported Waveforms**:
+- **Sine Wave**: Smooth sinusoidal waveform generation
+- **Square Wave**: Digital pulse waveform with configurable duty cycle
+- **White Noise**: Random signal generation for testing
+
+**Configurable Parameters**:
+- **Frequency**: 0.1 Hz to 100 Hz range
+- **Amplitude**: 0.1 to 10.0 units
+- **DC Offset**: -10.0 to +10.0 units
+- **Phase Continuity**: Maintained across streaming sessions
+
+#### WebSocket Protocol
+
+**Commands**:
+- `start`: Begin waveform streaming with specified parameters
+- `stop`: Halt streaming session
+- `configure`: Modify waveform parameters during active streaming
+
+**Data Format**:
+```json
+{
+    "timestamp": 1234567890.123,
+    "samples": [0.1, 0.2, ...],
+    "sample_rate": 1000,
+    "wave_type": "sine",
+    "parameters": {
+        "frequency": 10.0,
+        "amplitude": 1.0,
+        "offset": 0.0
+    }
+}
+```
+
+#### Frontend Integration
+
+**Location**: `durable-code-app/frontend/src/components/tabs/DemoTab.tsx`
+
+- **Real-time Visualization**: Canvas-based oscilloscope display
+- **Interactive Controls**: Waveform selection and parameter adjustment
+- **WebSocket Management**: Connection handling with auto-reconnect
+- **Performance Optimization**: Efficient rendering with animation frames
+
+#### Testing Coverage
+
+**Location**: `durable-code-app/backend/test/test_oscilloscope.py`
+
+- **Unit Tests**: Waveform generator validation
+- **Integration Tests**: WebSocket connection and streaming
+- **Performance Tests**: Data rate and latency validation
+- **Error Handling**: Edge case and invalid input testing
 
 ## Integration Features
 

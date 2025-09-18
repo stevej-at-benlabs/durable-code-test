@@ -1,0 +1,229 @@
+"""
+Purpose: {{WEBSOCKET_PURPOSE}}
+Scope: {{WEBSOCKET_SCOPE}}
+Overview: {{WEBSOCKET_OVERVIEW}}
+Dependencies: FastAPI, WebSocket, asyncio, Pydantic for validation
+Exports: WebSocket streaming endpoint and supporting functions
+Interfaces: WebSocket endpoint at /api/{{MODULE_NAME}}/stream
+Implementation: Async WebSocket handler with real-time data streaming
+"""
+
+import asyncio
+import json
+import time
+from enum import Enum
+from typing import Any, Dict, Optional
+
+from fastapi import APIRouter, WebSocket, WebSocketDisconnect
+from loguru import logger
+from pydantic import BaseModel, Field, validator
+
+# ============================================================================
+# Module Configuration
+# ============================================================================
+
+STREAM_INTERVAL = {{STREAM_INTERVAL_SECONDS}}  # Seconds between data packets
+MAX_PACKET_SIZE = {{MAX_PACKET_SIZE}}  # Maximum samples per packet
+
+router = APIRouter(prefix="/api/{{MODULE_NAME}}", tags=["{{MODULE_NAME}}"])
+
+# ============================================================================
+# Data Models
+# ============================================================================
+
+class {{COMMAND_PREFIX}}Command(BaseModel):
+    """WebSocket command model for {{MODULE_NAME}}."""
+
+    command: str = Field(..., description="Command type (start, stop, configure)")
+    # Add custom fields here
+    {{ADDITIONAL_COMMAND_FIELDS}}
+
+    @validator("command")
+    def validate_command(cls, value: str) -> str:
+        """Validate command is supported."""
+        valid_commands = ["start", "stop", "configure"]
+        if value not in valid_commands:
+            raise ValueError(f"Invalid command: {value}. Must be one of {valid_commands}")
+        return value
+
+    # Add custom validators
+    {{CUSTOM_VALIDATORS}}
+
+
+class {{DATA_PREFIX}}Data(BaseModel):
+    """Data model for {{MODULE_NAME}} streaming."""
+
+    timestamp: float = Field(..., description="Unix timestamp")
+    data: list[Any] = Field(..., description="Data samples")
+    # Add custom data fields
+    {{ADDITIONAL_DATA_FIELDS}}
+
+
+# ============================================================================
+# Data Generation/Processing
+# ============================================================================
+
+class {{GENERATOR_CLASS}}:
+    """{{GENERATOR_DESCRIPTION}}"""
+
+    def __init__(self) -> None:
+        """Initialize {{GENERATOR_CLASS}}."""
+        {{GENERATOR_INIT}}
+
+    def configure(self, **kwargs) -> None:
+        """Configure generator parameters."""
+        {{GENERATOR_CONFIGURE}}
+
+    def generate_data(self) -> list[Any]:
+        """Generate data samples."""
+        {{GENERATOR_LOGIC}}
+        return []  # Replace with actual data generation
+
+
+# ============================================================================
+# WebSocket Handlers
+# ============================================================================
+
+async def _handle_command(
+    command: {{COMMAND_PREFIX}}Command,
+    generator: {{GENERATOR_CLASS}},
+    streaming: bool
+) -> tuple[bool, str]:
+    """Handle incoming WebSocket commands."""
+    handlers = {
+        "start": _handle_start_command,
+        "stop": _handle_stop_command,
+        "configure": _handle_configure_command,
+    }
+
+    handler = handlers.get(command.command)
+    if handler:
+        return handler(command, generator, streaming)
+    return streaming, "Unknown command"
+
+
+def _handle_start_command(
+    command: {{COMMAND_PREFIX}}Command,
+    generator: {{GENERATOR_CLASS}},
+    streaming: bool  # pylint: disable=unused-argument
+) -> tuple[bool, str]:
+    """Handle start command."""
+    # Configure generator with command parameters
+    {{START_COMMAND_LOGIC}}
+    return True, f"Started streaming"
+
+
+def _handle_stop_command(
+    command: {{COMMAND_PREFIX}}Command,  # pylint: disable=unused-argument
+    generator: {{GENERATOR_CLASS}},  # pylint: disable=unused-argument
+    streaming: bool  # pylint: disable=unused-argument
+) -> tuple[bool, str]:
+    """Handle stop command."""
+    return False, "Stopped streaming"
+
+
+def _handle_configure_command(
+    command: {{COMMAND_PREFIX}}Command,
+    generator: {{GENERATOR_CLASS}},
+    streaming: bool
+) -> tuple[bool, str]:
+    """Handle configure command."""
+    # Update generator configuration
+    {{CONFIGURE_COMMAND_LOGIC}}
+    return streaming, f"Configuration updated"
+
+
+async def _process_command(
+    websocket: WebSocket,
+    generator: {{GENERATOR_CLASS}},
+    streaming: bool
+) -> bool:
+    """Process incoming WebSocket commands."""
+    try:
+        # Non-blocking receive with timeout
+        message = await asyncio.wait_for(websocket.receive_text(), timeout=0.01)
+        try:
+            command_data = json.loads(message)
+            command = {{COMMAND_PREFIX}}Command(**command_data)
+            streaming, status = await _handle_command(command, generator, streaming)
+            logger.info(f"Command processed: {status}")
+        except (json.JSONDecodeError, ValueError) as e:
+            logger.warning(f"Invalid command: {e}")
+    except asyncio.TimeoutError:
+        pass  # No command received, continue streaming
+    except WebSocketDisconnect:
+        return False
+
+    return streaming
+
+
+async def _send_data_packet(
+    websocket: WebSocket,
+    generator: {{GENERATOR_CLASS}}
+) -> None:
+    """Send a data packet over WebSocket."""
+    data = {{DATA_PREFIX}}Data(
+        timestamp=time.time(),
+        data=generator.generate_data(),
+        {{ADDITIONAL_PACKET_FIELDS}}
+    )
+
+    await websocket.send_json(data.dict())
+
+
+# ============================================================================
+# WebSocket Endpoint
+# ============================================================================
+
+@router.websocket("/stream")
+async def websocket_stream(websocket: WebSocket) -> None:
+    """
+    WebSocket endpoint for {{MODULE_NAME}} data streaming.
+
+    Accepts commands:
+    - start: Begin streaming with specified parameters
+    - stop: Stop streaming
+    - configure: Update parameters during streaming
+    """
+    await websocket.accept()
+    logger.info(f"WebSocket connection established for {{MODULE_NAME}}")
+
+    generator = {{GENERATOR_CLASS}}()
+    streaming = False
+    last_send_time = 0.0
+
+    try:
+        while True:
+            # Process any incoming commands
+            streaming = await _process_command(websocket, generator, streaming)
+
+            # Send data if streaming is active
+            if streaming:
+                current_time = time.time()
+                if current_time - last_send_time >= STREAM_INTERVAL:
+                    await _send_data_packet(websocket, generator)
+                    last_send_time = current_time
+
+            # Small delay to prevent CPU spinning
+            await asyncio.sleep(0.001)
+
+    except WebSocketDisconnect:
+        logger.info(f"WebSocket disconnected for {{MODULE_NAME}}")
+    except Exception as e:
+        logger.error(f"WebSocket error in {{MODULE_NAME}}: {e}")
+        await websocket.close()
+
+
+# ============================================================================
+# Health Check Endpoint
+# ============================================================================
+
+@router.get("/health")
+async def health_check() -> dict:
+    """Health check endpoint for {{MODULE_NAME}} module."""
+    return {
+        "status": "healthy",
+        "module": "{{MODULE_NAME}}",
+        "timestamp": time.time(),
+        {{HEALTH_CHECK_FIELDS}}
+    }
