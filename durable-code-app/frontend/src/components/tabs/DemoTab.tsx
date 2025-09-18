@@ -176,6 +176,7 @@ export function DemoTab(): ReactElement {
 
   // Connect to WebSocket
   const connectWebSocket = useCallback(() => {
+    // Connect directly to backend port
     const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
     const host = window.location.hostname;
     const port = 8000; // Backend port
