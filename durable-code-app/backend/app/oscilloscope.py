@@ -46,10 +46,21 @@ MAX_OFFSET = 10.0  # Maximum DC offset
 COMMAND_TIMEOUT = 0.01  # Timeout for receiving commands in seconds
 IDLE_SLEEP_DURATION = 0.1  # Sleep duration when not streaming in seconds
 
+# Example constants for documentation
+EXAMPLE_CONFIGURE_FREQUENCY = 20.0  # Example frequency for configure command
+EXAMPLE_CONFIGURE_AMPLITUDE = 2.0  # Example amplitude for configure command
+EXAMPLE_CONFIGURE_OFFSET = 0.5  # Example offset for configure command
+
+# HTTP Status codes
+HTTP_NOT_FOUND = 404
+
 # API Router for oscilloscope endpoints
 router = APIRouter(
     prefix="/api/oscilloscope",
     tags=["oscilloscope"],
+    responses={
+        HTTP_NOT_FOUND: {"description": "Not found"},
+    },
 )
 
 
@@ -273,6 +284,94 @@ async def oscilloscope_stream(websocket: WebSocket) -> None:  # noqa: C901
         logger.exception("Error in oscilloscope stream", error=str(e))
         with contextlib.suppress(Exception):
             await websocket.send_json({"error": "Internal server error"})
+
+
+def _get_stream_commands() -> dict[str, Any]:
+    """Get WebSocket stream command definitions."""
+    return {
+        "start": {
+            "description": "Start streaming waveform data",
+            "example": {
+                "command": "start",
+                "wave_type": "sine",
+                "frequency": 10.0,
+                "amplitude": 1.0,
+                "offset": 0.0,
+            },
+        },
+        "stop": {"description": "Stop streaming", "example": {"command": "stop"}},
+        "configure": {
+            "description": "Update waveform parameters while streaming",
+            "example": {
+                "command": "configure",
+                "wave_type": "square",
+                "frequency": EXAMPLE_CONFIGURE_FREQUENCY,
+                "amplitude": EXAMPLE_CONFIGURE_AMPLITUDE,
+                "offset": EXAMPLE_CONFIGURE_OFFSET,
+            },
+        },
+    }
+
+
+def _get_response_format() -> dict[str, Any]:
+    """Get WebSocket response format specification."""
+    return {
+        "timestamp": "Unix timestamp",
+        "samples": "Array of waveform samples",
+        "sample_rate": "Samples per second",
+        "wave_type": "Current waveform type",
+        "parameters": {
+            "frequency": "Current frequency in Hz",
+            "amplitude": "Current amplitude",
+            "offset": "Current DC offset",
+        },
+    }
+
+
+# API endpoint to document WebSocket streaming interface
+@router.get("/stream/info", tags=["oscilloscope"])
+async def get_stream_info() -> dict[str, Any]:
+    """Get information about the WebSocket streaming endpoint.
+
+    The oscilloscope provides real-time data streaming via WebSocket at:
+    ws://localhost:8000/api/oscilloscope/stream
+
+    Returns:
+        Information about the WebSocket endpoint including connection details,
+        message formats, and available commands.
+    """
+    return {
+        "endpoint": "ws://localhost:8000/api/oscilloscope/stream",
+        "description": "Real-time oscilloscope data streaming via WebSocket",
+        "protocol": {
+            "connection": "WebSocket",
+            "message_format": "JSON",
+        },
+        "commands": _get_stream_commands(),
+        "response_format": _get_response_format(),
+        "supported_wave_types": [wave.value for wave in WaveType],
+        "sample_rate": SAMPLE_RATE,
+        "buffer_size": BUFFER_SIZE,
+    }
+
+
+# API endpoint to get oscilloscope configuration
+@router.get("/config", tags=["oscilloscope"])
+async def get_oscilloscope_config() -> dict[str, Any]:
+    """Get current oscilloscope configuration and supported parameters.
+
+    Returns:
+        Configuration object containing supported wave types, frequency ranges,
+        amplitude ranges, and other oscilloscope parameters.
+    """
+    return {
+        "sample_rate": SAMPLE_RATE,
+        "buffer_size": BUFFER_SIZE,
+        "supported_wave_types": [wave.value for wave in WaveType],
+        "frequency": {"min": MIN_FREQUENCY, "max": MAX_FREQUENCY, "default": DEFAULT_FREQUENCY},
+        "amplitude": {"min": MIN_AMPLITUDE, "max": MAX_AMPLITUDE, "default": DEFAULT_AMPLITUDE},
+        "offset": {"min": MIN_OFFSET, "max": MAX_OFFSET, "default": DEFAULT_OFFSET},
+    }
 
 
 # Health check for oscilloscope module

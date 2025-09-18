@@ -135,12 +135,19 @@ export function DemoTab(): ReactElement {
       ctx.lineWidth = 2;
       ctx.beginPath();
 
-      const samplesPerPixel = Math.max(1, Math.floor(data.length / width));
-      const pixelStep = width / Math.min(width, data.length);
+      // Calculate samples to display based on time scale
+      // Each division represents timeScale milliseconds, and we have 10 divisions
+      const timeWindow = (state.timeScale * 10) / 1000; // Convert to seconds
+      const samplesToShow = Math.min(data.length, Math.floor(timeWindow * 1000)); // Assuming 1000 samples/sec
+      const startIndex = Math.max(0, data.length - samplesToShow);
+      const displayData = data.slice(startIndex);
 
-      for (let i = 0; i < Math.min(width, data.length); i++) {
+      const samplesPerPixel = Math.max(1, Math.floor(displayData.length / width));
+      const pixelStep = width / Math.min(width, displayData.length);
+
+      for (let i = 0; i < Math.min(width, displayData.length); i++) {
         const sampleIndex = Math.floor(i * samplesPerPixel);
-        const value = data[sampleIndex];
+        const value = displayData[sampleIndex];
 
         // Map value to canvas coordinates
         const x = i * pixelStep;
@@ -380,327 +387,319 @@ export function DemoTab(): ReactElement {
   }, []);
 
   return (
-    <div className="tab-content demo-tab">
-      <div className="tab-header">
-        <div className="tab-title-section">
-          <h1 className="tab-title">Oscilloscope Demo</h1>
-          <p className="tab-subtitle">
-            Built entirely by AI while the human went to dinner! Less than 10 minutes to
-            build, followed by 15 minutes of human review. Fully linted and tested.
-          </p>
-        </div>
+    <div className="tab-content demo-content">
+      <div className="demo-hero">
+        <h3 className="demo-title">
+          <span className="title-icon">🎭</span>
+          Oscilloscope Demo
+        </h3>
+        <p className="demo-subtitle">
+          Built entirely by AI while the human went to dinner! Less than 10 minutes to
+          build, followed by 15 minutes of human review. Fully linted and tested.
+        </p>
       </div>
 
-      <div className="tab-body">
-        <div className="content-grid">
-          {/* Oscilloscope Display */}
-          <section className="oscilloscope-section">
-            <div className="content-card">
-              <div className="oscilloscope-container">
-                <canvas
-                  ref={canvasRef}
-                  className="oscilloscope-canvas"
-                  style={{
-                    width: '100%',
-                    height: '400px',
-                    background: '#1a1a1a',
-                    border: '2px solid #333',
-                    borderRadius: '8px',
-                  }}
-                />
-              </div>
+      <div className="demo-showcase">
+        <div className="showcase-container">
+          <div className="oscilloscope-container">
+            <canvas
+              ref={canvasRef}
+              className="oscilloscope-canvas"
+              style={{
+                width: '100%',
+                height: '400px',
+                background: '#1a1a1a',
+                border: '2px solid #333',
+                borderRadius: '8px',
+              }}
+            />
+          </div>
 
-              {/* Control Panel */}
-              <div className="control-panel" style={{ marginTop: '20px' }}>
-                <div
-                  className="control-row"
-                  style={{ display: 'flex', gap: '10px', marginBottom: '15px' }}
-                >
-                  <button
-                    onClick={startStreaming}
-                    disabled={!state.isConnected || state.isStreaming}
-                    className="control-button"
-                    style={{
-                      padding: '10px 20px',
-                      background: state.isStreaming ? '#555' : '#00a86b',
-                      color: 'white',
-                      border: 'none',
-                      borderRadius: '5px',
-                      cursor: state.isStreaming ? 'not-allowed' : 'pointer',
-                    }}
-                  >
-                    ▶ Start
-                  </button>
-                  <button
-                    onClick={stopStreaming}
-                    disabled={!state.isConnected || !state.isStreaming}
-                    className="control-button"
-                    style={{
-                      padding: '10px 20px',
-                      background: !state.isStreaming ? '#555' : '#ff4444',
-                      color: 'white',
-                      border: 'none',
-                      borderRadius: '5px',
-                      cursor: !state.isStreaming ? 'not-allowed' : 'pointer',
-                    }}
-                  >
-                    ⏹ Stop
-                  </button>
-                  <button
-                    onClick={() =>
-                      setState((prev) => ({ ...prev, isPaused: !prev.isPaused }))
-                    }
-                    className="control-button"
-                    style={{
-                      padding: '10px 20px',
-                      background: state.isPaused ? '#ffa500' : '#555',
-                      color: 'white',
-                      border: 'none',
-                      borderRadius: '5px',
-                      cursor: 'pointer',
-                    }}
-                  >
-                    {state.isPaused ? '⏸ Paused' : '⏸ Pause'}
-                  </button>
-                  <button
-                    onClick={() => (dataBufferRef.current = [])}
-                    className="control-button"
-                    style={{
-                      padding: '10px 20px',
-                      background: '#555',
-                      color: 'white',
-                      border: 'none',
-                      borderRadius: '5px',
-                      cursor: 'pointer',
-                    }}
-                  >
-                    🗑️ Clear
-                  </button>
-                </div>
-
-                {/* Waveform Selection */}
-                <div className="waveform-selection" style={{ marginBottom: '15px' }}>
-                  <h3>Waveform Type</h3>
-                  <div style={{ display: 'flex', gap: '10px' }}>
-                    <button
-                      onClick={() => updateWaveform('sine')}
-                      className={state.waveType === 'sine' ? 'active' : ''}
-                      style={{
-                        padding: '10px 20px',
-                        background: state.waveType === 'sine' ? '#00a86b' : '#555',
-                        color: 'white',
-                        border: 'none',
-                        borderRadius: '5px',
-                        cursor: 'pointer',
-                      }}
-                    >
-                      ∿ Sine Wave
-                    </button>
-                    <button
-                      onClick={() => updateWaveform('square')}
-                      className={state.waveType === 'square' ? 'active' : ''}
-                      style={{
-                        padding: '10px 20px',
-                        background: state.waveType === 'square' ? '#00a86b' : '#555',
-                        color: 'white',
-                        border: 'none',
-                        borderRadius: '5px',
-                        cursor: 'pointer',
-                      }}
-                    >
-                      ⊓ Square Wave
-                    </button>
-                    <button
-                      onClick={() => updateWaveform('noise')}
-                      className={state.waveType === 'noise' ? 'active' : ''}
-                      style={{
-                        padding: '10px 20px',
-                        background: state.waveType === 'noise' ? '#00a86b' : '#555',
-                        color: 'white',
-                        border: 'none',
-                        borderRadius: '5px',
-                        cursor: 'pointer',
-                      }}
-                    >
-                      ≋ White Noise
-                    </button>
-                  </div>
-                </div>
-
-                {/* Parameter Controls */}
-                <div
-                  className="parameter-controls"
-                  style={{
-                    display: 'grid',
-                    gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-                    gap: '15px',
-                  }}
-                >
-                  <div className="control-group">
-                    <label>Frequency (Hz): {state.frequency}</label>
-                    <input
-                      type="range"
-                      min="0.1"
-                      max="100"
-                      step="0.1"
-                      value={state.frequency}
-                      onChange={(e) =>
-                        handleFrequencyChange(parseFloat(e.target.value))
-                      }
-                      style={{ width: '100%' }}
-                    />
-                  </div>
-                  <div className="control-group">
-                    <label>Amplitude: {state.amplitude.toFixed(1)}</label>
-                    <input
-                      type="range"
-                      min="0.1"
-                      max="10"
-                      step="0.1"
-                      value={state.amplitude}
-                      onChange={(e) =>
-                        handleAmplitudeChange(parseFloat(e.target.value))
-                      }
-                      style={{ width: '100%' }}
-                    />
-                  </div>
-                  <div className="control-group">
-                    <label>Time Scale (ms/div): {state.timeScale}</label>
-                    <input
-                      type="range"
-                      min="1"
-                      max="100"
-                      step="1"
-                      value={state.timeScale}
-                      onChange={(e) =>
-                        setState((prev) => ({
-                          ...prev,
-                          timeScale: parseInt(e.target.value),
-                        }))
-                      }
-                      style={{ width: '100%' }}
-                    />
-                  </div>
-                  <div className="control-group">
-                    <label>Voltage Scale (V/div): {state.voltScale.toFixed(1)}</label>
-                    <input
-                      type="range"
-                      min="0.1"
-                      max="10"
-                      step="0.1"
-                      value={state.voltScale}
-                      onChange={(e) =>
-                        setState((prev) => ({
-                          ...prev,
-                          voltScale: parseFloat(e.target.value),
-                        }))
-                      }
-                      style={{ width: '100%' }}
-                    />
-                  </div>
-                  <div className="control-group">
-                    <label>Trigger Level: {state.triggerLevel.toFixed(1)}</label>
-                    <input
-                      type="range"
-                      min="-5"
-                      max="5"
-                      step="0.1"
-                      value={state.triggerLevel}
-                      onChange={(e) =>
-                        setState((prev) => ({
-                          ...prev,
-                          triggerLevel: parseFloat(e.target.value),
-                        }))
-                      }
-                      style={{ width: '100%' }}
-                    />
-                  </div>
-                  <div className="control-group">
-                    <label>DC Offset: {state.offset.toFixed(1)}</label>
-                    <input
-                      type="range"
-                      min="-10"
-                      max="10"
-                      step="0.1"
-                      value={state.offset}
-                      onChange={(e) => handleOffsetChange(parseFloat(e.target.value))}
-                      style={{ width: '100%' }}
-                    />
-                  </div>
-                </div>
-              </div>
-
-              {/* Status Information */}
-              <div
-                className="status-panel"
+          {/* Control Panel */}
+          <div className="control-panel" style={{ marginTop: '20px' }}>
+            <div
+              className="control-row"
+              style={{ display: 'flex', gap: '10px', marginBottom: '15px' }}
+            >
+              <button
+                onClick={startStreaming}
+                disabled={!state.isConnected || state.isStreaming}
+                className="control-button"
                 style={{
-                  marginTop: '20px',
-                  padding: '10px',
-                  background: '#2a2a2a',
+                  padding: '10px 20px',
+                  background: state.isStreaming ? '#555' : '#00a86b',
+                  color: 'white',
+                  border: 'none',
                   borderRadius: '5px',
+                  cursor: state.isStreaming ? 'not-allowed' : 'pointer',
                 }}
               >
-                <h3>Connection Status</h3>
-                <div style={{ display: 'flex', gap: '20px' }}>
-                  <span>
-                    Connection:{' '}
-                    <span style={{ color: state.isConnected ? '#00ff00' : '#ff4444' }}>
-                      {state.isConnected ? '● Connected' : '○ Disconnected'}
-                    </span>
-                  </span>
-                  <span>
-                    Streaming:{' '}
-                    <span style={{ color: state.isStreaming ? '#00ff00' : '#666' }}>
-                      {state.isStreaming ? '● Active' : '○ Inactive'}
-                    </span>
-                  </span>
-                  <span>Data Rate: {stats.dataRate} S/s</span>
-                  <span>Buffer: {stats.bufferSize} samples</span>
-                </div>
+                ▶ Start
+              </button>
+              <button
+                onClick={stopStreaming}
+                disabled={!state.isConnected || !state.isStreaming}
+                className="control-button"
+                style={{
+                  padding: '10px 20px',
+                  background: !state.isStreaming ? '#555' : '#ff4444',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '5px',
+                  cursor: !state.isStreaming ? 'not-allowed' : 'pointer',
+                }}
+              >
+                ⏹ Stop
+              </button>
+              <button
+                onClick={() =>
+                  setState((prev) => ({ ...prev, isPaused: !prev.isPaused }))
+                }
+                className="control-button"
+                style={{
+                  padding: '10px 20px',
+                  background: state.isPaused ? '#ffa500' : '#555',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '5px',
+                  cursor: 'pointer',
+                }}
+              >
+                {state.isPaused ? '⏸ Paused' : '⏸ Pause'}
+              </button>
+              <button
+                onClick={() => (dataBufferRef.current = [])}
+                className="control-button"
+                style={{
+                  padding: '10px 20px',
+                  background: '#555',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '5px',
+                  cursor: 'pointer',
+                }}
+              >
+                🗑️ Clear
+              </button>
+            </div>
+
+            {/* Waveform Selection */}
+            <div className="waveform-selection" style={{ marginBottom: '15px' }}>
+              <h3>Waveform Type</h3>
+              <div style={{ display: 'flex', gap: '10px' }}>
+                <button
+                  onClick={() => updateWaveform('sine')}
+                  className={state.waveType === 'sine' ? 'active' : ''}
+                  style={{
+                    padding: '10px 20px',
+                    background: state.waveType === 'sine' ? '#00a86b' : '#555',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '5px',
+                    cursor: 'pointer',
+                  }}
+                >
+                  ∿ Sine Wave
+                </button>
+                <button
+                  onClick={() => updateWaveform('square')}
+                  className={state.waveType === 'square' ? 'active' : ''}
+                  style={{
+                    padding: '10px 20px',
+                    background: state.waveType === 'square' ? '#00a86b' : '#555',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '5px',
+                    cursor: 'pointer',
+                  }}
+                >
+                  ⊓ Square Wave
+                </button>
+                <button
+                  onClick={() => updateWaveform('noise')}
+                  className={state.waveType === 'noise' ? 'active' : ''}
+                  style={{
+                    padding: '10px 20px',
+                    background: state.waveType === 'noise' ? '#00a86b' : '#555',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '5px',
+                    cursor: 'pointer',
+                  }}
+                >
+                  ≋ White Noise
+                </button>
               </div>
             </div>
-          </section>
 
-          {/* Documentation section */}
-          <section className="documentation-section">
-            <div className="content-card">
-              <h2>About This Demo</h2>
-              <p>
-                This interactive oscilloscope demonstrates real-time data streaming
-                using WebSockets and canvas-based visualization. The backend generates
-                waveforms in real-time and streams them to the frontend for display.
-              </p>
-
-              <h3>Features</h3>
-              <ul>
-                <li>Real-time WebSocket streaming</li>
-                <li>Multiple waveform types (sine, square, white noise)</li>
-                <li>Adjustable frequency, amplitude, and offset</li>
-                <li>Zoom and scale controls</li>
-                <li>Trigger level adjustment</li>
-                <li>Pause and clear functionality</li>
-                <li>Performance monitoring (FPS, data rate)</li>
-              </ul>
-
-              <h3>Technical Implementation</h3>
-              <ul>
-                <li>Backend: FastAPI with WebSocket support</li>
-                <li>Frontend: React with Canvas API</li>
-                <li>Protocol: JSON over WebSocket</li>
-                <li>Visualization: Hardware-accelerated canvas rendering</li>
-              </ul>
+            {/* Parameter Controls */}
+            <div
+              className="parameter-controls"
+              style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+                gap: '15px',
+              }}
+            >
+              <div className="control-group">
+                <label>Frequency (Hz): {state.frequency}</label>
+                <input
+                  type="range"
+                  min="0.1"
+                  max="100"
+                  step="0.1"
+                  value={state.frequency}
+                  onChange={(e) => handleFrequencyChange(parseFloat(e.target.value))}
+                  style={{ width: '100%' }}
+                />
+              </div>
+              <div className="control-group">
+                <label>Amplitude: {state.amplitude.toFixed(1)}</label>
+                <input
+                  type="range"
+                  min="0.1"
+                  max="10"
+                  step="0.1"
+                  value={state.amplitude}
+                  onChange={(e) => handleAmplitudeChange(parseFloat(e.target.value))}
+                  style={{ width: '100%' }}
+                />
+              </div>
+              <div className="control-group">
+                <label>Time Scale (ms/div): {state.timeScale}</label>
+                <input
+                  type="range"
+                  min="1"
+                  max="100"
+                  step="1"
+                  value={state.timeScale}
+                  onChange={(e) =>
+                    setState((prev) => ({
+                      ...prev,
+                      timeScale: parseInt(e.target.value),
+                    }))
+                  }
+                  style={{ width: '100%' }}
+                />
+              </div>
+              <div className="control-group">
+                <label>Voltage Scale (V/div): {state.voltScale.toFixed(1)}</label>
+                <input
+                  type="range"
+                  min="0.1"
+                  max="10"
+                  step="0.1"
+                  value={state.voltScale}
+                  onChange={(e) =>
+                    setState((prev) => ({
+                      ...prev,
+                      voltScale: parseFloat(e.target.value),
+                    }))
+                  }
+                  style={{ width: '100%' }}
+                />
+              </div>
+              <div className="control-group">
+                <label>Trigger Level: {state.triggerLevel.toFixed(1)}</label>
+                <input
+                  type="range"
+                  min="-5"
+                  max="5"
+                  step="0.1"
+                  value={state.triggerLevel}
+                  onChange={(e) =>
+                    setState((prev) => ({
+                      ...prev,
+                      triggerLevel: parseFloat(e.target.value),
+                    }))
+                  }
+                  style={{ width: '100%' }}
+                />
+              </div>
+              <div className="control-group">
+                <label>DC Offset: {state.offset.toFixed(1)}</label>
+                <input
+                  type="range"
+                  min="-10"
+                  max="10"
+                  step="0.1"
+                  value={state.offset}
+                  onChange={(e) => handleOffsetChange(parseFloat(e.target.value))}
+                  style={{ width: '100%' }}
+                />
+              </div>
             </div>
-          </section>
+          </div>
+
+          {/* Status Information */}
+          <div
+            className="status-panel"
+            style={{
+              marginTop: '20px',
+              padding: '10px',
+              background: '#2a2a2a',
+              borderRadius: '5px',
+            }}
+          >
+            <h3>Connection Status</h3>
+            <div style={{ display: 'flex', gap: '20px' }}>
+              <span>
+                Connection:{' '}
+                <span style={{ color: state.isConnected ? '#00ff00' : '#ff4444' }}>
+                  {state.isConnected ? '● Connected' : '○ Disconnected'}
+                </span>
+              </span>
+              <span>
+                Streaming:{' '}
+                <span style={{ color: state.isStreaming ? '#00ff00' : '#666' }}>
+                  {state.isStreaming ? '● Active' : '○ Inactive'}
+                </span>
+              </span>
+              <span>Data Rate: {stats.dataRate} S/s</span>
+              <span>Buffer: {stats.bufferSize} samples</span>
+            </div>
+          </div>
         </div>
       </div>
 
-      <div className="tab-footer">
-        <div className="footer-content">
-          <p className="footer-note">
-            This oscilloscope demo showcases real-time data streaming and visualization
-            capabilities of the durable code framework.
+      <div className="demo-details-section">
+        <h4 className="section-title">
+          <span className="section-icon">📖</span>
+          About This Demo
+        </h4>
+        <div className="details-content">
+          <p>
+            This interactive oscilloscope demonstrates real-time data streaming using
+            WebSockets and canvas-based visualization. The backend generates waveforms
+            in real-time and streams them to the frontend for display.
           </p>
+
+          <h3>Features</h3>
+          <ul>
+            <li>Real-time WebSocket streaming</li>
+            <li>Multiple waveform types (sine, square, white noise)</li>
+            <li>Adjustable frequency, amplitude, and offset</li>
+            <li>Zoom and scale controls</li>
+            <li>Trigger level adjustment</li>
+            <li>Pause and clear functionality</li>
+            <li>Performance monitoring (FPS, data rate)</li>
+          </ul>
+
+          <h3>Technical Implementation</h3>
+          <ul>
+            <li>Backend: FastAPI with WebSocket support</li>
+            <li>Frontend: React with Canvas API</li>
+            <li>Protocol: JSON over WebSocket</li>
+            <li>Visualization: Hardware-accelerated canvas rendering</li>
+          </ul>
         </div>
+      </div>
+
+      <div className="demo-footer">
+        <p className="footer-note">
+          This oscilloscope demo showcases real-time data streaming and visualization
+          capabilities of the durable code framework.
+        </p>
       </div>
     </div>
   );

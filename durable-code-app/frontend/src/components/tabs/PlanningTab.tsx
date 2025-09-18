@@ -14,73 +14,82 @@ import type { ReactElement } from 'react';
 
 export function PlanningTab(): ReactElement {
   return (
-    <div className="tab-content">
-      <h3>Planning Documents</h3>
-      <div className="content-section">
-        <p>
+    <div className="tab-content planning-content">
+      <div className="planning-hero">
+        <h3 className="planning-title">
+          <span className="title-icon">📋</span>
+          Planning Documents
+        </h3>
+        <p className="planning-subtitle">
           Effective planning is crucial for successful AI-assisted development. Our
           planning documents provide comprehensive guidance for project setup and
           execution.
         </p>
       </div>
 
-      <div className="planning-links">
-        <div className="link-card">
-          <span className="link-icon">📑</span>
+      <div className="planning-grid">
+        <div className="planning-card feature-card">
+          <div className="card-icon">📑</div>
           <h4>Feature Index</h4>
           <p>Complete index of all planning documents and artifacts</p>
           <a href="/planning/feature-index.html" className="card-link">
             View Index →
           </a>
+          <div className="card-badge">Essential</div>
         </div>
 
-        <div className="link-card">
-          <span className="link-icon">📊</span>
+        <div className="planning-card feature-card">
+          <div className="card-icon">📊</div>
           <h4>Feature Metadata</h4>
           <p>Project configuration, team members, and timeline details</p>
           <a href="/planning/metadata.html" className="card-link">
             View Metadata →
           </a>
+          <div className="card-badge">Essential</div>
         </div>
 
-        <div className="link-card">
-          <span className="link-icon">📈</span>
+        <div className="planning-card feature-card">
+          <div className="card-icon">📈</div>
           <h4>Progress Tracking</h4>
           <p>Current status, weekly updates, and milestone tracking</p>
           <a href="/planning/progress.html" className="card-link">
             View Progress →
           </a>
+          <div className="card-badge">Active</div>
         </div>
 
-        <div className="link-card">
-          <span className="link-icon">🚀</span>
+        <div className="planning-card feature-card">
+          <div className="card-icon">🚀</div>
           <h4>Rollout Plan</h4>
           <p>Deployment strategy, feature flags, and phased release schedule</p>
           <a href="/planning/rollout-plan.html" className="card-link">
             View Rollout →
           </a>
+          <div className="card-badge">Strategic</div>
         </div>
 
-        <div className="link-card">
-          <span className="link-icon">🔧</span>
+        <div className="planning-card feature-card">
+          <div className="card-icon">🔧</div>
           <h4>Technical Specification</h4>
           <p>Architecture overview, API endpoints, and integration details</p>
           <a href="/planning/technical-spec.html" className="card-link">
             View Spec →
           </a>
+          <div className="card-badge">Technical</div>
         </div>
 
-        <div className="link-card">
-          <span className="link-icon">✅</span>
+        <div className="planning-card feature-card">
+          <div className="card-icon">✅</div>
           <h4>Testing Plan</h4>
           <p>Test scenarios, QA checklist, and validation criteria</p>
           <a href="/planning/testing-plan.html" className="card-link">
             View Testing →
           </a>
+          <div className="card-badge">Quality</div>
         </div>
 
-        <div className="link-card">
-          <span className="link-icon">🔄</span>
+        <div className="planning-card feature-card">
+          <div className="card-icon">🔄</div>
           <h4>Development Flow</h4>
           <p>
             Visual workflow showing the complete development lifecycle with AI
@@ -92,10 +101,11 @@ export function PlanningTab(): ReactElement {
           >
             View Flow Diagram →
           </a>
+          <div className="card-badge">Visual</div>
         </div>
 
-        <div className="link-card">
-          <span className="link-icon">📋</span>
+        <div className="planning-card feature-card">
+          <div className="card-icon">📋</div>
           <h4>AI Review Sequence</h4>
           <p>Step-by-step sequence diagram for AI code review processes</p>
           <a
@@ -104,10 +114,11 @@ export function PlanningTab(): ReactElement {
           >
             View Sequence →
           </a>
+          <div className="card-badge">Visual</div>
         </div>
 
-        <div className="link-card">
-          <span className="link-icon">📅</span>
+        <div className="planning-card feature-card">
+          <div className="card-icon">📅</div>
           <h4>Implementation Plan</h4>
           <p>Gantt chart showing project timeline and milestones</p>
           <a
@@ -116,6 +127,7 @@ export function PlanningTab(): ReactElement {
           >
             View Timeline →
           </a>
+          <div className="card-badge">Timeline</div>
         </div>
       </div>
     </div>
