@@ -44,6 +44,7 @@ export function DemoTab(): ReactElement {
   const wsRef = useRef<WebSocket | null>(null);
   const dataBufferRef = useRef<number[]>([]);
   const animationFrameRef = useRef<number>();
+  const frameCountRef = useRef<number>(0);
 
   const [state, setState] = useState<OscilloscopeState>({
     isConnected: false,
@@ -175,8 +176,11 @@ export function DemoTab(): ReactElement {
     ctx.fillText(`Freq: ${state.frequency.toFixed(1)} Hz`, 10, 50);
     ctx.fillText(`FPS: ${stats.fps}`, width - 80, 20);
 
+    // Increment frame counter
+    frameCountRef.current++;
+
     animationFrameRef.current = requestAnimationFrame(drawWaveform);
-  }, [state, stats, drawGrid]);
+  }, [state, stats, drawGrid, frameCountRef]);
 
   // Connect to WebSocket
   const connectWebSocket = useCallback(() => {
@@ -332,13 +336,13 @@ export function DemoTab(): ReactElement {
 
     // Calculate FPS
     let lastTime = performance.now();
-    let frameCount = 0;
+
     const fpsInterval = setInterval(() => {
       const currentTime = performance.now();
       const deltaTime = currentTime - lastTime;
-      const fps = Math.round((frameCount * 1000) / deltaTime);
+      const fps = Math.round((frameCountRef.current * 1000) / deltaTime);
       setStats((prev) => ({ ...prev, fps }));
-      frameCount = 0;
+      frameCountRef.current = 0;
       lastTime = currentTime;
     }, 1000);
 

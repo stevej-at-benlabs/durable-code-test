@@ -193,12 +193,13 @@ body::before {
 }
 
 .hero-subtitle {
-  font-size: 1rem;
-  color: #c9ab7f;
+  font-size: 1.05rem;
+  color: #f4e8d0;
   margin-bottom: 0.75rem;
   max-width: 700px;
   line-height: 1.6;
-  text-shadow: 0 1px 2px rgba(60, 36, 20, 0.4);
+  text-shadow: 0 2px 4px rgba(60, 36, 20, 0.6);
+  opacity: 0.95;
 }
 
 .project-info,
