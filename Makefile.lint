@@ -41,14 +41,14 @@ lint-all: dev-start ## Run ALL linters (Python: Black, isort, Ruff, Flake8, MyPy
 	@echo ""
 	@echo "$(YELLOW)━━━ Custom Design Linters ━━━$(NC)"
 	@docker exec durable-code-backend-dev bash -c "cd /app && \
-		echo '• SOLID principles...' && PYTHONPATH=/app/tools python -m design_linters --categories solid --format text --recursive app tools && \
-		echo '• Style rules...' && PYTHONPATH=/app/tools python -m design_linters --categories style --format text --recursive app tools && \
-		echo '• Magic literals...' && PYTHONPATH=/app/tools python -m design_linters --categories literals --format text --recursive app tools && \
-		echo '• Logging practices...' && PYTHONPATH=/app/tools python -m design_linters --categories logging --format text --recursive app tools && \
-		echo '• Loguru usage...' && PYTHONPATH=/app/tools python -m design_linters --categories loguru --format text --recursive app tools" || (echo "$(RED)✗ Custom linting failed$(NC)" && exit 1)
+		echo '• SOLID principles...' && PYTHONPATH=/app/tools python -m design_linters --categories solid --format text --recursive --fail-on-error app tools && \
+		echo '• Style rules...' && PYTHONPATH=/app/tools python -m design_linters --categories style --format text --recursive --fail-on-error app tools && \
+		echo '• Magic literals...' && PYTHONPATH=/app/tools python -m design_linters --categories literals --format text --recursive --fail-on-error app tools && \
+		echo '• Logging practices...' && PYTHONPATH=/app/tools python -m design_linters --categories logging --format text --recursive --fail-on-error app tools && \
+		echo '• Loguru usage...' && PYTHONPATH=/app/tools python -m design_linters --categories loguru --format text --recursive --fail-on-error app tools" || (echo "$(RED)✗ Custom linting failed$(NC)" && exit 1)
 	@echo "• File organization (checking root)..." && \
 		if ls *.py 2>/dev/null 1>&2; then \
-			env PYTHONPATH=tools python -m design_linters.cli --categories organization --format text *.py 2>&1 | grep -E "file-placement|violations found" || echo "  No misplaced files in root"; \
+			env PYTHONPATH=tools python -m design_linters.cli --categories organization --format text --fail-on-error *.py || (echo "$(RED)✗ File organization check failed$(NC)" && exit 1); \
 		else \
 			echo "  No Python files in root to check"; \
 		fi
@@ -127,3 +127,73 @@ lint-categories: dev-start ## List all custom rule categories with descriptions
 	@echo "$(CYAN)║                 Custom Rule Categories                    ║$(NC)"
 	@echo "$(CYAN)╚════════════════════════════════════════════════════════════╝$(NC)"
 	@docker exec durable-code-backend-dev bash -c "cd /app && PYTHONPATH=/app/tools python -m design_linters --list-categories"
+
+# Run all linters on staged files only (for pre-commit hooks and lint watcher)
+lint-all-staged: dev-start ## Run all linters on staged files only
+	@echo "$(CYAN)╔════════════════════════════════════════════════════════════╗$(NC)"
+	@echo "$(CYAN)║           Running Linters on Staged Files                 ║$(NC)"
+	@echo "$(CYAN)╚════════════════════════════════════════════════════════════╝$(NC)"
+	@echo ""
+	@# Get list of staged Python files
+	@STAGED_PY=$$(git diff --cached --name-only --diff-filter=ACM | grep -E '\.py$$' | tr '\n' ' '); \
+	STAGED_TS=$$(git diff --cached --name-only --diff-filter=ACM | grep -E '\.(ts|tsx|js|jsx)$$' | tr '\n' ' '); \
+	if [ -z "$$STAGED_PY" ] && [ -z "$$STAGED_TS" ]; then \
+		echo "$(YELLOW)No staged files to lint$(NC)"; \
+		exit 0; \
+	fi; \
+	if [ -n "$$STAGED_PY" ]; then \
+		echo "$(YELLOW)━━━ Python Linters ($$STAGED_PY)━━━$(NC)"; \
+		docker exec durable-code-backend-dev bash -c "cd /app && \
+			echo '• Black...' && poetry run black --check $$STAGED_PY && \
+			echo '• isort...' && poetry run isort --check-only $$STAGED_PY && \
+			echo '• Ruff...' && poetry run ruff check $$STAGED_PY && \
+			echo '• Flake8...' && poetry run flake8 $$STAGED_PY && \
+			echo '• MyPy...' && MYPY_CACHE_DIR=/tmp/mypy_cache poetry run mypy $$STAGED_PY && \
+			echo '• Pylint...' && poetry run pylint $$STAGED_PY && \
+			echo '• Bandit...' && poetry run bandit -r $$STAGED_PY && \
+			echo '• Xenon...' && poetry run xenon --max-absolute B --max-modules B --max-average A $$STAGED_PY && \
+			echo '• Custom Design Linters...' && PYTHONPATH=/app/tools python -m design_linters --format text $$STAGED_PY" || (echo "$(RED)✗ Python linting failed$(NC)" && exit 1); \
+		echo "$(GREEN)✓ Python linting passed$(NC)"; \
+		echo ""; \
+	fi; \
+	if [ -n "$$STAGED_TS" ]; then \
+		echo "$(YELLOW)━━━ TypeScript/React Linters ━━━$(NC)"; \
+		docker exec durable-code-frontend-dev sh -c "\
+			echo '• ESLint...' && npx eslint $$STAGED_TS && \
+			echo '• Prettier...' && npx prettier --check $$STAGED_TS && \
+			echo '• TypeScript...' && npx tsc --noEmit" || (echo "$(RED)✗ Frontend linting failed$(NC)" && exit 1); \
+		echo "$(GREEN)✓ Frontend linting passed$(NC)"; \
+	fi; \
+	echo "$(GREEN)✅ Staged files linting complete!$(NC)"
+
+# Watch for file changes and run linters automatically (dashboard style)
+lint-watch: dev-start ## Start lint watcher with dashboard UI
+	@echo "$(CYAN)Starting Lint Watch Dashboard...$(NC)"
+	@bash scripts/lint-watch-dashboard.sh
+
+# Simple lint watcher without dashboard
+lint-watch-simple: dev-start ## Start simple lint watcher (runs every 30 seconds)
+	@echo "$(CYAN)Starting Simple Lint Watcher...$(NC)"
+	@echo "$(YELLOW)Will run 'make lint-all' every 30 seconds. Press Ctrl+C to stop.$(NC)"
+	@while true; do \
+		clear; \
+		echo "$(CYAN)════════════════════════════════════════════════════════════$(NC)"; \
+		echo "$(CYAN)     Lint Check at $$(date +"%H:%M:%S")$(NC)"; \
+		echo "$(CYAN)════════════════════════════════════════════════════════════$(NC)"; \
+		$(MAKE) lint-all 2>&1 | tee /tmp/lint-watch.log; \
+		if [ $$? -eq 0 ]; then \
+			echo ""; \
+			echo "$(GREEN)✅ All linting checks passed!$(NC)"; \
+		else \
+			echo ""; \
+			echo "$(RED)❌ Linting errors detected!$(NC)"; \
+			if command -v osascript &> /dev/null; then \
+				osascript -e 'display notification "Linting errors detected!" with title "Lint Watch" sound name "Basso"' 2>/dev/null; \
+			elif command -v notify-send &> /dev/null; then \
+				notify-send -u critical "Lint Watch" "Linting errors detected!" 2>/dev/null; \
+			fi; \
+		fi; \
+		echo ""; \
+		echo "$(GRAY)Next check in 30 seconds... (Press Ctrl+C to stop)$(NC)"; \
+		sleep 30; \
+	done

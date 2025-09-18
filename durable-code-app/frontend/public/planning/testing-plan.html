@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Testing Plan - AI-Assisted Development Planning</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 2rem;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 3rem;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+        h1 { color: #2d3748; margin-bottom: 1rem; font-size: 2.5rem; }
+        h2 { color: #4a5568; margin-top: 2rem; margin-bottom: 1rem; font-size: 1.5rem; }
+        h3 { color: #2d3748; margin-top: 1.5rem; margin-bottom: 1rem; font-size: 1.2rem; }
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: #667eea;
+            text-decoration: none;
+            margin-bottom: 2rem;
+            padding: 0.5rem 1rem;
+            border: 2px solid #667eea;
+            border-radius: 8px;
+            transition: all 0.2s;
+        }
+        .back-link:hover { background: #667eea; color: white; }
+        .test-strategy {
+            background: #f7fafc;
+            padding: 1.5rem;
+            border-radius: 10px;
+            margin-bottom: 2rem;
+            border-left: 4px solid #667eea;
+        }
+        .test-section {
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+        .priority-badge {
+            display: inline-block;
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            font-weight: bold;
+            margin-left: 0.5rem;
+        }
+        .priority-p0 { background: #fed7d7; color: #c53030; }
+        .priority-p1 { background: #fed7aa; color: #c05621; }
+        .priority-p2 { background: #bee3f8; color: #2c5282; }
+        .priority-p3 { background: #c6f6d5; color: #22543d; }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+        }
+        th, td {
+            padding: 0.75rem;
+            text-align: left;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        th { background: #f7fafc; font-weight: 600; color: #2d3748; }
+        .checklist {
+            list-style: none;
+            padding: 0;
+            margin: 1rem 0;
+        }
+        .checklist li {
+            padding: 0.5rem 0;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .checkbox {
+            width: 20px;
+            height: 20px;
+            border: 2px solid #cbd5e0;
+            border-radius: 4px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .checkbox.checked {
+            background: #48bb78;
+            border-color: #48bb78;
+        }
+        .checkbox.checked::after {
+            content: '✓';
+            color: white;
+            font-weight: bold;
+        }
+        .test-flow {
+            background: #faf5ff;
+            border: 1px solid #e9d5ff;
+            border-radius: 10px;
+            padding: 1.5rem;
+            margin: 1rem 0;
+        }
+        .test-step {
+            margin: 1rem 0;
+            padding-left: 2rem;
+            position: relative;
+        }
+        .test-step::before {
+            content: counter(step);
+            counter-increment: step;
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 24px;
+            height: 24px;
+            background: #667eea;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.9rem;
+            font-weight: bold;
+        }
+        .test-flow { counter-reset: step; }
+        .expected {
+            background: #e6fffa;
+            padding: 0.5rem;
+            border-left: 3px solid #38b2ac;
+            margin: 0.5rem 0;
+        }
+        .validation {
+            background: #fef5e7;
+            padding: 0.5rem;
+            border-left: 3px solid #f39c12;
+            margin: 0.5rem 0;
+        }
+        .coverage-meter {
+            background: #e2e8f0;
+            height: 30px;
+            border-radius: 15px;
+            overflow: hidden;
+            margin: 1rem 0;
+            position: relative;
+        }
+        .coverage-fill {
+            background: linear-gradient(90deg, #48bb78, #38a169);
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+        .test-command {
+            background: #2d3748;
+            color: #e2e8f0;
+            padding: 1rem;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            margin: 1rem 0;
+        }
+        .test-command .comment { color: #68d391; }
+        .test-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
+            margin: 1rem 0;
+        }
+        .test-card {
+            background: #f7fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 1rem;
+            text-align: center;
+        }
+        .test-card h4 { color: #2d3748; margin-bottom: 0.5rem; }
+        .test-card .stat { font-size: 2rem; font-weight: bold; color: #667eea; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="/#Planning" class="back-link">
+            <span>←</span>
+            <span>Back to Planning Tab</span>
+        </a>
+
+        <h1>Testing Plan: AI-Assisted Development Planning</h1>
+
+        <div class="test-strategy">
+            <h2>Test Strategy</h2>
+            <p>Comprehensive testing using Docker-based environments with automated execution via Make targets. All tests must pass linting rules before execution. No local test execution - all tests run in Docker containers for consistency.</p>
+
+            <div class="coverage-meter">
+                <div class="coverage-fill" style="width: 80%;">Coverage Target: 80%</div>
+            </div>
+        </div>
+
+        <h2>Test Environment Requirements</h2>
+        <ul class="checklist">
+            <li><span class="checkbox checked"></span> Docker and docker-compose installed</li>
+            <li><span class="checkbox checked"></span> Make command available</li>
+            <li><span class="checkbox checked"></span> Environment variables configured in .env</li>
+            <li><span class="checkbox"></span> AI API key for integration tests</li>
+            <li><span class="checkbox checked"></span> Git repository initialized</li>
+            <li><span class="checkbox"></span> PostgreSQL container running</li>
+        </ul>
+
+        <h2>Test Scenarios</h2>
+
+        <div class="test-section">
+            <h3>Unit Tests <span class="priority-badge priority-p0">P0</span></h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Component</th>
+                        <th>Test Cases</th>
+                        <th>Priority</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Planning Document Generator</td>
+                        <td>Validate markdown generation, template substitution</td>
+                        <td><span class="priority-badge priority-p0">P0</span></td>
+                        <td>✅ Pass</td>
+                    </tr>
+                    <tr>
+                        <td>AI Response Parser</td>
+                        <td>Handle various response formats, error cases</td>
+                        <td><span class="priority-badge priority-p0">P0</span></td>
+                        <td>🔄 In Progress</td>
+                    </tr>
+                    <tr>
+                        <td>Linting Rule Engine</td>
+                        <td>Verify each rule triggers correctly</td>
+                        <td><span class="priority-badge priority-p0">P0</span></td>
+                        <td>✅ Pass</td>
+                    </tr>
+                    <tr>
+                        <td>Progress Tracker</td>
+                        <td>Git commit analysis, metric calculations</td>
+                        <td><span class="priority-badge priority-p1">P1</span></td>
+                        <td>⏳ Pending</td>
+                    </tr>
+                    <tr>
+                        <td>WebSocket Handler</td>
+                        <td>Connection management, message routing</td>
+                        <td><span class="priority-badge priority-p1">P1</span></td>
+                        <td>⏳ Pending</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="test-section">
+            <h3>Integration Tests <span class="priority-badge priority-p0">P0</span></h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Integration Point</th>
+                        <th>Test Cases</th>
+                        <th>Priority</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Frontend ↔ Backend API</td>
+                        <td>All endpoints return expected data</td>
+                        <td><span class="priority-badge priority-p0">P0</span></td>
+                    </tr>
+                    <tr>
+                        <td>Backend ↔ AI Service</td>
+                        <td>Request/response handling, timeout behavior</td>
+                        <td><span class="priority-badge priority-p0">P0</span></td>
+                    </tr>
+                    <tr>
+                        <td>Backend ↔ Database</td>
+                        <td>CRUD operations, transaction handling</td>
+                        <td><span class="priority-badge priority-p0">P0</span></td>
+                    </tr>
+                    <tr>
+                        <td>Docker ↔ Application</td>
+                        <td>Container communication, volume mounts</td>
+                        <td><span class="priority-badge priority-p0">P0</span></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <h2>End-to-End Test Flows</h2>
+
+        <div class="test-flow">
+            <h3>User Flow: Generate Planning Document</h3>
+            <div class="test-step">
+                Navigate to Planning tab
+                <div class="expected"><strong>Expected:</strong> Tab loads within 2 seconds</div>
+                <div class="validation"><strong>Validation:</strong> Check DOM for planning components</div>
+            </div>
+            <div class="test-step">
+                Click "Generate New Document"
+                <div class="expected"><strong>Expected:</strong> Modal appears with document type options</div>
+                <div class="validation"><strong>Validation:</strong> Verify all document types listed</div>
+            </div>
+            <div class="test-step">
+                Select "Technical Specification" and submit
+                <div class="expected"><strong>Expected:</strong> Loading indicator appears</div>
+                <div class="validation"><strong>Validation:</strong> WebSocket connection established</div>
+            </div>
+            <div class="test-step">
+                AI generates document
+                <div class="expected"><strong>Expected:</strong> Document appears within 5 seconds</div>
+                <div class="validation"><strong>Validation:</strong> Document contains all required sections</div>
+            </div>
+        </div>
+
+        <h2>QA Checklist</h2>
+
+        <div class="test-grid">
+            <div class="test-card">
+                <h4>Functionality</h4>
+                <ul class="checklist">
+                    <li><span class="checkbox checked"></span> Planning docs generate</li>
+                    <li><span class="checkbox checked"></span> AI responds correctly</li>
+                    <li><span class="checkbox"></span> Edge cases handled</li>
+                </ul>
+            </div>
+
+            <div class="test-card">
+                <h4>Performance</h4>
+                <ul class="checklist">
+                    <li><span class="checkbox"></span> Page load < 2s</li>
+                    <li><span class="checkbox"></span> API response < 200ms</li>
+                    <li><span class="checkbox"></span> Memory usage OK</li>
+                </ul>
+            </div>
+
+            <div class="test-card">
+                <h4>Security</h4>
+                <ul class="checklist">
+                    <li><span class="checkbox"></span> Auth working</li>
+                    <li><span class="checkbox"></span> Input sanitized</li>
+                    <li><span class="checkbox"></span> XSS prevented</li>
+                </ul>
+            </div>
+
+            <div class="test-card">
+                <h4>Compatibility</h4>
+                <ul class="checklist">
+                    <li><span class="checkbox checked"></span> Chrome tested</li>
+                    <li><span class="checkbox"></span> Firefox tested</li>
+                    <li><span class="checkbox"></span> Safari tested</li>
+                </ul>
+            </div>
+        </div>
+
+        <h2>Test Execution Commands</h2>
+        <div class="test-command">
+<span class="comment"># Run all tests in Docker</span>
+make test-all
+
+<span class="comment"># Run specific test suites</span>
+make test-unit
+make test-integration
+make test-e2e
+
+<span class="comment"># Run with coverage</span>
+make test-coverage
+
+<span class="comment"># Run linting before tests</span>
+make lint-fix && make test-all
+
+<span class="comment"># Run in watch mode for development</span>
+make test-watch</div>
+
+        <h2>Test Results Summary</h2>
+        <div class="test-grid">
+            <div class="test-card">
+                <h4>Unit Tests</h4>
+                <div class="stat">85%</div>
+                <p>42/50 Passing</p>
+            </div>
+            <div class="test-card">
+                <h4>Integration</h4>
+                <div class="stat">72%</div>
+                <p>18/25 Passing</p>
+            </div>
+            <div class="test-card">
+                <h4>E2E Tests</h4>
+                <div class="stat">60%</div>
+                <p>6/10 Passing</p>
+            </div>
+            <div class="test-card">
+                <h4>Overall</h4>
+                <div class="stat">76%</div>
+                <p>66/85 Passing</p>
+            </div>
+        </div>
+
+        <h2>Sign-off Criteria</h2>
+        <ul class="checklist">
+            <li><span class="checkbox checked"></span> All P0 and P1 test cases pass</li>
+            <li><span class="checkbox"></span> No P0 or P1 bugs outstanding</li>
+            <li><span class="checkbox"></span> Performance metrics met</li>
+            <li><span class="checkbox"></span> Security review completed</li>
+            <li><span class="checkbox"></span> Docker containers stable for 48 hours</li>
+            <li><span class="checkbox"></span> Make targets execute without errors</li>
+            <li><span class="checkbox"></span> AI integration functioning correctly</li>
+            <li><span class="checkbox"></span> Product owner approval received</li>
+        </ul>
+    </div>
+</body>
+</html>

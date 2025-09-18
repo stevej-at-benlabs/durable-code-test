@@ -1,7 +1,11 @@
 # Done Command
 
+## ⚠️ CRITICAL REQUIREMENT: ALWAYS USE 'make gh-watch-checks' ⚠️
+
+**After creating a PR, you MUST use the `make gh-watch-checks` target to monitor and confirm all checks pass. This is NOT optional - it is the REQUIRED method for verifying PR status.**
+
 ## Purpose
-Complete the development workflow by committing all changes, running comprehensive quality checks, creating a pull request, and ensuring all CI/CD checks pass.
+Complete the development workflow by committing all changes, running comprehensive quality checks, creating a pull request, and ensuring all CI/CD checks pass using the required `make gh-watch-checks` target.
 
 ## Command Overview
 The `/done` command automates the entire completion workflow for a feature branch, ensuring code quality and proper CI/CD integration before marking work as complete.
@@ -329,23 +333,37 @@ EOF
 )"
 ```
 
-### 8. CI/CD Verification
-Monitor and ensure all automated checks pass:
+### 8. CI/CD Verification - CRITICAL: USE 'make gh-watch-checks'
 
-#### GitHub Actions Monitoring (Preferred Method - Dashboard)
+**🚨 IMPORTANT: ALWAYS USE THE 'make gh-watch-checks' TARGET AFTER CREATING A PR 🚨**
+
+After creating a pull request, you MUST use the `make gh-watch-checks` target to monitor and confirm all checks pass:
+
+#### PRIMARY METHOD - REQUIRED: GitHub Checks Dashboard
 ```bash
-# Use the dashboard monitor for real-time check status
+# THIS IS THE REQUIRED COMMAND - ALWAYS USE THIS AFTER CREATING A PR
 make gh-watch-checks
+
+# ⚠️ DO NOT skip this step or use alternative commands
+# ⚠️ This is the ONLY approved method for monitoring PR checks
+# ⚠️ Wait for ALL checks to pass before considering the PR complete
 
 # The dashboard provides:
 # - Real-time updates every 5 seconds
-# - Color-coded status indicators
-# - Summary statistics
-# - Non-scrolling display
+# - Color-coded status indicators (green = pass, red = fail, yellow = pending)
+# - Summary statistics of all checks
+# - Non-scrolling display for easy monitoring
+# - Automatic exit when all checks complete
 ```
 
-#### Fallback Method (Manual Commands)
-If `make gh-watch-checks` is not available, use manual commands:
+**CRITICAL REMINDERS:**
+- ✅ ALWAYS run `make gh-watch-checks` immediately after PR creation
+- ✅ WAIT for all checks to show green/passed status
+- ✅ DO NOT proceed if any checks fail - fix issues first
+- ✅ DO NOT use alternative commands unless `make gh-watch-checks` is unavailable
+
+#### Fallback Method - ONLY IF 'make gh-watch-checks' FAILS
+⚠️ **ONLY use these manual commands if `make gh-watch-checks` is genuinely unavailable or broken:**
 ```bash
 # Watch CI/CD pipeline status
 gh pr checks $(gh pr view --json number -q .number)
@@ -358,11 +376,21 @@ gh run watch $(gh run list --branch $(git branch --show-current) --json database
 ```
 
 #### Handling Check Failures
+
+**If `make gh-watch-checks` shows failing checks:**
+
 ```bash
-# Get detailed failure logs using Make target
+# Step 1: Keep monitoring with gh-watch-checks to see if checks recover
+make gh-watch-checks
+
+# Step 2: If checks continue to fail, get detailed failure logs
 make gh-check-details
 
-# Or manually if Make target unavailable
+# Step 3: Fix the issues locally, commit, and push
+# Step 4: Run gh-watch-checks again to confirm fixes worked
+make gh-watch-checks  # <- ALWAYS use this to verify fixes
+
+# Manual fallback ONLY if make targets are broken:
 gh run view $(gh run list --branch $(git branch --show-current) --json databaseId -q .[0].databaseId) --log-failed
 ```
 
@@ -632,10 +660,12 @@ All standard criteria PLUS:
 "✅ PR created: #42 - feat: Add user authentication system"
 ""
 "🔄 Step 8/9: CI/CD verification"
-"🚀 Launching GitHub checks dashboard..."
-"make gh-watch-checks"
+"🚨 CRITICAL: Using required make target to monitor PR checks"
+"🚀 Launching GitHub checks dashboard with: make gh-watch-checks"
+"⚠️ This is the REQUIRED method for confirming passing checks"
 ""
-"[Dashboard shows real-time check status]"
+"[Dashboard monitoring all PR checks in real-time]"
+"[WAITING for all checks to pass before proceeding...]"
 "✅ Build check passed (2m 14s)"
 "✅ Test check passed (3m 45s)"
 "✅ Quality check passed (1m 32s)"
@@ -700,10 +730,12 @@ All standard criteria PLUS:
 "✅ PR created: #42 - feat: Add user authentication system"
 ""
 "🔄 Step 8/10: CI/CD verification"
-"🚀 Launching GitHub checks dashboard..."
-"make gh-watch-checks"
+"🚨 CRITICAL: Using required make target to monitor PR checks"
+"🚀 Executing: make gh-watch-checks"
+"⚠️ This is the MANDATORY method for confirming all checks pass"
 ""
-"[Dashboard monitoring all checks in real-time]"
+"[Dashboard actively monitoring all PR checks]"
+"[WAITING for confirmation that all checks have passed...]"
 "✅ Build check passed (2m 14s)"
 "✅ Test check passed (3m 45s)"
 "✅ Quality check passed (1m 32s)"

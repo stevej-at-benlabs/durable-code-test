@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Feature Index - AI-Assisted Development Planning</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 2rem;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 3rem;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        h1 {
+            color: #2d3748;
+            margin-bottom: 1rem;
+            font-size: 2.5rem;
+        }
+
+        h2 {
+            color: #4a5568;
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+            font-size: 1.5rem;
+            display: flex;
+            align-items: center;
+        }
+
+        .overview {
+            background: #f7fafc;
+            padding: 1.5rem;
+            border-radius: 10px;
+            margin-bottom: 2rem;
+            border-left: 4px solid #667eea;
+        }
+
+        .section-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .doc-card {
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+            padding: 1.5rem;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .doc-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .doc-card h3 {
+            color: #2d3748;
+            margin-bottom: 0.5rem;
+            font-size: 1.1rem;
+        }
+
+        .doc-card p {
+            color: #718096;
+            font-size: 0.9rem;
+            line-height: 1.6;
+        }
+
+        .doc-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .doc-list li {
+            padding: 0.75rem 1rem;
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            margin-bottom: 0.75rem;
+            transition: background 0.2s;
+        }
+
+        .doc-list li:hover {
+            background: #f7fafc;
+            border-color: #667eea;
+        }
+
+        .doc-list a {
+            color: #4a5568;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .doc-list a:hover {
+            color: #667eea;
+        }
+
+        .icon {
+            font-size: 1.2rem;
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: #667eea;
+            text-decoration: none;
+            margin-bottom: 2rem;
+            padding: 0.5rem 1rem;
+            border: 2px solid #667eea;
+            border-radius: 8px;
+            transition: all 0.2s;
+        }
+
+        .back-link:hover {
+            background: #667eea;
+            color: white;
+        }
+
+        .timestamp {
+            text-align: center;
+            color: #a0aec0;
+            font-size: 0.9rem;
+            margin-top: 2rem;
+            padding-top: 2rem;
+            border-top: 1px solid #e2e8f0;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            background: #667eea;
+            color: white;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            margin-left: 0.5rem;
+        }
+
+        .status-indicator {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            margin-right: 0.5rem;
+        }
+
+        .status-active { background: #48bb78; }
+        .status-pending { background: #ed8936; }
+        .status-planned { background: #4299e1; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="/#Planning" class="back-link">
+            <span>←</span>
+            <span>Back to Planning Tab</span>
+        </a>
+
+        <h1>Feature Index: AI-Assisted Development Planning</h1>
+
+        <div class="overview">
+            <p>This index provides quick access to all documentation and artifacts for the AI-Assisted Development Planning feature. Each document follows the standard template structure for consistent project management.</p>
+        </div>
+
+        <h2><span class="icon">📋</span> Planning Documents</h2>
+        <div class="section-grid">
+            <div class="doc-card">
+                <span class="status-indicator status-active"></span>
+                <h3>Progress Tracking</h3>
+                <p>Current status, completed tasks, and weekly updates for the planning feature implementation.</p>
+            </div>
+
+            <div class="doc-card">
+                <span class="status-indicator status-active"></span>
+                <h3>Rollout Plan</h3>
+                <p>Deployment strategy, feature flags, and phased release schedule for production rollout.</p>
+            </div>
+
+            <div class="doc-card">
+                <span class="status-indicator status-pending"></span>
+                <h3>Testing Plan</h3>
+                <p>Comprehensive test scenarios, QA checklist, and validation criteria for all components.</p>
+            </div>
+        </div>
+
+        <h2><span class="icon">📐</span> Technical Documentation</h2>
+        <ul class="doc-list">
+            <li>
+                <a href="/planning/technical-spec.html">
+                    <span>🔧</span>
+                    Technical Specification
+                    <span class="badge">Detailed</span>
+                </a>
+            </li>
+            <li>
+                <a href="/planning/metadata.html">
+                    <span>📊</span>
+                    Feature Metadata
+                    <span class="badge">Configuration</span>
+                </a>
+            </li>
+        </ul>
+
+        <h2><span class="icon">📊</span> Interactive Diagrams</h2>
+        <ul class="doc-list">
+            <li>
+                <a href="/diagrams/durable-code-flow.html?return=Planning">
+                    <span>🔄</span>
+                    Development Flow Diagram
+                </a>
+            </li>
+            <li>
+                <a href="/diagrams/ai-review-sequence.html?return=Planning">
+                    <span>📋</span>
+                    AI Review Sequence
+                </a>
+            </li>
+            <li>
+                <a href="/diagrams/implementation-plan.html?return=Planning">
+                    <span>📅</span>
+                    Implementation Timeline
+                </a>
+            </li>
+        </ul>
+
+        <h2><span class="icon">📁</span> Development Artifacts</h2>
+        <div class="section-grid">
+            <div class="doc-card">
+                <h3>Workflow Templates</h3>
+                <p>Standardized workflows for AI-assisted development, including code generation and review processes.</p>
+            </div>
+
+            <div class="doc-card">
+                <h3>Configuration Files</h3>
+                <p>Docker, Make, and linting configurations that power the development environment.</p>
+            </div>
+
+            <div class="doc-card">
+                <h3>AI Integration Specs</h3>
+                <p>Claude AI integration details, prompt engineering guidelines, and response handling.</p>
+            </div>
+        </div>
+
+        <h2><span class="icon">📝</span> Quick Links</h2>
+        <ul class="doc-list">
+            <li>
+                <a href="/planning/progress.html">
+                    <span>📈</span>
+                    View Current Progress
+                </a>
+            </li>
+            <li>
+                <a href="/planning/rollout-plan.html">
+                    <span>🚀</span>
+                    Review Rollout Strategy
+                </a>
+            </li>
+            <li>
+                <a href="/planning/testing-plan.html">
+                    <span>✅</span>
+                    Testing Documentation
+                </a>
+            </li>
+        </ul>
+
+        <div class="timestamp">
+            Last updated: January 17, 2025
+        </div>
+    </div>
+</body>
+</html>

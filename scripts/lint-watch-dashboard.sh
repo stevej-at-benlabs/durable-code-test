@@ -25,8 +25,7 @@ TOTAL_FAILURES=0
 WATCHING_SINCE=$(date +"%H:%M:%S")
 
 # Configuration
-DEBOUNCE_SECONDS=2
-LAST_RUN=0
+CHECK_INTERVAL=30  # Run lint check every 30 seconds
 PROJECT_ROOT="/home/stevejackson/Projects/durable-code-test"
 
 # Change to project root
@@ -95,18 +94,15 @@ draw_dashboard() {
         printf "  %-20s ${rate_color}%d%%${NC}\n" "Success Rate:" "$success_rate"
     fi
 
-    # Files section
+    # Scope section
     echo
-    echo -e "${WHITE}${BOLD}MONITORED FILES${NC}"
+    echo -e "${WHITE}${BOLD}SCOPE${NC}"
     draw_line
     if [ -n "$LAST_FILES" ]; then
-        echo "$LAST_FILES" | head -5 | while read -r file; do
-            [ -n "$file" ] && printf "  ${GRAY}•${NC} %s\n" "$file"
-        done
-        local file_count=$(echo "$LAST_FILES" | wc -l)
-        [ $file_count -gt 5 ] && echo "  ${GRAY}... and $((file_count - 5)) more files${NC}"
+        echo "  ${GRAY}•${NC} $LAST_FILES"
+        echo "  ${GRAY}•${NC} Directories: app/, tools/, src/, durable-code-app/"
     else
-        echo "  ${GRAY}No files changed yet${NC}"
+        echo "  ${GRAY}Waiting for first check...${NC}"
     fi
 
     # Errors section (only shown if there are errors)
@@ -125,7 +121,7 @@ draw_dashboard() {
     echo
     draw_line
     echo -e "${GRAY}Press Ctrl+C to stop watching${NC}"
-    echo -e "${GRAY}Checking for changes every 2 seconds...${NC}"
+    echo -e "${GRAY}Running 'make lint-all' every 30 seconds...${NC}"
 }
 
 # Function to send notifications
@@ -147,57 +143,36 @@ send_notification() {
 
 # Function to run linting
 run_lint() {
-    local current_time=$(date +%s)
+    LAST_RUN_TIME=$(date +"%H:%M:%S")
+    LAST_STATUS="RUNNING"
+    TOTAL_RUNS=$((TOTAL_RUNS + 1))
 
-    # Debounce check
-    if [ $((current_time - LAST_RUN)) -lt $DEBOUNCE_SECONDS ]; then
-        return
+    # Get list of all Python and TypeScript files
+    LAST_FILES=$(find app tools src durable-code-app -type f \( -name "*.py" -o -name "*.ts" -o -name "*.tsx" -o -name "*.js" -o -name "*.jsx" \) 2>/dev/null | wc -l)
+    LAST_FILES="Checking $LAST_FILES files"
+
+    # Update dashboard to show running status
+    draw_dashboard
+
+    # Capture lint output
+    lint_output=$(make lint-all 2>&1)
+    lint_exit_code=$?
+
+    # Extract only error messages (lines that look like errors)
+    LAST_ERRORS=$(echo "$lint_output" | grep -E '(Error|ERROR|Failed|FAILED|✗|error:|ERROR:|violation|Violation)' | head -20)
+
+    if [ $lint_exit_code -eq 0 ]; then
+        LAST_STATUS="PASSED"
+        TOTAL_PASSES=$((TOTAL_PASSES + 1))
+        LAST_ERRORS=""
+    else
+        LAST_STATUS="FAILED"
+        TOTAL_FAILURES=$((TOTAL_FAILURES + 1))
+        send_notification "Lint Failed" "Linting errors detected in the codebase"
     fi
 
-    LAST_RUN=$current_time
-
-    # Get changed files
-    local changed_files=$(git diff --name-only HEAD 2>/dev/null | grep -E '\.(py|ts|tsx|js|jsx)$')
-
-    if [ -z "$changed_files" ]; then
-        changed_files=$(git ls-files --others --exclude-standard | grep -E '\.(py|ts|tsx|js|jsx)$')
-    fi
-
-    if [ -n "$changed_files" ]; then
-        LAST_FILES="$changed_files"
-        LAST_RUN_TIME=$(date +"%H:%M:%S")
-        LAST_STATUS="RUNNING"
-        TOTAL_RUNS=$((TOTAL_RUNS + 1))
-
-        # Update dashboard to show running status
-        draw_dashboard
-
-        # Stage files temporarily
-        git add $changed_files 2>/dev/null
-
-        # Capture lint output
-        lint_output=$(make lint-all-staged 2>&1)
-        lint_exit_code=$?
-
-        # Extract only error messages (lines that look like errors)
-        LAST_ERRORS=$(echo "$lint_output" | grep -E '(Error|ERROR|Failed|FAILED|✗|error:|ERROR:)' | head -20)
-
-        if [ $lint_exit_code -eq 0 ]; then
-            LAST_STATUS="PASSED"
-            TOTAL_PASSES=$((TOTAL_PASSES + 1))
-            LAST_ERRORS=""
-        else
-            LAST_STATUS="FAILED"
-            TOTAL_FAILURES=$((TOTAL_FAILURES + 1))
-            send_notification "Lint Failed" "$(echo "$changed_files" | head -1 | xargs basename) has linting errors"
-        fi
-
-        # Unstage files
-        git reset HEAD $changed_files 2>/dev/null
-
-        # Redraw dashboard with results
-        draw_dashboard
-    fi
+    # Redraw dashboard with results
+    draw_dashboard
 }
 
 # Trap for clean exit
@@ -206,19 +181,12 @@ trap 'echo -e "\n${YELLOW}Stopping dashboard...${NC}"; clear_dashboard; exit 0' 
 # Initialize dashboard
 draw_dashboard
 
-# Store initial state for polling
-LAST_CHECKSUM=""
-
-# Main loop using polling (more reliable than fswatch for dashboard)
+# Main loop - run lint check every 30 seconds
+echo -e "${YELLOW}Running lint check every ${CHECK_INTERVAL} seconds...${NC}"
 while true; do
-    # Get checksum of relevant files
-    CURRENT_CHECKSUM=$(find app tools src durable-code-app -type f \( -name "*.py" -o -name "*.ts" -o -name "*.tsx" -o -name "*.js" -o -name "*.jsx" \) 2>/dev/null | xargs ls -la 2>/dev/null | md5sum 2>/dev/null | cut -d' ' -f1)
+    # Wait for the check interval
+    sleep $CHECK_INTERVAL
 
-    # Check if files have changed
-    if [ "$CURRENT_CHECKSUM" != "$LAST_CHECKSUM" ] && [ -n "$LAST_CHECKSUM" ]; then
-        run_lint
-    fi
-
-    LAST_CHECKSUM="$CURRENT_CHECKSUM"
-    sleep 2
+    # Run the lint check
+    run_lint
 done

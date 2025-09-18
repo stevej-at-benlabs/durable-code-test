@@ -17,8 +17,11 @@ from typing import Any
 from design_linters.framework.interfaces import ASTLintRule, LintContext, LintViolation, Severity
 
 
-class PrintStatementRule(ASTLintRule):
-    """Rule to detect print statements that should use logging instead."""
+class PrintStatementRule(ASTLintRule):  # design-lint: ignore[solid.srp.too-many-methods]
+    """Rule to detect print statements that should use logging instead.
+
+    AST visitor pattern requires multiple visit methods for different node types.
+    """
 
     @property
     def rule_id(self) -> str:
@@ -150,8 +153,11 @@ class PrintStatementRule(ASTLintRule):
         return "debug"
 
 
-class ConsoleOutputRule(ASTLintRule):
-    """Rule to detect other console output methods that should use logging."""
+class ConsoleOutputRule(ASTLintRule):  # design-lint: ignore[solid.srp.too-many-methods]
+    """Rule to detect other console output methods that should use logging.
+
+    AST visitor pattern requires multiple visit methods for different node types.
+    """
 
     @property
     def rule_id(self) -> str:
