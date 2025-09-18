@@ -71,6 +71,36 @@ make test-coverage    # Coverage reports
 
 Before committing, analyze changes for AI documentation updates:
 
+#### IMPORTANT: Check Existing AI Documentation First
+```bash
+# ALWAYS check if .ai directory exists at project root
+if [ -d ".ai" ]; then
+    echo "Found .ai directory at project root"
+else
+    echo "ERROR: .ai directory not found - DO NOT create a new one"
+    echo "The .ai directory should exist at the project root"
+    exit 1
+fi
+
+# Read the AI documentation index to understand existing docs
+if [ -f ".ai/index.json" ]; then
+    # Parse index.json to understand:
+    # - Existing feature documentation in .ai/features/
+    # - Available templates in .ai/templates/
+    # - Documentation standards in .ai/docs/
+    # - How-to guides in .ai/howto/
+    cat .ai/index.json
+else
+    echo "WARNING: .ai/index.json not found - cannot verify existing documentation"
+fi
+```
+
+**CRITICAL**:
+- The `.ai` directory MUST already exist at the project root
+- NEVER create a new `.ai` directory - it should already be there
+- Always read `.ai/index.json` first to understand what's already documented
+- Only update existing files or add new ones to the existing structure
+
 #### Automated Analysis of Changes
 ```bash
 # Get list of changed files for analysis
@@ -78,6 +108,9 @@ git diff --name-only HEAD
 
 # Check for changes that might require AI documentation updates
 git diff --stat HEAD | grep -E "\.(py|tsx?|md|yml|json)$"
+
+# Compare changes against existing documentation from index.json
+# to identify what's new vs what's already documented
 ```
 
 #### Documentation Update Opportunities
@@ -109,29 +142,71 @@ git diff --stat HEAD | grep -E "\.(py|tsx?|md|yml|json)$"
    - Changes to existing procedures
    - New debugging techniques or troubleshooting steps
 
+#### Implementation Guide for AI Assistant
+
+When executing the `/done` command, the AI assistant MUST:
+
+1. **First check for .ai directory**:
+   ```python
+   # Pseudo-code for AI implementation
+   ai_dir = find_project_root() + "/.ai"
+   if not exists(ai_dir):
+       error("CRITICAL: .ai directory not found at project root")
+       error("DO NOT create a new .ai directory")
+       stop_execution()
+   ```
+
+2. **Read and parse .ai/index.json**:
+   ```python
+   index_path = ai_dir + "/index.json"
+   if exists(index_path):
+       index_data = read_json(index_path)
+       existing_features = index_data.get("features", [])
+       existing_templates = index_data.get("templates", [])
+       # Use this to understand what's already documented
+   ```
+
+3. **Analyze changes against existing documentation**:
+   ```python
+   changed_files = git_diff_files()
+   for file in changed_files:
+       if is_new_feature(file) and file not in existing_features:
+           suggest_feature_doc_update(file)
+       if is_new_pattern(file) and pattern not in existing_templates:
+           suggest_new_template(file)
+   ```
+
 #### Present Update Opportunities
+
+The AI assistant should dynamically analyze the actual changes and present relevant opportunities:
+
+1. **Analyze git diff to identify what changed**
+2. **Compare changes against .ai/index.json to see what's already documented**
+3. **Identify gaps and opportunities**
+4. **Present ONLY relevant suggestions based on actual changes**
+
+Example format (adjust based on actual changes):
 ```
 🤖 AI Documentation Update Analysis
 
+✅ Successfully located .ai directory at project root
+✅ Read .ai/index.json (found X features, Y templates)
+
 Based on your changes, I've identified opportunities to update AI documentation:
 
-📁 Templates:
-  [✓] Create new React hook template (3 new hooks added)
-  [ ] Update FastAPI template (new validation patterns)
+[Dynamic list based on actual changes - examples:]
+- If new component type: Suggest template creation
+- If new feature: Suggest feature documentation update
+- If new pattern: Suggest standards update
+- If nothing needs updating: State "No documentation updates needed"
 
-📚 Features:
-  [✓] Update web-application.md (new authentication tab)
-  [ ] Add new feature: real-time notifications
-
-📖 Howto Guides:
-  [✓] Update run-tests.md (new test categories)
-  [ ] Create howto for database migrations
-
-🎯 Standards:
-  [ ] Update STANDARDS.md (new security requirements)
-
-Would you like me to update any of these? (y/N for each, or 'all' for everything)
+Would you like me to update any of these?
 ```
+
+**IMPORTANT**:
+- Never suggest updates for things that haven't changed
+- Always check if documentation already exists before suggesting creation
+- Be specific about what changed and why it needs documentation
 
 #### User Response Handling
 ```bash
