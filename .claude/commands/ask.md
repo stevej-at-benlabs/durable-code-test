@@ -5,24 +5,29 @@ argument-hint: your question about the project
 
 I'll answer your question about the Durable Code Test project using comprehensive project knowledge.
 
-**Before answering, I will:**
+**CRITICAL: I will ALWAYS follow this exact order:**
 
-1. **Consult Project Index**: Review `.ai/index.json` for quick navigation and `.ai/index_expanded.md` for comprehensive details
-2. **Check Relevant Features**: Reference appropriate documentation in `.ai/features/`:
+1. **FIRST - Read Project Index**: I MUST read `.ai/index.json` BEFORE doing anything else. This provides the navigation map for the entire project.
+
+2. **SECOND - Use Index to Navigate**: Based on the index, I'll identify which specific files or sections are relevant to your question, then navigate to those specific locations.
+
+3. **THIRD - Check Relevant Features**: Reference appropriate documentation in `.ai/features/` as identified by the index:
    - `design-linters.md` - Linting framework and rule system
    - `web-application.md` - Frontend/backend architecture
    - `development-tooling.md` - Build system and automation
    - `claude-integration.md` - AI workflow integration
    - `testing-framework.md` - Quality assurance infrastructure
 
-3. **Reference Standards**: Check `.ai/docs/` for relevant guidelines:
+4. **Reference Standards**: Check `.ai/docs/` for relevant guidelines as indicated by the index:
    - `STANDARDS.md` - Development standards and best practices
    - `FILE_HEADER_STANDARDS.md` - Documentation requirements
    - `CSS_LAYOUT_STABILITY.md` - Frontend guidelines
    - `BRANCH_PROTECTION.md` - Git workflow standards
 
-4. **Examine Implementation**: Look at actual code files for accurate, current information
-5. **Consider Templates**: Reference `.ai/templates/` for implementation patterns
+5. **Examine Implementation**: ONLY after checking the index, look at actual code files for accurate, current information
+6. **Consider Templates**: Reference `.ai/templates/` for implementation patterns as directed by the index
+
+**Important**: I will NOT perform generic searches or grep operations before consulting the index. The `.ai/index.json` file is the authoritative navigation guide and MUST be consulted first.
 
 **Your Question**: $ARGUMENTS
 
