@@ -13,7 +13,6 @@
  */
 import { lazy, Suspense, useEffect } from 'react';
 import { Route, Routes } from 'react-router-dom';
-import type { ReactElement } from 'react';
 import './App.css';
 import './qa-maintenance.css';
 import packageJson from '../package.json';
@@ -25,18 +24,37 @@ import ParticleBackground from './components/ParticleBackground';
 import { Tab } from './components/common/Tab';
 import { Icon } from './components/common/Icon';
 import { LoadingSpinner } from './components/common/LoadingSpinner';
-import { PlanningTab } from './components/tabs/PlanningTab';
-import { BuildingTab } from './components/tabs/BuildingTab';
-import { QualityAssuranceTab } from './components/tabs/QualityAssuranceTab';
-import { MaintenanceTab } from './components/tabs/MaintenanceTab';
-// Lazy load infrastructure feature
+// Lazy load all feature tabs
 const InfrastructureTab = lazy(() =>
   import('./features/infrastructure').then((m) => ({
     default: m.InfrastructureTab,
   })),
 );
 
-// Lazy load demo feature
+const PlanningTab = lazy(() =>
+  import('./features/planning').then((m) => ({
+    default: m.PlanningTab,
+  })),
+);
+
+const BuildingTab = lazy(() =>
+  import('./features/building').then((m) => ({
+    default: m.BuildingTab,
+  })),
+);
+
+const QualityAssuranceTab = lazy(() =>
+  import('./features/quality').then((m) => ({
+    default: m.QualityAssuranceTab,
+  })),
+);
+
+const MaintenanceTab = lazy(() =>
+  import('./features/maintenance').then((m) => ({
+    default: m.MaintenanceTab,
+  })),
+);
+
 const DemoTab = lazy(() =>
   import('./features/demo').then((m) => ({
     default: m.DemoTab,
@@ -47,7 +65,7 @@ interface TabContent {
   title: string;
   icon: string;
   description: string;
-  component: () => ReactElement;
+  component: React.LazyExoticComponent<React.ComponentType>;
 }
 
 function HomePage() {

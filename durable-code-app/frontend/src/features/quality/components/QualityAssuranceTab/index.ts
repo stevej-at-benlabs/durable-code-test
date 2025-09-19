@@ -1,0 +1,1 @@
+export { QualityAssuranceTab } from './QualityAssuranceTab';

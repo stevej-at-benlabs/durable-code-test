@@ -131,9 +131,11 @@ describe('App Component', () => {
       const planningTab = screen.getByRole('tab', { name: /Planning/i });
       await user.click(planningTab);
 
-      // Should show Planning tab content
-      expect(screen.getByText('Planning Documents')).toBeInTheDocument();
-      expect(screen.getByText('View Flow Diagram →')).toBeInTheDocument();
+      // Should show Planning tab content - wait for lazy loading
+      await waitFor(() => {
+        expect(screen.getByText('Planning Documents')).toBeInTheDocument();
+      });
+      expect(screen.getByText('View Development →')).toBeInTheDocument();
     });
 
     it('highlights active tab button', async () => {
@@ -152,11 +154,15 @@ describe('App Component', () => {
 
       // Start with Building
       await user.click(screen.getByRole('tab', { name: /Building/i }));
-      expect(screen.getByText('AI-Powered Code Generation')).toBeInTheDocument();
+      await waitFor(() => {
+        expect(screen.getByText('AI-Powered Code Generation')).toBeInTheDocument();
+      });
 
       // Switch to Quality Assurance
       await user.click(screen.getByRole('tab', { name: /Quality Assurance/i }));
-      expect(screen.getByText('Bulletproof Code Quality')).toBeInTheDocument();
+      await waitFor(() => {
+        expect(screen.getByText('Bulletproof Code Quality')).toBeInTheDocument();
+      });
       expect(screen.queryByText('AI-Powered Code Generation')).not.toBeInTheDocument();
 
       // Back to Infrastructure
@@ -235,14 +241,14 @@ describe('App Component', () => {
       const planningTab = screen.getByRole('tab', { name: /Planning/i });
       await user.click(planningTab);
 
-      const flowLink = screen.getByRole('link', { name: /View Flow Diagram/i });
+      const flowLink = screen.getByRole('link', { name: /View Development/i });
       expect(flowLink).toBeInTheDocument();
       expect(flowLink).toHaveAttribute(
         'href',
         '/diagrams/durable-code-flow.html?return=Planning',
       );
 
-      const sequenceLink = screen.getByRole('link', { name: /View Sequence/i });
+      const sequenceLink = screen.getByRole('link', { name: /View AI/i });
       expect(sequenceLink).toBeInTheDocument();
       expect(sequenceLink).toHaveAttribute(
         'href',
@@ -483,12 +489,12 @@ describe('App Component', () => {
       await user.click(planningTab);
 
       // Check that diagram links include return parameter
-      const flowLink = screen.getByRole('link', { name: /View Flow Diagram →/i });
+      const flowLink = screen.getByRole('link', { name: /View Development →/i });
       expect(flowLink.getAttribute('href')).toBe(
         '/diagrams/durable-code-flow.html?return=Planning',
       );
 
-      const sequenceLink = screen.getByRole('link', { name: /View Sequence →/i });
+      const sequenceLink = screen.getByRole('link', { name: /View AI →/i });
       expect(sequenceLink.getAttribute('href')).toBe(
         '/diagrams/ai-review-sequence.html?return=Planning',
       );
@@ -503,15 +509,18 @@ describe('App Component', () => {
       const qualityTab = screen.getByRole('tab', { name: /Quality Assurance/i });
       await user.click(qualityTab);
 
-      // Check that QA links include return parameter
-      const lintersLink = screen.getByRole('link', { name: /View All Linters/i });
-      expect(lintersLink.getAttribute('href')).toBe(
-        '/custom-linters?return=Quality Assurance',
-      );
+      // Wait for lazy loading
+      await waitFor(() => {
+        expect(screen.getByText('Bulletproof Code Quality')).toBeInTheDocument();
+      });
 
-      const pipelineLink = screen.getByRole('link', { name: /View Pipeline/i });
-      expect(pipelineLink.getAttribute('href')).toBe(
-        'ci-cd-pipeline.html?return=Quality Assurance',
+      // Check that QA links exist (reports and standards)
+      const reportLinks = screen.getAllByRole('link', { name: /View Report/i });
+      expect(reportLinks.length).toBeGreaterThan(0);
+
+      const standardsLink = screen.getByRole('link', { name: /View Standards/i });
+      expect(standardsLink.getAttribute('href')).toBe(
+        '/standards?return=QualityAssurance',
       );
     });
 
@@ -615,12 +624,12 @@ describe('App Component', () => {
       const planningTab = screen.getByRole('tab', { name: /Planning/i });
       await user.click(planningTab);
 
-      const flowLink = screen.getByRole('link', { name: /View Flow Diagram →/i });
+      const flowLink = screen.getByRole('link', { name: /View Development →/i });
       expect(flowLink.getAttribute('href')).toBe(
         '/diagrams/durable-code-flow.html?return=Planning',
       );
 
-      const sequenceLink = screen.getByRole('link', { name: /View Sequence →/i });
+      const sequenceLink = screen.getByRole('link', { name: /View AI →/i });
       expect(sequenceLink.getAttribute('href')).toBe(
         '/diagrams/ai-review-sequence.html?return=Planning',
       );
