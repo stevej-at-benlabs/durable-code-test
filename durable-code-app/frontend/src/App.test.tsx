@@ -8,7 +8,7 @@
  */
 
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import userEvent from '@testing-library/user-event';
 import App from './App';
@@ -90,27 +90,37 @@ describe('App Component', () => {
       expect(screen.getByText('Clear Success Criteria')).toBeInTheDocument();
     });
 
-    it('renders tab content properly', () => {
+    it('renders tab content properly', async () => {
       render(<AppWithRouter />);
 
-      // Should show Infrastructure tab content by default
-      expect(
-        screen.getByText('Rigid Infrastructure: The Foundation for AI'),
-      ).toBeInTheDocument();
-      expect(screen.getAllByText('Custom Linters')[0]).toBeInTheDocument();
+      // Should show Infrastructure tab content by default (after lazy loading)
+      await waitFor(() => {
+        expect(
+          screen.getByText('Rigid Infrastructure: The Foundation for AI'),
+        ).toBeInTheDocument();
+      });
+      await waitFor(() => {
+        expect(screen.getAllByText('Custom Linters')[0]).toBeInTheDocument();
+      });
     });
   });
 
   describe('Tab Navigation', () => {
-    it('displays Infrastructure tab content by default', () => {
+    it('displays Infrastructure tab content by default', async () => {
       render(<AppWithRouter />);
 
-      // Should show Infrastructure tab content
-      expect(
-        screen.getByText('Rigid Infrastructure: The Foundation for AI'),
-      ).toBeInTheDocument();
-      expect(screen.getAllByText('Custom Linters')[0]).toBeInTheDocument();
-      expect(screen.getAllByText('Make Targets')[0]).toBeInTheDocument();
+      // Should show Infrastructure tab content (after lazy loading)
+      await waitFor(() => {
+        expect(
+          screen.getByText('Rigid Infrastructure: The Foundation for AI'),
+        ).toBeInTheDocument();
+      });
+      await waitFor(() => {
+        expect(screen.getAllByText('Custom Linters')[0]).toBeInTheDocument();
+      });
+      await waitFor(() => {
+        expect(screen.getAllByText('Make Targets')[0]).toBeInTheDocument();
+      });
     });
 
     it('switches to different tabs when clicked', async () => {
@@ -151,19 +161,27 @@ describe('App Component', () => {
 
       // Back to Infrastructure
       await user.click(screen.getByRole('tab', { name: /Infrastructure/i }));
-      expect(
-        screen.getByText('Rigid Infrastructure: The Foundation for AI'),
-      ).toBeInTheDocument();
+      await waitFor(() => {
+        expect(
+          screen.getByText('Rigid Infrastructure: The Foundation for AI'),
+        ).toBeInTheDocument();
+      });
       expect(screen.queryByText('Bulletproof Code Quality')).not.toBeInTheDocument();
     });
   });
 
   describe('Link Validation and Navigation', () => {
-    it('has working external links in Infrastructure tab', () => {
+    it('has working external links in Infrastructure tab', async () => {
       render(<AppWithRouter />);
 
+      // Wait for lazy-loaded content
+      await waitFor(() => {
+        expect(
+          screen.getByRole('link', { name: /Explore .ai Repository/i }),
+        ).toBeInTheDocument();
+      });
+
       const projectLink = screen.getByRole('link', { name: /Explore .ai Repository/i });
-      expect(projectLink).toBeInTheDocument();
       expect(projectLink).toHaveAttribute(
         'href',
         'https://github.com/stevej-at-benlabs/durable-code-test/tree/main/.ai',
@@ -267,8 +285,15 @@ describe('App Component', () => {
       expect(tabButtons.length).toBe(6); // Exactly 6 tab buttons including Demo
     });
 
-    it('has proper links for external resources', () => {
+    it('has proper links for external resources', async () => {
       render(<AppWithRouter />);
+
+      // Wait for lazy-loaded content
+      await waitFor(() => {
+        expect(
+          screen.getByRole('link', { name: /Explore .ai Repository/i }),
+        ).toBeInTheDocument();
+      });
 
       const projectLink = screen.getByRole('link', { name: /Explore .ai Repository/i });
       expect(projectLink).toHaveAttribute('href');
@@ -512,9 +537,14 @@ describe('App Component', () => {
       // Collect all links from all tabs
       const allLinks: string[] = [];
 
-      // Infrastructure tab (default)
+      // Infrastructure tab (default) - wait for lazy loading
       const infrastructureTab = screen.getByRole('tab', { name: /Infrastructure/i });
       await user.click(infrastructureTab);
+      await waitFor(() => {
+        expect(
+          screen.getByText('Rigid Infrastructure: The Foundation for AI'),
+        ).toBeInTheDocument();
+      });
       const infrastructureLinks = screen.getAllByRole('link');
       infrastructureLinks.forEach((link) => {
         const href = link.getAttribute('href');

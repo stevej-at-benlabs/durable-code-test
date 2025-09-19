@@ -1,0 +1,393 @@
+/**
+ * Purpose: CSS module styles for InfrastructureTab component
+ * Scope: Infrastructure tab styling with consistent visual hierarchy
+ * Overview: Modern CSS module implementing the existing infrastructure tab styles
+ *     with proper modularization, responsive design, and accessibility features.
+ */
+
+.infrastructureTab {
+  width: 100%;
+  padding: 2rem;
+  color: var(--text-color, #333);
+  background: var(--background-color, #fff);
+  min-height: 100vh;
+}
+
+.infrastructureTab.loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 400px;
+}
+
+.infrastructureTab.error {
+  padding: 2rem;
+}
+
+/* Hero section */
+.infrastructureHero {
+  text-align: center;
+  margin-bottom: 3rem;
+  padding: 2rem 0;
+}
+
+.infrastructureTitle {
+  font-size: 2.5rem;
+  font-weight: 700;
+  margin-bottom: 1rem;
+  color: var(--primary-color, #2563eb);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+}
+
+.titleIcon {
+  font-size: 3rem;
+}
+
+.infrastructureSubtitle {
+  font-size: 1.2rem;
+  line-height: 1.6;
+  max-width: 800px;
+  margin: 0 auto;
+  color: var(--text-secondary, #6b7280);
+}
+
+/* Infrastructure grid */
+.infrastructureGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 3rem;
+}
+
+.infrastructureCard {
+  padding: 1.5rem;
+  border: 1px solid var(--border-color, #e5e7eb);
+  border-radius: 8px;
+  background: var(--card-background, #fff);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  transition: all 0.2s ease;
+  cursor: pointer;
+  position: relative;
+}
+
+.infrastructureCard:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  border-color: var(--primary-color, #2563eb);
+}
+
+.infrastructureCard:focus {
+  outline: 2px solid var(--primary-color, #2563eb);
+  outline-offset: 2px;
+}
+
+/* Card content styling */
+.infrastructureCard :global(.card-icon) {
+  font-size: 2.5rem;
+  margin-bottom: 1rem;
+  text-align: left;
+}
+
+.infrastructureCard h4 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin-bottom: 0.75rem;
+  color: var(--text-color, #1f2937);
+}
+
+.infrastructureCard p {
+  font-size: 0.95rem;
+  line-height: 1.5;
+  color: var(--text-secondary, #6b7280);
+  margin-bottom: 1rem;
+}
+
+.infrastructureCard :global(.card-badge) {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  background: var(--badge-critical, #dc2626);
+  color: white;
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 0.25rem 0.5rem;
+  border-radius: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* Section titles */
+:global(.section-title) {
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin-bottom: 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  color: var(--text-color, #1f2937);
+}
+
+:global(.section-icon) {
+  font-size: 1.75rem;
+}
+
+/* Folder structure */
+.folderSection {
+  margin-bottom: 3rem;
+}
+
+.folderContainer {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2rem;
+  align-items: start;
+}
+
+.folderPreview {
+  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+  font-size: 0.9rem;
+  line-height: 1.4;
+  background: var(--code-background, #f8fafc);
+  border: 1px solid var(--border-color, #e5e7eb);
+  border-radius: 8px;
+  padding: 1.5rem;
+  overflow-x: auto;
+}
+
+.folderItem {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.2rem 0;
+  white-space: nowrap;
+}
+
+.folderItem.root {
+  font-weight: 600;
+  color: var(--primary-color, #2563eb);
+}
+
+.folderItem.file {
+  color: var(--text-color, #374151);
+}
+
+.folderItem.folder {
+  color: var(--secondary-color, #7c3aed);
+}
+
+.folderItem.nested {
+  margin-left: 0;
+}
+
+.folderLine {
+  color: var(--text-muted, #9ca3af);
+  font-weight: normal;
+}
+
+.icon {
+  flex-shrink: 0;
+}
+
+.name {
+  font-weight: 500;
+}
+
+.description {
+  color: var(--text-secondary, #6b7280);
+  font-style: italic;
+  margin-left: auto;
+  flex-shrink: 0;
+}
+
+.folderDescription h5 {
+  font-size: 1.2rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+  color: var(--primary-color, #2563eb);
+}
+
+.folderDescription p {
+  margin-bottom: 1rem;
+  line-height: 1.6;
+}
+
+.benefitList {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.benefitList li {
+  padding: 0.5rem 0;
+  border-bottom: 1px solid var(--border-light, #f3f4f6);
+  line-height: 1.5;
+}
+
+.benefitList li:last-child {
+  border-bottom: none;
+}
+
+/* Stats section */
+.statsSection {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1.5rem;
+  margin: 3rem 0;
+  padding: 2rem;
+  background: var(--stats-background, #f8fafc);
+  border-radius: 12px;
+}
+
+.statCard {
+  text-align: center;
+  padding: 1.5rem;
+  background: var(--card-background, #fff);
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.statNumber {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: var(--primary-color, #2563eb);
+  margin-bottom: 0.5rem;
+}
+
+.statLabel {
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--text-secondary, #6b7280);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* Action section */
+.actionSection {
+  margin-top: 3rem;
+}
+
+.actionLinks {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-top: 1.5rem;
+}
+
+.actionLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  border: none;
+  border-radius: 6px;
+  font-weight: 500;
+  text-decoration: none;
+  transition: all 0.2s ease;
+  cursor: pointer;
+  font-size: 0.95rem;
+}
+
+.actionLink.primary {
+  background: var(--primary-color, #2563eb);
+  color: white;
+}
+
+.actionLink.primary:hover {
+  background: var(--primary-hover, #1d4ed8);
+  transform: translateY(-1px);
+}
+
+.actionLink.secondary {
+  background: var(--secondary-background, #f3f4f6);
+  color: var(--text-color, #374151);
+  border: 1px solid var(--border-color, #e5e7eb);
+}
+
+.actionLink.secondary:hover {
+  background: var(--secondary-hover, #e5e7eb);
+  border-color: var(--primary-color, #2563eb);
+  color: var(--primary-color, #2563eb);
+}
+
+.actionLink:focus {
+  outline: 2px solid var(--primary-color, #2563eb);
+  outline-offset: 2px;
+}
+
+.linkIcon {
+  font-size: 1.1rem;
+}
+
+/* Loading and error states */
+.loadingSpinner {
+  margin-bottom: 1rem;
+}
+
+.errorMessage {
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .infrastructureTab {
+    padding: 1rem;
+  }
+
+  .infrastructureTitle {
+    font-size: 2rem;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .titleIcon {
+    font-size: 2.5rem;
+  }
+
+  .infrastructureSubtitle {
+    font-size: 1rem;
+  }
+
+  .infrastructureGrid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  .folderContainer {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+
+  .folderPreview {
+    font-size: 0.8rem;
+    padding: 1rem;
+  }
+
+  .statsSection {
+    grid-template-columns: repeat(2, 1fr);
+    padding: 1.5rem;
+  }
+
+  .actionLinks {
+    flex-direction: column;
+  }
+
+  .actionLink {
+    justify-content: center;
+    text-align: center;
+  }
+}
+
+@media (max-width: 480px) {
+  .statsSection {
+    grid-template-columns: 1fr;
+  }
+
+  .statNumber {
+    font-size: 2rem;
+  }
+}
