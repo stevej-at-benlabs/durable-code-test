@@ -10,7 +10,7 @@
  * State/Behavior: Manages WebSocket connection, waveform parameters, and visualization settings
  */
 
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import type { ReactElement } from 'react';
 
 interface OscilloscopeState {
@@ -43,9 +43,9 @@ export function DemoTab(): ReactElement {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const wsRef = useRef<WebSocket | null>(null);
   const dataBufferRef = useRef<number[]>([]);
-  const animationFrameRef = useRef<number>();
+  const animationFrameRef = useRef<number | undefined>(undefined);
   const frameCountRef = useRef<number>(0);
-  const drawWaveformRef = useRef<() => void>();
+  const drawWaveformRef = useRef<(() => void) | undefined>(undefined);
 
   const [state, setState] = useState<OscilloscopeState>({
     isConnected: false,
@@ -206,12 +206,10 @@ export function DemoTab(): ReactElement {
     const ws = new WebSocket(`${protocol}//${host}:${port}/api/oscilloscope/stream`);
 
     ws.onopen = () => {
-      console.log('WebSocket connected');
       setState((prev) => ({ ...prev, isConnected: true }));
     };
 
     ws.onclose = () => {
-      console.log('WebSocket disconnected');
       setState((prev) => ({ ...prev, isConnected: false, isStreaming: false }));
     };
 

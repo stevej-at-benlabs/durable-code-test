@@ -8,9 +8,10 @@
  */
 
 import {
-  UrlNormalizer,
+  createErrorResult,
+  createSuccessResult,
   HttpRequestService,
-  ValidationResultBuilder,
+  normalizeUrl,
 } from './HttpRequestService';
 import type { ValidationResult } from './HttpRequestService';
 
@@ -42,13 +43,13 @@ export class LinkValidationService {
     const startTime = Date.now();
 
     try {
-      const fullUrl = UrlNormalizer.normalizeUrl(url);
+      const fullUrl = normalizeUrl(url);
       const response = await this.httpService.makeRequest(fullUrl, options);
 
-      return ValidationResultBuilder.createSuccessResult(url, response);
+      return createSuccessResult(url, response);
     } catch (error) {
       const responseTime = Date.now() - startTime;
-      return ValidationResultBuilder.createErrorResult(url, error, responseTime);
+      return createErrorResult(url, error, responseTime);
     }
   }
 

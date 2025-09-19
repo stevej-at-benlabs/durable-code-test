@@ -1,10 +1,10 @@
 import { useEffect, useRef } from 'react';
 import type { Particle } from '../utils/ParticleSystem';
 import {
+  MouseTracker,
   ParticleFactory,
   ParticlePhysics,
   ParticleRenderer,
-  MouseTracker,
 } from '../utils/ParticleSystem';
 
 interface ParticleBackgroundProps {

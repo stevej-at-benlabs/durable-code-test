@@ -46,10 +46,8 @@ export class FetchRequestStrategy implements RequestStrategy {
   }
 }
 
-export class UrlNormalizer {
-  static normalizeUrl(url: string): string {
-    return url.startsWith('http') ? url : `${window.location.origin}/${url}`;
-  }
+export function normalizeUrl(url: string): string {
+  return url.startsWith('http') ? url : `${window.location.origin}/${url}`;
 }
 
 export class HttpRequestService {
@@ -79,26 +77,27 @@ export interface ValidationResult {
   responseTime: number;
 }
 
-export class ValidationResultBuilder {
-  static createSuccessResult(url: string, response: HttpResponse): ValidationResult {
-    return {
-      url,
-      isValid: response.ok,
-      status: response.status,
-      responseTime: response.responseTime,
-    };
-  }
+export function createSuccessResult(
+  url: string,
+  response: HttpResponse,
+): ValidationResult {
+  return {
+    url,
+    isValid: response.ok,
+    status: response.status,
+    responseTime: response.responseTime,
+  };
+}
 
-  static createErrorResult(
-    url: string,
-    error: unknown,
-    responseTime: number,
-  ): ValidationResult {
-    return {
-      url,
-      isValid: false,
-      error: error instanceof Error ? error.message : 'Unknown error',
-      responseTime,
-    };
-  }
+export function createErrorResult(
+  url: string,
+  error: unknown,
+  responseTime: number,
+): ValidationResult {
+  return {
+    url,
+    isValid: false,
+    error: error instanceof Error ? error.message : 'Unknown error',
+    responseTime,
+  };
 }
