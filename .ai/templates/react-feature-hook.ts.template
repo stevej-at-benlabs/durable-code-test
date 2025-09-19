@@ -1,0 +1,59 @@
+/**
+ * Purpose: Custom hook for managing {{FEATURE_NAME}} feature data and state
+ * Scope: {{FEATURE_NAME}} data provider with error handling and loading states
+ * Overview: React hook that provides all {{FEATURE_NAME}}-related data including
+ *     {{DATA_DESCRIPTION}}. Handles loading states and error management for the {{FEATURE_NAME}} feature.
+ * Dependencies: React (useState, useEffect, useMemo), {{FEATURE_NAME}} types
+ * Exports: use{{HOOK_NAME}} hook function
+ * Props/Interfaces: No parameters, returns Use{{HOOK_NAME}}Return interface
+ * State/Behavior: Manages loading state, error state, and {{DATA_SOURCE}} data provision
+ */
+
+import { useEffect, useMemo, useState } from 'react';
+import type {
+  {{TYPE_IMPORTS}},
+  Use{{HOOK_NAME}}Return,
+} from '../types/{{FEATURE_NAME}}.types';
+
+export function use{{HOOK_NAME}}(): Use{{HOOK_NAME}}Return {
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<Error | null>(null);
+
+  // {{FEATURE_NAME}} data
+  const {{DATA_NAME}} = useMemo(
+    (): {{DATA_TYPE}}[] => [
+      {{DATA_IMPLEMENTATION}}
+    ],
+    [],
+  );
+
+  {{ADDITIONAL_DATA_MEMOS}}
+
+  // Simulate loading effect
+  useEffect(() => {
+    const loadData = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+
+        // Simulate brief loading for realistic UX
+        await new Promise((resolve) => setTimeout(resolve, 100));
+
+        setLoading(false);
+      } catch (err) {
+        const error =
+          err instanceof Error ? err : new Error('Failed to load {{FEATURE_NAME}} data');
+        setError(error);
+        setLoading(false);
+      }
+    };
+
+    loadData();
+  }, []);
+
+  return {
+    {{RETURN_PROPERTIES}},
+    loading,
+    error,
+  };
+}

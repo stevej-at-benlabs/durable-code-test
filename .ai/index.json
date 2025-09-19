@@ -48,8 +48,8 @@
     },
     "web-tab.tsx.template": {
       "purpose": "Add new tabs to the web application interface",
-      "location": "durable-code-app/frontend/src/components/tabs/",
-      "example_files": ["durable-code-app/frontend/src/components/tabs/InfrastructureTab.tsx"]
+      "location": "durable-code-app/frontend/src/components/tabs/ or features/[feature-name]/",
+      "example_files": ["durable-code-app/frontend/src/components/tabs/PlanningTab.tsx", "durable-code-app/frontend/src/features/infrastructure/"]
     },
     "fastapi-endpoint.py.template": {
       "purpose": "Production-ready API endpoints with validation",
@@ -65,6 +65,21 @@
       "purpose": "Interactive workflow documentation with Mermaid diagrams",
       "location": "anywhere for documentation",
       "use_case": "Process documentation, sequence diagrams, training materials"
+    },
+    "react-feature.tsx.template": {
+      "purpose": "Feature-based React components with full architecture",
+      "location": "durable-code-app/frontend/src/features/[feature-name]/components/",
+      "example_files": ["durable-code-app/frontend/src/features/infrastructure/"]
+    },
+    "react-feature-hook.ts.template": {
+      "purpose": "Custom React hooks for feature data management",
+      "location": "durable-code-app/frontend/src/features/[feature-name]/hooks/",
+      "example_files": ["durable-code-app/frontend/src/features/infrastructure/hooks/useInfrastructure.ts"]
+    },
+    "react-feature-types.ts.template": {
+      "purpose": "TypeScript interfaces for feature domain modeling",
+      "location": "durable-code-app/frontend/src/features/[feature-name]/types/",
+      "example_files": ["durable-code-app/frontend/src/features/infrastructure/types/infrastructure.types.ts"]
     }
   },
   "features": {
@@ -153,6 +168,8 @@
     "_note": "Key directories and their purposes",
     "tools/design_linters/": "Linting framework implementation",
     "durable-code-app/": "Full-stack web application",
+    "durable-code-app/frontend/src/features/": "Feature-based architecture for complex components",
+    "durable-code-app/frontend/src/components/": "Simple reusable components and basic tabs",
     "test/": "Comprehensive test suites",
     ".ai/": "AI agent documentation and templates",
     ".claude/commands/": "Claude AI command definitions",
@@ -164,12 +181,16 @@
       "details_in": "index_expanded.md#adding-linting-rules"
     },
     "add_web_tab": {
-      "steps": ["Use web-tab.tsx.template", "Place in frontend/src/components/tabs/", "Update App.tsx", "Add styling"],
+      "steps": ["Use web-tab.tsx.template", "Choose: components/tabs/ for simple tabs or features/[name]/ for complex features", "Update App.tsx with lazy loading", "Add styling and types"],
       "details_in": "index_expanded.md#adding-web-tabs"
     },
     "add_api_endpoint": {
       "steps": ["Use fastapi-endpoint.py.template", "Add to backend routes", "Create Pydantic models", "Add tests"],
       "details_in": "index_expanded.md#adding-api-endpoints"
+    },
+    "add_feature_tab": {
+      "steps": ["Create feature directory", "Use react-feature templates", "Implement types, hooks, and components", "Add lazy loading to App.tsx", "Update tests for async loading"],
+      "details_in": "index_expanded.md#adding-feature-tabs"
     }
   }
 }

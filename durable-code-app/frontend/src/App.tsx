@@ -11,7 +11,7 @@
  * Props/Interfaces: No external props - self-contained root component
  * State/Behavior: Manages active tab state, URL synchronization, and navigation breadcrumbs
  */
-import { useEffect } from 'react';
+import { lazy, Suspense, useEffect } from 'react';
 import { Route, Routes } from 'react-router-dom';
 import type { ReactElement } from 'react';
 import './App.css';
@@ -24,12 +24,19 @@ import CustomLinters from './pages/CustomLinters';
 import ParticleBackground from './components/ParticleBackground';
 import { Tab } from './components/common/Tab';
 import { Icon } from './components/common/Icon';
-import { InfrastructureTab } from './components/tabs/InfrastructureTab';
+import { LoadingSpinner } from './components/common/LoadingSpinner';
 import { PlanningTab } from './components/tabs/PlanningTab';
 import { BuildingTab } from './components/tabs/BuildingTab';
 import { QualityAssuranceTab } from './components/tabs/QualityAssuranceTab';
 import { MaintenanceTab } from './components/tabs/MaintenanceTab';
 import { DemoTab } from './components/tabs/DemoTab';
+
+// Lazy load infrastructure feature
+const InfrastructureTab = lazy(() =>
+  import('./features/infrastructure').then((m) => ({
+    default: m.InfrastructureTab,
+  })),
+);
 
 interface TabContent {
   title: string;
@@ -207,7 +214,9 @@ function HomePage() {
             <h2>{tabs[activeTab].title}</h2>
             <p>{tabs[activeTab].description}</p>
           </div>
-          <ActiveTabComponent />
+          <Suspense fallback={<LoadingSpinner />}>
+            <ActiveTabComponent />
+          </Suspense>
         </section>
 
         <section className="ai-principles">
