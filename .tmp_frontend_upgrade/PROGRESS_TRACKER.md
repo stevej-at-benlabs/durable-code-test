@@ -8,9 +8,9 @@ This is the **PRIMARY HANDOFF DOCUMENT** for AI agents working on the React fron
 4. **Update this document** after completing each PR
 
 ## 📍 Current Status
-**Current PR**: PR4 Completed
+**Current PR**: PR5 Completed
 **Last Updated**: 2025-09-19
-**Application State**: ✅ Fully functional - Infrastructure feature extracted with lazy loading
+**Application State**: ✅ Fully functional - Demo feature extracted with WebSocket service working
 
 ## 📁 Required Documents Location
 ```
@@ -23,20 +23,19 @@ This is the **PRIMARY HANDOFF DOCUMENT** for AI agents working on the React fron
 
 ## 🎯 Next PR to Implement
 
-### ➡️ START HERE: PR5 - Demo Feature Extraction with WebSocket Service
+### ➡️ START HERE: PR6 - Remaining Features Extraction
 
-**Reference**: See `/tmp/react_upgrade/PR_BREAKDOWN.md` → PR5 section
+**Reference**: See `/tmp/react_upgrade/PR_BREAKDOWN.md` → PR6 section
 
 **Quick Summary**:
-- Extract Demo tab (707 lines) into feature-based components
-- Create WebSocket service with proper abstractions
-- Break down into Oscilloscope, ControlPanel, and StatusPanel components
-- Add custom hooks for WebSocket, canvas, and data management
-- Implement proper separation of concerns
+- Extract remaining tab components (Standards, CustomElements, ParticleBackground, Maintenance, BuildingTab, QualityAssuranceTab)
+- Create feature modules for each with proper structure
+- Implement lazy loading for all features
+- Ensure consistent patterns from PR4 and PR5
 
 **Pre-flight Checklist**:
 - [ ] Read AI_CONTEXT.md for project overview
-- [ ] Read PR5 section in PR_BREAKDOWN.md
+- [ ] Read PR6 section in PR_BREAKDOWN.md
 - [ ] Ensure you're on a feature branch (not main)
 - [ ] Run `make dev` to verify app currently works
 
@@ -50,7 +49,7 @@ This is the **PRIMARY HANDOFF DOCUMENT** for AI agents working on the React fron
 | PR2 | State Management (Zustand) | ✅ Completed | feature/pr2-state-management-foundation | Add Zustand + React Query |
 | PR3 | Common Components Library | ✅ Completed | feature/pr3-common-components | 9 reusable components with CSS Modules |
 | PR4 | Infrastructure Feature | ✅ Completed | feature/pr4-infrastructure-feature | First feature extraction with lazy loading |
-| PR5 | Demo Feature + WebSocket | ⏳ Pending | - | Most complex extraction |
+| PR5 | Demo Feature + WebSocket | ✅ Completed | feature/pr5-demo-websocket | Most complex extraction, WebSocket singleton |
 | PR6 | Remaining Features | ⏳ Pending | - | Complete modularization |
 | PR7 | App Shell Refactoring | ⏳ Pending | - | Clean up main App.tsx |
 | PR8 | Styling System | ⏳ Pending | - | CSS modules + theme |
@@ -310,6 +309,78 @@ This is the **PRIMARY HANDOFF DOCUMENT** for AI agents working on the React fron
 - Template for complex feature breakdown (Demo tab will be much larger)
 - Infrastructure data hook pattern ready for reuse in other features
 
+### PR5: Demo Feature Extraction with WebSocket Service
+**Date**: 2025-09-19
+**Branch**: feature/pr5-demo-websocket
+**Key Commits**: [pending commit]
+
+**What Was Done**:
+- Successfully extracted 692-line DemoTab into comprehensive feature-based architecture
+- Created complete WebSocket service with singleton pattern to handle React StrictMode
+- Implemented modular components:
+  - OscilloscopeCanvas: Canvas-based waveform visualization with grid and measurements
+  - ControlPanel: Waveform selection, parameter controls, streaming controls
+  - StatusPanel: Connection status, data rate, buffer size, performance metrics
+  - WaveformSelector, ParameterControls, ZoomControls, MeasurementControls sub-components
+- Created custom hooks:
+  - useWebSocket: WebSocket connection management with event handling
+  - useOscilloscope: Oscilloscope state and control logic
+  - useCanvas: Canvas rendering and animation loop management
+- Implemented WebSocket singleton pattern to persist connection across React re-renders
+- Fixed critical WebSocket connection issues caused by React StrictMode double-mounting
+- Added comprehensive TypeScript types for all oscilloscope data structures
+- Used CSS Modules for component-scoped styling
+- Maintained all existing functionality including real-time waveform streaming
+
+**Deviations from Plan**:
+- Had to implement singleton pattern for WebSocket service due to React StrictMode issues
+- Removed mountedRef checks that were blocking data flow in StrictMode
+- Added periodic state synchronization to handle singleton connection state
+- More granular component breakdown than originally planned (11 components total)
+
+**New Files Created**:
+- src/features/demo/types/oscilloscope.types.ts
+- src/features/demo/constants/oscilloscope.constants.ts
+- src/features/demo/services/websocketService.ts
+- src/features/demo/services/websocketSingleton.ts
+- src/features/demo/hooks/useWebSocket.ts
+- src/features/demo/hooks/useOscilloscope.ts
+- src/features/demo/hooks/useCanvas.ts
+- src/features/demo/components/DemoTab/DemoTab.tsx and .module.css
+- src/features/demo/components/Oscilloscope/OscilloscopeCanvas.tsx and .module.css
+- src/features/demo/components/ControlPanel/ (with 5 sub-components)
+- src/features/demo/components/StatusPanel/StatusPanel.tsx and .module.css
+- src/features/demo/index.ts
+
+**Files Modified**:
+- src/App.tsx (updated import to use feature module)
+
+**Files Deleted**:
+- src/components/tabs/DemoTab.tsx (replaced by feature module)
+
+**Tests**:
+- Existing tests continue to pass
+- WebSocket functionality manually tested and verified working
+- Real-time streaming confirmed operational
+
+**Verification**:
+- [x] App builds successfully
+- [x] All tests pass
+- [x] Linting passes (0 errors, 0 warnings)
+- [x] TypeScript strict mode (0 errors)
+- [x] No console errors
+- [x] WebSocket connection working
+- [x] Real-time waveform streaming functional
+- [x] All controls operational (frequency, amplitude, waveform selection)
+- [x] Performance maintained with smooth animations
+
+**Notes for Next PR**:
+- WebSocket singleton pattern established for persistent connections
+- Canvas hook pattern ready for reuse in other visualization features
+- Complex feature extraction pattern proven with 692-line component
+- React StrictMode compatibility ensured
+- All oscilloscope functionality preserved and working
+
 ### Baseline Assessment (Pre-PR1)
 **Date**: 2024-01-19
 **Branch**: main
@@ -562,5 +633,5 @@ _AI agents should list questions here if blocked_
 
 ---
 
-**Last AI Agent**: Claude - Completed PR4 (2025-09-19)
-**Next AI Agent Action**: Begin PR5 - Read PR_BREAKDOWN.md PR5 section and implement Demo feature extraction with WebSocket service
+**Last AI Agent**: Claude - Completed PR5 (2025-09-19)
+**Next AI Agent Action**: Begin PR6 - Read PR_BREAKDOWN.md PR6 section and extract remaining features

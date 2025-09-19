@@ -1,0 +1,23 @@
+/**
+ * Purpose: CSS module styles for the oscilloscope canvas component
+ * Scope: Styling for canvas container and responsive layout
+ * Overview: Provides responsive styling for the oscilloscope canvas with proper
+ *     container layout and canvas rendering optimizations.
+ */
+
+.container {
+  width: 100%;
+  height: auto;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.canvas {
+  display: block;
+  max-width: 100%;
+  image-rendering: pixelated;
+  image-rendering: -moz-crisp-edges;
+  image-rendering: crisp-edges;
+}

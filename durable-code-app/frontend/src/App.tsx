@@ -29,12 +29,17 @@ import { PlanningTab } from './components/tabs/PlanningTab';
 import { BuildingTab } from './components/tabs/BuildingTab';
 import { QualityAssuranceTab } from './components/tabs/QualityAssuranceTab';
 import { MaintenanceTab } from './components/tabs/MaintenanceTab';
-import { DemoTab } from './components/tabs/DemoTab';
-
 // Lazy load infrastructure feature
 const InfrastructureTab = lazy(() =>
   import('./features/infrastructure').then((m) => ({
     default: m.InfrastructureTab,
+  })),
+);
+
+// Lazy load demo feature
+const DemoTab = lazy(() =>
+  import('./features/demo').then((m) => ({
+    default: m.DemoTab,
   })),
 );
 

@@ -80,6 +80,26 @@
       "purpose": "TypeScript interfaces for feature domain modeling",
       "location": "durable-code-app/frontend/src/features/[feature-name]/types/",
       "example_files": ["durable-code-app/frontend/src/features/infrastructure/types/infrastructure.types.ts"]
+    },
+    "react-websocket-service.ts.template": {
+      "purpose": "WebSocket service class for React with reconnection and event handling",
+      "location": "durable-code-app/frontend/src/features/[feature-name]/services/",
+      "example_files": ["durable-code-app/frontend/src/features/demo/services/websocketService.ts"]
+    },
+    "react-websocket-singleton.ts.template": {
+      "purpose": "Singleton wrapper for WebSocket service to handle React StrictMode",
+      "location": "durable-code-app/frontend/src/features/[feature-name]/services/",
+      "example_files": ["durable-code-app/frontend/src/features/demo/services/websocketSingleton.ts"]
+    },
+    "react-websocket-hook.ts.template": {
+      "purpose": "React hook for WebSocket connection management with state synchronization",
+      "location": "durable-code-app/frontend/src/features/[feature-name]/hooks/",
+      "example_files": ["durable-code-app/frontend/src/features/demo/hooks/useWebSocket.ts"]
+    },
+    "websocket-endpoint.py.template": {
+      "purpose": "FastAPI WebSocket endpoint with streaming and command handling",
+      "location": "durable-code-app/backend/app/",
+      "example_files": ["durable-code-app/backend/app/oscilloscope.py"]
     }
   },
   "features": {
@@ -162,6 +182,10 @@
     "debug-with-tests-and-logging.md": {
       "purpose": "Test-driven debugging methodology",
       "philosophy": "Use unit tests and Loguru logging, never temp files"
+    },
+    "implement-websocket-react.md": {
+      "purpose": "Implement WebSocket connections in React with StrictMode compatibility",
+      "key_commands": ["Use singleton pattern", "Handle reconnection", "Sync state with service"]
     }
   },
   "file_structure": {
@@ -191,6 +215,10 @@
     "add_feature_tab": {
       "steps": ["Create feature directory", "Use react-feature templates", "Implement types, hooks, and components", "Add lazy loading to App.tsx", "Update tests for async loading"],
       "details_in": "index_expanded.md#adding-feature-tabs"
+    },
+    "add_websocket_feature": {
+      "steps": ["Use websocket-endpoint.py.template for backend", "Use react-websocket-service.ts.template for service", "Use react-websocket-singleton.ts.template for singleton", "Use react-websocket-hook.ts.template for React hook", "Follow implement-websocket-react.md guide"],
+      "details_in": ".ai/howto/implement-websocket-react.md"
     }
   }
 }

@@ -1,0 +1,211 @@
+/**
+ * Purpose: Custom React hook for WebSocket connection management in {{FEATURE_NAME}}
+ * Scope: Hook for managing WebSocket connections, state, and event handling
+ * Overview: Provides a React hook interface to the WebSocket service with automatic
+ *     connection management, state tracking, and cleanup. Handles connection lifecycle
+ *     and provides reactive state updates for React components.
+ * Dependencies: React hooks, WebSocket service, {{ADDITIONAL_DEPENDENCIES}}
+ * Exports: use{{HOOK_NAME}} hook
+ * Interfaces: Hook return type with connection state and methods
+ * Implementation: React hook wrapping WebSocket service with proper lifecycle management
+ */
+
+import { useCallback, useEffect, useRef, useState } from 'react';
+import type { {{DATA_TYPE}}, {{COMMAND_TYPE}} } from '../types/{{TYPE_FILE}}';
+import { get{{SERVICE_NAME}}Singleton } from '../services/{{SINGLETON_FILE}}';
+
+interface Use{{HOOK_NAME}}Return {
+  isConnected: boolean;
+  isConnecting: boolean;
+  error: Error | null;
+  lastData: {{DATA_TYPE}} | null;
+  send: (command: {{COMMAND_TYPE}}) => boolean;
+  connect: () => Promise<void>;
+  disconnect: () => void;
+  reconnectAttempts: number;
+  {{ADDITIONAL_RETURN_FIELDS}}
+}
+
+export function use{{HOOK_NAME}}(url?: string): Use{{HOOK_NAME}}Return {
+  // Get singleton service first
+  const service = get{{SERVICE_NAME}}Singleton();
+
+  // Initialize state based on service's current state
+  const [isConnected, setIsConnected] = useState(false);
+  const [isConnecting, setIsConnecting] = useState(false);
+  const [error, setError] = useState<Error | null>(null);
+  const [lastData, setLastData] = useState<{{DATA_TYPE}} | null>(null);
+  const [reconnectAttempts, setReconnectAttempts] = useState(0);
+  {{ADDITIONAL_STATE}}
+
+  const hasInitializedRef = useRef(false);
+
+  // Setup event listeners
+  useEffect(() => {
+    if (!service) return;
+
+    const handleOpen = () => {
+      setIsConnected(true);
+      setIsConnecting(false);
+      setError(null);
+      setReconnectAttempts(0);
+    };
+
+    const handleClose = () => {
+      setIsConnected(false);
+      setIsConnecting(false);
+    };
+
+    const handleError = (error: Error) => {
+      setError(error);
+      setIsConnecting(false);
+    };
+
+    const handleData = (data: {{DATA_TYPE}}) => {
+      setLastData(data);
+      setError(null); // Clear error on successful data
+      {{ADDITIONAL_DATA_HANDLING}}
+    };
+
+    const handleReconnecting = (data: { attempt: number }) => {
+      setReconnectAttempts(data.attempt);
+      setIsConnecting(true);
+    };
+
+    const handleReconnected = () => {
+      setReconnectAttempts(0);
+    };
+
+    const handleMaxReconnectAttempts = () => {
+      setError(new Error('Maximum reconnection attempts reached'));
+      setIsConnecting(false);
+    };
+
+    {{ADDITIONAL_EVENT_HANDLERS}}
+
+    // Add event listeners
+    service.on('open', handleOpen);
+    service.on('close', handleClose);
+    service.on('error', handleError);
+    service.on('data', handleData);
+    service.on('reconnecting', handleReconnecting);
+    service.on('reconnected', handleReconnected);
+    service.on('maxReconnectAttemptsReached', handleMaxReconnectAttempts);
+    {{REGISTER_ADDITIONAL_LISTENERS}}
+
+    // Cleanup listeners
+    return () => {
+      service.off('open', handleOpen);
+      service.off('close', handleClose);
+      service.off('error', handleError);
+      service.off('data', handleData);
+      service.off('reconnecting', handleReconnecting);
+      service.off('reconnected', handleReconnected);
+      service.off('maxReconnectAttemptsReached', handleMaxReconnectAttempts);
+      {{UNREGISTER_ADDITIONAL_LISTENERS}}
+    };
+  }, [service]);
+
+  // Connect function
+  const connect = useCallback(async (): Promise<void> => {
+    if (!service || isConnecting || isConnected) return;
+
+    setIsConnecting(true);
+    setError(null);
+
+    try {
+      await service.connect(url);
+    } catch (error) {
+      setError(error as Error);
+      setIsConnecting(false);
+      throw error;
+    }
+  }, [service, url, isConnecting, isConnected]);
+
+  // Disconnect function
+  const disconnect = useCallback(() => {
+    if (!service) return;
+
+    service.disconnect();
+    setIsConnected(false);
+    setIsConnecting(false);
+    setReconnectAttempts(0);
+  }, [service]);
+
+  // Send function
+  const send = useCallback((command: {{COMMAND_TYPE}}): boolean => {
+    if (!service) return false;
+    return service.send(command);
+  }, [service]);
+
+  // Auto-connect on mount and sync state
+  useEffect(() => {
+    if (!service || hasInitializedRef.current) return;
+
+    hasInitializedRef.current = true;
+
+    const initConnection = async () => {
+      // First, check if already connected
+      if (service.isConnected) {
+        setIsConnected(true);
+        setIsConnecting(false);
+        return;
+      }
+
+      setIsConnecting(true);
+      setError(null);
+
+      try {
+        await service.connect(url);
+        // Check state after connection attempt
+        if (service.isConnected) {
+          setIsConnected(true);
+          setIsConnecting(false);
+        }
+      } catch (error) {
+        setError(error as Error);
+        setIsConnecting(false);
+      }
+    };
+
+    // Run immediately
+    initConnection();
+  }, [service, url]);
+
+  // Periodically check and sync connection state
+  // This handles cases where the singleton's state changes outside this hook
+  useEffect(() => {
+    const checkInterval = setInterval(() => {
+      if (service && service.isConnected !== isConnected) {
+        setIsConnected(service.isConnected);
+        if (!service.isConnected) {
+          setIsConnecting(false);
+        }
+      }
+    }, 500); // Check every 500ms
+
+    return () => clearInterval(checkInterval);
+  }, [service, isConnected]);
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      hasInitializedRef.current = false;
+      // Don't disconnect the singleton - it should persist
+    };
+  }, []);
+
+  {{ADDITIONAL_EFFECTS}}
+
+  return {
+    isConnected,
+    isConnecting,
+    error,
+    lastData,
+    send,
+    connect,
+    disconnect,
+    reconnectAttempts,
+    {{ADDITIONAL_RETURN_VALUES}}
+  };
+}
