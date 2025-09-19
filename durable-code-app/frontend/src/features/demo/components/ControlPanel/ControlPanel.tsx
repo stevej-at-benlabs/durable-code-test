@@ -27,6 +27,7 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
   onFrequencyChange,
   onAmplitudeChange,
   onOffsetChange,
+  onReset,
 }) => {
   const handlePauseToggle = () => {
     onStateChange({ isPaused: !state.isPaused });
@@ -84,6 +85,7 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
       <WaveformSelector
         selectedWaveType={state.waveType}
         onWaveTypeChange={onUpdateWaveform}
+        onReset={onReset}
         disabled={!state.isConnected}
       />
 

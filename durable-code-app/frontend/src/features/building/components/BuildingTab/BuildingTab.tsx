@@ -21,9 +21,11 @@ export function BuildingTab(): ReactElement {
     <div className={styles.container}>
       {/* Hero Section */}
       <div className={styles.hero}>
-        <div className={styles.heroIcon}>⚡</div>
-        <h3 className={styles.title}>AI-Powered Code Generation</h3>
-        <p className={styles.subtitle}>
+        <h3 className="hero-title">
+          <span className={styles.heroIcon}>⚡</span>
+          AI-Powered Code Generation
+        </h3>
+        <p className="subtitle">
           Build complete applications without writing a single line of code - powered by
           AI-driven development and intelligent automation
         </p>
@@ -32,11 +34,11 @@ export function BuildingTab(): ReactElement {
       {/* Slash Commands Section */}
       <section>
         <div className={styles.sectionHeader}>
-          <h4 className={styles.sectionTitle}>
+          <h4 className="light-title-on-dark">
             <span className={styles.sectionIcon}>⚡</span>
             Slash Commands
           </h4>
-          <div className={styles.sectionBadge}>4 Available</div>
+          <div className={`${styles.badge} ${styles.available}`}>4 Available</div>
         </div>
 
         <div className={styles.commandCards}>
@@ -56,11 +58,11 @@ export function BuildingTab(): ReactElement {
       {/* New Code Capabilities Section */}
       <section>
         <div className={styles.sectionHeader}>
-          <h4 className={styles.sectionTitle}>
+          <h4 className="light-title-on-dark">
             <span className={styles.sectionIcon}>🛠️</span>
             /new-code Capabilities
           </h4>
-          <div className={styles.sectionBadge}>Smart Generation</div>
+          <div className={`${styles.badge} ${styles.info}`}>Smart Generation</div>
         </div>
 
         <div className={styles.commandCards}>
@@ -80,18 +82,18 @@ export function BuildingTab(): ReactElement {
       {/* AI-Powered Commands Section */}
       <section>
         <div className={styles.sectionHeader}>
-          <h4 className={styles.sectionTitle}>
+          <h4 className="light-title-on-dark">
             <span className={styles.sectionIcon}>🤖</span>
             AI-Powered Slash Commands
           </h4>
-          <div className={styles.sectionBadge}>New</div>
+          <div className={`${styles.badge} ${styles.new}`}>New</div>
         </div>
 
         <div className={styles.aiCommandCards}>
           {aiCommands.map((cmd) => (
             <div key={cmd.id} className={styles.aiCommandCard}>
               <div className={styles.aiCommandIcon}>{cmd.icon}</div>
-              <h5 className={styles.aiCommandName}>{cmd.name}</h5>
+              <h5 className="light-title-on-dark">{cmd.name}</h5>
               <p className={styles.aiCommandDesc}>{cmd.description}</p>
               <div className={styles.aiCommandFeatures}>
                 {cmd.features.map((feature) => (
@@ -115,7 +117,7 @@ export function BuildingTab(): ReactElement {
 
       {/* AI Templates Section */}
       <section>
-        <h4 className={styles.sectionTitle}>
+        <h4 className="light-title-on-dark">
           <span className={styles.sectionIcon}>📄</span>
           AI Templates (.ai/templates)
         </h4>
@@ -123,7 +125,7 @@ export function BuildingTab(): ReactElement {
           {templates.map((template) => (
             <div key={template.id} className={styles.templateCard}>
               <div className={styles.templateIcon}>{template.icon}</div>
-              <h5 className={styles.templateName}>{template.filename}</h5>
+              <h5 className="light-title-on-dark">{template.filename}</h5>
               <p className={styles.templateDesc}>{template.description}</p>
             </div>
           ))}
@@ -132,7 +134,7 @@ export function BuildingTab(): ReactElement {
 
       {/* How-To Guides Section */}
       <section>
-        <h4 className={styles.sectionTitle}>
+        <h4 className="light-title-on-dark">
           <span className={styles.sectionIcon}>📚</span>
           How-To Guides (.ai/howto)
         </h4>
@@ -140,7 +142,7 @@ export function BuildingTab(): ReactElement {
           {howToGuides.map((guide) => (
             <div key={guide.id} className={styles.howtoCard}>
               <div className={styles.howtoIcon}>{guide.icon}</div>
-              <h5 className={styles.howtoTitle}>{guide.title}</h5>
+              <h5 className="light-title-on-dark">{guide.title}</h5>
               <p className={styles.howtoDesc}>{guide.description}</p>
             </div>
           ))}
@@ -151,11 +153,11 @@ export function BuildingTab(): ReactElement {
       <section>
         <div className={styles.standardsCard}>
           <div className={styles.sectionHeader}>
-            <h4 className={styles.sectionTitle}>
+            <h4 className="light-title-on-dark">
               <span className={styles.sectionIcon}>📋</span>
               Development Standards (.ai/docs/STANDARDS.md)
             </h4>
-            <div className={styles.sectionBadge}>Essential</div>
+            <div className={`${styles.badge} ${styles.essential}`}>Essential</div>
           </div>
           <div className={styles.standardsGrid}>
             {standards.map((standard) => (

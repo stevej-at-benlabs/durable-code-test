@@ -28,3 +28,8 @@ export type { ErrorMessageProps, ErrorMessageVariant } from './ErrorMessage';
 
 export { Section } from './Section';
 export type { SectionProps, SectionVariant } from './Section';
+
+export { DetailsCard } from './DetailsCard';
+
+export { FeatureCard } from './FeatureCard';
+export type { FeatureCardVariant } from './FeatureCard';

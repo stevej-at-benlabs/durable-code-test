@@ -125,16 +125,22 @@ export const OscilloscopeCanvas: React.FC<OscilloscopeCanvasProps> = ({
 
   // Draw measurements and labels
   const drawMeasurements = useCallback(
-    (ctx: CanvasRenderingContext2D, width: number, _height: number) => {
+    (ctx: CanvasRenderingContext2D, width: number, height: number) => {
       ctx.fillStyle = CANVAS_CONFIG.TEXT_COLOR;
       ctx.font = '12px monospace';
 
-      // Draw scale information
-      ctx.fillText(`${state.timeScale} ms/div`, 10, 20);
-      ctx.fillText(`${state.voltScale} V/div`, 10, 35);
-      ctx.fillText(`Freq: ${state.frequency.toFixed(1)} Hz`, 10, 50);
+      // Draw scale information at bottom with proper margin
+      const bottomMargin = 25;
+      const lineSpacing = 18;
+      ctx.fillText(
+        `${state.timeScale} ms/div`,
+        10,
+        height - bottomMargin - lineSpacing * 2,
+      );
+      ctx.fillText(`${state.voltScale} V/div`, 10, height - bottomMargin - lineSpacing);
+      ctx.fillText(`Freq: ${state.frequency.toFixed(1)} Hz`, 10, height - bottomMargin);
 
-      // Draw performance metrics
+      // Draw performance metrics at top
       ctx.fillText(`FPS: ${stats.fps}`, width - 80, 20);
     },
     [state.timeScale, state.voltScale, state.frequency, stats.fps],

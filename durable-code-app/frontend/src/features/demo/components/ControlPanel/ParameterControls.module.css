@@ -18,8 +18,8 @@
 
 .label {
   font-size: 14px;
-  font-weight: 500;
-  color: #ffffff;
+  font-weight: 600;
+  color: var(--color-text-primary, #fff);
   margin: 0;
 }
 
@@ -36,6 +36,12 @@
 
 .slider:hover {
   opacity: 1;
+}
+
+.slider:focus {
+  opacity: 1;
+  outline: 2px solid var(--color-primary, #00a86b);
+  outline-offset: 2px;
 }
 
 .slider:disabled {

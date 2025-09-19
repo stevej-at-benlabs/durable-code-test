@@ -1,0 +1,211 @@
+/**
+ * Purpose: Global application styles using theme variables
+ * Scope: Base HTML and body styles with theme integration
+ * Overview: Global styles that apply theme variables to foundational elements
+ * Dependencies: Theme system (colors, typography, spacing)
+ * Exports: Global element styles
+ * Interfaces: Base styling for HTML/body and global patterns
+ * Implementation: Uses CSS variables from theme system
+ */
+
+/* Import theme system */
+@import './theme/index.css';
+@import './reset.css';
+
+/* Global base styles */
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: var(--body-font);
+  font-weight: var(--body-weight);
+  line-height: var(--body-line-height);
+  color: var(--color-text-primary);
+  background: var(--gradient-primary);
+  background-attachment: fixed;
+  overflow-x: hidden;
+  position: relative;
+}
+
+/* Parchment texture overlay */
+body::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-image:
+    radial-gradient(circle at 20% 50%, rgba(139, 100, 61, 0.08) 0%, transparent 50%),
+    radial-gradient(circle at 80% 20%, rgba(101, 67, 33, 0.06) 0%, transparent 50%),
+    radial-gradient(circle at 40% 80%, rgba(160, 120, 85, 0.05) 0%, transparent 50%);
+  pointer-events: none;
+  z-index: -1;
+}
+
+/* Global link styles */
+a {
+  color: var(--color-primary-400);
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+a:hover {
+  color: var(--color-primary-500);
+}
+
+/* Global heading styles */
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: var(--heading-font);
+  font-weight: var(--heading-weight);
+  line-height: var(--heading-line-height);
+  color: var(--color-text-primary);
+  margin-bottom: var(--space-4);
+}
+
+h1 {
+  font-size: var(--hero-title-size);
+  margin-bottom: var(--space-6);
+}
+
+h2 {
+  font-size: var(--text-3xl);
+  margin-bottom: var(--space-5);
+}
+
+h3 {
+  font-size: var(--text-2xl);
+  margin-bottom: var(--space-4);
+}
+
+h4 {
+  font-size: var(--text-xl);
+  margin-bottom: var(--space-3);
+}
+
+h5 {
+  font-size: var(--text-lg);
+  margin-bottom: var(--space-3);
+}
+
+h6 {
+  font-size: var(--text-base);
+  margin-bottom: var(--space-2);
+}
+
+/* Global paragraph styles */
+p {
+  margin-bottom: var(--space-4);
+  max-width: 65ch; /* Optimal reading width */
+}
+
+/* Global code styles */
+code,
+pre {
+  font-family: var(--code-font);
+  font-weight: var(--code-weight);
+  line-height: var(--code-line-height);
+}
+
+code {
+  background: var(--color-surface-elevated);
+  padding: var(--space-1) var(--space-2);
+  border-radius: var(--space-1);
+  font-size: 0.875em;
+}
+
+pre {
+  background: var(--color-surface-elevated);
+  padding: var(--space-4);
+  border-radius: var(--space-2);
+  overflow-x: auto;
+  margin-bottom: var(--space-4);
+}
+
+pre code {
+  background: none;
+  padding: 0;
+}
+
+/* Global list styles */
+ul,
+ol {
+  margin-bottom: var(--space-4);
+  padding-left: var(--space-6);
+}
+
+li {
+  margin-bottom: var(--space-1);
+}
+
+/* Global table styles */
+table {
+  border-collapse: collapse;
+  width: 100%;
+  margin-bottom: var(--space-4);
+}
+
+th,
+td {
+  padding: var(--space-3);
+  text-align: left;
+  border-bottom: 1px solid var(--color-border-light);
+}
+
+th {
+  font-weight: var(--font-weight-semibold);
+  background: var(--color-surface-elevated);
+}
+
+/* Global form styles */
+input,
+textarea,
+select {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border-medium);
+  border-radius: var(--space-1);
+  padding: var(--space-2) var(--space-3);
+  font-size: var(--text-base);
+  color: var(--color-text-primary);
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+input:focus,
+textarea:focus,
+select:focus {
+  outline: none;
+  border-color: var(--color-primary-400);
+  box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.1);
+}
+
+/* Utility classes */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.visually-hidden {
+  @extend .sr-only;
+}
+
+/* Responsive images */
+.responsive-img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+}

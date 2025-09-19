@@ -37,6 +37,7 @@ interface UseOscilloscopeReturn {
   updateTriggerLevel: (triggerLevel: number) => void;
   togglePause: () => void;
   clearBuffer: () => void;
+  resetToDefaults: () => void;
   error: Error | null;
 }
 
@@ -222,6 +223,30 @@ export function useOscilloscope(): UseOscilloscopeReturn {
     setStats((prev) => ({ ...prev, bufferSize: 0 }));
   }, []);
 
+  // Reset only UI parameters to default values (like adjusting dials by hand)
+  const resetToDefaults = useCallback(() => {
+    setState((prev) => ({
+      ...prev,
+      waveType: DEFAULT_OSCILLOSCOPE_STATE.waveType,
+      frequency: DEFAULT_OSCILLOSCOPE_STATE.frequency,
+      amplitude: DEFAULT_OSCILLOSCOPE_STATE.amplitude,
+      offset: DEFAULT_OSCILLOSCOPE_STATE.offset,
+      timeScale: DEFAULT_OSCILLOSCOPE_STATE.timeScale,
+      voltScale: DEFAULT_OSCILLOSCOPE_STATE.voltScale,
+      triggerLevel: DEFAULT_OSCILLOSCOPE_STATE.triggerLevel,
+    }));
+
+    // If streaming, send the configuration update to backend
+    if (isConnected && state.isStreaming) {
+      sendConfiguration({
+        waveType: DEFAULT_OSCILLOSCOPE_STATE.waveType,
+        frequency: DEFAULT_OSCILLOSCOPE_STATE.frequency,
+        amplitude: DEFAULT_OSCILLOSCOPE_STATE.amplitude,
+        offset: DEFAULT_OSCILLOSCOPE_STATE.offset,
+      });
+    }
+  }, [isConnected, state.isStreaming, sendConfiguration]);
+
   return {
     state,
     stats,
@@ -237,6 +262,7 @@ export function useOscilloscope(): UseOscilloscopeReturn {
     updateTriggerLevel,
     togglePause,
     clearBuffer,
+    resetToDefaults,
     error,
   };
 }

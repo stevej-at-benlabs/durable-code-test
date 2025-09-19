@@ -16,11 +16,11 @@ export function QualityAssuranceTab(): ReactElement {
   return (
     <div className={styles.container}>
       <div className={styles.hero}>
-        <h3 className={styles.title}>
+        <h3 className="hero-title">
           <span className={styles.titleIcon}>🛡️</span>
           Bulletproof Code Quality
         </h3>
-        <p className={styles.subtitle}>
+        <p className="subtitle">
           Comprehensive automated testing, custom linting, and AI-powered validation to
           ensure your code meets the highest standards
         </p>
@@ -28,17 +28,17 @@ export function QualityAssuranceTab(): ReactElement {
 
       <div className={styles.showcaseSection}>
         <div className={styles.showcaseHeader}>
-          <h4 className={styles.showcaseTitle}>
+          <h4 className="light-title-on-dark">
             <span className={styles.showcaseIcon}>🔍</span>
             Custom Linters
           </h4>
-          <div className={styles.showcaseBadge}>18+ Active</div>
+          <div className={`${styles.badge} ${styles.active}`}>18+ Active</div>
         </div>
 
         <div className={styles.linterCards}>
           <div className={styles.linterCard}>
             <div className={styles.linterIcon}>🔢</div>
-            <h5 className={styles.linterName}>Magic Number Detection</h5>
+            <h5 className="light-title-on-dark">Magic Number Detection</h5>
             <p className={styles.linterDesc}>
               Identifies hardcoded values and complex literals
             </p>
@@ -54,7 +54,7 @@ export function QualityAssuranceTab(): ReactElement {
 
           <div className={styles.linterCard}>
             <div className={styles.linterIcon}>📁</div>
-            <h5 className={styles.linterName}>File Organization</h5>
+            <h5 className="light-title-on-dark">File Organization</h5>
             <p className={styles.linterDesc}>
               Ensures proper module structure and placement
             </p>
@@ -70,7 +70,7 @@ export function QualityAssuranceTab(): ReactElement {
 
           <div className={styles.linterCard}>
             <div className={styles.linterIcon}>🖨️</div>
-            <h5 className={styles.linterName}>Print & Console Output</h5>
+            <h5 className="light-title-on-dark">Print & Console Output</h5>
             <p className={styles.linterDesc}>
               Detects print statements and console methods
             </p>
@@ -86,7 +86,7 @@ export function QualityAssuranceTab(): ReactElement {
 
           <div className={styles.linterCard}>
             <div className={styles.linterIcon}>📊</div>
-            <h5 className={styles.linterName}>Logging Standards</h5>
+            <h5 className="light-title-on-dark">Logging Standards</h5>
             <p className={styles.linterDesc}>Enforces structured logging with Loguru</p>
             <div className={styles.linterStats}>
               <span className={styles.statItem}>
@@ -100,7 +100,7 @@ export function QualityAssuranceTab(): ReactElement {
 
           <div className={styles.linterCard}>
             <div className={styles.linterIcon}>🏗️</div>
-            <h5 className={styles.linterName}>SOLID Principles</h5>
+            <h5 className="light-title-on-dark">SOLID Principles</h5>
             <p className={styles.linterDesc}>
               Validates SRP, class size, and dependencies
             </p>
@@ -116,7 +116,7 @@ export function QualityAssuranceTab(): ReactElement {
 
           <div className={styles.linterCard}>
             <div className={styles.linterIcon}>📏</div>
-            <h5 className={styles.linterName}>Naming Conventions</h5>
+            <h5 className="light-title-on-dark">Naming Conventions</h5>
             <p className={styles.linterDesc}>Enforces consistent naming standards</p>
             <div className={styles.linterStats}>
               <span className={styles.statItem}>
@@ -159,7 +159,7 @@ export function QualityAssuranceTab(): ReactElement {
             <span className={styles.showcaseIcon}>🚀</span>
             CI/CD Pipeline
           </h4>
-          <div className={styles.showcaseBadge}>All Systems Go</div>
+          <div className={`${styles.badge} ${styles.success}`}>All Systems Go</div>
         </div>
 
         <div className={styles.pipelineStages}>

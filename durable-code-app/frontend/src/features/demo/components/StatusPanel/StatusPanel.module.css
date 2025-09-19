@@ -7,21 +7,23 @@
 .container {
   margin-top: 20px;
   padding: 10px;
-  background: #2a2a2a;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.25);
   border-radius: 5px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
 }
 
 .title {
   margin: 0 0 15px 0;
   font-size: 16px;
-  font-weight: 600;
-  color: #ffffff;
+  font-weight: 700;
+  color: #333333;
 }
 
 .statusGrid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-  gap: 10px;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 15px;
 }
 
 .statusItem {
@@ -33,14 +35,14 @@
 
 .label {
   font-size: 14px;
-  color: #cccccc;
-  font-weight: 500;
+  color: #333333;
+  font-weight: 600;
 }
 
 .value {
   font-size: 14px;
   font-weight: 600;
-  color: #ffffff;
+  color: #333333;
   font-family: 'Courier New', monospace;
 }
 

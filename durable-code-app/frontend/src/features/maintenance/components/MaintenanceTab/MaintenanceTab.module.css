@@ -49,27 +49,8 @@
   }
 }
 
-.title {
-  font-size: 2rem;
-  font-weight: 700;
-  color: #fff;
-  margin-bottom: 1rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-}
-
 .titleIcon {
   font-size: 2rem;
-}
-
-.subtitle {
-  font-size: 1.125rem;
-  color: #999;
-  max-width: 800px;
-  margin: 0 auto;
-  line-height: 1.6;
 }
 
 /* AI Index Showcase */
@@ -97,17 +78,6 @@
   font-size: 1.5rem;
 }
 
-.showcaseBadge {
-  background: rgba(156, 39, 176, 0.1);
-  color: #9c27b0;
-  padding: 0.25rem 1rem;
-  border-radius: 20px;
-  font-size: 0.875rem;
-  font-weight: 600;
-  border: 1px solid rgba(156, 39, 176, 0.2);
-  text-transform: uppercase;
-}
-
 /* Index Features */
 .indexFeatures {
   display: grid;
@@ -133,13 +103,6 @@
 .featureIcon {
   font-size: 2rem;
   margin-bottom: 1rem;
-}
-
-.featureTitle {
-  font-size: 1.25rem;
-  font-weight: 600;
-  color: #fff;
-  margin-bottom: 0.75rem;
 }
 
 .featureDesc {
@@ -221,13 +184,6 @@
 .docIcon {
   font-size: 2rem;
   margin-bottom: 1rem;
-}
-
-.docTitle {
-  font-size: 1.125rem;
-  font-weight: 600;
-  color: #fff;
-  margin-bottom: 0.75rem;
 }
 
 .docDesc {
@@ -340,13 +296,6 @@
   margin-bottom: 1rem;
 }
 
-.toolTitle {
-  font-size: 1.125rem;
-  font-weight: 600;
-  color: #fff;
-  margin-bottom: 0.75rem;
-}
-
 .toolDesc {
   color: #999;
   margin-bottom: 1rem;
@@ -361,6 +310,27 @@
   font-family: 'Courier New', monospace;
   font-size: 0.875rem;
   display: inline-block;
+}
+
+/* Badge System */
+.badge {
+  background: rgba(156, 39, 176, 0.1);
+  color: #9c27b0;
+  padding: 0.25rem 1rem;
+  border-radius: 20px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  border: 1px solid rgba(156, 39, 176, 0.2);
+  text-transform: uppercase;
+  display: inline-flex;
+  align-items: center;
+  white-space: nowrap;
+}
+
+.badge.live {
+  background: rgba(34, 197, 94, 0.1);
+  color: #16a34a;
+  border: 1px solid rgba(34, 197, 94, 0.2);
 }
 
 /* Responsive */

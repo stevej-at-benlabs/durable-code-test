@@ -13,32 +13,45 @@
   margin: 0 auto;
 }
 
+/* Hero Section */
 .hero {
   text-align: center;
   margin-bottom: 3rem;
+  padding: 2rem;
+  background: linear-gradient(
+    135deg,
+    rgba(155, 89, 182, 0.1) 0%,
+    rgba(155, 89, 182, 0.05) 100%
+  );
+  border-radius: 15px;
+  position: relative;
+  overflow: hidden;
+  border: 1px solid rgba(155, 89, 182, 0.2);
 }
 
-.title {
-  font-size: 2rem;
-  font-weight: 700;
-  color: var(--color-primary, #d4af37);
-  margin-bottom: 1rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
+.hero::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, #9b59b6, #8e44ad, #9b59b6);
+  animation: shimmer 3s ease-in-out infinite;
+}
+
+@keyframes shimmer {
+  0%,
+  100% {
+    opacity: 0.5;
+  }
+  50% {
+    opacity: 1;
+  }
 }
 
 .titleIcon {
-  font-size: 2rem;
-}
-
-.subtitle {
-  font-size: 1.125rem;
-  color: #888;
-  line-height: 1.6;
-  max-width: 800px;
-  margin: 0 auto;
+  font-size: 3rem;
 }
 
 .grid {
@@ -86,13 +99,6 @@
   display: block;
 }
 
-.cardTitle {
-  font-size: 1.25rem;
-  font-weight: 600;
-  color: #fff;
-  margin-bottom: 0.75rem;
-}
-
 .cardDescription {
   color: #999;
   line-height: 1.5;
@@ -114,19 +120,63 @@
   gap: 0.5rem;
 }
 
-.cardBadge {
+/* Badge System */
+.badge {
   position: absolute;
   top: 1rem;
   right: 1rem;
-  background: rgba(212, 175, 55, 0.1);
-  color: #d4af37;
+  display: inline-flex;
+  align-items: center;
   padding: 0.25rem 0.75rem;
-  border-radius: 20px;
+  border-radius: 9999px;
   font-size: 0.75rem;
   font-weight: 600;
   text-transform: uppercase;
-  letter-spacing: 0.5px;
-  border: 1px solid rgba(212, 175, 55, 0.2);
+  letter-spacing: 0.05em;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.badge.essential {
+  background: rgba(239, 68, 68, 0.1);
+  color: #ef4444;
+  border: 1px solid rgba(239, 68, 68, 0.2);
+}
+
+.badge.active {
+  background: rgba(59, 130, 246, 0.1);
+  color: #3b82f6;
+  border: 1px solid rgba(59, 130, 246, 0.2);
+}
+
+.badge.info {
+  background: rgba(34, 211, 238, 0.1);
+  color: #22d3ee;
+  border: 1px solid rgba(34, 211, 238, 0.2);
+}
+
+.badge.neutral {
+  background: rgba(107, 114, 128, 0.1);
+  color: #6b7280;
+  border: 1px solid rgba(107, 114, 128, 0.2);
+}
+
+.badge.success {
+  background: rgba(34, 197, 94, 0.1);
+  color: #22c55e;
+  border: 1px solid rgba(34, 197, 94, 0.2);
+}
+
+.badge.available {
+  background: rgba(168, 85, 247, 0.1);
+  color: #a855f7;
+  border: 1px solid rgba(168, 85, 247, 0.2);
+}
+
+.badge.warning {
+  background: rgba(245, 158, 11, 0.1);
+  color: #f59e0b;
+  border: 1px solid rgba(245, 158, 11, 0.2);
 }
 
 /* Responsive styles */

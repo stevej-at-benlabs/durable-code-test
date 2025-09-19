@@ -5,39 +5,44 @@
  */
 
 .container {
-  margin-top: 20px;
+  margin-top: var(--space-5, 20px);
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: var(--space-5, 20px);
 }
 
 .controlRow {
   display: flex;
-  gap: 10px;
-  margin-bottom: 15px;
+  gap: var(--space-2, 10px);
+  margin-bottom: var(--space-3, 15px);
   flex-wrap: wrap;
 }
 
 .controlButton {
-  padding: 10px 20px;
-  background: #555;
-  color: white;
+  padding: var(--space-2) var(--space-4);
+  background: var(--color-surface-variant, #555);
+  color: var(--color-text-primary, white);
   border: none;
-  border-radius: 5px;
+  border-radius: var(--border-radius-sm, 5px);
   cursor: pointer;
-  font-size: 14px;
-  font-weight: 500;
+  font-size: var(--font-size-sm, 14px);
+  font-weight: var(--font-weight-medium, 500);
   transition: all 0.2s ease;
   min-width: 100px;
 }
 
 .controlButton:hover:not(:disabled) {
-  background: #666;
+  background: var(--color-surface-hover, #666);
   transform: translateY(-1px);
 }
 
 .controlButton:active {
   transform: translateY(0);
+}
+
+.controlButton:focus {
+  outline: 2px solid var(--color-primary, #00a86b);
+  outline-offset: 2px;
 }
 
 .controlButton:disabled {

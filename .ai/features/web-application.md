@@ -53,12 +53,27 @@ Six main tabs representing different aspects of AI-ready development:
 
 **Simple Tab Architecture**: Basic tabs remain in `components/tabs/` for simpler content.
 
+**CSS Modules + CSS Variables**: All components use scoped styling with systematic theming:
+- `ComponentName.module.css` - Component-scoped styles
+- `src/styles/theme/` - CSS Variables design token system
+- Badge system with semantic variants (essential, active, warning, success, etc.)
+- Common title classes for accessibility and consistency (.hero-title, .light-title-on-dark)
+
 #### Visual Components
 
 **Location**: `durable-code-app/frontend/src/components/`
 
 - **ParticleBackground.tsx**: Animated particle system for visual appeal
 - **Interactive Elements**: Dynamic content and user interaction components
+
+#### Reusable Common Components
+
+**Location**: `durable-code-app/frontend/src/components/common/`
+
+- **DetailsCard**: Reusable card component for displaying detailed information with icons, titles, and descriptions
+- **FeatureCard**: Standardized card for feature highlights with consistent styling and layout
+- **Button, Card, Tab, Icon, Link, Badge**: Complete component library with TypeScript types and CSS Modules
+- **LoadingSpinner, ErrorMessage, Section**: Utility components for common UI patterns
 
 #### Utility Services
 

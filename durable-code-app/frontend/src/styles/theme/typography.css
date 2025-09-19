@@ -1,0 +1,277 @@
+/**
+ * Purpose: Typography system variables and font definitions
+ * Scope: Global typography tokens for consistent text styling
+ * Overview: Font families, sizes, weights, and line heights
+ * Dependencies: None - foundational theme file
+ * Exports: CSS custom properties for typography
+ * Interfaces: --font-* and --text-* variables
+ * Implementation: Based on existing Georgia serif font system
+ */
+
+:root {
+  /* Font families */
+  --font-primary: 'Georgia', 'Times New Roman', 'Book Antiqua', serif;
+  --font-secondary: 'Crimson Text', 'Playfair Display', serif;
+  --font-mono: 'Fira Code', 'Monaco', 'Cascadia Code', monospace;
+  --font-sans: 'Inter', 'Helvetica Neue', Arial, sans-serif;
+
+  /* Font weights */
+  --font-weight-light: 300;
+  --font-weight-normal: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
+
+  /* Font sizes */
+  --text-xs: 0.75rem; /* 12px */
+  --text-sm: 0.875rem; /* 14px */
+  --text-base: 1rem; /* 16px */
+  --text-lg: 1.125rem; /* 18px */
+  --text-xl: 1.25rem; /* 20px */
+  --text-2xl: 1.5rem; /* 24px */
+  --text-3xl: 1.875rem; /* 30px */
+  --text-4xl: 2.25rem; /* 36px */
+  --text-5xl: 3rem; /* 48px */
+  --text-6xl: 3.75rem; /* 60px */
+
+  /* Line heights */
+  --leading-none: 1;
+  --leading-tight: 1.25;
+  --leading-snug: 1.375;
+  --leading-normal: 1.5;
+  --leading-relaxed: 1.625;
+  --leading-loose: 2;
+
+  /* Letter spacing */
+  --tracking-tighter: -0.05em;
+  --tracking-tight: -0.025em;
+  --tracking-normal: 0em;
+  --tracking-wide: 0.025em;
+  --tracking-wider: 0.05em;
+  --tracking-widest: 0.1em;
+
+  /* Semantic typography tokens */
+  --heading-font: var(--font-primary);
+  --heading-weight: var(--font-weight-bold);
+  --heading-line-height: var(--leading-tight);
+
+  --body-font: var(--font-primary);
+  --body-weight: var(--font-weight-normal);
+  --body-line-height: 1.7; /* Matches existing App.css */
+
+  --code-font: var(--font-mono);
+  --code-weight: var(--font-weight-normal);
+  --code-line-height: var(--leading-normal);
+
+  /* Component-specific typography */
+  --hero-title-size: clamp(var(--text-4xl), 5vw, var(--text-6xl));
+  --hero-subtitle-size: var(--text-xl);
+  --card-title-size: var(--text-lg);
+  --card-description-size: var(--text-base);
+  --button-text-size: var(--text-base);
+  --tab-text-size: var(--text-base);
+}
+
+/* Common title classes for consistent styling across all components */
+
+/* Main hero titles - used in tab headers */
+.hero-title {
+  font-family: var(--heading-font);
+  font-size: var(--text-4xl);
+  font-weight: var(--font-weight-bold);
+  line-height: var(--leading-tight);
+  color: var(--color-text-primary);
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+/* Section titles - used for major sections within tabs */
+.section-title {
+  font-family: var(--heading-font);
+  font-size: var(--text-2xl);
+  font-weight: var(--font-weight-semibold);
+  line-height: var(--leading-tight);
+  color: var(--color-text-primary);
+  margin-bottom: 0.75rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+/* Subsection titles - used for smaller sections and showcase areas */
+.subsection-title {
+  font-family: var(--heading-font);
+  font-size: var(--text-xl);
+  font-weight: var(--font-weight-semibold);
+  line-height: var(--leading-tight);
+  color: var(--color-text-primary);
+  margin-bottom: 0.75rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+/* Card titles - used for individual cards and components */
+.card-title {
+  font-family: var(--heading-font);
+  font-size: var(--text-lg);
+  font-weight: var(--font-weight-semibold);
+  line-height: var(--leading-tight);
+  color: var(--color-text-primary);
+  margin-bottom: 0.5rem;
+}
+
+/* Subtitles and descriptions */
+.subtitle {
+  font-family: var(--body-font);
+  font-size: var(--text-lg);
+  font-weight: var(--font-weight-normal);
+  line-height: var(--leading-relaxed);
+  color: var(--color-text-secondary);
+  margin-bottom: 1rem;
+  max-width: 800px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* Light text classes for dark backgrounds */
+.light-title-on-dark {
+  font-family: var(--heading-font);
+  font-size: var(--text-lg);
+  font-weight: var(--font-weight-semibold);
+  line-height: var(--leading-tight);
+  color: var(--color-text-inverse, #ffffff);
+  margin-bottom: 0.75rem;
+}
+
+.light-text-on-dark {
+  font-family: var(--body-font);
+  font-size: var(--text-base);
+  font-weight: var(--font-weight-normal);
+  line-height: var(--leading-normal);
+  color: var(--color-text-inverse-secondary, #e5e5e5);
+}
+
+.light-small-title-on-dark {
+  font-family: var(--heading-font);
+  font-size: var(--text-base);
+  font-weight: var(--font-weight-medium);
+  line-height: var(--leading-tight);
+  color: var(--color-text-inverse, #ffffff);
+  margin-bottom: 0.5rem;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .hero-title {
+    font-size: var(--text-3xl);
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .section-title {
+    font-size: var(--text-xl);
+  }
+
+  .subsection-title {
+    font-size: var(--text-lg);
+  }
+
+  .light-title-on-dark {
+    font-size: var(--text-base);
+  }
+}
+
+/* Badge System - Consistent styling for status indicators and labels */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  font-size: var(--text-xs);
+  font-weight: var(--font-weight-semibold);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+/* Badge Variants - Semantic colors for different states */
+.badge-new {
+  background: rgba(34, 197, 94, 0.1);
+  color: #22c55e;
+  border: 1px solid rgba(34, 197, 94, 0.2);
+}
+
+.badge-active {
+  background: rgba(59, 130, 246, 0.1);
+  color: #3b82f6;
+  border: 1px solid rgba(59, 130, 246, 0.2);
+}
+
+.badge-live {
+  background: rgba(34, 197, 94, 0.1);
+  color: #16a34a;
+  border: 1px solid rgba(34, 197, 94, 0.2);
+}
+
+.badge-essential {
+  background: rgba(239, 68, 68, 0.1);
+  color: #ef4444;
+  border: 1px solid rgba(239, 68, 68, 0.2);
+}
+
+.badge-available {
+  background: rgba(168, 85, 247, 0.1);
+  color: #a855f7;
+  border: 1px solid rgba(168, 85, 247, 0.2);
+}
+
+.badge-success {
+  background: rgba(34, 197, 94, 0.1);
+  color: #22c55e;
+  border: 1px solid rgba(34, 197, 94, 0.2);
+}
+
+.badge-warning {
+  background: rgba(245, 158, 11, 0.1);
+  color: #f59e0b;
+  border: 1px solid rgba(245, 158, 11, 0.2);
+}
+
+.badge-info {
+  background: rgba(34, 211, 238, 0.1);
+  color: #22d3ee;
+  border: 1px solid rgba(34, 211, 238, 0.2);
+}
+
+.badge-neutral {
+  background: rgba(107, 114, 128, 0.1);
+  color: #6b7280;
+  border: 1px solid rgba(107, 114, 128, 0.2);
+}
+
+.badge-urgent {
+  background: rgba(239, 68, 68, 0.15);
+  color: #dc2626;
+  border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
+/* Badge Sizes */
+.badge-small {
+  padding: 0.125rem 0.5rem;
+  font-size: var(--text-xs);
+}
+
+.badge-medium {
+  padding: 0.25rem 0.75rem;
+  font-size: var(--text-xs);
+}
+
+.badge-large {
+  padding: 0.375rem 1rem;
+  font-size: var(--text-sm);
+}

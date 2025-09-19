@@ -17,6 +17,7 @@ import styles from './WaveformSelector.module.css';
 interface WaveformSelectorProps {
   selectedWaveType: WaveType;
   onWaveTypeChange: (waveType: WaveType) => void;
+  onReset?: () => void;
   disabled?: boolean;
 }
 
@@ -29,25 +30,38 @@ const WAVEFORM_OPTIONS = [
 export const WaveformSelector: React.FC<WaveformSelectorProps> = ({
   selectedWaveType,
   onWaveTypeChange,
+  onReset,
   disabled = false,
 }) => {
   return (
     <div className={styles.container}>
       <h3 className={styles.title}>Waveform Type</h3>
       <div className={styles.buttonGroup}>
-        {WAVEFORM_OPTIONS.map(({ type, label }) => (
+        <div className={styles.waveformButtons}>
+          {WAVEFORM_OPTIONS.map(({ type, label }) => (
+            <button
+              key={type}
+              onClick={() => onWaveTypeChange(type)}
+              disabled={disabled}
+              className={`${styles.waveformButton} ${
+                selectedWaveType === type ? styles.active : ''
+              }`}
+              aria-pressed={selectedWaveType === type}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
+        {onReset && (
           <button
-            key={type}
-            onClick={() => onWaveTypeChange(type)}
+            onClick={onReset}
             disabled={disabled}
-            className={`${styles.waveformButton} ${
-              selectedWaveType === type ? styles.active : ''
-            }`}
-            aria-pressed={selectedWaveType === type}
+            className={styles.resetButton}
+            title="Reset all parameters to default values"
           >
-            {label}
+            RESET
           </button>
-        ))}
+        )}
       </div>
     </div>
   );
