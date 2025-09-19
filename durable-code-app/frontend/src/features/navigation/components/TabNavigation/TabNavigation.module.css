@@ -1,0 +1,53 @@
+/**
+ * Purpose: Styles for TabNavigation component using CSS Modules
+ * Scope: Navigation component-specific styling
+ * Overview: Modular styles for tab navigation
+ * Dependencies: None
+ * Exports: CSS module classes
+ * Implementation: Component-scoped styles for navigation
+ */
+
+.navigation {
+  display: flex;
+  gap: 0;
+  margin-bottom: 2rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 0;
+  overflow-x: auto;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.3) transparent;
+}
+
+.navigation::-webkit-scrollbar {
+  height: 8px;
+}
+
+.navigation::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.navigation::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 4px;
+}
+
+.navigation::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.5);
+}
+
+.tabTitle {
+  font-size: 0.95rem;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+@media (max-width: 768px) {
+  .navigation {
+    gap: 0.5rem;
+    padding: 0 1rem;
+  }
+
+  .tabTitle {
+    font-size: 0.875rem;
+  }
+}
