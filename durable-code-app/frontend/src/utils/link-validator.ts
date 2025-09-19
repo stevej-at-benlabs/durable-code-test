@@ -50,8 +50,8 @@ export {
 // Import services for facade operations
 import { LinkValidationService } from './LinkValidationService';
 import type {
-  LinkValidationResult,
   LinkValidationOptions,
+  LinkValidationResult,
 } from './LinkValidationService';
 import { categorizeLinks } from './LinkCategorizationService';
 import { CompositeLinkExtractor } from './LinkExtractionService';

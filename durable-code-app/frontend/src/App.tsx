@@ -11,8 +11,8 @@
  * Props/Interfaces: No external props - self-contained root component
  * State/Behavior: Manages active tab state, URL synchronization, and navigation breadcrumbs
  */
-import { useState, useEffect } from 'react';
-import { Routes, Route } from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import { Route, Routes } from 'react-router-dom';
 import type { ReactElement } from 'react';
 import './App.css';
 import './qa-maintenance.css';

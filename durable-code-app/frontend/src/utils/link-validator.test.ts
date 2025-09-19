@@ -7,18 +7,18 @@
  * Version: 1.0
  */
 
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
+  categorizeLinks,
+  createLinkReportSummary,
+  extractLinksFromElement,
+  generateLinkReport,
+  getExpectedPublicLinks,
+  validateExpectedLinks,
   validateLink,
   validateLinks,
-  extractLinksFromElement,
-  categorizeLinks,
-  generateLinkReport,
-  createLinkReportSummary,
-  validateExpectedLinks,
-  getExpectedPublicLinks,
 } from './link-validator';
-import { mockFetch, mockFailedFetch } from '../test-setup';
+import { mockFailedFetch, mockFetch } from '../test-setup';
 
 // Mock window.location
 Object.defineProperty(window, 'location', {

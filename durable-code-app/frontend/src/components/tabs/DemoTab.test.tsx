@@ -9,8 +9,8 @@
  * Implementation: Component testing with mocked WebSocket and canvas
  */
 
-import { render, screen, fireEvent, waitFor, act } from '@testing-library/react';
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { DemoTab } from './DemoTab';
 
 // Mock WebSocket
@@ -115,8 +115,8 @@ describe('DemoTab Component', () => {
     HTMLCanvasElement.prototype.getContext = vi.fn(() => mockCanvasContext);
 
     // Mock requestAnimationFrame
-    global.requestAnimationFrame = vi.fn((cb) =>
-      setTimeout(cb, 0),
+    global.requestAnimationFrame = vi.fn(
+      (cb) => setTimeout(cb, 0) as unknown as number,
     ) as typeof requestAnimationFrame;
     global.cancelAnimationFrame = vi.fn();
   });
@@ -231,7 +231,7 @@ describe('DemoTab Component', () => {
           (msg) => msg.command === 'start',
         );
         expect(sentMessage).toBeDefined();
-        expect(sentMessage.wave_type).toBe('sine');
+        expect(sentMessage?.wave_type).toBe('sine');
       });
     });
 

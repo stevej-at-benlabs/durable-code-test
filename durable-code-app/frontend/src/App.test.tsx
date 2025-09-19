@@ -7,12 +7,12 @@
  * Version: 1.0
  */
 
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import userEvent from '@testing-library/user-event';
 import App from './App';
-import { mockFetch, mockFailedFetch } from './test-setup';
+import { mockFailedFetch, mockFetch } from './test-setup';
 
 // Wrapper component for router context in tests
 const AppWithRouter = ({ initialEntries = ['/'] } = {}) => (
