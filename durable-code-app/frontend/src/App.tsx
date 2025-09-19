@@ -11,12 +11,14 @@
  * Props/Interfaces: No external props - self-contained root component
  * State/Behavior: Manages active tab state, URL synchronization, and navigation breadcrumbs
  */
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { Route, Routes } from 'react-router-dom';
 import type { ReactElement } from 'react';
 import './App.css';
 import './qa-maintenance.css';
 import packageJson from '../package.json';
+import { useNavigationStore } from './store/navigationStore';
+import type { TabName } from './store/navigationStore';
 import Standards from './pages/Standards';
 import CustomLinters from './pages/CustomLinters';
 import ParticleBackground from './components/ParticleBackground';
@@ -26,14 +28,6 @@ import { BuildingTab } from './components/tabs/BuildingTab';
 import { QualityAssuranceTab } from './components/tabs/QualityAssuranceTab';
 import { MaintenanceTab } from './components/tabs/MaintenanceTab';
 import { DemoTab } from './components/tabs/DemoTab';
-
-type TabName =
-  | 'Infrastructure'
-  | 'Planning'
-  | 'Building'
-  | 'Quality Assurance'
-  | 'Maintenance'
-  | 'Demo';
 
 interface TabContent {
   title: string;
@@ -67,23 +61,41 @@ function HomePage() {
     return 'Infrastructure';
   };
 
-  const [activeTab, setActiveTab] = useState<TabName>(getInitialTab);
+  const { activeTab, setActiveTab } = useNavigationStore();
+
+  // Initialize tab from URL on mount
+  useEffect(() => {
+    const initialTab = getInitialTab();
+    setActiveTab(initialTab);
+  }, [setActiveTab]);
 
   // Update URL hash when tab changes
   const handleTabChange = (tab: TabName) => {
     setActiveTab(tab);
-    window.history.pushState(null, '', `#${tab}`);
   };
 
   // Listen for browser back/forward navigation
   useEffect(() => {
     const handlePopState = () => {
-      setActiveTab(getInitialTab());
+      const hash = window.location.hash.replace('#', '');
+      const validTabs: TabName[] = [
+        'Infrastructure',
+        'Planning',
+        'Building',
+        'Quality Assurance',
+        'Maintenance',
+        'Demo',
+      ];
+      if (validTabs.includes(hash as TabName)) {
+        setActiveTab(hash as TabName);
+      } else {
+        setActiveTab('Infrastructure');
+      }
     };
 
     window.addEventListener('popstate', handlePopState);
     return () => window.removeEventListener('popstate', handlePopState);
-  }, []);
+  }, [setActiveTab]);
 
   // Clean up URL and set hash when return parameter is used
   useEffect(() => {
