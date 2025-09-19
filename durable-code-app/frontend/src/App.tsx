@@ -22,6 +22,8 @@ import type { TabName } from './store/navigationStore';
 import Standards from './pages/Standards';
 import CustomLinters from './pages/CustomLinters';
 import ParticleBackground from './components/ParticleBackground';
+import { Tab } from './components/common/Tab';
+import { Icon } from './components/common/Icon';
 import { InfrastructureTab } from './components/tabs/InfrastructureTab';
 import { PlanningTab } from './components/tabs/PlanningTab';
 import { BuildingTab } from './components/tabs/BuildingTab';
@@ -188,14 +190,15 @@ function HomePage() {
       <main className="main-content">
         <nav className="tab-navigation">
           {(Object.keys(tabs) as TabName[]).map((tabName) => (
-            <button
+            <Tab
               key={tabName}
-              className={`tab-button ${activeTab === tabName ? 'active' : ''}`}
+              isActive={activeTab === tabName}
               onClick={() => handleTabChange(tabName)}
+              variant="underline"
             >
-              <span className="tab-icon">{tabs[tabName].icon}</span>
+              <Icon emoji={tabs[tabName].icon} label={tabs[tabName].title} />
               <span className="tab-title">{tabs[tabName].title}</span>
-            </button>
+            </Tab>
           ))}
         </nav>
 

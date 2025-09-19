@@ -12,6 +12,7 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type { ReactElement } from 'react';
+import { Button } from '../common/Button';
 
 interface OscilloscopeState {
   isConnected: boolean;
@@ -419,36 +420,22 @@ export function DemoTab(): ReactElement {
               className="control-row"
               style={{ display: 'flex', gap: '10px', marginBottom: '15px' }}
             >
-              <button
+              <Button
                 onClick={startStreaming}
                 disabled={!state.isConnected || state.isStreaming}
-                className="control-button"
-                style={{
-                  padding: '10px 20px',
-                  background: state.isStreaming ? '#555' : '#00a86b',
-                  color: 'white',
-                  border: 'none',
-                  borderRadius: '5px',
-                  cursor: state.isStreaming ? 'not-allowed' : 'pointer',
-                }}
+                variant="primary"
+                size="medium"
               >
                 ▶ Start
-              </button>
-              <button
+              </Button>
+              <Button
                 onClick={stopStreaming}
                 disabled={!state.isConnected || !state.isStreaming}
-                className="control-button"
-                style={{
-                  padding: '10px 20px',
-                  background: !state.isStreaming ? '#555' : '#ff4444',
-                  color: 'white',
-                  border: 'none',
-                  borderRadius: '5px',
-                  cursor: !state.isStreaming ? 'not-allowed' : 'pointer',
-                }}
+                variant="danger"
+                size="medium"
               >
                 ⏹ Stop
-              </button>
+              </Button>
               <button
                 onClick={() =>
                   setState((prev) => ({ ...prev, isPaused: !prev.isPaused }))

@@ -1,0 +1,62 @@
+.link {
+  text-decoration: underline;
+  cursor: pointer;
+  transition: color 0.2s ease;
+  outline: none;
+}
+
+.link:focus-visible {
+  outline: 2px solid var(--primary-color, #007bff);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+.link:hover {
+  text-decoration: none;
+}
+
+/* Variants */
+.default {
+  color: var(--link-color, #007bff);
+}
+
+.default:hover {
+  color: var(--link-hover, #0056b3);
+}
+
+.default:active {
+  color: var(--link-active, #004085);
+}
+
+.primary {
+  color: var(--primary-color, #007bff);
+  font-weight: 500;
+}
+
+.primary:hover {
+  color: var(--primary-hover, #0056b3);
+}
+
+.primary:active {
+  color: var(--primary-active, #004085);
+}
+
+.muted {
+  color: var(--text-secondary, #6c757d);
+}
+
+.muted:hover {
+  color: var(--text-primary, #333);
+}
+
+.danger {
+  color: var(--danger-color, #dc3545);
+}
+
+.danger:hover {
+  color: var(--danger-hover, #c82333);
+}
+
+.danger:active {
+  color: var(--danger-active, #a71d2a);
+}

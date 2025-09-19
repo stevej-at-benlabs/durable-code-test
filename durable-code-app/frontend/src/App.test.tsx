@@ -71,15 +71,14 @@ describe('App Component', () => {
     it('renders all tab buttons', () => {
       render(<AppWithRouter />);
 
+      expect(screen.getByRole('tab', { name: /Infrastructure/i })).toBeInTheDocument();
+      expect(screen.getByRole('tab', { name: /Planning/i })).toBeInTheDocument();
+      expect(screen.getByRole('tab', { name: /Building/i })).toBeInTheDocument();
       expect(
-        screen.getByRole('button', { name: /Infrastructure/i }),
+        screen.getByRole('tab', { name: /Quality Assurance/i }),
       ).toBeInTheDocument();
-      expect(screen.getByRole('button', { name: /Planning/i })).toBeInTheDocument();
-      expect(screen.getByRole('button', { name: /Building/i })).toBeInTheDocument();
-      expect(
-        screen.getByRole('button', { name: /Quality Assurance/i }),
-      ).toBeInTheDocument();
-      expect(screen.getByRole('button', { name: /Maintenance/i })).toBeInTheDocument();
+      expect(screen.getByRole('tab', { name: /Maintenance/i })).toBeInTheDocument();
+      expect(screen.getByRole('tab', { name: /Demo/i })).toBeInTheDocument();
     });
 
     it('renders AI principles section', () => {
@@ -119,7 +118,7 @@ describe('App Component', () => {
       render(<AppWithRouter />);
 
       // Click on Planning tab
-      const planningTab = screen.getByRole('button', { name: /Planning/i });
+      const planningTab = screen.getByRole('tab', { name: /Planning/i });
       await user.click(planningTab);
 
       // Should show Planning tab content
@@ -131,10 +130,10 @@ describe('App Component', () => {
       const user = userEvent.setup();
       render(<AppWithRouter />);
 
-      const buildingTab = screen.getByRole('button', { name: /Building/i });
+      const buildingTab = screen.getByRole('tab', { name: /Building/i });
       await user.click(buildingTab);
 
-      expect(buildingTab).toHaveClass('active');
+      expect(buildingTab.className).toMatch(/active/);
     });
 
     it('can switch between different tabs', async () => {
@@ -142,16 +141,16 @@ describe('App Component', () => {
       render(<AppWithRouter />);
 
       // Start with Building
-      await user.click(screen.getByRole('button', { name: /Building/i }));
+      await user.click(screen.getByRole('tab', { name: /Building/i }));
       expect(screen.getByText('AI-Powered Code Generation')).toBeInTheDocument();
 
       // Switch to Quality Assurance
-      await user.click(screen.getByRole('button', { name: /Quality Assurance/i }));
+      await user.click(screen.getByRole('tab', { name: /Quality Assurance/i }));
       expect(screen.getByText('Bulletproof Code Quality')).toBeInTheDocument();
       expect(screen.queryByText('AI-Powered Code Generation')).not.toBeInTheDocument();
 
       // Back to Infrastructure
-      await user.click(screen.getByRole('button', { name: /Infrastructure/i }));
+      await user.click(screen.getByRole('tab', { name: /Infrastructure/i }));
       expect(
         screen.getByText('Rigid Infrastructure: The Foundation for AI'),
       ).toBeInTheDocument();
@@ -183,7 +182,7 @@ describe('App Component', () => {
       render(<AppWithRouter />);
 
       // Switch to Building tab
-      const buildingTab = screen.getByRole('button', { name: /Building/i });
+      const buildingTab = screen.getByRole('tab', { name: /Building/i });
       await user.click(buildingTab);
 
       const standardsLink = screen.getByRole('link', {
@@ -215,7 +214,7 @@ describe('App Component', () => {
       render(<AppWithRouter />);
 
       // Switch to Planning tab
-      const planningTab = screen.getByRole('button', { name: /Planning/i });
+      const planningTab = screen.getByRole('tab', { name: /Planning/i });
       await user.click(planningTab);
 
       const flowLink = screen.getByRole('link', { name: /View Flow Diagram/i });
@@ -239,7 +238,7 @@ describe('App Component', () => {
       const user = userEvent.setup();
       render(<AppWithRouter />);
 
-      const planningTab = screen.getByRole('button', { name: /Planning/i });
+      const planningTab = screen.getByRole('tab', { name: /Planning/i });
 
       await user.hover(planningTab);
       // Tab should be hoverable (though specific hover class depends on CSS)
@@ -264,7 +263,7 @@ describe('App Component', () => {
     it('has proper button roles for tabs', () => {
       render(<AppWithRouter />);
 
-      const tabButtons = screen.getAllByRole('button');
+      const tabButtons = screen.getAllByRole('tab');
       expect(tabButtons.length).toBe(6); // Exactly 6 tab buttons including Demo
     });
 
@@ -303,7 +302,7 @@ describe('App Component', () => {
       render(<AppWithRouter />);
 
       // Switch to Infrastructure tab first to ensure we have links
-      const infrastructureTab = screen.getByRole('button', { name: /Infrastructure/i });
+      const infrastructureTab = screen.getByRole('tab', { name: /Infrastructure/i });
       await user.click(infrastructureTab);
 
       // Get all links
@@ -345,7 +344,7 @@ describe('App Component', () => {
       render(<AppWithRouter />);
 
       // Switch to Building tab
-      const buildingTab = screen.getByRole('button', { name: /Building/i });
+      const buildingTab = screen.getByRole('tab', { name: /Building/i });
       await user.click(buildingTab);
 
       // Click the standards link
@@ -373,8 +372,8 @@ describe('App Component', () => {
     it('defaults to Infrastructure tab when no hash is present', () => {
       render(<AppWithRouter />);
 
-      const infrastructureTab = screen.getByRole('button', { name: /Infrastructure/i });
-      expect(infrastructureTab).toHaveClass('active');
+      const infrastructureTab = screen.getByRole('tab', { name: /Infrastructure/i });
+      expect(infrastructureTab.className).toMatch(/active/);
     });
 
     it('loads correct tab from URL hash', () => {
@@ -382,8 +381,8 @@ describe('App Component', () => {
 
       render(<AppWithRouter />);
 
-      const planningTab = screen.getByRole('button', { name: /Planning/i });
-      expect(planningTab).toHaveClass('active');
+      const planningTab = screen.getByRole('tab', { name: /Planning/i });
+      expect(planningTab.className).toMatch(/active/);
     });
 
     it('loads correct tab from return parameter', () => {
@@ -391,8 +390,8 @@ describe('App Component', () => {
 
       render(<AppWithRouter />);
 
-      const buildingTab = screen.getByRole('button', { name: /Building/i });
-      expect(buildingTab).toHaveClass('active');
+      const buildingTab = screen.getByRole('tab', { name: /Building/i });
+      expect(buildingTab.className).toMatch(/active/);
     });
 
     it('prioritizes hash over return parameter', () => {
@@ -401,8 +400,8 @@ describe('App Component', () => {
 
       render(<AppWithRouter />);
 
-      const qualityTab = screen.getByRole('button', { name: /Quality Assurance/i });
-      expect(qualityTab).toHaveClass('active');
+      const qualityTab = screen.getByRole('tab', { name: /Quality Assurance/i });
+      expect(qualityTab.className).toMatch(/active/);
     });
 
     it('falls back to Infrastructure for invalid hash', () => {
@@ -410,8 +409,8 @@ describe('App Component', () => {
 
       render(<AppWithRouter />);
 
-      const infrastructureTab = screen.getByRole('button', { name: /Infrastructure/i });
-      expect(infrastructureTab).toHaveClass('active');
+      const infrastructureTab = screen.getByRole('tab', { name: /Infrastructure/i });
+      expect(infrastructureTab.className).toMatch(/active/);
     });
 
     it('updates URL hash when tab is clicked', async () => {
@@ -419,7 +418,7 @@ describe('App Component', () => {
 
       render(<AppWithRouter />);
 
-      const planningTab = screen.getByRole('button', { name: /Planning/i });
+      const planningTab = screen.getByRole('tab', { name: /Planning/i });
       await user.click(planningTab);
 
       expect(mockHistory.pushState).toHaveBeenCalledWith(null, '', '#Planning');
@@ -439,7 +438,7 @@ describe('App Component', () => {
       render(<AppWithRouter />);
 
       // Switch to Building tab
-      const buildingTab = screen.getByRole('button', { name: /Building/i });
+      const buildingTab = screen.getByRole('tab', { name: /Building/i });
       await user.click(buildingTab);
 
       // Check that standards guide link includes return parameter
@@ -455,7 +454,7 @@ describe('App Component', () => {
       render(<AppWithRouter />);
 
       // Switch to Planning tab
-      const planningTab = screen.getByRole('button', { name: /Planning/i });
+      const planningTab = screen.getByRole('tab', { name: /Planning/i });
       await user.click(planningTab);
 
       // Check that diagram links include return parameter
@@ -476,7 +475,7 @@ describe('App Component', () => {
       render(<AppWithRouter />);
 
       // Switch to Quality Assurance tab
-      const qualityTab = screen.getByRole('button', { name: /Quality Assurance/i });
+      const qualityTab = screen.getByRole('tab', { name: /Quality Assurance/i });
       await user.click(qualityTab);
 
       // Check that QA links include return parameter
@@ -497,8 +496,8 @@ describe('App Component', () => {
       render(<AppWithRouter />);
 
       // Should load the Maintenance tab based on hash
-      const maintenanceTab = screen.getByRole('button', { name: /Maintenance/i });
-      expect(maintenanceTab).toHaveClass('active');
+      const maintenanceTab = screen.getByRole('tab', { name: /Maintenance/i });
+      expect(maintenanceTab.className).toMatch(/active/);
     });
   });
 
@@ -514,7 +513,7 @@ describe('App Component', () => {
       const allLinks: string[] = [];
 
       // Infrastructure tab (default)
-      const infrastructureTab = screen.getByRole('button', { name: /Infrastructure/i });
+      const infrastructureTab = screen.getByRole('tab', { name: /Infrastructure/i });
       await user.click(infrastructureTab);
       const infrastructureLinks = screen.getAllByRole('link');
       infrastructureLinks.forEach((link) => {
@@ -523,7 +522,7 @@ describe('App Component', () => {
       });
 
       // Planning tab
-      const planningTab = screen.getByRole('button', { name: /Planning/i });
+      const planningTab = screen.getByRole('tab', { name: /Planning/i });
       await user.click(planningTab);
       const planningLinks = screen.getAllByRole('link');
       planningLinks.forEach((link) => {
@@ -532,7 +531,7 @@ describe('App Component', () => {
       });
 
       // Building tab
-      const buildingTab = screen.getByRole('button', { name: /Building/i });
+      const buildingTab = screen.getByRole('tab', { name: /Building/i });
       await user.click(buildingTab);
       const buildingLinks = screen.getAllByRole('link');
       buildingLinks.forEach((link) => {
@@ -541,7 +540,7 @@ describe('App Component', () => {
       });
 
       // Quality Assurance tab
-      const qualityTab = screen.getByRole('button', { name: /Quality Assurance/i });
+      const qualityTab = screen.getByRole('tab', { name: /Quality Assurance/i });
       await user.click(qualityTab);
       const qualityLinks = screen.getAllByRole('link');
       qualityLinks.forEach((link) => {
@@ -574,7 +573,7 @@ describe('App Component', () => {
       render(<AppWithRouter />);
 
       // Check Building tab links
-      const buildingTab = screen.getByRole('button', { name: /Building/i });
+      const buildingTab = screen.getByRole('tab', { name: /Building/i });
       await user.click(buildingTab);
 
       const standardsLink = screen.getByRole('link', {
@@ -583,7 +582,7 @@ describe('App Component', () => {
       expect(standardsLink.getAttribute('href')).toBe('/standards?return=Building');
 
       // Check Planning tab links
-      const planningTab = screen.getByRole('button', { name: /Planning/i });
+      const planningTab = screen.getByRole('tab', { name: /Planning/i });
       await user.click(planningTab);
 
       const flowLink = screen.getByRole('link', { name: /View Flow Diagram →/i });

@@ -1,0 +1,90 @@
+.errorMessage {
+  border-radius: 6px;
+  padding: 16px;
+  margin: 16px 0;
+  border: 1px solid;
+  font-family: inherit;
+}
+
+.content {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.header {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.icon {
+  font-size: 16px;
+  line-height: 1;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.title {
+  font-size: 16px;
+  font-weight: 600;
+  margin: 0;
+  flex: 1;
+  line-height: 1.4;
+}
+
+.message {
+  font-size: 14px;
+  line-height: 1.5;
+  margin-left: 24px; /* Align with title, accounting for icon width */
+}
+
+.children {
+  margin-left: 24px; /* Align with message */
+}
+
+.dismissButton {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  font-size: 14px;
+  line-height: 1;
+  opacity: 0.7;
+  transition: opacity 0.2s ease;
+  flex-shrink: 0;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.dismissButton:hover {
+  opacity: 1;
+}
+
+.dismissButton:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+/* Variant styles */
+.error {
+  background-color: var(--error-light, #f8d7da);
+  color: var(--error-dark, #721c24);
+  border-color: var(--error-border, #f1aeb5);
+}
+
+.warning {
+  background-color: var(--warning-light, #fff3cd);
+  color: var(--warning-dark, #856404);
+  border-color: var(--warning-border, #ffeaa7);
+}
+
+.info {
+  background-color: var(--info-light, #d1ecf1);
+  color: var(--info-dark, #0c5460);
+  border-color: var(--info-border, #bee5eb);
+}
