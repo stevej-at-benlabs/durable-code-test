@@ -15,6 +15,7 @@ A modern full-stack web application demonstrating AI-ready development practices
 - **Vite** for fast development and optimized builds
 - **CSS Modules** for component-scoped styling
 - **Vitest** for testing framework
+- **React.lazy()** and **Suspense** for code splitting and lazy loading
 
 ### Core Components
 
@@ -29,16 +30,28 @@ A modern full-stack web application demonstrating AI-ready development practices
 
 #### Tab System
 
-**Location**: `durable-code-app/frontend/src/components/tabs/`
+**Locations**:
+- Simple tabs: `durable-code-app/frontend/src/components/tabs/`
+- Feature-based tabs: `durable-code-app/frontend/src/features/[feature-name]/`
 
 Six main tabs representing different aspects of AI-ready development:
 
-1. **InfrastructureTab.tsx**: Development environment and tooling setup
+1. **Infrastructure**: Development environment and tooling setup (feature-based: `src/features/infrastructure/`)
 2. **PlanningTab.tsx**: Project planning and architectural decisions
 3. **BuildingTab.tsx**: Implementation strategies and coding practices
 4. **QualityAssuranceTab.tsx**: Testing, validation, and quality processes
 5. **MaintenanceTab.tsx**: Ongoing maintenance and optimization strategies
 6. **DemoTab.tsx**: Interactive oscilloscope demonstration with real-time WebSocket streaming
+
+#### Architecture Patterns
+
+**Feature-Based Architecture**: Complex tabs like Infrastructure are organized as features with:
+- `components/` - React components with proper separation of concerns
+- `hooks/` - Custom React hooks for state management and data fetching
+- `types/` - TypeScript interfaces and type definitions
+- `index.ts` - Feature exports and public API
+
+**Simple Tab Architecture**: Basic tabs remain in `components/tabs/` for simpler content.
 
 #### Visual Components
 
@@ -320,10 +333,34 @@ curl http://localhost:8000/health
 
 ### Adding New Tabs
 
+**For Simple Tabs**:
 1. Create new tab component in `src/components/tabs/`
 2. Add to tab configuration in `App.tsx`
 3. Update navigation and routing logic
 4. Implement tab-specific functionality
+
+**For Complex Feature Tabs**:
+1. Create feature directory in `src/features/[feature-name]/`
+2. Implement feature structure: `components/`, `hooks/`, `types/`, `index.ts`
+3. Add lazy loading in `App.tsx` with `React.lazy()` and `Suspense`
+4. Create comprehensive TypeScript interfaces
+5. Implement custom hooks for data management
+6. Add proper test coverage with async handling
+
+**Example Feature Structure**:
+```
+src/features/infrastructure/
+├── components/
+│   └── InfrastructureTab/
+│       ├── InfrastructureTab.tsx
+│       ├── InfrastructureTab.module.css
+│       └── index.ts
+├── hooks/
+│   └── useInfrastructure.ts
+├── types/
+│   └── infrastructure.types.ts
+└── index.ts
+```
 
 ### API Extension
 

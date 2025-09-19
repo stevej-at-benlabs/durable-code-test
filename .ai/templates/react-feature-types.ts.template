@@ -1,0 +1,49 @@
+/**
+ * Purpose: Type definitions for {{FEATURE_NAME}} feature components and data structures
+ * Scope: {{FEATURE_NAME}} feature with {{TYPE_SCOPE_DESCRIPTION}}
+ * Overview: Comprehensive TypeScript interfaces for {{FEATURE_NAME}} feature implementation.
+ *     Defines types for {{TYPE_OVERVIEW_DESCRIPTION}}
+ *     and component props to ensure type safety across the {{FEATURE_NAME}} feature.
+ * Dependencies: None (pure TypeScript types)
+ * Exports: {{MAIN_TYPES}} and component prop interfaces
+ * Props/Interfaces: Core data structures for {{FEATURE_NAME}} components
+ * State/Behavior: Type definitions only, no runtime behavior
+ */
+
+export interface {{MAIN_TYPE}} {
+  id: string;
+  {{MAIN_TYPE_PROPERTIES}}
+}
+
+{{ADDITIONAL_INTERFACES}}
+
+export interface {{FEATURE_NAME}}Stats {
+  {{STATS_PROPERTIES}}
+}
+
+export interface ActionLink {
+  id: string;
+  url: string;
+  text: string;
+  icon: string;
+  type: 'primary' | 'secondary';
+  description?: string;
+}
+
+// Component prop interfaces
+export interface {{COMPONENT_NAME}}Props {
+  className?: string;
+  onError?: (error: Error) => void;
+}
+
+{{ADDITIONAL_COMPONENT_PROPS}}
+
+// Hook return types
+export interface Use{{HOOK_NAME}}Return {
+  {{HOOK_RETURN_PROPERTIES}};
+  loading: boolean;
+  error: Error | null;
+}
+
+// Utility types
+{{UTILITY_TYPES}}

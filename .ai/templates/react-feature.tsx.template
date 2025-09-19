@@ -1,0 +1,113 @@
+/**
+ * Purpose: {{PURPOSE}}
+ * Scope: {{SCOPE}}
+ * Overview: {{OVERVIEW}}
+ * Dependencies: React, {{FEATURE_NAME}} types and hooks
+ * Exports: {{COMPONENT_NAME}} component (default export)
+ * Props/Interfaces: {{COMPONENT_NAME}}Props interface
+ * State/Behavior: {{STATE_BEHAVIOR}}
+ */
+
+import { useCallback, useMemo } from 'react';
+import type { ReactElement } from 'react';
+import { ErrorMessage, LoadingSpinner } from '{{COMMON_COMPONENTS_PATH}}';
+import { use{{HOOK_NAME}} } from '../hooks/use{{HOOK_NAME}}';
+import type {
+  {{MAIN_TYPE}},
+  {{COMPONENT_NAME}}Props,
+} from '../types/{{FEATURE_NAME}}.types';
+import styles from './{{COMPONENT_NAME}}.module.css';
+
+/**
+ * {{COMPONENT_NAME}} component
+ *
+ * @param props - Component props
+ * @returns Rendered {{FEATURE_NAME}} component
+ */
+export function {{COMPONENT_NAME}}({
+  className = '',
+  onError,
+}: {{COMPONENT_NAME}}Props): ReactElement {
+  const {
+    {{DATA_PROPERTIES}},
+    loading,
+    error,
+  } = use{{HOOK_NAME}}();
+
+  // Component classes
+  const componentClasses = useMemo(() => {
+    return [
+      styles.{{COMPONENT_NAME_CAMEL}},
+      'tab-content',
+      '{{FEATURE_NAME}}-content',
+      className,
+      loading && styles.loading,
+      error && styles.error,
+    ]
+      .filter(Boolean)
+      .join(' ');
+  }, [className, loading, error]);
+
+  // Event handlers
+  const handleItemClick = useCallback((item: {{MAIN_TYPE}}) => {
+    {{CLICK_HANDLER_LOGIC}}
+  }, []);
+
+  // Error propagation
+  if (error) {
+    onError?.(error);
+  }
+
+  // Render helpers
+  const renderContent = useCallback(() => {
+    return (
+      <div className={styles.contentGrid}>
+        {{CONTENT_RENDERING}}
+      </div>
+    );
+  }, [{{DEPENDENCIES}}]);
+
+  // Loading state
+  if (loading) {
+    return (
+      <div className={componentClasses}>
+        <LoadingSpinner className={styles.loadingSpinner} />
+        <p>Loading {{FEATURE_NAME}} data...</p>
+      </div>
+    );
+  }
+
+  // Error state
+  if (error) {
+    return (
+      <div className={componentClasses}>
+        <ErrorMessage
+          error={error}
+          onRetry={() => window.location.reload()}
+          className={styles.errorMessage}
+        />
+      </div>
+    );
+  }
+
+  // Main render
+  return (
+    <div className={componentClasses}>
+      {/* Hero section */}
+      <div className={styles.{{FEATURE_NAME}}Hero}>
+        <h3 className={styles.{{FEATURE_NAME}}Title}>
+          <span className={styles.titleIcon}>{{TITLE_ICON}}</span>
+          {{TITLE_TEXT}}
+        </h3>
+        <p className={styles.{{FEATURE_NAME}}Subtitle}>
+          {{SUBTITLE_TEXT}}
+        </p>
+      </div>
+
+      {/* Main content */}
+      {renderContent()}
+    </div>
+  );
+}
+
+export default {{COMPONENT_NAME}};
