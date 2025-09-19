@@ -1,0 +1,163 @@
+/**
+ * Purpose: CSS module styles for main demo tab component
+ * Scope: Styling for demo tab layout and sections
+ * Overview: Provides comprehensive styling for the demo tab including hero section,
+ *     showcase area, and documentation sections with responsive design.
+ */
+
+.demoHero {
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+.demoTitle {
+  font-size: 2.5rem;
+  font-weight: 700;
+  margin: 0 0 15px 0;
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+}
+
+.titleIcon {
+  font-size: 2.2rem;
+}
+
+.demoSubtitle {
+  font-size: 1.1rem;
+  color: #cccccc;
+  margin: 0;
+  max-width: 800px;
+  margin-left: auto;
+  margin-right: auto;
+  line-height: 1.6;
+}
+
+.errorContainer {
+  margin-bottom: 20px;
+  display: flex;
+  justify-content: center;
+}
+
+.errorMessage {
+  background: #ff4444;
+  color: white;
+  padding: 12px 20px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 500;
+}
+
+.errorIcon {
+  font-size: 1.2rem;
+}
+
+.demoShowcase {
+  margin-bottom: 40px;
+}
+
+.showcaseContainer {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+
+.oscilloscopeContainer {
+  margin-bottom: 20px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.demoDetailsSection {
+  background: #1e1e1e;
+  border-radius: 12px;
+  padding: 30px;
+  margin: 40px 0;
+  border: 1px solid #333;
+}
+
+.sectionTitle {
+  font-size: 1.8rem;
+  font-weight: 600;
+  margin: 0 0 20px 0;
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.sectionIcon {
+  font-size: 1.6rem;
+}
+
+.detailsContent {
+  color: #cccccc;
+  line-height: 1.7;
+}
+
+.detailsContent p {
+  margin: 0 0 20px 0;
+  font-size: 1.1rem;
+}
+
+.detailsContent h3 {
+  color: #ffffff;
+  font-size: 1.3rem;
+  margin: 25px 0 12px 0;
+  font-weight: 600;
+}
+
+.detailsContent ul {
+  margin: 0 0 20px 0;
+  padding-left: 20px;
+}
+
+.detailsContent li {
+  margin-bottom: 8px;
+  font-size: 1rem;
+}
+
+.demoFooter {
+  text-align: center;
+  padding: 30px 20px;
+  background: #1a1a1a;
+  border-radius: 8px;
+  margin-top: 40px;
+}
+
+.footerNote {
+  color: #999999;
+  font-size: 0.95rem;
+  margin: 0;
+  font-style: italic;
+}
+
+@media (max-width: 768px) {
+  .demoTitle {
+    font-size: 2rem;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .demoSubtitle {
+    font-size: 1rem;
+  }
+
+  .showcaseContainer {
+    padding: 0 10px;
+  }
+
+  .demoDetailsSection {
+    padding: 20px;
+    margin: 30px 10px;
+  }
+
+  .sectionTitle {
+    font-size: 1.5rem;
+  }
+}

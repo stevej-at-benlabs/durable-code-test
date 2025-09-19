@@ -1,0 +1,35 @@
+/**
+ * Purpose: Singleton WebSocket service instance for {{FEATURE_NAME}}
+ * Scope: Global WebSocket connection management outside React lifecycle
+ * Overview: Creates a single WebSocket service instance that persists across
+ *     React component re-renders and StrictMode double-invocations. This pattern
+ *     avoids the connection/disconnection cycles caused by React's StrictMode.
+ * Dependencies: {{SERVICE_CLASS_NAME}}
+ * Exports: get{{SERVICE_NAME}}Singleton and reset{{SERVICE_NAME}}Singleton functions
+ * Implementation: Module-scoped singleton pattern
+ */
+
+import { {{SERVICE_CLASS_NAME}} } from './{{SERVICE_FILE}}';
+
+// Create a single instance that persists across React re-renders
+let instance: {{SERVICE_CLASS_NAME}} | null = null;
+
+/**
+ * Get or create the singleton WebSocket service instance
+ */
+export function get{{SERVICE_NAME}}Singleton(): {{SERVICE_CLASS_NAME}} {
+  if (!instance) {
+    instance = new {{SERVICE_CLASS_NAME}}();
+  }
+  return instance;
+}
+
+/**
+ * Reset the singleton (mainly for testing)
+ */
+export function reset{{SERVICE_NAME}}Singleton(): void {
+  if (instance) {
+    instance.disconnect();
+    instance = null;
+  }
+}

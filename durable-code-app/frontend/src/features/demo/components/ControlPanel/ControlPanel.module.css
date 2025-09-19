@@ -1,0 +1,55 @@
+/**
+ * Purpose: CSS module styles for main control panel component
+ * Scope: Styling for control panel layout and button controls
+ * Overview: Provides organized layout for control sections with proper spacing and styling.
+ */
+
+.container {
+  margin-top: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.controlRow {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 15px;
+  flex-wrap: wrap;
+}
+
+.controlButton {
+  padding: 10px 20px;
+  background: #555;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  min-width: 100px;
+}
+
+.controlButton:hover:not(:disabled) {
+  background: #666;
+  transform: translateY(-1px);
+}
+
+.controlButton:active {
+  transform: translateY(0);
+}
+
+.controlButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.controlButton.paused {
+  background: #ffa500;
+  color: white;
+}
+
+.controlButton.paused:hover:not(:disabled) {
+  background: #ffb733;
+}

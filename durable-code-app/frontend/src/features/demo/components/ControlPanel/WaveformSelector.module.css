@@ -1,0 +1,58 @@
+/**
+ * Purpose: CSS module styles for waveform selector component
+ * Scope: Styling for waveform type selection buttons and layout
+ * Overview: Provides clean button group styling with active states and hover effects.
+ */
+
+.container {
+  margin-bottom: 15px;
+}
+
+.title {
+  margin: 0 0 10px 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: #ffffff;
+}
+
+.buttonGroup {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.waveformButton {
+  padding: 10px 20px;
+  background: #555;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  min-width: 120px;
+}
+
+.waveformButton:hover:not(:disabled) {
+  background: #666;
+  transform: translateY(-1px);
+}
+
+.waveformButton:active {
+  transform: translateY(0);
+}
+
+.waveformButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.waveformButton.active {
+  background: #00a86b;
+  color: white;
+}
+
+.waveformButton.active:hover {
+  background: #00c77e;
+}
