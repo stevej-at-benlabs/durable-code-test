@@ -1,0 +1,443 @@
+/**
+ * Purpose: Styles for the QualityAssuranceTab component using CSS Modules
+ * Scope: Quality Assurance tab-specific styling
+ * Overview: Modular styles for QA metrics, linters, and reports
+ * Dependencies: None
+ * Exports: CSS module classes
+ * Implementation: Component-scoped styles for quality feature
+ */
+
+.container {
+  padding: 2rem;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+/* Hero Section */
+.hero {
+  text-align: center;
+  margin-bottom: 3rem;
+  padding: 2rem;
+  background: linear-gradient(
+    135deg,
+    rgba(34, 193, 195, 0.1) 0%,
+    rgba(253, 187, 45, 0.1) 100%
+  );
+  border-radius: 15px;
+  position: relative;
+  overflow: hidden;
+}
+
+.hero::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, #22c1c3, #fdbb2d, #22c1c3);
+  animation: shimmer 3s ease-in-out infinite;
+}
+
+@keyframes shimmer {
+  0%,
+  100% {
+    opacity: 0.5;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+.titleIcon {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+}
+
+.title {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #fff;
+  margin-bottom: 1rem;
+}
+
+.subtitle {
+  font-size: 1.125rem;
+  color: #999;
+  max-width: 800px;
+  margin: 0 auto;
+  line-height: 1.6;
+}
+
+/* Showcase Section */
+.showcaseSection {
+  margin-bottom: 3rem;
+}
+
+.showcaseHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1.5rem;
+}
+
+.showcaseTitle {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.showcaseIcon {
+  font-size: 1.5rem;
+}
+
+.showcaseBadge {
+  background: rgba(34, 193, 195, 0.1);
+  color: #22c1c3;
+  padding: 0.25rem 1rem;
+  border-radius: 20px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  border: 1px solid rgba(34, 193, 195, 0.2);
+}
+
+/* Linter Cards */
+.linterCards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 3rem;
+}
+
+.linterCard {
+  background: linear-gradient(135deg, #1e1e1e 0%, #2a2a2a 100%);
+  border: 1px solid rgba(34, 193, 195, 0.2);
+  border-radius: 12px;
+  padding: 1.5rem;
+  transition: all 0.3s ease;
+}
+
+.linterCard:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 10px 30px rgba(34, 193, 195, 0.2);
+  border-color: rgba(34, 193, 195, 0.4);
+}
+
+.linterIcon {
+  font-size: 2rem;
+  margin-bottom: 1rem;
+  display: block;
+}
+
+.linterName {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #fff;
+  margin-bottom: 0.75rem;
+}
+
+.linterDesc {
+  color: #999;
+  margin-bottom: 1rem;
+  font-size: 0.95rem;
+}
+
+.linterStats {
+  display: flex;
+  gap: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.statItem {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.875rem;
+}
+
+.statIcon {
+  font-size: 1rem;
+}
+
+/* Metrics Grid */
+.metricsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 3rem;
+}
+
+.metricCard {
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+  border-radius: 12px;
+  padding: 1.5rem;
+  text-align: center;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  transition: all 0.3s ease;
+}
+
+.metricCard:hover {
+  transform: scale(1.05);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+}
+
+.metricCard.success {
+  border-color: rgba(34, 193, 195, 0.4);
+  background: linear-gradient(
+    135deg,
+    rgba(34, 193, 195, 0.1) 0%,
+    rgba(34, 193, 195, 0.05) 100%
+  );
+}
+
+.metricCard.info {
+  border-color: rgba(52, 152, 219, 0.4);
+  background: linear-gradient(
+    135deg,
+    rgba(52, 152, 219, 0.1) 0%,
+    rgba(52, 152, 219, 0.05) 100%
+  );
+}
+
+.metricCard.warning {
+  border-color: rgba(253, 187, 45, 0.4);
+  background: linear-gradient(
+    135deg,
+    rgba(253, 187, 45, 0.1) 0%,
+    rgba(253, 187, 45, 0.05) 100%
+  );
+}
+
+.metricIcon {
+  font-size: 2rem;
+  margin-bottom: 0.5rem;
+}
+
+.metricValue {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #fff;
+  margin-bottom: 0.5rem;
+}
+
+.metricLabel {
+  color: #888;
+  font-size: 0.875rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* Pipeline Stages */
+.pipelineStages {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1.5rem;
+  background: linear-gradient(135deg, #1e1e1e 0%, #2a2a2a 100%);
+  border-radius: 12px;
+  border: 1px solid rgba(34, 193, 195, 0.2);
+  margin-bottom: 3rem;
+}
+
+.stageItem {
+  flex: 1;
+  text-align: center;
+  padding: 1rem;
+  border-radius: 8px;
+  background: rgba(0, 0, 0, 0.3);
+  transition: all 0.3s ease;
+}
+
+.stageItem.completed {
+  background: linear-gradient(
+    135deg,
+    rgba(34, 193, 195, 0.1) 0%,
+    rgba(34, 193, 195, 0.05) 100%
+  );
+  border: 1px solid rgba(34, 193, 195, 0.2);
+}
+
+.stageIcon {
+  font-size: 1.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.stageName {
+  font-size: 0.875rem;
+  color: #fff;
+  margin-bottom: 0.25rem;
+}
+
+.stageTime {
+  font-size: 0.75rem;
+  color: #22c1c3;
+}
+
+/* Reports Section */
+.reportsSection {
+  margin-bottom: 3rem;
+}
+
+.sectionTitle {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #fff;
+  margin-bottom: 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.sectionIcon {
+  font-size: 1.5rem;
+}
+
+.reportsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 1.5rem;
+}
+
+.reportCard {
+  background: linear-gradient(135deg, #1e1e1e 0%, #2a2a2a 100%);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 1.5rem;
+  text-decoration: none;
+  color: inherit;
+  transition: all 0.3s ease;
+  display: block;
+}
+
+.reportCard:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(34, 193, 195, 0.15);
+  border-color: rgba(34, 193, 195, 0.4);
+}
+
+.reportIcon {
+  font-size: 2rem;
+  margin-bottom: 1rem;
+}
+
+.reportTitle {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #fff;
+  margin-bottom: 0.75rem;
+}
+
+.reportDesc {
+  color: #999;
+  font-size: 0.875rem;
+  line-height: 1.5;
+  margin-bottom: 1rem;
+}
+
+.reportLink {
+  color: #22c1c3;
+  font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  transition: gap 0.2s ease;
+}
+
+.reportCard:hover .reportLink {
+  gap: 0.5rem;
+}
+
+/* Case Study Section */
+.caseStudySection {
+  margin-top: 3rem;
+}
+
+.caseStudyCard {
+  background: linear-gradient(
+    135deg,
+    rgba(34, 193, 195, 0.05) 0%,
+    rgba(253, 187, 45, 0.05) 100%
+  );
+  border: 2px solid rgba(34, 193, 195, 0.3);
+  border-radius: 15px;
+  padding: 2rem;
+  position: relative;
+  overflow: hidden;
+}
+
+.caseStudyTitle {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #fff;
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.caseIcon {
+  font-size: 1.5rem;
+}
+
+.caseStudyContent {
+  color: #bbb;
+  line-height: 1.6;
+  margin-bottom: 1.5rem;
+  font-size: 1.125rem;
+}
+
+.caseStudyStats {
+  display: flex;
+  gap: 2rem;
+  justify-content: center;
+  padding-top: 1.5rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.stat {
+  text-align: center;
+}
+
+.statValue {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #22c1c3;
+  display: block;
+  margin-bottom: 0.25rem;
+}
+
+.statLabel {
+  color: #888;
+  font-size: 0.875rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .linterCards,
+  .reportsGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .metricsGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .pipelineStages {
+    flex-direction: column;
+  }
+
+  .caseStudyStats {
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .container {
+    padding: 1rem;
+  }
+}
