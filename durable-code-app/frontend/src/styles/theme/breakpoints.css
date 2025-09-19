@@ -1,0 +1,142 @@
+/**
+ * Purpose: Responsive breakpoint variables for consistent media queries
+ * Scope: Global breakpoint tokens for responsive design
+ * Overview: Standard breakpoints for mobile-first responsive design
+ * Dependencies: None - foundational theme file
+ * Exports: CSS custom properties for breakpoints
+ * Interfaces: --bp-* variables and responsive utility classes
+ * Implementation: Mobile-first approach with standard breakpoints
+ */
+
+:root {
+  /* Breakpoint values */
+  --bp-xs: 320px; /* Extra small devices */
+  --bp-sm: 640px; /* Small devices (phones) */
+  --bp-md: 768px; /* Medium devices (tablets) */
+  --bp-lg: 1024px; /* Large devices (laptops) */
+  --bp-xl: 1280px; /* Extra large devices (desktops) */
+  --bp-2xl: 1536px; /* 2X large devices (large desktops) */
+
+  /* Container max-widths for each breakpoint */
+  --container-xs: 100%;
+  --container-sm: 640px;
+  --container-md: 768px;
+  --container-lg: 1024px;
+  --container-xl: 1280px;
+  --container-2xl: 1536px;
+}
+
+/* Responsive utility classes for common patterns */
+.container {
+  width: 100%;
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: var(--container-padding-mobile);
+  padding-right: var(--container-padding-mobile);
+}
+
+@media (min-width: 640px) {
+  .container {
+    max-width: var(--container-sm);
+    padding-left: var(--container-padding);
+    padding-right: var(--container-padding);
+  }
+}
+
+@media (min-width: 768px) {
+  .container {
+    max-width: var(--container-md);
+  }
+}
+
+@media (min-width: 1024px) {
+  .container {
+    max-width: var(--container-lg);
+  }
+}
+
+@media (min-width: 1280px) {
+  .container {
+    max-width: var(--container-xl);
+  }
+}
+
+@media (min-width: 1536px) {
+  .container {
+    max-width: var(--container-2xl);
+  }
+}
+
+/* Responsive visibility utilities */
+.hidden-xs {
+  display: none;
+}
+.hidden-sm {
+  display: none;
+}
+.hidden-md {
+  display: none;
+}
+.hidden-lg {
+  display: none;
+}
+.hidden-xl {
+  display: none;
+}
+
+@media (min-width: 640px) {
+  .hidden-xs {
+    display: initial;
+  }
+  .show-sm {
+    display: initial;
+  }
+  .hidden-sm {
+    display: none;
+  }
+}
+
+@media (min-width: 768px) {
+  .hidden-sm {
+    display: initial;
+  }
+  .show-md {
+    display: initial;
+  }
+  .hidden-md {
+    display: none;
+  }
+}
+
+@media (min-width: 1024px) {
+  .hidden-md {
+    display: initial;
+  }
+  .show-lg {
+    display: initial;
+  }
+  .hidden-lg {
+    display: none;
+  }
+}
+
+@media (min-width: 1280px) {
+  .hidden-lg {
+    display: initial;
+  }
+  .show-xl {
+    display: initial;
+  }
+  .hidden-xl {
+    display: none;
+  }
+}
+
+@media (min-width: 1536px) {
+  .hidden-xl {
+    display: initial;
+  }
+  .show-2xl {
+    display: initial;
+  }
+}

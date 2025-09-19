@@ -19,7 +19,7 @@ interface UseCanvasOptions {
 }
 
 interface UseCanvasReturn {
-  canvasRef: React.RefObject<HTMLCanvasElement>;
+  canvasRef: React.RefObject<HTMLCanvasElement | null>;
   startAnimation: () => void;
   stopAnimation: () => void;
   isAnimating: boolean;

@@ -18,23 +18,43 @@ export function PlanningTab(): ReactElement {
   return (
     <div className={styles.container}>
       <div className={styles.hero}>
-        <h3 className={styles.title}>
+        <h3 className="hero-title">
           <span className={styles.titleIcon}>{planningSection.icon}</span>
           {planningSection.title}
         </h3>
-        <p className={styles.subtitle}>{planningSection.subtitle}</p>
+        <p className="subtitle">{planningSection.subtitle}</p>
       </div>
 
       <div className={styles.grid}>
         {planningSection.documents.map((doc) => (
           <div key={doc.id} className={styles.card}>
             <span className={styles.cardIcon}>{doc.icon}</span>
-            <h4 className={styles.cardTitle}>{doc.title}</h4>
+            <h4 className="light-title-on-dark">{doc.title}</h4>
             <p className={styles.cardDescription}>{doc.description}</p>
             <a href={doc.href} className={styles.cardLink}>
               View {doc.title.split(' ')[0]} →
             </a>
-            <div className={styles.cardBadge}>{doc.badge}</div>
+            <div
+              className={`${styles.badge} ${
+                doc.badge === 'Essential'
+                  ? styles.essential
+                  : doc.badge === 'Active'
+                    ? styles.active
+                    : doc.badge === 'Strategic'
+                      ? styles.info
+                      : doc.badge === 'Technical'
+                        ? styles.neutral
+                        : doc.badge === 'Quality'
+                          ? styles.success
+                          : doc.badge === 'Visual'
+                            ? styles.available
+                            : doc.badge === 'Timeline'
+                              ? styles.warning
+                              : styles.neutral
+              }`}
+            >
+              {doc.badge}
+            </div>
           </div>
         ))}
       </div>

@@ -29,30 +29,41 @@
 .infrastructureHero {
   text-align: center;
   margin-bottom: 3rem;
-  padding: 2rem 0;
+  padding: 2rem;
+  background: linear-gradient(
+    135deg,
+    rgba(46, 125, 50, 0.1) 0%,
+    rgba(46, 125, 50, 0.05) 100%
+  );
+  border-radius: 15px;
+  position: relative;
+  overflow: hidden;
+  border: 1px solid rgba(46, 125, 50, 0.2);
 }
 
-.infrastructureTitle {
-  font-size: 2.5rem;
-  font-weight: 700;
-  margin-bottom: 1rem;
-  color: var(--primary-color, #2563eb);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 1rem;
+.infrastructureHero::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, #2e7d32, #388e3c, #2e7d32);
+  animation: shimmer 3s ease-in-out infinite;
+}
+
+@keyframes shimmer {
+  0%,
+  100% {
+    opacity: 0.5;
+  }
+  50% {
+    opacity: 1;
+  }
 }
 
 .titleIcon {
   font-size: 3rem;
-}
-
-.infrastructureSubtitle {
-  font-size: 1.2rem;
-  line-height: 1.6;
-  max-width: 800px;
-  margin: 0 auto;
-  color: var(--text-secondary, #6b7280);
 }
 
 /* Infrastructure grid */
@@ -65,19 +76,18 @@
 
 .infrastructureCard {
   padding: 1.5rem;
-  border: 1px solid var(--border-color, #e5e7eb);
-  border-radius: 8px;
-  background: var(--card-background, #fff);
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-  transition: all 0.2s ease;
+  background: linear-gradient(135deg, #1e1e1e 0%, #2a2a2a 100%);
+  border: 1px solid rgba(46, 125, 50, 0.2);
+  border-radius: 12px;
+  transition: all 0.3s ease;
   cursor: pointer;
   position: relative;
 }
 
 .infrastructureCard:hover {
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-  border-color: var(--primary-color, #2563eb);
+  border-color: rgba(46, 125, 50, 0.4);
+  box-shadow: 0 8px 24px rgba(46, 125, 50, 0.15);
 }
 
 .infrastructureCard:focus {
@@ -96,13 +106,13 @@
   font-size: 1.25rem;
   font-weight: 600;
   margin-bottom: 0.75rem;
-  color: var(--text-color, #1f2937);
+  color: #ffffff !important;
 }
 
 .infrastructureCard p {
   font-size: 0.95rem;
   line-height: 1.5;
-  color: var(--text-secondary, #6b7280);
+  color: #cccccc !important;
   margin-bottom: 1rem;
 }
 

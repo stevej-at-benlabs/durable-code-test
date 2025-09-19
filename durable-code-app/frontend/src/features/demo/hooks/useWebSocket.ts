@@ -37,6 +37,7 @@ export function useWebSocket(url?: string): UseWebSocketReturn {
   const [reconnectAttempts, setReconnectAttempts] = useState(0);
 
   const hasInitializedRef = useRef(false);
+  const mountedRef = useRef(true);
 
   // Setup event listeners
   useEffect(() => {

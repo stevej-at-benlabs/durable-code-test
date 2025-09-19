@@ -17,19 +17,27 @@
 
 .buttonGroup {
   display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.waveformButtons {
+  display: flex;
   gap: 10px;
   flex-wrap: wrap;
 }
 
 .waveformButton {
-  padding: 10px 20px;
-  background: #555;
-  color: white;
+  padding: var(--space-2, 10px) var(--space-4, 20px);
+  background: var(--color-surface-variant, #555);
+  color: var(--color-text-primary, white);
   border: none;
-  border-radius: 5px;
+  border-radius: var(--border-radius-sm, 5px);
   cursor: pointer;
-  font-size: 14px;
-  font-weight: 500;
+  font-size: var(--font-size-sm, 14px);
+  font-weight: var(--font-weight-medium, 500);
   transition: all 0.2s ease;
   min-width: 120px;
 }
@@ -41,6 +49,11 @@
 
 .waveformButton:active {
   transform: translateY(0);
+}
+
+.waveformButton:focus {
+  outline: 2px solid var(--color-primary, #00a86b);
+  outline-offset: 2px;
 }
 
 .waveformButton:disabled {
@@ -55,4 +68,34 @@
 
 .waveformButton.active:hover {
   background: #00c77e;
+}
+
+.resetButton {
+  background: #666;
+  color: #ffffff;
+  border: 1px solid #777;
+  padding: 10px 20px;
+  border-radius: 5px;
+  font-weight: 500;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  min-width: 80px;
+}
+
+.resetButton:hover:not(:disabled) {
+  background: #777;
+  border-color: #888;
+  color: #ffffff;
+  transform: translateY(-1px);
+}
+
+.resetButton:focus {
+  outline: 2px solid var(--color-primary, #00a86b);
+  outline-offset: 2px;
+}
+
+.resetButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }

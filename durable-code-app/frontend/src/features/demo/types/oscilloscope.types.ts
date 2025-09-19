@@ -72,6 +72,7 @@ export interface ControlPanelProps {
   onFrequencyChange: (frequency: number) => void;
   onAmplitudeChange: (amplitude: number) => void;
   onOffsetChange: (offset: number) => void;
+  onReset?: () => void;
 }
 
 export interface StatusPanelProps {

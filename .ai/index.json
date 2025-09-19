@@ -100,6 +100,16 @@
       "purpose": "FastAPI WebSocket endpoint with streaming and command handling",
       "location": "durable-code-app/backend/app/",
       "example_files": ["durable-code-app/backend/app/oscilloscope.py"]
+    },
+    "reusable-card-component.tsx.template": {
+      "purpose": "Reusable card components for code deduplication (DetailsCard, FeatureCard patterns)",
+      "location": "durable-code-app/frontend/src/components/common/",
+      "example_files": ["durable-code-app/frontend/src/components/common/DetailsCard/", "durable-code-app/frontend/src/components/common/FeatureCard/"]
+    },
+    "css-modules-badge-system.css.template": {
+      "purpose": "Badge system with semantic variants using CSS Modules approach",
+      "location": "durable-code-app/frontend/src/features/[feature-name]/components/",
+      "example_files": ["durable-code-app/frontend/src/features/planning/components/PlanningTab/PlanningTab.module.css"]
     }
   },
   "features": {
@@ -219,6 +229,18 @@
     "add_websocket_feature": {
       "steps": ["Use websocket-endpoint.py.template for backend", "Use react-websocket-service.ts.template for service", "Use react-websocket-singleton.ts.template for singleton", "Use react-websocket-hook.ts.template for React hook", "Follow implement-websocket-react.md guide"],
       "details_in": ".ai/howto/implement-websocket-react.md"
+    },
+    "implement_badge_system": {
+      "steps": ["Create badge base class in component CSS module", "Add semantic variants (essential, active, warning, etc.)", "Update JSX to use styles.badge with styles.variant", "Remove individual badge CSS rules"],
+      "details_in": ".ai/docs/STYLING_SYSTEM_GUIDE.md"
+    },
+    "fix_text_accessibility": {
+      "steps": ["Create common title classes (.hero-title, .light-title-on-dark)", "Add to src/styles/theme/typography.css", "Replace individual text styles with common classes", "Ensure proper color contrast"],
+      "details_in": ".ai/docs/STYLING_SYSTEM_GUIDE.md"
+    },
+    "create_reusable_cards": {
+      "steps": ["Use DetailsCard for detailed information display", "Use FeatureCard for feature highlights", "Follow existing component patterns in src/components/common/", "Add TypeScript types and CSS Modules"],
+      "details_in": ".ai/features/web-application.md"
     }
   }
 }

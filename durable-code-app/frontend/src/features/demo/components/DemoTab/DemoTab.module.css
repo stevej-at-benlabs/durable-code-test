@@ -7,27 +7,58 @@
 
 .demoHero {
   text-align: center;
-  margin-bottom: 30px;
+  margin-bottom: 3rem;
+  padding: 2rem;
+  background: linear-gradient(
+    135deg,
+    rgba(52, 152, 219, 0.1) 0%,
+    rgba(52, 152, 219, 0.05) 100%
+  );
+  border-radius: 15px;
+  position: relative;
+  overflow: hidden;
+  border: 1px solid rgba(52, 152, 219, 0.2);
+}
+
+.demoHero::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, #3498db, #2980b9, #3498db);
+  animation: shimmer 3s ease-in-out infinite;
+}
+
+@keyframes shimmer {
+  0%,
+  100% {
+    opacity: 0.5;
+  }
+  50% {
+    opacity: 1;
+  }
 }
 
 .demoTitle {
-  font-size: 2.5rem;
+  font-size: 2rem;
   font-weight: 700;
-  margin: 0 0 15px 0;
-  color: #ffffff;
+  margin: 0 0 1rem 0;
+  color: var(--color-text-primary, #ffffff);
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 12px;
+  gap: 0.5rem;
 }
 
 .titleIcon {
-  font-size: 2.2rem;
+  font-size: 3rem;
 }
 
 .demoSubtitle {
-  font-size: 1.1rem;
-  color: #cccccc;
+  font-size: 1.125rem;
+  color: var(--color-text-secondary, #999);
   margin: 0;
   max-width: 800px;
   margin-left: auto;
@@ -71,70 +102,6 @@
   display: flex;
   justify-content: center;
   align-items: center;
-}
-
-.demoDetailsSection {
-  background: #1e1e1e;
-  border-radius: 12px;
-  padding: 30px;
-  margin: 40px 0;
-  border: 1px solid #333;
-}
-
-.sectionTitle {
-  font-size: 1.8rem;
-  font-weight: 600;
-  margin: 0 0 20px 0;
-  color: #ffffff;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.sectionIcon {
-  font-size: 1.6rem;
-}
-
-.detailsContent {
-  color: #cccccc;
-  line-height: 1.7;
-}
-
-.detailsContent p {
-  margin: 0 0 20px 0;
-  font-size: 1.1rem;
-}
-
-.detailsContent h3 {
-  color: #ffffff;
-  font-size: 1.3rem;
-  margin: 25px 0 12px 0;
-  font-weight: 600;
-}
-
-.detailsContent ul {
-  margin: 0 0 20px 0;
-  padding-left: 20px;
-}
-
-.detailsContent li {
-  margin-bottom: 8px;
-  font-size: 1rem;
-}
-
-.demoFooter {
-  text-align: center;
-  padding: 30px 20px;
-  background: #1a1a1a;
-  border-radius: 8px;
-  margin-top: 40px;
-}
-
-.footerNote {
-  color: #999999;
-  font-size: 0.95rem;
-  margin: 0;
-  font-style: italic;
 }
 
 @media (max-width: 768px) {

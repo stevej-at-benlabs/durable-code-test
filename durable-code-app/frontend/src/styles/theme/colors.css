@@ -1,0 +1,93 @@
+/**
+ * Purpose: Color system variables for consistent theming
+ * Scope: Global color variables and semantic color tokens
+ * Overview: Centralized color definitions supporting light/dark themes
+ * Dependencies: None - foundational theme file
+ * Exports: CSS custom properties (variables)
+ * Interfaces: --color-* variables for components
+ * Implementation: Based on existing app color palette
+ */
+
+:root {
+  /* Primary color palette - parchment/gold theme */
+  --color-primary-50: #f4e8d0;
+  --color-primary-100: #e8d5b7;
+  --color-primary-200: #ddc7a0;
+  --color-primary-300: #d4af37;
+  --color-primary-400: #b8860b;
+  --color-primary-500: #8b6341;
+  --color-primary-600: #654321;
+  --color-primary-700: #3c2414;
+
+  /* Accent colors */
+  --color-accent-50: #a08555;
+  --color-accent-100: #8b7355;
+  --color-accent-200: #765f45;
+
+  /* Semantic colors */
+  --color-background: var(--color-primary-50);
+  --color-surface: #ffffff;
+  --color-surface-elevated: rgba(255, 255, 255, 0.95);
+  --color-overlay: rgba(0, 0, 0, 0.2);
+
+  /* Text colors */
+  --color-text-primary: #3c2414;
+  --color-text-secondary: #654321;
+  --color-text-tertiary: #8b6341;
+  --color-text-inverse: #f4e8d0;
+
+  /* Border colors */
+  --color-border-light: rgba(196, 181, 155, 0.3);
+  --color-border-medium: rgba(139, 100, 61, 0.4);
+  --color-border-dark: rgba(101, 67, 33, 0.6);
+
+  /* State colors */
+  --color-success: #4ade80;
+  --color-warning: #fbbf24;
+  --color-error: #ef4444;
+  --color-info: #3b82f6;
+
+  /* Component-specific tokens */
+  --button-bg-primary: var(--color-primary-300);
+  --button-bg-primary-hover: var(--color-primary-400);
+  --button-text-primary: var(--color-text-primary);
+
+  --card-bg: var(--color-surface);
+  --card-border: var(--color-border-light);
+  --card-shadow: rgba(60, 36, 20, 0.1);
+
+  --tab-bg-active: var(--color-surface-elevated);
+  --tab-bg-inactive: transparent;
+  --tab-border-active: var(--color-primary-300);
+
+  /* Gradient backgrounds */
+  --gradient-primary: linear-gradient(
+    135deg,
+    var(--color-primary-50) 0%,
+    var(--color-primary-100) 50%,
+    var(--color-primary-200) 100%
+  );
+  --gradient-accent: linear-gradient(
+    45deg,
+    var(--color-primary-300) 0%,
+    var(--color-primary-400) 100%
+  );
+}
+
+/* Dark theme support */
+[data-theme='dark'] {
+  --color-background: #1a1a1a;
+  --color-surface: #2a2a2a;
+  --color-surface-elevated: #3a3a3a;
+  --color-text-primary: #f4e8d0;
+  --color-text-secondary: #e8d5b7;
+  --color-text-tertiary: #ddc7a0;
+  --color-text-inverse: #3c2414;
+
+  --color-border-light: rgba(244, 232, 208, 0.2);
+  --color-border-medium: rgba(244, 232, 208, 0.3);
+  --color-border-dark: rgba(244, 232, 208, 0.4);
+
+  --card-shadow: rgba(0, 0, 0, 0.3);
+  --gradient-primary: linear-gradient(135deg, #2a2a2a 0%, #1a1a1a 50%, #0a0a0a 100%);
+}

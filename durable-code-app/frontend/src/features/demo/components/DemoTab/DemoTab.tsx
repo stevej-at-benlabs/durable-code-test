@@ -10,12 +10,12 @@
  * Implementation: Feature-based architecture with modular components and hooks
  */
 
-import React from 'react';
 import type { ReactElement } from 'react';
 import { useOscilloscope } from '../../hooks/useOscilloscope';
 import { OscilloscopeCanvas } from '../Oscilloscope';
 import { ControlPanel } from '../ControlPanel';
 import { StatusPanel } from '../StatusPanel';
+import { DetailsCard } from '../../../../components/common';
 import styles from './DemoTab.module.css';
 
 export function DemoTab(): ReactElement {
@@ -34,6 +34,7 @@ export function DemoTab(): ReactElement {
     updateTriggerLevel,
     togglePause,
     clearBuffer,
+    resetToDefaults,
     error,
   } = useOscilloscope();
 
@@ -96,6 +97,7 @@ export function DemoTab(): ReactElement {
             onFrequencyChange={updateFrequency}
             onAmplitudeChange={updateAmplitude}
             onOffsetChange={updateOffset}
+            onReset={resetToDefaults}
           />
 
           {/* Status Panel */}
@@ -104,46 +106,40 @@ export function DemoTab(): ReactElement {
       </div>
 
       {/* Documentation Section */}
-      <div className={styles.demoDetailsSection}>
-        <h4 className={styles.sectionTitle}>
-          <span className={styles.sectionIcon}>📖</span>
-          About This Demo
-        </h4>
-        <div className={styles.detailsContent}>
-          <p>
-            This interactive oscilloscope demonstrates real-time data streaming using
-            WebSockets and canvas-based visualization. The backend generates waveforms
-            in real-time and streams them to the frontend for display.
-          </p>
+      <DetailsCard title="About This Demo" icon="📖">
+        <p>
+          This interactive oscilloscope demonstrates real-time data streaming using
+          WebSockets and canvas-based visualization. The backend generates waveforms in
+          real-time and streams them to the frontend for display.
+        </p>
 
-          <h3>Features</h3>
-          <ul>
-            <li>Real-time WebSocket streaming</li>
-            <li>Multiple waveform types (sine, square, white noise)</li>
-            <li>Adjustable frequency, amplitude, and offset</li>
-            <li>Zoom and scale controls</li>
-            <li>Trigger level adjustment</li>
-            <li>Pause and clear functionality</li>
-            <li>Performance monitoring (FPS, data rate)</li>
-          </ul>
+        <h3>Features</h3>
+        <ul>
+          <li>Real-time WebSocket streaming</li>
+          <li>Multiple waveform types (sine, square, white noise)</li>
+          <li>Adjustable frequency, amplitude, and offset</li>
+          <li>Zoom and scale controls</li>
+          <li>Trigger level adjustment</li>
+          <li>Pause and clear functionality</li>
+          <li>Performance monitoring (FPS, data rate)</li>
+        </ul>
 
-          <h3>Technical Implementation</h3>
-          <ul>
-            <li>Backend: FastAPI with WebSocket support</li>
-            <li>Frontend: React with Canvas API</li>
-            <li>Protocol: JSON over WebSocket</li>
-            <li>Visualization: Hardware-accelerated canvas rendering</li>
-          </ul>
-        </div>
-      </div>
+        <h3>Technical Implementation</h3>
+        <ul>
+          <li>Backend: FastAPI with WebSocket support</li>
+          <li>Frontend: React with Canvas API</li>
+          <li>Protocol: JSON over WebSocket</li>
+          <li>Visualization: Hardware-accelerated canvas rendering</li>
+        </ul>
+      </DetailsCard>
 
       {/* Footer */}
-      <div className={styles.demoFooter}>
-        <p className={styles.footerNote}>
+      <DetailsCard title="Demo Summary" icon="⚡">
+        <p>
           This oscilloscope demo showcases real-time data streaming and visualization
           capabilities of the durable code framework.
         </p>
-      </div>
+      </DetailsCard>
     </div>
   );
 }

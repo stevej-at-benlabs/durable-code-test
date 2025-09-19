@@ -9,13 +9,14 @@
 
 .navigation {
   display: flex;
+  justify-content: center;
   gap: 0;
-  margin-bottom: 2rem;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  margin-bottom: var(--space-8);
+  border-bottom: 1px solid var(--color-border-light);
   padding: 0;
   overflow-x: auto;
   scrollbar-width: thin;
-  scrollbar-color: rgba(255, 255, 255, 0.3) transparent;
+  scrollbar-color: var(--color-border-medium) transparent;
 }
 
 .navigation::-webkit-scrollbar {
@@ -27,27 +28,27 @@
 }
 
 .navigation::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.3);
-  border-radius: 4px;
+  background: var(--color-border-medium);
+  border-radius: var(--space-1);
 }
 
 .navigation::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.5);
+  background: var(--color-border-dark);
 }
 
 .tabTitle {
-  font-size: 0.95rem;
-  font-weight: 500;
+  font-size: var(--tab-text-size);
+  font-weight: var(--font-weight-medium);
   white-space: nowrap;
 }
 
 @media (max-width: 768px) {
   .navigation {
-    gap: 0.5rem;
-    padding: 0 1rem;
+    gap: var(--space-2);
+    padding: 0 var(--space-4);
   }
 
   .tabTitle {
-    font-size: 0.875rem;
+    font-size: var(--text-sm);
   }
 }

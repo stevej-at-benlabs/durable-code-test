@@ -86,7 +86,7 @@ export function InfrastructureTab({
             }}
           >
             <div className="card-icon">{item.icon}</div>
-            <h4>{item.title}</h4>
+            <h4 className="light-title-on-dark">{item.title}</h4>
             <p>{item.description}</p>
             <div className="card-badge">{item.badge}</div>
           </div>
@@ -105,7 +105,7 @@ export function InfrastructureTab({
     ) => {
       return (
         <div className={styles.folderSection}>
-          <h4 className="section-title">
+          <h4 className="light-title-on-dark">
             <span className="section-icon">{icon}</span>
             {title}
           </h4>
@@ -338,7 +338,7 @@ export function InfrastructureTab({
   const renderActionLinks = useCallback(() => {
     return (
       <div className={styles.actionSection}>
-        <h4 className="section-title">
+        <h4 className="light-title-on-dark">
           <span className="section-icon">🚀</span>
           Try the Infrastructure
         </h4>
@@ -375,8 +375,10 @@ export function InfrastructureTab({
     return (
       <div className={componentClasses}>
         <ErrorMessage
-          error={error}
-          onRetry={() => window.location.reload()}
+          message={error.message}
+          title="Error loading infrastructure"
+          variant="error"
+          onDismiss={() => window.location.reload()}
           className={styles.errorMessage}
         />
       </div>
@@ -388,11 +390,11 @@ export function InfrastructureTab({
     <div className={componentClasses}>
       {/* Hero section */}
       <div className={styles.infrastructureHero}>
-        <h3 className={styles.infrastructureTitle}>
+        <h3 className="hero-title">
           <span className={styles.titleIcon}>🏗️</span>
           Rigid Infrastructure: The Foundation for AI
         </h3>
-        <p className={styles.infrastructureSubtitle}>
+        <p className="subtitle">
           AI collaboration at scale requires uncompromising infrastructure discipline.
           This project shows some examples of the rigid standards, automated quality
           controls, and structured documentation that make AI-assisted development

@@ -1,0 +1,17 @@
+/**
+ * Purpose: Theme system entry point importing all theme variables
+ * Scope: Global theme import for entire application
+ * Overview: Centralized import for all theme-related CSS variables
+ * Dependencies: All theme files (colors, typography, spacing, breakpoints)
+ * Exports: All theme CSS custom properties
+ * Interfaces: Complete theme system via CSS variables
+ * Implementation: Import order ensures proper cascade and specificity
+ */
+
+/* Import all theme variables */
+@import './colors.css';
+@import './typography.css';
+@import './spacing.css';
+@import './breakpoints.css';
+
+/* Theme system is complete - all variables are now available globally */
