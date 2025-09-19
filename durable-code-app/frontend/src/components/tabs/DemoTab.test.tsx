@@ -11,7 +11,7 @@
 
 import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { DemoTab } from './DemoTab';
+import { DemoTab } from '../../features/demo';
 
 // Mock WebSocket
 class MockWebSocket {
