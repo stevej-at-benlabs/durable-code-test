@@ -63,10 +63,7 @@
 .qa-hero::before {
   content: '';
   position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
+  inset: 0;
   background: radial-gradient(
     circle at 70% 30%,
     rgba(139, 100, 61, 0.1) 0%,
@@ -230,6 +227,32 @@
   display: block;
 }
 
+/* Base card typography styles */
+.stage-content h5,
+.pipeline-feature h5,
+.command-card h5,
+.doc-automation-card h5,
+.strategy-header h5,
+.tool-card h5 {
+  font-size: 1.25rem;
+  color: #1f2937;
+  margin-bottom: 0.5rem;
+  font-weight: 700;
+}
+
+.stage-content p,
+.pipeline-feature p,
+.command-item p,
+.step-content p,
+.strategy-card p,
+.debt-details p,
+.tool-card p,
+.timeline-content p {
+  color: #6b7280;
+  font-size: 0.875rem;
+  line-height: 1.5;
+}
+
 .linters-showcase .linter-card h5 {
   font-size: 1.25rem;
   color: #1f2937;
@@ -338,19 +361,6 @@
   background: linear-gradient(135deg, #8b6341 0%, #654321 100%);
 }
 
-.stage-content h5 {
-  font-size: 1.125rem;
-  color: #1f2937;
-  margin-bottom: 0.25rem;
-  font-weight: 600;
-}
-
-.stage-content p {
-  font-size: 0.875rem;
-  color: #6b7280;
-  margin-bottom: 0.5rem;
-}
-
 .stage-time {
   font-size: 0.75rem;
   color: #9ca3af;
@@ -401,19 +411,6 @@
   display: block;
 }
 
-.pipeline-feature h5 {
-  font-size: 1.125rem;
-  color: #1f2937;
-  margin-bottom: 0.5rem;
-  font-weight: 600;
-}
-
-.pipeline-feature p {
-  font-size: 0.875rem;
-  color: #6b7280;
-  line-height: 1.5;
-}
-
 /* Commands Grid */
 .command-grid {
   display: grid;
@@ -446,12 +443,6 @@
   margin-bottom: 0.75rem;
 }
 
-.command-item p {
-  color: #6b7280;
-  font-size: 0.875rem;
-  margin: 0;
-}
-
 /* Maintenance Tab Styles */
 .maintenance-content {
   padding: 0;
@@ -474,10 +465,7 @@
 .maintenance-hero::before {
   content: '';
   position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
+  inset: 0;
   background: radial-gradient(
     circle at 30% 70%,
     rgba(139, 100, 61, 0.1) 0%,
@@ -596,14 +584,6 @@
   text-transform: uppercase;
 }
 
-.command-card h5,
-.doc-automation-card h5 {
-  font-size: 1.25rem;
-  color: #1f2937;
-  margin-bottom: 0.75rem;
-  font-weight: 700;
-}
-
 .command-description,
 .doc-description {
   color: #6b7280;
@@ -709,13 +689,6 @@
   font-size: 0.875rem;
   color: #1f2937;
   margin-bottom: 0.25rem;
-}
-
-.step-content p {
-  font-size: 0.75rem;
-  color: #6b7280;
-  margin: 0;
-  line-height: 1.4;
 }
 
 /* Metrics Impact */
@@ -857,7 +830,7 @@
 
 .score-fill {
   fill: none;
-  stroke: url(#scoreGradient);
+  stroke: url('#scoreGradient');
   stroke-width: 10;
   stroke-linecap: round;
   animation: fillScore 2s ease-out;
@@ -981,14 +954,6 @@
   font-size: 2.5rem;
 }
 
-.strategy-header h5 {
-  flex: 1;
-  font-size: 1.25rem;
-  color: #1f2937;
-  margin: 0;
-  font-weight: 700;
-}
-
 .strategy-badge {
   background: linear-gradient(135deg, #7d5d3b 0%, #5d4427 100%);
   color: white;
@@ -997,12 +962,6 @@
   font-size: 0.75rem;
   font-weight: 600;
   text-transform: uppercase;
-}
-
-.strategy-card p {
-  color: #6b7280;
-  margin-bottom: 1.5rem;
-  line-height: 1.6;
 }
 
 .strategy-features {
@@ -1152,12 +1111,6 @@
   font-weight: 600;
 }
 
-.debt-details p {
-  font-size: 0.875rem;
-  color: #6b7280;
-  margin: 0;
-}
-
 .debt-estimate {
   font-size: 0.875rem;
   color: #9ca3af;
@@ -1195,20 +1148,6 @@
   font-size: 2.5rem;
   margin-bottom: 0.75rem;
   display: block;
-}
-
-.tool-card h5 {
-  font-size: 1.125rem;
-  color: #1f2937;
-  margin-bottom: 0.5rem;
-  font-weight: 600;
-}
-
-.tool-card p {
-  font-size: 0.875rem;
-  color: #6b7280;
-  margin-bottom: 1rem;
-  line-height: 1.5;
 }
 
 .tool-status {
@@ -1289,12 +1228,6 @@
   color: #6b7280;
   margin-bottom: 0.25rem;
   font-weight: 600;
-}
-
-.timeline-content p {
-  font-size: 1rem;
-  color: #1f2937;
-  font-weight: 500;
 }
 
 @media (max-width: 768px) {

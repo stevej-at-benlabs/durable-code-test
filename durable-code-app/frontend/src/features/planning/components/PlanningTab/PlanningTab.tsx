@@ -29,7 +29,7 @@ export function PlanningTab(): ReactElement {
         {planningSection.documents.map((doc) => (
           <div key={doc.id} className={styles.card}>
             <span className={styles.cardIcon}>{doc.icon}</span>
-            <h4 className="light-title-on-dark">{doc.title}</h4>
+            <h4 className="dark-title-on-light">{doc.title}</h4>
             <p className={styles.cardDescription}>{doc.description}</p>
             <a href={doc.href} className={styles.cardLink}>
               View {doc.title.split(' ')[0]} →

@@ -9,8 +9,8 @@
 }
 
 .title {
-  margin: 0 0 10px 0;
-  font-size: 16px;
+  margin: 0 0 10px;
+  font-size: var(--text-base);
   font-weight: 600;
   color: #ffffff;
 }
@@ -42,11 +42,6 @@
   min-width: 120px;
 }
 
-.waveformButton:hover:not(:disabled) {
-  background: #666;
-  transform: translateY(-1px);
-}
-
 .waveformButton:active {
   transform: translateY(0);
 }
@@ -59,6 +54,11 @@
 .waveformButton:disabled {
   opacity: 0.5;
   cursor: not-allowed;
+}
+
+.waveformButton:hover:not(:disabled) {
+  background: #666;
+  transform: translateY(-1px);
 }
 
 .waveformButton.active {
@@ -77,17 +77,10 @@
   padding: 10px 20px;
   border-radius: 5px;
   font-weight: 500;
-  font-size: 14px;
+  font-size: var(--text-sm);
   cursor: pointer;
   transition: all 0.2s ease;
   min-width: 80px;
-}
-
-.resetButton:hover:not(:disabled) {
-  background: #777;
-  border-color: #888;
-  color: #ffffff;
-  transform: translateY(-1px);
 }
 
 .resetButton:focus {
@@ -98,4 +91,11 @@
 .resetButton:disabled {
   opacity: 0.5;
   cursor: not-allowed;
+}
+
+.resetButton:hover:not(:disabled) {
+  background: #777;
+  border-color: #888;
+  color: #ffffff;
+  transform: translateY(-1px);
 }

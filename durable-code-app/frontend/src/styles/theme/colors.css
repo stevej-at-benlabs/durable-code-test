@@ -51,11 +51,9 @@
   --button-bg-primary: var(--color-primary-300);
   --button-bg-primary-hover: var(--color-primary-400);
   --button-text-primary: var(--color-text-primary);
-
   --card-bg: var(--color-surface);
   --card-border: var(--color-border-light);
   --card-shadow: rgba(60, 36, 20, 0.1);
-
   --tab-bg-active: var(--color-surface-elevated);
   --tab-bg-inactive: transparent;
   --tab-border-active: var(--color-primary-300);
@@ -83,11 +81,9 @@
   --color-text-secondary: #e8d5b7;
   --color-text-tertiary: #ddc7a0;
   --color-text-inverse: #3c2414;
-
   --color-border-light: rgba(244, 232, 208, 0.2);
   --color-border-medium: rgba(244, 232, 208, 0.3);
   --color-border-dark: rgba(244, 232, 208, 0.4);
-
   --card-shadow: rgba(0, 0, 0, 0.3);
   --gradient-primary: linear-gradient(135deg, #2a2a2a 0%, #1a1a1a 50%, #0a0a0a 100%);
 }

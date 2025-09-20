@@ -28,7 +28,7 @@
   cursor: not-allowed;
 }
 
-.tab:hover:not(:disabled):not(.active) {
+.tab:hover:not(:disabled, .active) {
   color: var(--color-primary-600, #654321);
   background-color: var(--color-surface-elevated, rgba(255, 255, 255, 0.3));
   border-radius: var(--space-2, 8px);

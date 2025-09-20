@@ -9,9 +9,9 @@
  */
 
 /* Import all theme variables */
-@import './colors.css';
-@import './typography.css';
-@import './spacing.css';
-@import './breakpoints.css';
+@import url('./colors.css');
+@import url('./typography.css');
+@import url('./spacing.css');
+@import url('./breakpoints.css');
 
 /* Theme system is complete - all variables are now available globally */

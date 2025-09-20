@@ -34,7 +34,7 @@ export function BuildingTab(): ReactElement {
       {/* Slash Commands Section */}
       <section>
         <div className={styles.sectionHeader}>
-          <h4 className="light-title-on-dark">
+          <h4 className="dark-title-on-light">
             <span className={styles.sectionIcon}>⚡</span>
             Slash Commands
           </h4>
@@ -58,7 +58,7 @@ export function BuildingTab(): ReactElement {
       {/* New Code Capabilities Section */}
       <section>
         <div className={styles.sectionHeader}>
-          <h4 className="light-title-on-dark">
+          <h4 className="dark-title-on-light">
             <span className={styles.sectionIcon}>🛠️</span>
             /new-code Capabilities
           </h4>
@@ -82,7 +82,7 @@ export function BuildingTab(): ReactElement {
       {/* AI-Powered Commands Section */}
       <section>
         <div className={styles.sectionHeader}>
-          <h4 className="light-title-on-dark">
+          <h4 className="dark-title-on-light">
             <span className={styles.sectionIcon}>🤖</span>
             AI-Powered Slash Commands
           </h4>
@@ -93,7 +93,7 @@ export function BuildingTab(): ReactElement {
           {aiCommands.map((cmd) => (
             <div key={cmd.id} className={styles.aiCommandCard}>
               <div className={styles.aiCommandIcon}>{cmd.icon}</div>
-              <h5 className="light-title-on-dark">{cmd.name}</h5>
+              <h5 className="dark-title-on-light">{cmd.name}</h5>
               <p className={styles.aiCommandDesc}>{cmd.description}</p>
               <div className={styles.aiCommandFeatures}>
                 {cmd.features.map((feature) => (
@@ -117,7 +117,7 @@ export function BuildingTab(): ReactElement {
 
       {/* AI Templates Section */}
       <section>
-        <h4 className="light-title-on-dark">
+        <h4 className="dark-title-on-light">
           <span className={styles.sectionIcon}>📄</span>
           AI Templates (.ai/templates)
         </h4>
@@ -125,7 +125,7 @@ export function BuildingTab(): ReactElement {
           {templates.map((template) => (
             <div key={template.id} className={styles.templateCard}>
               <div className={styles.templateIcon}>{template.icon}</div>
-              <h5 className="light-title-on-dark">{template.filename}</h5>
+              <h5 className="dark-title-on-light">{template.filename}</h5>
               <p className={styles.templateDesc}>{template.description}</p>
             </div>
           ))}
@@ -134,7 +134,7 @@ export function BuildingTab(): ReactElement {
 
       {/* How-To Guides Section */}
       <section>
-        <h4 className="light-title-on-dark">
+        <h4 className="dark-title-on-light">
           <span className={styles.sectionIcon}>📚</span>
           How-To Guides (.ai/howto)
         </h4>
@@ -142,7 +142,7 @@ export function BuildingTab(): ReactElement {
           {howToGuides.map((guide) => (
             <div key={guide.id} className={styles.howtoCard}>
               <div className={styles.howtoIcon}>{guide.icon}</div>
-              <h5 className="light-title-on-dark">{guide.title}</h5>
+              <h5 className="dark-title-on-light">{guide.title}</h5>
               <p className={styles.howtoDesc}>{guide.description}</p>
             </div>
           ))}
@@ -153,7 +153,7 @@ export function BuildingTab(): ReactElement {
       <section>
         <div className={styles.standardsCard}>
           <div className={styles.sectionHeader}>
-            <h4 className="light-title-on-dark">
+            <h4 className="dark-title-on-light">
               <span className={styles.sectionIcon}>📋</span>
               Development Standards (.ai/docs/STANDARDS.md)
             </h4>
@@ -175,7 +175,7 @@ export function BuildingTab(): ReactElement {
 
       {/* Action Section */}
       <section className={styles.actionSection}>
-        <h4 className={styles.sectionTitle}>
+        <h4 className="dark-title-on-light">
           <span className={styles.sectionIcon}>🚀</span>
           Get Started
         </h4>

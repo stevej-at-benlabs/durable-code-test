@@ -86,7 +86,7 @@ export function InfrastructureTab({
             }}
           >
             <div className="card-icon">{item.icon}</div>
-            <h4 className="light-title-on-dark">{item.title}</h4>
+            <h4 className="dark-title-on-light">{item.title}</h4>
             <p>{item.description}</p>
             <div className="card-badge">{item.badge}</div>
           </div>
@@ -105,7 +105,7 @@ export function InfrastructureTab({
     ) => {
       return (
         <div className={styles.folderSection}>
-          <h4 className="light-title-on-dark">
+          <h4 className="dark-title-on-light">
             <span className="section-icon">{icon}</span>
             {title}
           </h4>
@@ -338,7 +338,7 @@ export function InfrastructureTab({
   const renderActionLinks = useCallback(() => {
     return (
       <div className={styles.actionSection}>
-        <h4 className="light-title-on-dark">
+        <h4 className="dark-title-on-light">
           <span className="section-icon">🚀</span>
           Try the Infrastructure
         </h4>

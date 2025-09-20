@@ -14,8 +14,8 @@
 }
 
 .title {
-  margin: 0 0 15px 0;
-  font-size: 16px;
+  margin: 0 0 15px;
+  font-size: var(--text-base);
   font-weight: 700;
   color: #333333;
 }
@@ -34,13 +34,13 @@
 }
 
 .label {
-  font-size: 14px;
+  font-size: var(--text-sm);
   color: #333333;
   font-weight: 600;
 }
 
 .value {
-  font-size: 14px;
+  font-size: var(--text-sm);
   font-weight: 600;
   color: #333333;
   font-family: 'Courier New', monospace;
@@ -49,7 +49,7 @@
 .performance {
   font-weight: 700;
   text-transform: uppercase;
-  font-size: 12px;
+  font-size: var(--text-xs);
 }
 
 @media (max-width: 768px) {
