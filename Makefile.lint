@@ -15,7 +15,7 @@
 .PHONY: lint-all lint-tool lint-custom lint-fix lint-list-rules lint-categories
 
 # Run all linters: common tools + custom rules
-lint-all: dev-start ## Run ALL linters (Python: Black, isort, Ruff, Flake8, MyPy, Pylint, Bandit, Xenon; JS: ESLint, Prettier, TypeScript; Custom: all design rules including file organization)
+lint-all: dev-start ## Run ALL linters (Python: Black, isort, Ruff, Flake8, MyPy, Pylint, Bandit, Xenon; JS: ESLint, Prettier, TypeScript; CSS: Stylelint; Custom: all design rules including file organization)
 	@echo "$(CYAN)╔════════════════════════════════════════════════════════════╗$(NC)"
 	@echo "$(CYAN)║                  Running ALL Linters                      ║$(NC)"
 	@echo "$(CYAN)╚════════════════════════════════════════════════════════════╝$(NC)"
@@ -36,6 +36,7 @@ lint-all: dev-start ## Run ALL linters (Python: Black, isort, Ruff, Flake8, MyPy
 	@docker exec durable-code-frontend-dev sh -c "\
 		echo '• TypeScript...' && npm run typecheck && \
 		echo '• ESLint...' && npm run lint && \
+		echo '• Stylelint...' && npm run lint:css && \
 		echo '• Prettier...' && npm run format:check" || (echo "$(RED)✗ Frontend linting failed$(NC)" && exit 1)
 	@echo "$(GREEN)✓ Frontend linting passed$(NC)"
 	@echo ""
@@ -100,7 +101,7 @@ lint-custom: dev-start ## Run custom linters by category (e.g., make lint-custom
 	@echo "$(GREEN)✓ Category '$(CAT)' check complete$(NC)"
 
 # Auto-fix formatting issues
-lint-fix: dev-start ## Auto-fix linting issues (Black, isort, Ruff, ESLint, Prettier)
+lint-fix: dev-start ## Auto-fix linting issues (Black, isort, Ruff, ESLint, Prettier, Stylelint)
 	@echo "$(CYAN)Auto-fixing code formatting...$(NC)"
 	@echo "$(YELLOW)Fixing Python code...$(NC)"
 	@docker exec -u root durable-code-backend-dev bash -c "cd /app && \
@@ -111,6 +112,7 @@ lint-fix: dev-start ## Auto-fix linting issues (Black, isort, Ruff, ESLint, Pret
 	@echo "$(YELLOW)Fixing TypeScript/React code...$(NC)"
 	@docker exec durable-code-frontend-dev sh -c "\
 		npm run lint:fix && \
+		npm run lint:css:fix && \
 		npm run format"
 	@echo "$(GREEN)✅ Auto-fix complete!$(NC)"
 
