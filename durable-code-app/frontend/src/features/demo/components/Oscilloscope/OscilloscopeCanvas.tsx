@@ -14,6 +14,7 @@ import React, { useCallback, useMemo } from 'react';
 import type { OscilloscopeCanvasProps } from '../../types/oscilloscope.types';
 import { CANVAS_CONFIG } from '../../constants/oscilloscope.constants';
 import { useCanvas } from '../../hooks/useCanvas';
+import { usePerformanceMetrics } from '../../../../core/performance';
 import styles from './OscilloscopeCanvas.module.css';
 
 export const OscilloscopeCanvas: React.FC<OscilloscopeCanvasProps> = ({
@@ -21,9 +22,14 @@ export const OscilloscopeCanvas: React.FC<OscilloscopeCanvasProps> = ({
   state,
   stats,
 }) => {
+  // Performance monitoring
+  const { startMeasuring } = usePerformanceMetrics({
+    componentName: 'OscilloscopeCanvas',
+    trackRenders: true,
+  });
   // Memoize expensive data processing
   const displayData = useMemo(() => {
-    if (data.length === 0) return [];
+    if (data.length === 0) return new Float32Array(0);
     const timeWindow =
       (state.timeScale * CANVAS_CONFIG.GRID_DIVISIONS_HORIZONTAL) / 1000;
     const samplesToShow = Math.min(data.length, Math.floor(timeWindow * 1000));
@@ -151,19 +157,25 @@ export const OscilloscopeCanvas: React.FC<OscilloscopeCanvasProps> = ({
   // Main drawing function
   const draw = useCallback(
     (ctx: CanvasRenderingContext2D, canvas: HTMLCanvasElement) => {
-      const { width, height } = canvas;
+      const stopMeasuring = startMeasuring();
 
-      // Clear canvas
-      ctx.fillStyle = CANVAS_CONFIG.BACKGROUND_COLOR;
-      ctx.fillRect(0, 0, width, height);
+      try {
+        const { width, height } = canvas;
 
-      // Draw components
-      drawGrid(ctx, width, height);
-      drawWaveform(ctx, width, height);
-      drawTrigger(ctx, width, height);
-      drawMeasurements(ctx, width, height);
+        // Clear canvas
+        ctx.fillStyle = CANVAS_CONFIG.BACKGROUND_COLOR;
+        ctx.fillRect(0, 0, width, height);
+
+        // Draw components
+        drawGrid(ctx, width, height);
+        drawWaveform(ctx, width, height);
+        drawTrigger(ctx, width, height);
+        drawMeasurements(ctx, width, height);
+      } finally {
+        stopMeasuring();
+      }
     },
-    [drawGrid, drawWaveform, drawTrigger, drawMeasurements],
+    [drawGrid, drawWaveform, drawTrigger, drawMeasurements, startMeasuring],
   );
 
   const { canvasRef } = useCanvas(draw, {

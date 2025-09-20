@@ -90,14 +90,36 @@ export function useCanvas(
       canvas.height = canvas.offsetHeight || canvas.clientHeight;
     }
 
-    // Start animation
-    startAnimation();
+    // Draw once on initialization
+    const ctx = canvas.getContext('2d');
+    if (ctx) {
+      try {
+        drawFunctionRef.current(ctx, canvas);
+      } catch (error) {
+        console.error('Error in canvas draw function:', error);
+      }
+    }
 
     // Cleanup on unmount
     return () => {
       stopAnimation();
     };
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Redraw when draw function changes (i.e., when data changes)
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    try {
+      drawFunctionRef.current(ctx, canvas);
+    } catch (error) {
+      console.error('Error in canvas draw function:', error);
+    }
+  }, [drawFunction]);
 
   // Handle resize
   useEffect(() => {
