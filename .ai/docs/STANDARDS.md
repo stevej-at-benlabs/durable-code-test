@@ -248,7 +248,13 @@ frontend/
 │   ├── components/
 │   │   ├── common/          # Reusable components
 │   │   └── features/        # Feature-specific components
-│   ├── pages/               # Page components
+│   ├── core/
+│   │   └── errors/          # Error boundary infrastructure
+│   │       ├── MinimalErrorBoundary.tsx
+│   │       ├── ErrorBoundary.tsx
+│   │       ├── ErrorBoundary.types.ts
+│   │       └── index.ts
+│   ├── pages/               # Page components (must have error boundaries)
 │   ├── hooks/               # Custom React hooks
 │   ├── services/            # API services
 │   ├── store/               # State management
@@ -256,7 +262,10 @@ frontend/
 │   ├── utils/               # Utility functions
 │   ├── styles/              # Global styles
 │   ├── App.tsx
-│   └── main.tsx
+│   └── main.tsx             # Must include root error boundary
+├── scripts/                 # Page content verification tools
+│   ├── simple-check.js
+│   └── check-page-content.js
 ├── public/
 ├── tests/
 ├── package.json
@@ -277,13 +286,20 @@ frontend/
   5. Style imports
 
 ### 3. Component Guidelines
-- **Functional Components Only**: Use hooks instead of class components
+- **Functional Components Only**: Use hooks instead of class components (Exception: Error boundaries require class components)
+- **Error Boundary Requirements**:
+  - ✅ **MANDATORY**: All route components must be wrapped with error boundaries
+  - ✅ **MANDATORY**: Root level error boundary in main.tsx
+  - ✅ **RECOMMENDED**: Component-level error boundaries for complex features
+  - ✅ **STANDARD**: Use MinimalErrorBoundary for stability unless advanced features needed
+  - ✅ **TESTING**: Verify with `make check-page` after adding error boundaries
 - **Component Structure**:
   ```typescript
   // 1. Imports
   // 2. Type definitions
-  // 3. Component definition
-  // 4. Styled components (if using CSS-in-JS)
+  // 3. Error boundary wrapper (if applicable)
+  // 4. Component definition
+  // 5. Styled components (if using CSS-in-JS)
   ```
 - **Naming Conventions**:
   - Components: PascalCase
@@ -530,6 +546,8 @@ The custom file placement linter enforces these rules:
 - [ ] Documentation is updated
 - [ ] No hardcoded values
 - [ ] Error handling is implemented
+- [ ] **Error boundaries are implemented** (for React components)
+- [ ] **Page content verification passes** (`make check-page`)
 - [ ] Security considerations addressed
 - [ ] Performance impact considered
 

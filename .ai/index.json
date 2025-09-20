@@ -31,6 +31,10 @@
     "run_tests": {
       "command": "make test",
       "details_in": "index_expanded.md#testing-framework"
+    },
+    "check_page_content": {
+      "command": "make check-page",
+      "details_in": "index_expanded.md#page-content-verification"
     }
   },
   "templates": {
@@ -110,6 +114,11 @@
       "purpose": "Badge system with semantic variants using CSS Modules approach",
       "location": "durable-code-app/frontend/src/features/[feature-name]/components/",
       "example_files": ["durable-code-app/frontend/src/features/planning/components/PlanningTab/PlanningTab.module.css"]
+    },
+    "react-error-boundary.tsx.template": {
+      "purpose": "Error boundary components for React error isolation and recovery",
+      "location": "durable-code-app/frontend/src/core/errors/",
+      "example_files": ["durable-code-app/frontend/src/core/errors/MinimalErrorBoundary.tsx", "durable-code-app/frontend/src/core/errors/ErrorBoundary.tsx"]
     }
   },
   "features": {
@@ -144,6 +153,12 @@
       "summary": "Multi-layered quality assurance with unit, integration, and performance tests",
       "key_files": ["test/", ".pre-commit-config.yaml"],
       "usage": "make test, pytest"
+    },
+    "error-boundaries": {
+      "file": "features/error-boundaries.md",
+      "summary": "Comprehensive React error boundary system with 3-tier architecture and recovery mechanisms",
+      "key_files": ["durable-code-app/frontend/src/core/errors/", "scripts/", "check-page.py"],
+      "usage": "make check-page, node test-rendered-content.js"
     }
   },
   "standards": {
@@ -196,6 +211,14 @@
     "implement-websocket-react.md": {
       "purpose": "Implement WebSocket connections in React with StrictMode compatibility",
       "key_commands": ["Use singleton pattern", "Handle reconnection", "Sync state with service"]
+    },
+    "implement-error-boundaries.md": {
+      "purpose": "Implement React error boundaries with 3-tier architecture and testing",
+      "key_commands": ["make check-page", "node test-rendered-content.js", "use MinimalErrorBoundary for stability"]
+    },
+    "test-page-content.md": {
+      "purpose": "Verify React app renders correctly using various testing tools",
+      "key_commands": ["make check-page", "make check-page-full", "make check-page-watch"]
     }
   },
   "file_structure": {
@@ -204,6 +227,8 @@
     "durable-code-app/": "Full-stack web application",
     "durable-code-app/frontend/src/features/": "Feature-based architecture for complex components",
     "durable-code-app/frontend/src/components/": "Simple reusable components and basic tabs",
+    "durable-code-app/frontend/src/core/errors/": "Error boundary infrastructure and global error handling",
+    "durable-code-app/frontend/scripts/": "Page content verification and testing tools",
     "test/": "Comprehensive test suites",
     ".ai/": "AI agent documentation and templates",
     ".claude/commands/": "Claude AI command definitions",
@@ -241,6 +266,14 @@
     "create_reusable_cards": {
       "steps": ["Use DetailsCard for detailed information display", "Use FeatureCard for feature highlights", "Follow existing component patterns in src/components/common/", "Add TypeScript types and CSS Modules"],
       "details_in": ".ai/features/web-application.md"
+    },
+    "implement_error_boundaries": {
+      "steps": ["Use MinimalErrorBoundary for stability", "Implement 3-tier architecture (root, route, component)", "Add to main.tsx, AppShell.tsx, and component level", "Test with make check-page", "Verify with page content tools"],
+      "details_in": ".ai/howto/implement-error-boundaries.md"
+    },
+    "test_page_functionality": {
+      "steps": ["Use make check-page for basic verification", "Use make check-page-full for complete testing", "Use make check-page-watch for continuous monitoring", "Debug with node test-rendered-content.js"],
+      "details_in": ".ai/howto/test-page-content.md"
     }
   }
 }

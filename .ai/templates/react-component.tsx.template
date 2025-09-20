@@ -256,24 +256,18 @@ export type { {{COMPONENT_NAME}}Props, {{STATE_INTERFACE}}, {{DATA_INTERFACE}} }
 // 6. Replace {{PROPS_DESCRIPTION}} with props interface description
 // 7. Replace {{STATE_DESCRIPTION}} with state behavior description
 // 8. Replace {{PROPS_DEFINITION}} with TypeScript props interface
-// 9. Replace {{STATE_INTERFACE}} with state interface name
-// 10. Replace {{STATE_PROPERTIES}} with state interface properties
-// 11. Replace {{DATA_INTERFACE}} with data interface name
-// 12. Replace {{DATA_PROPERTIES}} with data interface properties
-// 13. Replace {{CONSTANTS}} with constants object name
-// 14. Replace {{CONSTANT_VALUES}} with constant definitions
-// 15. Replace {{DEFAULT_PROP_VALUES}} with default prop values
-// 16. Replace {{DESTRUCTURED_PROPS}} with destructured prop names
-// 17. Replace {{INITIAL_STATE}} with initial state values
-// 18. Replace {{DATA_STATE}} with data state variable name
-// 19. Replace {{DATA_STATE_SETTER}} with data setter function name
-// 20. Replace {{REF_NAME}} with ref variable name
-// 21. Replace {{REF_TYPE}} with ref element type
-// 22. Replace {{MEMOIZED_VALUE}} with memoized value name
-// 23. Replace {{MEMOIZATION_LOGIC}} with memoization calculation
-// 24. Replace {{MEMOIZATION_DEPENDENCIES}} with dependency array
-// 25. Replace {{COMPONENT_STYLE_CLASS}} with main CSS class
-// 26. Replace {{EVENT_NAME}} with event handler name
-// 27. Replace {{EVENT_PARAMS}} with event parameters
-// 28. Replace {{EVENT_LOGIC}} with event handling logic
-// 29. Replace all other {{PLACEHOLDER}} values appropriately
+// ... (replace all {{PLACEHOLDER}} values appropriately)
+//
+// ERROR BOUNDARY INTEGRATION:
+// - For route components: Wrap with error boundary in AppShell.tsx
+// - For complex features: Consider wrapping with MinimalErrorBoundary
+// - Test after implementation: make check-page
+// - Example error boundary usage:
+//   <MinimalErrorBoundary>
+//     <YourComponent />
+//   </MinimalErrorBoundary>
+//
+// TESTING:
+// - Verify functionality: make check-page
+// - Test error boundaries with intentional errors
+// - Ensure component doesn't break app rendering
