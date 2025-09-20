@@ -8,7 +8,8 @@
  * Implementation: Shared component with theme-aware styling
  */
 
-import type { ReactElement, ReactNode } from 'react';
+import { memo } from 'react';
+import type { ReactNode } from 'react';
 import styles from './DetailsCard.module.css';
 
 interface DetailsCardProps {
@@ -18,19 +19,18 @@ interface DetailsCardProps {
   className?: string;
 }
 
-export function DetailsCard({
-  title,
-  icon,
-  children,
-  className = '',
-}: DetailsCardProps): ReactElement {
-  return (
-    <div className={`${styles.detailsCard} ${className}`}>
-      <h4 className={styles.title}>
-        <span className={styles.icon}>{icon}</span>
-        {title}
-      </h4>
-      <div className={styles.content}>{children}</div>
-    </div>
-  );
-}
+export const DetailsCard = memo<DetailsCardProps>(
+  ({ title, icon, children, className = '' }) => {
+    return (
+      <div className={`${styles.detailsCard} ${className}`}>
+        <h4 className={styles.title}>
+          <span className={styles.icon}>{icon}</span>
+          {title}
+        </h4>
+        <div className={styles.content}>{children}</div>
+      </div>
+    );
+  }
+);
+
+DetailsCard.displayName = 'DetailsCard';

@@ -10,7 +10,7 @@
  * Implementation: Canvas-based rendering with grid, waveform, and measurement overlays
  */
 
-import React, { useCallback } from 'react';
+import React, { useCallback, useMemo } from 'react';
 import type { OscilloscopeCanvasProps } from '../../types/oscilloscope.types';
 import { CANVAS_CONFIG } from '../../constants/oscilloscope.constants';
 import { useCanvas } from '../../hooks/useCanvas';
@@ -21,6 +21,15 @@ export const OscilloscopeCanvas: React.FC<OscilloscopeCanvasProps> = ({
   state,
   stats,
 }) => {
+  // Memoize expensive data processing
+  const displayData = useMemo(() => {
+    if (data.length === 0) return [];
+    const timeWindow = (state.timeScale * CANVAS_CONFIG.GRID_DIVISIONS_HORIZONTAL) / 1000;
+    const samplesToShow = Math.min(data.length, Math.floor(timeWindow * 1000));
+    const startIndex = Math.max(0, data.length - samplesToShow);
+    return data.slice(startIndex);
+  }, [data, state.timeScale]);
+
   // Draw grid on canvas
   const drawGrid = useCallback(
     (ctx: CanvasRenderingContext2D, width: number, height: number) => {
@@ -67,19 +76,11 @@ export const OscilloscopeCanvas: React.FC<OscilloscopeCanvasProps> = ({
   // Draw waveform data
   const drawWaveform = useCallback(
     (ctx: CanvasRenderingContext2D, width: number, height: number) => {
-      if (data.length === 0) return;
+      if (displayData.length === 0) return;
 
       ctx.strokeStyle = CANVAS_CONFIG.WAVEFORM_COLOR;
       ctx.lineWidth = 2;
       ctx.beginPath();
-
-      // Calculate samples to display based on time scale
-      // Each division represents timeScale milliseconds, and we have 10 divisions
-      const timeWindow =
-        (state.timeScale * CANVAS_CONFIG.GRID_DIVISIONS_HORIZONTAL) / 1000; // Convert to seconds
-      const samplesToShow = Math.min(data.length, Math.floor(timeWindow * 1000)); // Assuming 1000 samples/sec
-      const startIndex = Math.max(0, data.length - samplesToShow);
-      const displayData = data.slice(startIndex);
 
       const samplesPerPixel = Math.max(1, Math.floor(displayData.length / width));
       const pixelStep = width / Math.min(width, displayData.length);
@@ -100,7 +101,7 @@ export const OscilloscopeCanvas: React.FC<OscilloscopeCanvasProps> = ({
       }
       ctx.stroke();
     },
-    [data, state.timeScale, state.voltScale],
+    [displayData, state.voltScale],
   );
 
   // Draw trigger level

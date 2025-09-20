@@ -8,7 +8,8 @@
  * Implementation: Shared component with color theme variants
  */
 
-import type { ReactElement, ReactNode } from 'react';
+import { memo } from 'react';
+import type { ReactNode } from 'react';
 import styles from './FeatureCard.module.css';
 
 export type FeatureCardVariant =
@@ -29,20 +30,17 @@ interface FeatureCardProps {
   className?: string;
 }
 
-export function FeatureCard({
-  icon,
-  title,
-  description,
-  children,
-  variant = 'primary',
-  className = '',
-}: FeatureCardProps): ReactElement {
-  return (
-    <div className={`${styles.featureCard} ${styles[variant]} ${className}`}>
-      <div className={styles.icon}>{icon}</div>
-      <h5 className={styles.title}>{title}</h5>
-      {description && <p className={styles.description}>{description}</p>}
-      {children && <div className={styles.content}>{children}</div>}
-    </div>
-  );
-}
+export const FeatureCard = memo<FeatureCardProps>(
+  ({ icon, title, description, children, variant = 'primary', className = '' }) => {
+    return (
+      <div className={`${styles.featureCard} ${styles[variant]} ${className}`}>
+        <div className={styles.icon}>{icon}</div>
+        <h5 className={styles.title}>{title}</h5>
+        {description && <p className={styles.description}>{description}</p>}
+        {children && <div className={styles.content}>{children}</div>}
+      </div>
+    );
+  }
+);
+
+FeatureCard.displayName = 'FeatureCard';
