@@ -134,6 +134,16 @@
       "purpose": "Application-wide performance monitoring singleton with threshold alerts",
       "location": "durable-code-app/frontend/src/core/performance/",
       "example_files": ["durable-code-app/frontend/src/core/performance/PerformanceMonitor.ts"]
+    },
+    "backend-exception-hierarchy.py.template": {
+      "purpose": "Structured exception hierarchy for backend error handling with status codes",
+      "location": "durable-code-app/backend/app/core/",
+      "example_files": ["durable-code-app/backend/app/core/exceptions.py"]
+    },
+    "backend-retry-logic.py.template": {
+      "purpose": "Retry decorators with exponential backoff for resilient backend operations",
+      "location": "durable-code-app/backend/app/core/",
+      "example_files": ["durable-code-app/backend/app/core/retry.py"]
     }
   },
   "features": {
@@ -202,6 +212,10 @@
     "DOCKER_EXECUTION_STANDARDS.md": {
       "purpose": "Docker-only execution requirements for all development tools and scripts",
       "enforcement": "Documentation standards, Make targets, no local execution patterns"
+    },
+    "ERROR_HANDLING_STANDARDS.md": {
+      "purpose": "Error handling patterns and antipatterns to avoid, especially broad exception catching",
+      "enforcement": "W0718 linting check must never be disabled, custom error_handling linting rules"
     }
   },
   "howto": {
@@ -238,6 +252,10 @@
     "implement-error-boundaries.md": {
       "purpose": "Implement React error boundaries with 3-tier architecture and testing",
       "key_commands": ["make check-page", "docker exec durable-code-frontend-dev node /app/scripts/test-rendered-content.js", "use MinimalErrorBoundary for stability"]
+    },
+    "implement-backend-error-handling.md": {
+      "purpose": "Implement robust backend error handling with exceptions, retry logic, and circuit breakers",
+      "key_commands": ["No broad exceptions", "Use retry decorators", "Add global handlers", "Enable W0718 linting"]
     },
     "test-page-content.md": {
       "purpose": "Verify React app renders correctly using various testing tools",
@@ -293,6 +311,10 @@
     "implement_error_boundaries": {
       "steps": ["Use MinimalErrorBoundary for stability", "Implement 3-tier architecture (root, route, component)", "Add to main.tsx, AppShell.tsx, and component level", "Test with make check-page", "Verify with page content tools"],
       "details_in": ".ai/howto/implement-error-boundaries.md"
+    },
+    "implement_backend_error_handling": {
+      "steps": ["Use backend-exception-hierarchy.py.template for exceptions", "Add global handlers to main.py", "Replace broad exceptions with specific types", "Use backend-retry-logic.py.template for retry decorators", "Enable W0718 in pylint", "Test error responses"],
+      "details_in": ".ai/howto/implement-backend-error-handling.md"
     },
     "test_page_functionality": {
       "steps": ["Use make check-page for basic verification", "Use make check-page-full for complete testing", "Use make check-page-watch for continuous monitoring", "Debug with docker exec durable-code-frontend-dev node /app/scripts/test-rendered-content.js"],

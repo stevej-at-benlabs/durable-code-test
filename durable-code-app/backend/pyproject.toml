@@ -14,8 +14,11 @@ python-dotenv = "^1.1.1"
 pydantic = "^2.11.7"
 websockets = "^13.0.0"
 slowapi = "^0.1.9"
+tenacity = "^8.2.3"
+loguru = "^0.7.3"
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.4.2"
+pytest-asyncio = "^0.23.0"
 pytest-cov = "^4.1.0"
 black = "^25.1.0"
 ruff = "^0.13.0"
@@ -33,7 +36,6 @@ flake8-simplify = "^0.21.0"
 xenon = "^0.9.1"
 typer = "^0.12.0"
 pip-audit = "^2.9.0"
-loguru = "^0.7.3"
 httpx = "^0.28.0"
 
 [build-system]
@@ -126,7 +128,6 @@ disable = [
     "E0213", # no-self-argument (false positive for Pydantic validators)
     "W0613", # unused-argument (false positive for FastAPI request parameters)
     "C0415", # import-outside-toplevel (sometimes required for FastAPI setup)
-    "W0718", # broad-exception-caught (intentional for security error handling)
 ]
 
 [tool.pylint.design]

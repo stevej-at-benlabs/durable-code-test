@@ -5,11 +5,17 @@ This module demonstrates durable code practices with
 strict complexity limits and comprehensive type safety.
 """
 
+import logging
+
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 
+from .core.exceptions import AppExceptionError, ValidationError
 from .oscilloscope import router as oscilloscope_router
 from .security import SecurityMiddleware, get_rate_limiter, get_security_config
+
+logger = logging.getLogger(__name__)
 
 # Application configuration
 API_TITLE = "Durable Code API"
@@ -49,6 +55,61 @@ def create_application() -> FastAPI:
 
     application.state.limiter = RATE_LIMITER
     application.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+
+    # Add global exception handlers
+    @application.exception_handler(AppExceptionError)
+    async def app_exception_handler(request: Request, exc: AppExceptionError) -> JSONResponse:
+        """Handle application-specific exceptions with structured responses."""
+        logger.error(
+            f"Application error: {exc.error_code}",
+            extra={
+                "error_code": exc.error_code,
+                "status_code": exc.status_code,
+                "details": exc.details,
+                "path": request.url.path,
+            },
+        )
+        return JSONResponse(
+            status_code=exc.status_code,
+            content={
+                "error": exc.error_code,
+                "message": exc.message,
+                "details": exc.details,
+            },
+        )
+
+    @application.exception_handler(ValidationError)
+    async def validation_exception_handler(request: Request, exc: ValidationError) -> JSONResponse:
+        """Handle validation errors with detailed field information."""
+        logger.warning(
+            f"Validation error on {request.url.path}",
+            extra={"details": exc.details, "path": request.url.path},
+        )
+        return JSONResponse(
+            status_code=exc.status_code,
+            content={
+                "error": exc.error_code,
+                "message": exc.message,
+                "details": exc.details,
+            },
+        )
+
+    @application.exception_handler(Exception)
+    async def general_exception_handler(request: Request, exc: Exception) -> JSONResponse:
+        """Handle unexpected exceptions safely without exposing internals."""
+        logger.exception(
+            f"Unexpected error on {request.url.path}",
+            extra={"path": request.url.path, "method": request.method},
+        )
+        # Don't expose internal error details in production
+        return JSONResponse(
+            status_code=500,
+            content={
+                "error": "INTERNAL_ERROR",
+                "message": "An unexpected error occurred",
+                "details": {},
+            },
+        )
 
     # Add security middleware
     application.add_middleware(SecurityMiddleware)
