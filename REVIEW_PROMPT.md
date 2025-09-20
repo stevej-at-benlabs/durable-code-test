@@ -100,3 +100,9 @@ Each agent should provide a focused report with specific findings, recommendatio
 - All code changes must pass the strict linting and testing pipeline
 - The project uses Docker for consistency across environments
 - All development should be done through make targets
+
+## Security Context
+- The `.env` file is properly gitignored and contains local development secrets only
+- API keys and sensitive data are never committed to version control
+- `.env.example` provides documentation for required environment variables
+- This follows proper secrets management practices - do not flag as a security issue
