@@ -15,7 +15,7 @@ from fastapi.responses import JSONResponse
 
 # Import our error handling modules - modules should be accessible directly
 from app.core.exceptions import (
-    AppException,
+    AppExceptionError,
     ValidationError,
     ServiceError,
     WebSocketError,
@@ -41,8 +41,8 @@ class TestExceptionHierarchy:
     """Test custom exception classes."""
 
     def test_app_exception_base(self):
-        """Test base AppException."""
-        exc = AppException(
+        """Test base AppExceptionError."""
+        exc = AppExceptionError(
             message="Test error",
             status_code=500,
             error_code="TEST_ERROR",
@@ -309,7 +309,7 @@ class TestGlobalExceptionHandlers:
 
     @patch("app.main.logger")
     def test_app_exception_handler(self, mock_logger):
-        """Test AppException handler returns structured response."""
+        """Test AppExceptionError handler returns structured response."""
         @self.app.get("/test-app-error")
         async def test_endpoint():
             raise ServiceError(
@@ -412,14 +412,14 @@ class TestErrorHandlingIntegration:
                 return await service_layer()
             except ServiceError as e:
                 # Transform to user-friendly error
-                raise AppException(
+                raise AppExceptionError(
                     message="Operation temporarily unavailable",
                     status_code=503,
                     error_code="TEMP_UNAVAILABLE",
                     details=e.details
                 )
 
-        with pytest.raises(AppException) as exc_info:
+        with pytest.raises(AppExceptionError) as exc_info:
             await api_layer()
 
         assert exc_info.value.error_code == "TEMP_UNAVAILABLE"

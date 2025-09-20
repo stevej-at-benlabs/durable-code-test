@@ -11,12 +11,12 @@ Key features:
 - Detailed error messages and context
 """
 
-from typing import Any, Optional
+from typing import Any
 
 from fastapi import status
 
 
-class AppException(Exception):
+class AppExceptionError(Exception):
     """
     Base exception for all application errors.
 
@@ -32,7 +32,7 @@ class AppException(Exception):
         message: str,
         status_code: int = status.HTTP_500_INTERNAL_SERVER_ERROR,
         error_code: str = "INTERNAL_ERROR",
-        details: Optional[dict[str, Any]] = None,
+        details: dict[str, Any] | None = None,
     ) -> None:
         """Initialize the exception with structured error information."""
         super().__init__(message)
@@ -42,7 +42,7 @@ class AppException(Exception):
         self.details = details or {}
 
 
-class ValidationError(AppException):
+class ValidationError(AppExceptionError):
     """
     Exception for input validation failures.
 
@@ -52,7 +52,7 @@ class ValidationError(AppException):
     def __init__(
         self,
         message: str = "Invalid input provided",
-        details: Optional[dict[str, Any]] = None,
+        details: dict[str, Any] | None = None,
     ) -> None:
         """Initialize validation error with 422 status."""
         super().__init__(
@@ -63,7 +63,7 @@ class ValidationError(AppException):
         )
 
 
-class ServiceError(AppException):
+class ServiceError(AppExceptionError):
     """
     Exception for service layer errors.
 
@@ -73,7 +73,7 @@ class ServiceError(AppException):
     def __init__(
         self,
         message: str = "Service operation failed",
-        details: Optional[dict[str, Any]] = None,
+        details: dict[str, Any] | None = None,
     ) -> None:
         """Initialize service error with 500 status."""
         super().__init__(
@@ -84,7 +84,7 @@ class ServiceError(AppException):
         )
 
 
-class WebSocketError(AppException):
+class WebSocketError(AppExceptionError):
     """
     Exception for WebSocket-specific errors.
 
@@ -94,7 +94,7 @@ class WebSocketError(AppException):
     def __init__(
         self,
         message: str = "WebSocket operation failed",
-        details: Optional[dict[str, Any]] = None,
+        details: dict[str, Any] | None = None,
     ) -> None:
         """Initialize WebSocket error with 500 status."""
         super().__init__(
@@ -105,7 +105,7 @@ class WebSocketError(AppException):
         )
 
 
-class ConfigurationError(AppException):
+class ConfigurationError(AppExceptionError):
     """
     Exception for configuration-related errors.
 
@@ -115,7 +115,7 @@ class ConfigurationError(AppException):
     def __init__(
         self,
         message: str = "Configuration error",
-        details: Optional[dict[str, Any]] = None,
+        details: dict[str, Any] | None = None,
     ) -> None:
         """Initialize configuration error with 500 status."""
         super().__init__(
@@ -126,7 +126,7 @@ class ConfigurationError(AppException):
         )
 
 
-class ExternalServiceError(AppException):
+class ExternalServiceError(AppExceptionError):
     """
     Exception for external service communication failures.
 
@@ -137,7 +137,7 @@ class ExternalServiceError(AppException):
     def __init__(
         self,
         message: str = "External service unavailable",
-        details: Optional[dict[str, Any]] = None,
+        details: dict[str, Any] | None = None,
     ) -> None:
         """Initialize external service error with 503 status."""
         super().__init__(
@@ -148,7 +148,7 @@ class ExternalServiceError(AppException):
         )
 
 
-class ResourceNotFoundError(AppException):
+class ResourceNotFoundError(AppExceptionError):
     """
     Exception for resource not found scenarios.
 
@@ -158,8 +158,8 @@ class ResourceNotFoundError(AppException):
     def __init__(
         self,
         message: str = "Resource not found",
-        resource_type: Optional[str] = None,
-        resource_id: Optional[str] = None,
+        resource_type: str | None = None,
+        resource_id: str | None = None,
     ) -> None:
         """Initialize not found error with 404 status."""
         details = {}
@@ -176,7 +176,7 @@ class ResourceNotFoundError(AppException):
         )
 
 
-class AuthenticationError(AppException):
+class AuthenticationError(AppExceptionError):
     """
     Exception for authentication failures.
 
@@ -186,7 +186,7 @@ class AuthenticationError(AppException):
     def __init__(
         self,
         message: str = "Authentication failed",
-        details: Optional[dict[str, Any]] = None,
+        details: dict[str, Any] | None = None,
     ) -> None:
         """Initialize authentication error with 401 status."""
         super().__init__(
@@ -197,7 +197,7 @@ class AuthenticationError(AppException):
         )
 
 
-class AuthorizationError(AppException):
+class AuthorizationError(AppExceptionError):
     """
     Exception for authorization failures.
 
@@ -207,7 +207,7 @@ class AuthorizationError(AppException):
     def __init__(
         self,
         message: str = "Insufficient permissions",
-        details: Optional[dict[str, Any]] = None,
+        details: dict[str, Any] | None = None,
     ) -> None:
         """Initialize authorization error with 403 status."""
         super().__init__(
@@ -218,7 +218,7 @@ class AuthorizationError(AppException):
         )
 
 
-class RateLimitExceededError(AppException):
+class RateLimitExceededError(AppExceptionError):
     """
     Exception for rate limit violations.
 
@@ -228,7 +228,7 @@ class RateLimitExceededError(AppException):
     def __init__(
         self,
         message: str = "Rate limit exceeded",
-        retry_after: Optional[int] = None,
+        retry_after: int | None = None,
     ) -> None:
         """Initialize rate limit error with 429 status."""
         details = {}

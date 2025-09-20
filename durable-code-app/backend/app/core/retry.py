@@ -8,18 +8,11 @@ retry logic, circuit breakers, and other resilience patterns.
 import asyncio
 import functools
 import logging
-from typing import Any, Callable, Optional, Type, TypeVar, Union
+from collections.abc import Callable
+from typing import Any, TypeVar
 
-from tenacity import (
-    RetryError,
-    Retrying,
-    retry,
-    stop_after_attempt,
-    wait_exponential,
-)
+from tenacity import Retrying, retry, stop_after_attempt, wait_exponential
 from tenacity.before_sleep import before_sleep_log
-from tenacity.stop import stop_base
-from tenacity.wait import wait_base
 
 from .exceptions import ExternalServiceError
 
@@ -37,7 +30,7 @@ class RetryConfig:
         min_wait: float = 1.0,
         max_wait: float = 10.0,
         multiplier: float = 2.0,
-        exceptions: Optional[tuple[Type[Exception], ...]] = None,
+        exceptions: tuple[type[Exception], ...] | None = None,
     ) -> None:
         """
         Initialize retry configuration.
@@ -77,8 +70,8 @@ GENTLE_RETRY = RetryConfig(
 
 
 def with_retry(
-    config: Optional[RetryConfig] = None,
-    on_retry: Optional[Callable[[Any, Any], None]] = None,
+    config: RetryConfig | None = None,
+    on_retry: Callable[[Any, Any], None] | None = None,
 ) -> Callable[[Callable[..., T]], Callable[..., T]]:
     """
     Decorator to add retry logic to a function.
@@ -118,11 +111,7 @@ def with_retry(
                     min=config.min_wait,
                     max=config.max_wait,
                 ),
-                retry=(
-                    retry_if_exception_type(config.exceptions)
-                    if config.exceptions
-                    else None
-                ),
+                retry=(retry_if_exception_type(config.exceptions) if config.exceptions else None),
                 before_sleep=before_sleep_log(logger, logging.INFO),
             ):
                 with attempt_manager:
@@ -130,9 +119,7 @@ def with_retry(
                     try:
                         result = await func(*args, **kwargs)
                         if attempt > 1:
-                            logger.info(
-                                f"Operation {func.__name__} succeeded after {attempt} attempts"
-                            )
+                            logger.info(f"Operation {func.__name__} succeeded after {attempt} attempts")
                         return result
                     except config.exceptions as e:
                         last_exception = e
@@ -143,9 +130,7 @@ def with_retry(
                                 f"Operation {func.__name__} failed (attempt {attempt}/{config.max_attempts}): {str(e)}"
                             )
                         else:
-                            logger.error(
-                                f"Operation {func.__name__} failed after {attempt} attempts: {str(e)}"
-                            )
+                            logger.error(f"Operation {func.__name__} failed after {attempt} attempts: {str(e)}")
                         raise
 
             # This should not be reached, but handle it gracefully
@@ -163,11 +148,7 @@ def with_retry(
                     min=config.min_wait,
                     max=config.max_wait,
                 ),
-                retry=(
-                    retry_if_exception_type(config.exceptions)
-                    if config.exceptions
-                    else None
-                ),
+                retry=(retry_if_exception_type(config.exceptions) if config.exceptions else None),
                 before_sleep=before_sleep_log(logger, logging.INFO),
             )(func)(*args, **kwargs)
 
@@ -180,9 +161,7 @@ def with_retry(
     return decorator
 
 
-def retry_if_exception_type(
-    exceptions: tuple[Type[Exception], ...]
-) -> Callable[[Any], bool]:
+def retry_if_exception_type(exceptions: tuple[type[Exception], ...]) -> Callable[[Any], bool]:
     """
     Helper to determine if an exception should trigger a retry.
 
@@ -219,14 +198,10 @@ class AsyncRetrying(Retrying):
 
 
 # Convenience decorators for common scenarios
-retry_on_external_error = with_retry(
-    config=RetryConfig(exceptions=(ExternalServiceError,))
-)
+retry_on_external_error = with_retry(config=RetryConfig(exceptions=(ExternalServiceError,)))
 
 retry_on_connection_error = with_retry(
-    config=RetryConfig(
-        exceptions=(ConnectionError, TimeoutError, ExternalServiceError)
-    )
+    config=RetryConfig(exceptions=(ConnectionError, TimeoutError, ExternalServiceError))
 )
 
 retry_critical = with_retry(config=AGGRESSIVE_RETRY)

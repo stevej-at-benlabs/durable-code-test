@@ -6,7 +6,6 @@ ensure specific exception types are used, and verify retry logic exists.
 """
 
 import ast
-from typing import Any, Optional
 
 from design_linters.framework.rule import Rule
 from design_linters.framework.violation import Violation
@@ -34,7 +33,7 @@ class NoBroadExceptionsRule(Rule):
                             line=node.lineno,
                             column=node.col_offset,
                             message="Bare except clause found - catch specific exceptions",
-                            severity="error"
+                            severity="error",
                         )
                     )
                 elif isinstance(node.type, ast.Name):
@@ -46,7 +45,7 @@ class NoBroadExceptionsRule(Rule):
                                 line=node.lineno,
                                 column=node.col_offset,
                                 message=f"Broad exception type '{node.type.id}' - use specific exceptions",
-                                severity="error"
+                                severity="error",
                             )
                         )
                 elif isinstance(node.type, ast.Tuple):
@@ -60,7 +59,7 @@ class NoBroadExceptionsRule(Rule):
                                     line=node.lineno,
                                     column=node.col_offset,
                                     message=f"Broad exception type '{exc.id}' in tuple - use specific exceptions",
-                                    severity="error"
+                                    severity="error",
                                 )
                             )
 
@@ -85,17 +84,26 @@ class RequireRetryLogicRule(Rule):
         for node in ast.walk(tree):
             if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
                 # Check if function name suggests external operation
-                is_external = any(keyword in node.name.lower() for keyword in [
-                    "fetch", "call", "request", "api", "external", "remote",
-                    "database", "db", "query", "http", "webhook"
-                ])
+                is_external = any(
+                    keyword in node.name.lower()
+                    for keyword in [
+                        "fetch",
+                        "call",
+                        "request",
+                        "api",
+                        "external",
+                        "remote",
+                        "database",
+                        "db",
+                        "query",
+                        "http",
+                        "webhook",
+                    ]
+                )
 
                 if is_external:
                     # Check if it has retry decorator
-                    has_retry = any(
-                        self._is_retry_decorator(dec)
-                        for dec in node.decorator_list
-                    )
+                    has_retry = any(self._is_retry_decorator(dec) for dec in node.decorator_list)
 
                     if not has_retry:
                         violations.append(
@@ -105,7 +113,7 @@ class RequireRetryLogicRule(Rule):
                                 line=node.lineno,
                                 column=node.col_offset,
                                 message=f"External operation '{node.name}' should have retry logic",
-                                severity="warning"
+                                severity="warning",
                             )
                         )
 
@@ -163,7 +171,7 @@ class StructuredExceptionsRule(Rule):
                             if "error_code" in init_source:
                                 has_error_code = True
 
-                    if has_init and not has_status_code and node.name != "AppException":
+                    if has_init and not has_status_code and node.name not in ["AppException", "AppExceptionError"]:
                         violations.append(
                             Violation(
                                 rule=self.name,
@@ -171,11 +179,11 @@ class StructuredExceptionsRule(Rule):
                                 line=node.lineno,
                                 column=node.col_offset,
                                 message=f"Exception '{node.name}' should define status_code",
-                                severity="warning"
+                                severity="warning",
                             )
                         )
 
-                    if has_init and not has_error_code and node.name != "AppException":
+                    if has_init and not has_error_code and node.name not in ["AppException", "AppExceptionError"]:
                         violations.append(
                             Violation(
                                 rule=self.name,
@@ -183,7 +191,7 @@ class StructuredExceptionsRule(Rule):
                                 line=node.lineno,
                                 column=node.col_offset,
                                 message=f"Exception '{node.name}' should define error_code",
-                                severity="warning"
+                                severity="warning",
                             )
                         )
 
@@ -228,7 +236,7 @@ class RequireErrorLoggingRule(Rule):
                             line=node.lineno,
                             column=node.col_offset,
                             message=f"Caught {exc_type} should be logged or re-raised",
-                            severity="warning"
+                            severity="warning",
                         )
                     )
 
@@ -236,18 +244,15 @@ class RequireErrorLoggingRule(Rule):
 
     def _contains_logging(self, node: ast.AST) -> bool:
         """Check if node contains logging call."""
-        if isinstance(node, ast.Expr) and isinstance(node.value, ast.Call):
-            if isinstance(node.value.func, ast.Attribute):
-                return node.value.func.attr in [
-                    "debug", "info", "warning", "error", "exception", "critical"
-                ]
+        if (
+            isinstance(node, ast.Expr)
+            and isinstance(node.value, ast.Call)
+            and isinstance(node.value.func, ast.Attribute)
+        ):
+            return node.value.func.attr in ["debug", "info", "warning", "error", "exception", "critical"]
 
         # Recursively check in nested structures
-        for child in ast.iter_child_nodes(node):
-            if self._contains_logging(child):
-                return True
-
-        return False
+        return any(self._contains_logging(child) for child in ast.iter_child_nodes(node))
 
 
 class CircuitBreakerUsageRule(Rule):
@@ -268,16 +273,14 @@ class CircuitBreakerUsageRule(Rule):
         for node in ast.walk(tree):
             if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
                 # Check if it's an external service call
-                is_service_call = any(keyword in node.name.lower() for keyword in [
-                    "service", "api", "external", "remote", "database", "cache"
-                ])
+                is_service_call = any(
+                    keyword in node.name.lower()
+                    for keyword in ["service", "api", "external", "remote", "database", "cache"]
+                )
 
                 if is_service_call:
                     # Check for circuit breaker decorator or usage
-                    has_circuit_breaker = any(
-                        self._is_circuit_breaker(dec)
-                        for dec in node.decorator_list
-                    )
+                    has_circuit_breaker = any(self._is_circuit_breaker(dec) for dec in node.decorator_list)
 
                     if not has_circuit_breaker:
                         # Check if circuit breaker is used inside the function
@@ -291,7 +294,7 @@ class CircuitBreakerUsageRule(Rule):
                                     line=node.lineno,
                                     column=node.col_offset,
                                     message=f"Service call '{node.name}' could benefit from circuit breaker",
-                                    severity="info"
+                                    severity="info",
                                 )
                             )
 

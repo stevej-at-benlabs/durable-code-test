@@ -1,7 +1,7 @@
 """Core infrastructure modules for the backend application."""
 
 from .exceptions import (
-    AppException,
+    AppExceptionError,
     AuthenticationError,
     AuthorizationError,
     ConfigurationError,
@@ -14,7 +14,7 @@ from .exceptions import (
 )
 
 __all__ = [
-    "AppException",
+    "AppExceptionError",
     "AuthenticationError",
     "AuthorizationError",
     "ConfigurationError",

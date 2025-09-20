@@ -11,7 +11,7 @@ from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
-from .core.exceptions import AppException, ValidationError
+from .core.exceptions import AppExceptionError, ValidationError
 from .oscilloscope import router as oscilloscope_router
 from .security import SecurityMiddleware, get_rate_limiter, get_security_config
 
@@ -57,8 +57,8 @@ def create_application() -> FastAPI:
     application.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
     # Add global exception handlers
-    @application.exception_handler(AppException)
-    async def app_exception_handler(request: Request, exc: AppException) -> JSONResponse:
+    @application.exception_handler(AppExceptionError)
+    async def app_exception_handler(request: Request, exc: AppExceptionError) -> JSONResponse:
         """Handle application-specific exceptions with structured responses."""
         logger.error(
             f"Application error: {exc.error_code}",

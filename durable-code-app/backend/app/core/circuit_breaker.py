@@ -8,8 +8,9 @@ cascading failures when external services are unavailable.
 import asyncio
 import logging
 import time
+from collections.abc import Callable
 from enum import Enum
-from typing import Any, Callable, Optional, TypeVar
+from typing import Any, TypeVar
 
 from .exceptions import ExternalServiceError
 
@@ -48,7 +49,7 @@ class CircuitBreaker:
         failure_threshold: int = 5,
         success_threshold: int = 2,
         timeout_duration: float = 60.0,
-        expected_exceptions: Optional[tuple[type[Exception], ...]] = None,
+        expected_exceptions: tuple[type[Exception], ...] | None = None,
     ) -> None:
         """
         Initialize circuit breaker.
@@ -74,7 +75,7 @@ class CircuitBreaker:
         self.state = CircuitBreakerState.CLOSED
         self.failure_count = 0
         self.success_count = 0
-        self.last_failure_time: Optional[float] = None
+        self.last_failure_time: float | None = None
         self._lock = asyncio.Lock()
 
     async def _transition_to_open(self) -> None:
@@ -82,9 +83,7 @@ class CircuitBreaker:
         self.state = CircuitBreakerState.OPEN
         self.last_failure_time = time.time()
         self.success_count = 0
-        logger.warning(
-            f"Circuit breaker '{self.name}' opened after {self.failure_count} failures"
-        )
+        logger.warning(f"Circuit breaker '{self.name}' opened after {self.failure_count} failures")
 
     async def _transition_to_closed(self) -> None:
         """Transition to CLOSED state."""
@@ -163,7 +162,7 @@ class CircuitBreaker:
             await self._on_success()
             return result
 
-        except self.expected_exceptions as e:
+        except self.expected_exceptions:
             await self._on_failure()
             raise
 

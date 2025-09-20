@@ -15,6 +15,7 @@ pydantic = "^2.11.7"
 websockets = "^13.0.0"
 slowapi = "^0.1.9"
 tenacity = "^8.2.3"
+loguru = "^0.7.3"
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.4.2"
 pytest-asyncio = "^0.23.0"
@@ -35,7 +36,6 @@ flake8-simplify = "^0.21.0"
 xenon = "^0.9.1"
 typer = "^0.12.0"
 pip-audit = "^2.9.0"
-loguru = "^0.7.3"
 httpx = "^0.28.0"
 
 [build-system]

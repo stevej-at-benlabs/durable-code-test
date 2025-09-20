@@ -21,7 +21,7 @@ Use the `backend-exception-hierarchy.py.template`:
 from typing import Any, Optional
 from fastapi import status
 
-class AppException(Exception):
+class AppExceptionError(Exception):
     """Base exception with structured error info."""
     def __init__(
         self,
@@ -37,7 +37,7 @@ class AppException(Exception):
         self.details = details or {}
 
 # Create specific exceptions
-class ValidationError(AppException):
+class ValidationError(AppExceptionError):
     """For input validation failures."""
     def __init__(self, message: str, details: Optional[dict[str, Any]] = None):
         super().__init__(
@@ -56,12 +56,12 @@ In your FastAPI app:
 # app/main.py
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
-from .core.exceptions import AppException, ValidationError
+from .core.exceptions import AppExceptionError, ValidationError
 
 app = FastAPI()
 
-@app.exception_handler(AppException)
-async def app_exception_handler(request: Request, exc: AppException):
+@app.exception_handler(AppExceptionError)
+async def app_exception_handler(request: Request, exc: AppExceptionError):
     """Handle application-specific exceptions."""
     logger.error(f"Application error: {exc.error_code}")
     return JSONResponse(

@@ -41,7 +41,7 @@ disable = [
 All custom exceptions should inherit from a base exception class with structured error information:
 
 ```python
-class AppException(Exception):
+class AppExceptionError(Exception):
     def __init__(self, message: str, status_code: int, error_code: str, details: dict):
         self.message = message
         self.status_code = status_code
