@@ -105,7 +105,7 @@ import { MinimalErrorBoundary } from '../../core/errors/MinimalErrorBoundary';
 - `node test-rendered-content.js` - Simple HTTP-based content verification
 - `scripts/simple-check.js` - Container-based quick verification
 - `scripts/check-page-content.js` - Advanced content verification
-- `check-page.py` - Python-based Playwright verification
+- `scripts/check-page.py` - Python-based Playwright verification
 
 ### Verification Process
 1. **Start development**: `make dev`

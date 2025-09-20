@@ -214,3 +214,7 @@ check-page-watch: ## Watch page content continuously
 		docker exec durable-code-frontend-dev node scripts/check-page-content.js 2>&1; \
 		sleep 5; \
 	done
+
+check-page-python: ## Check page content with Python/Playwright
+	@echo "$(CYAN)Running Python page check with Playwright...$(NC)"
+	@docker exec durable-code-backend-dev python scripts/check-page.py || echo "$(RED)Python page check failed$(NC)"

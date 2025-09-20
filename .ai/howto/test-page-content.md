@@ -96,13 +96,17 @@ node test-rendered-content.js
 
 ### 3. Python Tools
 
-#### `check-page.py`
+#### `scripts/check-page.py`
 - **Purpose**: Playwright-based verification with console error detection
 - **Features**: JavaScript execution, console monitoring, DOM inspection
 - **Usage**: Standalone Python script
 
 ```bash
-python check-page.py
+# Recommended: Use Make target
+make check-page-python
+
+# Or run directly from Docker container
+docker exec durable-code-backend-dev python scripts/check-page.py
 
 # Automatically detects if page loads correctly
 # Reports console errors and warnings

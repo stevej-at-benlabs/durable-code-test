@@ -157,8 +157,8 @@
     "error-boundaries": {
       "file": "features/error-boundaries.md",
       "summary": "Comprehensive React error boundary system with 3-tier architecture and recovery mechanisms",
-      "key_files": ["durable-code-app/frontend/src/core/errors/", "scripts/", "check-page.py"],
-      "usage": "make check-page, node test-rendered-content.js"
+      "key_files": ["durable-code-app/frontend/src/core/errors/", "scripts/", "scripts/check-page.py"],
+      "usage": "make check-page, make check-page-python, node test-rendered-content.js"
     }
   },
   "standards": {
