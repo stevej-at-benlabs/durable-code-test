@@ -24,7 +24,8 @@ export const OscilloscopeCanvas: React.FC<OscilloscopeCanvasProps> = ({
   // Memoize expensive data processing
   const displayData = useMemo(() => {
     if (data.length === 0) return [];
-    const timeWindow = (state.timeScale * CANVAS_CONFIG.GRID_DIVISIONS_HORIZONTAL) / 1000;
+    const timeWindow =
+      (state.timeScale * CANVAS_CONFIG.GRID_DIVISIONS_HORIZONTAL) / 1000;
     const samplesToShow = Math.min(data.length, Math.floor(timeWindow * 1000));
     const startIndex = Math.max(0, data.length - samplesToShow);
     return data.slice(startIndex);

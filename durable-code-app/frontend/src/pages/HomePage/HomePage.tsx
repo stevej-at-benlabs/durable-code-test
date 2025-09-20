@@ -16,6 +16,7 @@ import { TabNavigation, useNavigation } from '../../features/navigation';
 import { tabs } from '../../config/tabs.config';
 import packageJson from '../../../package.json';
 import styles from './HomePage.module.css';
+import { MinimalErrorBoundary } from '../../core/errors/MinimalErrorBoundary';
 
 export default function HomePage(): ReactElement {
   const { activeTab, handleTabChange } = useNavigation();
@@ -68,9 +69,11 @@ export default function HomePage(): ReactElement {
             <h2>{tabs[activeTab].title}</h2>
             <p>{tabs[activeTab].description}</p>
           </div>
-          <Suspense fallback={<LoadingSpinner />}>
-            <ActiveTabComponent />
-          </Suspense>
+          <MinimalErrorBoundary>
+            <Suspense fallback={<LoadingSpinner />}>
+              <ActiveTabComponent />
+            </Suspense>
+          </MinimalErrorBoundary>
         </section>
 
         <section className={styles.aiPrinciples}>

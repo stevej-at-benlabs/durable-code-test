@@ -1,0 +1,81 @@
+/**
+ * Purpose: {{PURPOSE}}
+ * Scope: {{SCOPE}}
+ * Overview: {{OVERVIEW}}
+ * Dependencies: React, error boundary types
+ * Exports: {{COMPONENT_NAME}}
+ * Props/Interfaces: {{PROPS_INTERFACE}}
+ * Implementation: Error boundary with React lifecycle methods
+ */
+
+import { Component } from 'react';
+import type { ErrorInfo, ReactNode } from 'react';
+
+interface Props {
+  children: ReactNode;
+  {{ADDITIONAL_PROPS}}
+}
+
+interface State {
+  hasError: boolean;
+  {{ADDITIONAL_STATE}}
+}
+
+export class {{COMPONENT_NAME}} extends Component<Props, State> {
+  constructor(props: Props) {
+    super(props);
+    this.state = {
+      hasError: false{{ADDITIONAL_STATE_INIT}}
+    };
+  }
+
+  static getDerivedStateFromError(error: Error): State {
+    console.error('[{{COMPONENT_NAME}}] Caught error:', error);
+    return {
+      hasError: true{{ERROR_STATE_UPDATE}}
+    };
+  }
+
+  componentDidCatch(error: Error, errorInfo: ErrorInfo): void {
+    console.error('[{{COMPONENT_NAME}}] Error details:', error, errorInfo);
+    {{ERROR_LOGGING}}
+  }
+
+  {{RECOVERY_METHODS}}
+
+  render(): ReactNode {
+    if (this.state.hasError) {
+      return (
+        {{ERROR_FALLBACK_UI}}
+      );
+    }
+
+    return this.props.children;
+  }
+}
+
+export default {{COMPONENT_NAME}};
+
+// Usage example:
+// <{{COMPONENT_NAME}}>
+//   <YourComponent />
+// </{{COMPONENT_NAME}}>
+
+// Common patterns:
+//
+// 1. Minimal Error Boundary (Recommended):
+// Use MinimalErrorBoundary from src/core/errors/MinimalErrorBoundary.tsx
+//
+// 2. Custom Error Boundary with Recovery:
+// Add retry logic and custom fallback UI
+//
+// 3. Route-Level Error Boundary:
+// Wrap individual routes in AppShell.tsx
+//
+// 4. Component-Level Error Boundary:
+// Wrap specific features or complex components
+//
+// Testing:
+// - Verify with: make check-page
+// - Test systematically after each addition
+// - Use intentional errors to verify boundaries work

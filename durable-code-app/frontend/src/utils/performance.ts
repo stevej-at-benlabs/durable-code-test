@@ -61,8 +61,8 @@ export function measureComponentPerf(componentName: string): () => void {
         if (latestMeasure.duration > 16) {
           console.warn(
             `⚠️ Slow render detected: ${componentName} took ${latestMeasure.duration.toFixed(
-              2
-            )}ms`
+              2,
+            )}ms`,
           );
         }
       }
@@ -120,48 +120,50 @@ export function logPerformanceSummary(): void {
   }
 
   // Group metrics by component
-  const summary = performanceMetrics.reduce((acc, metric) => {
-    if (!acc[metric.componentName]) {
-      acc[metric.componentName] = {
-        count: 0,
-        totalDuration: 0,
-        maxDuration: 0,
-        minDuration: Infinity,
-      };
-    }
+  const summary = performanceMetrics.reduce(
+    (acc, metric) => {
+      if (!acc[metric.componentName]) {
+        acc[metric.componentName] = {
+          count: 0,
+          totalDuration: 0,
+          maxDuration: 0,
+          minDuration: Infinity,
+        };
+      }
 
-    const stats = acc[metric.componentName];
-    stats.count++;
-    stats.totalDuration += metric.duration;
-    stats.maxDuration = Math.max(stats.maxDuration, metric.duration);
-    stats.minDuration = Math.min(stats.minDuration, metric.duration);
+      const stats = acc[metric.componentName];
+      stats.count++;
+      stats.totalDuration += metric.duration;
+      stats.maxDuration = Math.max(stats.maxDuration, metric.duration);
+      stats.minDuration = Math.min(stats.minDuration, metric.duration);
 
-    return acc;
-  }, {} as Record<string, any>);
+      return acc;
+    },
+    {} as Record<
+      string,
+      { count: number; totalDuration: number; maxDuration: number; minDuration: number }
+    >,
+  );
 
   // Log summary table
-  console.group('📊 Performance Summary');
+  console.error('📊 Performance Summary');
   Object.entries(summary).forEach(([componentName, stats]) => {
     const avgDuration = stats.totalDuration / stats.count;
-    console.log(
+    console.error(
       `${componentName}:`,
       `Renders: ${stats.count},`,
       `Avg: ${avgDuration.toFixed(2)}ms,`,
       `Min: ${stats.minDuration.toFixed(2)}ms,`,
-      `Max: ${stats.maxDuration.toFixed(2)}ms`
+      `Max: ${stats.maxDuration.toFixed(2)}ms`,
     );
   });
-  console.groupEnd();
 }
 
 /**
  * Performance observer for long tasks
  */
 export function observeLongTasks(): void {
-  if (
-    process.env.NODE_ENV !== 'development' ||
-    !('PerformanceObserver' in window)
-  ) {
+  if (process.env.NODE_ENV !== 'development' || !('PerformanceObserver' in window)) {
     return;
   }
 
@@ -169,10 +171,10 @@ export function observeLongTasks(): void {
     const observer = new PerformanceObserver((list) => {
       for (const entry of list.getEntries()) {
         if (entry.duration > 50) {
-          console.warn(
+          console.error(
             `⚠️ Long task detected: ${entry.name || 'Unknown'} took ${entry.duration.toFixed(
-              2
-            )}ms`
+              2,
+            )}ms`,
           );
         }
       }
@@ -193,14 +195,14 @@ if (process.env.NODE_ENV === 'development') {
   observeLongTasks();
 
   // Expose utilities to window for debugging
-  (window as any).__PERF__ = {
+  (window as Record<string, unknown>).__PERF__ = {
     measureComponentPerf,
     getPerformanceMetrics,
     clearPerformanceMetrics,
     logPerformanceSummary,
   };
 
-  console.log(
-    '🚀 Performance monitoring enabled. Use window.__PERF__ for debugging.'
+  console.error(
+    '🚀 Performance monitoring enabled. Use window.__PERF__ for debugging.',
   );
 }

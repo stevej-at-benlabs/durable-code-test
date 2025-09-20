@@ -30,7 +30,7 @@ export const DetailsCard = memo<DetailsCardProps>(
         <div className={styles.content}>{children}</div>
       </div>
     );
-  }
+  },
 );
 
 DetailsCard.displayName = 'DetailsCard';

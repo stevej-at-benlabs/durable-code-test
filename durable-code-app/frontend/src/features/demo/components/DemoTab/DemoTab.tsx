@@ -55,7 +55,7 @@ export function DemoTab(): ReactElement {
         updateTriggerLevel(newState.triggerLevel);
       }
     },
-    [togglePause, updateTimeScale, updateVoltScale, updateTriggerLevel]
+    [togglePause, updateTimeScale, updateVoltScale, updateTriggerLevel],
   );
 
   return (
