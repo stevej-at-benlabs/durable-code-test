@@ -10,6 +10,9 @@ COPY package*.json ./
 # Install dependencies
 RUN npm install
 
+# Install HTMLHint globally
+RUN npm install -g htmlhint
+
 # Copy application files
 COPY . .
 

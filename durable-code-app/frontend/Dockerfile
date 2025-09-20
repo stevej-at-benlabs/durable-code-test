@@ -10,6 +10,9 @@ COPY package*.json ./
 # Install ALL dependencies (including dev) for building
 RUN npm ci
 
+# Install HTMLHint globally for build-time checking
+RUN npm install -g htmlhint
+
 # Copy application files
 COPY . .
 
