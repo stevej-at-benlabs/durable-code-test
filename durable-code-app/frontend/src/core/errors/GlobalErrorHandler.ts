@@ -7,7 +7,7 @@
  * Implementation: Event listeners for global error events with recovery UI
  */
 
-import type { GlobalErrorHandlerOptions } from './ErrorBoundary.types';
+import type { ErrorInfo, GlobalErrorHandlerOptions } from './ErrorBoundary.types';
 import { errorLogger } from './ErrorLogger';
 
 /**
@@ -43,7 +43,7 @@ export class GlobalErrorHandler {
 
     // Log setup completion
     if (this.options.logToConsole) {
-      console.log('🛡️ Global error handlers initialized');
+      console.error('🛡️ Global error handlers initialized');
     }
   }
 
@@ -80,7 +80,7 @@ export class GlobalErrorHandler {
     };
 
     // Log the error
-    errorLogger.logError(error, errorInfo as any);
+    errorLogger.logError(error, errorInfo as ErrorInfo);
 
     // Call custom handler if provided
     if (this.options.onError) {
@@ -112,7 +112,7 @@ export class GlobalErrorHandler {
     this.lastErrorTime = Date.now();
 
     const error = new Error(
-      event.reason?.message || event.reason || 'Unhandled Promise Rejection'
+      event.reason?.message || event.reason || 'Unhandled Promise Rejection',
     );
 
     const errorInfo = {
@@ -125,7 +125,7 @@ export class GlobalErrorHandler {
     };
 
     // Log the error
-    errorLogger.logError(error, errorInfo as any);
+    errorLogger.logError(error, errorInfo as ErrorInfo);
 
     // Call custom handler if provided
     if (this.options.onUnhandledRejection) {
@@ -344,7 +344,7 @@ export class GlobalErrorHandler {
         });
 
         observer.observe({ entryTypes: ['longtask'] });
-      } catch (e) {
+      } catch {
         // Silently fail if not supported
       }
     }

@@ -8,7 +8,11 @@
  * Implementation: Console and service logging with queuing for offline scenarios
  */
 
-import type { ErrorInfo, ErrorLogger as IErrorLogger, ErrorRecoveryAction } from './ErrorBoundary.types';
+import type {
+  ErrorInfo,
+  ErrorRecoveryAction,
+  ErrorLogger as IErrorLogger,
+} from './ErrorBoundary.types';
 
 /**
  * Error log entry structure
@@ -35,11 +39,13 @@ export class ErrorLogger implements IErrorLogger {
   private logToConsole: boolean;
   private logToService: boolean;
 
-  constructor(options: {
-    logToConsole?: boolean;
-    logToService?: boolean;
-    serviceUrl?: string;
-  } = {}) {
+  constructor(
+    options: {
+      logToConsole?: boolean;
+      logToService?: boolean;
+      serviceUrl?: string;
+    } = {},
+  ) {
     this.logToConsole = options.logToConsole ?? true;
     this.logToService = options.logToService ?? false;
     this.serviceUrl = options.serviceUrl;
@@ -120,22 +126,23 @@ export class ErrorLogger implements IErrorLogger {
     // Console logging
     if (this.logToConsole) {
       const style = this.getConsoleStyle(entry.level);
-      console.group(`%c[${entry.level.toUpperCase()}] ${new Date(entry.timestamp).toISOString()}`, style);
-      console.log('Message:', entry.message);
+      console.error(
+        `[${entry.level.toUpperCase()}] ${new Date(entry.timestamp).toISOString()}`,
+        style,
+      );
+      console.error('Message:', entry.message);
 
       if (entry.error) {
         console.error('Error:', entry.error);
       }
 
       if (entry.errorInfo) {
-        console.log('Error Info:', entry.errorInfo);
+        console.error('Error Info:', entry.errorInfo);
       }
 
       if (entry.context) {
-        console.log('Context:', entry.context);
+        console.error('Context:', entry.context);
       }
-
-      console.groupEnd();
     }
 
     // Service logging
@@ -190,7 +197,7 @@ export class ErrorLogger implements IErrorLogger {
           environment: process.env.NODE_ENV,
         }),
       });
-    } catch (error) {
+    } catch {
       // Silently fail but queue for retry
       this.queueEntry(entry);
     }
@@ -229,8 +236,15 @@ export class ErrorLogger implements IErrorLogger {
    */
   private reportMetrics(eventName: string, metadata: Record<string, unknown>): void {
     // Integration point for analytics services
-    if (typeof window !== 'undefined' && (window as any).analytics) {
-      (window as any).analytics.track(eventName, metadata);
+    if (
+      typeof window !== 'undefined' &&
+      (window as Record<string, unknown>).analytics
+    ) {
+      (
+        (window as Record<string, unknown>).analytics as {
+          track: (event: string, data: Record<string, unknown>) => void;
+        }
+      ).track(eventName, metadata);
     }
   }
 }

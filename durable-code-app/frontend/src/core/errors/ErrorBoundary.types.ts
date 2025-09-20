@@ -8,7 +8,7 @@
  * Implementation: Comprehensive type definitions for robust error handling
  */
 
-import type { ReactNode, ErrorInfo as ReactErrorInfo } from 'react';
+import type { ErrorInfo as ReactErrorInfo, ReactNode } from 'react';
 
 /**
  * Error information with additional context

@@ -8,7 +8,7 @@
  * Implementation: Accessible, informative error UI with multiple recovery paths
  */
 
-import { useState, useCallback } from 'react';
+import { useCallback, useState } from 'react';
 import type { ReactElement } from 'react';
 import type { ErrorFallbackProps } from './ErrorBoundary.types';
 import styles from './ErrorFallback.module.css';
@@ -123,15 +123,11 @@ export function ErrorFallback({
                 <div>
                   <strong>Error:</strong> {error.message}
                 </div>
-                {error.stack && (
-                  <pre className={styles.errorStack}>{error.stack}</pre>
-                )}
+                {error.stack && <pre className={styles.errorStack}>{error.stack}</pre>}
                 {errorInfo?.componentStack && (
                   <div>
                     <strong>Component Stack:</strong>
-                    <pre className={styles.errorStack}>
-                      {errorInfo.componentStack}
-                    </pre>
+                    <pre className={styles.errorStack}>{errorInfo.componentStack}</pre>
                   </div>
                 )}
               </>

@@ -41,7 +41,7 @@ window.addEventListener('unhandledrejection', (event) => {
   console.error('Unhandled promise rejection:', event.reason);
 });
 
-console.log('[main.tsx] Starting app initialization');
+console.error('[main.tsx] Starting app initialization');
 
 const rootElement = document.getElementById('root');
 if (!rootElement) {
@@ -49,7 +49,7 @@ if (!rootElement) {
   throw new Error('Failed to find root element');
 }
 
-console.log('[main.tsx] Root element found, rendering app');
+console.error('[main.tsx] Root element found, rendering app');
 
 createRoot(rootElement).render(
   <StrictMode>

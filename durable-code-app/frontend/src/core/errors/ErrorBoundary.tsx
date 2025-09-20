@@ -9,7 +9,7 @@
  */
 
 import { Component } from 'react';
-import type { ReactNode, ErrorInfo as ReactErrorInfo } from 'react';
+import type { ErrorInfo as ReactErrorInfo, ReactNode } from 'react';
 import type {
   ErrorBoundaryProps,
   ErrorBoundaryState,
@@ -89,7 +89,7 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
     // Check if reset keys have changed
     if (resetKeys && prevProps.resetKeys) {
       const hasResetKeyChanged = resetKeys.some(
-        (key, index) => key !== this.previousResetKeys[index]
+        (key, index) => key !== this.previousResetKeys[index],
       );
 
       if (hasResetKeyChanged) {
@@ -103,7 +103,8 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
       const propsChanged = Object.keys(prevProps).some(
         (key) =>
           key !== 'children' &&
-          (prevProps as any)[key] !== (this.props as any)[key]
+          (prevProps as Record<string, unknown>)[key] !==
+            (this.props as Record<string, unknown>)[key],
       );
 
       if (propsChanged) {
@@ -195,19 +196,19 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
   };
 
   render(): ReactNode {
-    console.log('[ErrorBoundary] Render called, hasError:', this.state.hasError);
-
     if (this.state.hasError) {
       const FallbackComponent = this.props.fallback || ErrorFallback;
+      const error = this.state.error;
+      if (!error) {
+        return <div>Unknown error occurred</div>;
+      }
 
       return (
         <FallbackComponent
-          error={this.state.error!}
+          error={error}
           errorInfo={this.state.errorInfo}
           onReset={this.handleReset}
-          onRetry={
-            this.props.recoveryOptions?.onRetry ? this.handleRetry : undefined
-          }
+          onRetry={this.props.recoveryOptions?.onRetry ? this.handleRetry : undefined}
           onHome={this.handleHome}
           level={this.props.level}
           name={this.props.name}
@@ -219,26 +220,6 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
 
     return this.props.children;
   }
-}
-
-/**
- * Higher-order component to wrap a component with an error boundary
- */
-export function withErrorBoundary<P extends object>(
-  Component: React.ComponentType<P>,
-  errorBoundaryProps?: Omit<ErrorBoundaryProps, 'children'>
-): React.ComponentType<P> {
-  const WrappedComponent = (props: P) => (
-    <ErrorBoundary {...errorBoundaryProps}>
-      <Component {...props} />
-    </ErrorBoundary>
-  );
-
-  WrappedComponent.displayName = `withErrorBoundary(${
-    Component.displayName || Component.name || 'Component'
-  })`;
-
-  return WrappedComponent;
 }
 
 export default ErrorBoundary;

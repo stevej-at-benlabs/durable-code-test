@@ -40,7 +40,7 @@ export const FeatureCard = memo<FeatureCardProps>(
         {children && <div className={styles.content}>{children}</div>}
       </div>
     );
-  }
+  },
 );
 
 FeatureCard.displayName = 'FeatureCard';
