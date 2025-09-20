@@ -87,22 +87,24 @@ class SecurityPatternDetector:
 
     def check_patterns(self, file_path: Path, content: str, collector: SecurityIssueCollector) -> None:
         """Check for dangerous patterns in code content."""
-        lines = content.split('\n')
+        lines = content.split("\n")
 
         for category, patterns in self.dangerous_patterns.items():
             for pattern_str in patterns:
                 pattern = re.compile(pattern_str)
                 for line_num, line in enumerate(lines, 1):
                     if pattern.search(line):
-                        collector.add_issue(SecurityIssue(
-                            file_path=str(file_path),
-                            line_number=line_num,
-                            column=0,
-                            severity=self._get_severity(category),
-                            issue_type=category,
-                            message=f"Detected {category.replace('_', ' ')}: {line.strip()}",
-                            suggestion=self._get_suggestion(category)
-                        ))
+                        collector.add_issue(
+                            SecurityIssue(
+                                file_path=str(file_path),
+                                line_number=line_num,
+                                column=0,
+                                severity=self._get_severity(category),
+                                issue_type=category,
+                                message=f"Detected {category.replace('_', ' ')}: {line.strip()}",
+                                suggestion=self._get_suggestion(category),
+                            )
+                        )
 
     def _get_severity(self, category: str) -> str:
         """Get severity level for issue category."""
@@ -136,56 +138,72 @@ class SecurityASTAnalyzer:
             elif isinstance(node, ast.Call):
                 self._check_call_security(file_path, node, collector)
 
-    def _check_function_security(self, file_path: Path, node: ast.FunctionDef, collector: SecurityIssueCollector) -> None:
+    def _check_function_security(
+        self, file_path: Path, node: ast.FunctionDef, collector: SecurityIssueCollector
+    ) -> None:
         """Check function for security issues."""
         # Check for missing input validation
         if self._handles_user_input(node) and not self._has_validation(node):
-            collector.add_issue(SecurityIssue(
-                file_path=str(file_path),
-                line_number=node.lineno,
-                column=node.col_offset,
-                severity="MEDIUM",
-                issue_type="missing_input_validation",
-                message=f"Function '{node.name}' handles user input without validation",
-                suggestion="Add input validation using Pydantic models or validators"
-            ))
+            collector.add_issue(
+                SecurityIssue(
+                    file_path=str(file_path),
+                    line_number=node.lineno,
+                    column=node.col_offset,
+                    severity="MEDIUM",
+                    issue_type="missing_input_validation",
+                    message=f"Function '{node.name}' handles user input without validation",
+                    suggestion="Add input validation using Pydantic models or validators",
+                )
+            )
 
         # Check for missing rate limiting on API endpoints
         if self._is_api_endpoint(node) and not self._has_rate_limiting(node):
-            collector.add_issue(SecurityIssue(
-                file_path=str(file_path),
-                line_number=node.lineno,
-                column=node.col_offset,
-                severity="MEDIUM",
-                issue_type="missing_rate_limiting",
-                message=f"API endpoint '{node.name}' lacks rate limiting",
-                suggestion="Add rate limiting decorators to prevent abuse"
-            ))
+            collector.add_issue(
+                SecurityIssue(
+                    file_path=str(file_path),
+                    line_number=node.lineno,
+                    column=node.col_offset,
+                    severity="MEDIUM",
+                    issue_type="missing_rate_limiting",
+                    message=f"API endpoint '{node.name}' lacks rate limiting",
+                    suggestion="Add rate limiting decorators to prevent abuse",
+                )
+            )
 
     def _check_call_security(self, file_path: Path, node: ast.Call, collector: SecurityIssueCollector) -> None:
         """Check function calls for security issues."""
         if isinstance(node.func, ast.Name) and node.func.id == "eval":
-            collector.add_issue(SecurityIssue(
-                file_path=str(file_path),
-                line_number=node.lineno,
-                column=node.col_offset,
-                severity="CRITICAL",
-                issue_type="dangerous_eval",
-                message="Use of eval() is dangerous and should be avoided",
-                suggestion="Use safer alternatives like ast.literal_eval() for data parsing"
-            ))
+            collector.add_issue(
+                SecurityIssue(
+                    file_path=str(file_path),
+                    line_number=node.lineno,
+                    column=node.col_offset,
+                    severity="CRITICAL",
+                    issue_type="dangerous_eval",
+                    message="Use of eval() is dangerous and should be avoided",
+                    suggestion="Use safer alternatives like ast.literal_eval() for data parsing",
+                )
+            )
 
     def _handles_user_input(self, node: ast.FunctionDef) -> bool:
         """Check if function handles user input."""
         for arg in node.args.args:
-            if arg.annotation and isinstance(arg.annotation, ast.Name) and arg.annotation.id in ["Request", "BaseModel"]:
+            if (
+                arg.annotation
+                and isinstance(arg.annotation, ast.Name)
+                and arg.annotation.id in ["Request", "BaseModel"]
+            ):
                 return True
         return False
 
     def _has_validation(self, node: ast.FunctionDef) -> bool:
         """Check if function has input validation."""
         for stmt in ast.walk(node):
-            if isinstance(stmt, ast.Call) and isinstance(stmt.func, ast.Name) and stmt.func.id in ["validate", "sanitize", "check_input"]:
+            if (
+                isinstance(stmt, ast.Call)
+                and isinstance(stmt.func, ast.Name)
+                and stmt.func.id in ["validate", "sanitize", "check_input"]
+            ):
                 return True
         return False
 
@@ -193,17 +211,23 @@ class SecurityASTAnalyzer:
         """Check if function is an API endpoint."""
         api_decorators = {"get", "post", "put", "delete", "patch"}
         for decorator in node.decorator_list:
-            if isinstance(decorator, ast.Call) and isinstance(decorator.func, ast.Attribute):
-                if decorator.func.attr in api_decorators:
-                    return True
+            if (
+                isinstance(decorator, ast.Call)
+                and isinstance(decorator.func, ast.Attribute)
+                and decorator.func.attr in api_decorators
+            ):
+                return True
         return False
 
     def _has_rate_limiting(self, node: ast.FunctionDef) -> bool:
         """Check if function has rate limiting."""
         for decorator in node.decorator_list:
-            if isinstance(decorator, ast.Call) and isinstance(decorator.func, ast.Attribute):
-                if "limit" in str(decorator.func.attr):
-                    return True
+            if (
+                isinstance(decorator, ast.Call)
+                and isinstance(decorator.func, ast.Attribute)
+                and "limit" in str(decorator.func.attr)
+            ):
+                return True
         return False
 
 
@@ -235,15 +259,17 @@ class SecurityReporter:
         """Report issues in JSON format."""
         issues_data = []
         for issue in issues:
-            issues_data.append({
-                "file_path": issue.file_path,
-                "line_number": issue.line_number,
-                "column": issue.column,
-                "severity": issue.severity,
-                "issue_type": issue.issue_type,
-                "message": issue.message,
-                "suggestion": issue.suggestion,
-            })
+            issues_data.append(
+                {
+                    "file_path": issue.file_path,
+                    "line_number": issue.line_number,
+                    "column": issue.column,
+                    "severity": issue.severity,
+                    "issue_type": issue.issue_type,
+                    "message": issue.message,
+                    "suggestion": issue.suggestion,
+                }
+            )
 
         result = {
             "total_issues": len(issues),
@@ -275,7 +301,9 @@ class SecurityReporter:
 class SecurityFileScanner:
     """Handles file scanning operations."""
 
-    def __init__(self, collector: SecurityIssueCollector, detector: SecurityPatternDetector, analyzer: SecurityASTAnalyzer) -> None:
+    def __init__(
+        self, collector: SecurityIssueCollector, detector: SecurityPatternDetector, analyzer: SecurityASTAnalyzer
+    ) -> None:
         """Initialize the file scanner."""
         self.collector = collector
         self.detector = detector
@@ -292,29 +320,33 @@ class SecurityFileScanner:
                 tree = ast.parse(content)
                 self.analyzer.analyze_ast(file_path, tree, self.collector)
             except SyntaxError as e:
-                self.collector.add_issue(SecurityIssue(
-                    file_path=str(file_path),
-                    line_number=e.lineno or 0,
-                    column=e.offset or 0,
-                    severity="ERROR",
-                    issue_type="syntax_error",
-                    message=f"Syntax error: {e.msg}",
-                    suggestion="Fix syntax errors before security analysis"
-                ))
+                self.collector.add_issue(
+                    SecurityIssue(
+                        file_path=str(file_path),
+                        line_number=e.lineno or 0,
+                        column=e.offset or 0,
+                        severity="ERROR",
+                        issue_type="syntax_error",
+                        message=f"Syntax error: {e.msg}",
+                        suggestion="Fix syntax errors before security analysis",
+                    )
+                )
 
             # Check for dangerous patterns
             self.detector.check_patterns(file_path, content, self.collector)
 
         except Exception as e:
-            self.collector.add_issue(SecurityIssue(
-                file_path=str(file_path),
-                line_number=0,
-                column=0,
-                severity="ERROR",
-                issue_type="scan_error",
-                message=f"Error scanning file: {str(e)}",
-                suggestion="Check file permissions and encoding"
-            ))
+            self.collector.add_issue(
+                SecurityIssue(
+                    file_path=str(file_path),
+                    line_number=0,
+                    column=0,
+                    severity="ERROR",
+                    issue_type="scan_error",
+                    message=f"Error scanning file: {str(e)}",
+                    suggestion="Check file permissions and encoding",
+                )
+            )
 
 
 class SecurityLinter:
