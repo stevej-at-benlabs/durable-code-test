@@ -304,10 +304,17 @@ async def oscilloscope_stream(websocket: WebSocket) -> None:  # noqa: C901
 
     except WebSocketDisconnect:
         logger.debug("Oscilloscope WebSocket connection closed", connection_type="websocket")
-    except Exception as e:  # pylint: disable=broad-exception-caught
-        logger.exception("Error in oscilloscope stream", error=str(e))
-        with contextlib.suppress(Exception):
-            await websocket.send_json({"error": "Internal server error"})
+    except (ConnectionError, TimeoutError) as e:
+        logger.error("Connection error in oscilloscope stream", error=str(e))
+        with contextlib.suppress(WebSocketDisconnect, ConnectionError):
+            await websocket.send_json({"error": "Connection error", "message": str(e)})
+    except (ValueError, TypeError) as e:
+        logger.error("Data processing error in oscilloscope stream", error=str(e))
+        with contextlib.suppress(WebSocketDisconnect, ConnectionError):
+            await websocket.send_json({"error": "Data processing error", "message": str(e)})
+    except asyncio.CancelledError:
+        logger.debug("Oscilloscope stream cancelled")
+        raise  # Re-raise to allow proper cleanup
 
 
 def _get_stream_commands() -> dict[str, Any]:

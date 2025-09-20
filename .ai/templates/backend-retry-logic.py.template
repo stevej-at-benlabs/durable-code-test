@@ -1,0 +1,139 @@
+"""
+{{SERVICE_NAME}} Retry Logic Template
+
+This template provides retry decorators for resilient backend operations.
+Replace {{PLACEHOLDER}} variables with your specific values.
+
+Purpose: Add retry logic with exponential backoff for external operations
+Location: durable-code-app/backend/app/core/retry.py or service-specific module
+Example: app/core/retry.py
+"""
+
+import asyncio
+import functools
+from typing import Any, Callable, Optional, TypeVar
+
+from tenacity import (
+    retry,
+    stop_after_attempt,
+    wait_exponential,
+    retry_if_exception_type,
+)
+
+# Import your custom exceptions
+from .exceptions import {{MODULE_NAME}}ServiceError, ExternalServiceError
+
+T = TypeVar("T")
+
+
+# Configuration for {{SERVICE_NAME}} retry behavior
+{{SERVICE_NAME}}_RETRY_CONFIG = {
+    "max_attempts": {{MAX_ATTEMPTS}},  # e.g., 3
+    "min_wait": {{MIN_WAIT}},  # e.g., 1.0 seconds
+    "max_wait": {{MAX_WAIT}},  # e.g., 10.0 seconds
+    "multiplier": {{MULTIPLIER}},  # e.g., 2.0 for exponential backoff
+}
+
+
+def retry_{{SERVICE_NAME}}_operation(
+    exceptions: tuple[type[Exception], ...] = ({{RETRY_EXCEPTIONS}}),
+) -> Callable[[Callable[..., T]], Callable[..., T]]:
+    """
+    Decorator to add retry logic to {{SERVICE_NAME}} operations.
+
+    Args:
+        exceptions: Tuple of exceptions to retry on
+
+    Returns:
+        Decorated function with retry logic
+
+    Example:
+        @retry_{{SERVICE_NAME}}_operation()
+        async def fetch_{{SERVICE_NAME}}_data():
+            # This will retry on configured exceptions
+            ...
+    """
+    def decorator(func: Callable[..., T]) -> Callable[..., T]:
+        if asyncio.iscoroutinefunction(func):
+            @functools.wraps(func)
+            @retry(
+                stop=stop_after_attempt({{SERVICE_NAME}}_RETRY_CONFIG["max_attempts"]),
+                wait=wait_exponential(
+                    multiplier={{SERVICE_NAME}}_RETRY_CONFIG["multiplier"],
+                    min={{SERVICE_NAME}}_RETRY_CONFIG["min_wait"],
+                    max={{SERVICE_NAME}}_RETRY_CONFIG["max_wait"],
+                ),
+                retry=retry_if_exception_type(exceptions),
+            )
+            async def async_wrapper(*args: Any, **kwargs: Any) -> T:
+                return await func(*args, **kwargs)
+            return async_wrapper
+        else:
+            @functools.wraps(func)
+            @retry(
+                stop=stop_after_attempt({{SERVICE_NAME}}_RETRY_CONFIG["max_attempts"]),
+                wait=wait_exponential(
+                    multiplier={{SERVICE_NAME}}_RETRY_CONFIG["multiplier"],
+                    min={{SERVICE_NAME}}_RETRY_CONFIG["min_wait"],
+                    max={{SERVICE_NAME}}_RETRY_CONFIG["max_wait"],
+                ),
+                retry=retry_if_exception_type(exceptions),
+            )
+            def sync_wrapper(*args: Any, **kwargs: Any) -> T:
+                return func(*args, **kwargs)
+            return sync_wrapper
+
+    return decorator
+
+
+# Pre-configured decorators for common scenarios
+retry_on_{{SERVICE_NAME}}_error = retry_{{SERVICE_NAME}}_operation(
+    exceptions=({{MODULE_NAME}}ServiceError, ExternalServiceError)
+)
+
+retry_on_connection_error = retry_{{SERVICE_NAME}}_operation(
+    exceptions=(ConnectionError, TimeoutError, ExternalServiceError)
+)
+
+
+# Example usage with specific error handling
+class {{SERVICE_NAME}}Service:
+    """Service class with retry logic for {{SERVICE_NAME}} operations."""
+
+    @retry_on_{{SERVICE_NAME}}_error
+    async def fetch_data(self, resource_id: str) -> dict[str, Any]:
+        """
+        Fetch data from {{SERVICE_NAME}} with automatic retry.
+
+        Args:
+            resource_id: ID of the resource to fetch
+
+        Returns:
+            Resource data
+
+        Raises:
+            {{MODULE_NAME}}ServiceError: After all retries exhausted
+        """
+        try:
+            # Your implementation here
+            response = await self._make_request(resource_id)
+            return response
+        except (ConnectionError, TimeoutError) as e:
+            raise {{MODULE_NAME}}ServiceError(
+                f"Failed to fetch {{SERVICE_NAME}} data",
+                details={"resource_id": resource_id, "error": str(e)}
+            )
+
+    @retry_on_connection_error
+    async def health_check(self) -> bool:
+        """
+        Check {{SERVICE_NAME}} health with retry on connection errors.
+
+        Returns:
+            True if service is healthy
+        """
+        try:
+            # Your health check implementation
+            return await self._ping()
+        except Exception:
+            return False
