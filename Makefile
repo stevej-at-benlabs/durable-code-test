@@ -198,11 +198,11 @@ monitor: ## Show real-time resource usage
 # Page content check
 check-page: ## Check if the frontend page renders content properly
 	@echo "$(CYAN)Checking page content...$(NC)"
-	@docker exec durable-code-frontend-dev node scripts/simple-check.js || echo "$(RED)Page check failed$(NC)"
+	@docker exec durable-code-frontend-dev node /app/scripts/simple-check.js || echo "$(RED)Page check failed$(NC)"
 
 check-page-full: ## Full page check with Playwright (requires setup)
 	@echo "$(CYAN)Full page content check...$(NC)"
-	@docker exec durable-code-frontend-dev node scripts/check-page-content.js || echo "$(RED)Full page check failed$(NC)"
+	@docker exec durable-code-frontend-dev node /app/scripts/check-page-content.js || echo "$(RED)Full page check failed$(NC)"
 
 check-page-watch: ## Watch page content continuously
 	@echo "$(CYAN)Watching page content (Ctrl+C to stop)...$(NC)"
@@ -211,10 +211,6 @@ check-page-watch: ## Watch page content continuously
 		echo "$(CYAN)═══════════════════════════════════════════════════$(NC)"; \
 		echo "$(CYAN)  Page Content Check - $$(date +%H:%M:%S)$(NC)"; \
 		echo "$(CYAN)═══════════════════════════════════════════════════$(NC)"; \
-		docker exec durable-code-frontend-dev node scripts/check-page-content.js 2>&1; \
+		docker exec durable-code-frontend-dev node /app/scripts/check-page-content.js 2>&1; \
 		sleep 5; \
 	done
-
-check-page-python: ## Check page content with Python/Playwright
-	@echo "$(CYAN)Running Python page check with Playwright...$(NC)"
-	@docker exec durable-code-backend-dev python scripts/check-page.py || echo "$(RED)Python page check failed$(NC)"

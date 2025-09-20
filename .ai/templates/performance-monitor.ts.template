@@ -1,0 +1,416 @@
+/**
+ * Purpose: Application-wide performance monitoring singleton
+ * Scope: {{MONITOR_DESCRIPTION}}
+ * Overview: Centralized performance monitoring system implementing singleton pattern
+ *     for tracking FPS, render times, memory usage, and custom metrics. Provides
+ *     threshold-based alerting and event-driven performance notifications.
+ * Dependencies: Performance API, event emitters
+ * Exports: PerformanceMonitor singleton class, performance interfaces
+ * Interfaces: PerformanceMetrics, PerformanceAlert, monitoring configuration
+ * Implementation: Singleton with threshold monitoring and event-driven alerts
+ */
+
+// Performance metrics interface
+export interface PerformanceMetrics {
+  fps: number;
+  renderTime: number; // milliseconds
+  memoryUsage: number; // bytes
+  bufferUtilization: number; // 0.0 to 1.0
+  customMetrics: Record<string, number>;
+  timestamp: number;
+}
+
+// Performance alert interface
+export interface PerformanceAlert {
+  type: 'warning' | 'critical';
+  metric: keyof PerformanceMetrics | string;
+  value: number;
+  threshold: number;
+  message: string;
+  timestamp: number;
+}
+
+// Performance thresholds configuration
+export interface PerformanceThresholds {
+  minFps: number;
+  maxRenderTime: number;
+  maxMemoryUsage: number;
+  maxBufferUtilization: number;
+  customThresholds: Record<string, { min?: number; max?: number }>;
+}
+
+// Default performance thresholds
+const DEFAULT_THRESHOLDS: PerformanceThresholds = {
+  minFps: {{MIN_FPS || 30}},
+  maxRenderTime: {{MAX_RENDER_TIME || 16}}, // 16ms for 60fps
+  maxMemoryUsage: {{MAX_MEMORY_USAGE || 100 * 1024 * 1024}}, // 100MB
+  maxBufferUtilization: {{MAX_BUFFER_UTILIZATION || 0.9}}, // 90%
+  customThresholds: {},
+};
+
+// Event listener type
+type PerformanceListener = (metrics: PerformanceMetrics) => void;
+type AlertListener = (alert: PerformanceAlert) => void;
+
+export class PerformanceMonitor {
+  private static instance: PerformanceMonitor;
+  private metrics: PerformanceMetrics;
+  private thresholds: PerformanceThresholds;
+  private listeners: Set<PerformanceListener> = new Set();
+  private alertListeners: Set<AlertListener> = new Set();
+  private isActive: boolean = true;
+  private lastUpdateTime: number = performance.now();
+  private frameCount: number = 0;
+  private renderTimes: number[] = [];
+  private maxRenderTimeSamples: number = 60; // Keep last 60 render times
+
+  private constructor() {
+    this.metrics = {
+      fps: 0,
+      renderTime: 0,
+      memoryUsage: 0,
+      bufferUtilization: 0,
+      customMetrics: {},
+      timestamp: performance.now(),
+    };
+    this.thresholds = { ...DEFAULT_THRESHOLDS };
+
+    // Initialize memory monitoring if available
+    this.initializeMemoryMonitoring();
+  }
+
+  /**
+   * Get singleton instance
+   */
+  static getInstance(): PerformanceMonitor {
+    if (!PerformanceMonitor.instance) {
+      PerformanceMonitor.instance = new PerformanceMonitor();
+    }
+    return PerformanceMonitor.instance;
+  }
+
+  /**
+   * Subscribe to performance metrics updates
+   */
+  subscribe(listener: PerformanceListener): () => void {
+    this.listeners.add(listener);
+    // Send current metrics immediately
+    listener(this.metrics);
+
+    return () => {
+      this.listeners.delete(listener);
+    };
+  }
+
+  /**
+   * Subscribe to performance alerts
+   */
+  subscribeToAlerts(listener: AlertListener): () => void {
+    this.alertListeners.add(listener);
+    return () => {
+      this.alertListeners.delete(listener);
+    };
+  }
+
+  /**
+   * Update FPS metrics
+   */
+  updateFps(): void {
+    if (!this.isActive) return;
+
+    this.frameCount++;
+    const now = performance.now();
+    const deltaTime = now - this.lastUpdateTime;
+
+    // Update FPS every second
+    if (deltaTime >= 1000) {
+      const fps = Math.round((this.frameCount * 1000) / deltaTime);
+      this.updateMetrics({ fps });
+
+      this.frameCount = 0;
+      this.lastUpdateTime = now;
+    }
+  }
+
+  /**
+   * Record render time
+   */
+  recordRenderTime(renderTime: number): void {
+    if (!this.isActive) return;
+
+    this.renderTimes.push(renderTime);
+    if (this.renderTimes.length > this.maxRenderTimeSamples) {
+      this.renderTimes.shift();
+    }
+
+    // Calculate average render time
+    const avgRenderTime = this.renderTimes.reduce((sum, time) => sum + time, 0) / this.renderTimes.length;
+    this.updateMetrics({ renderTime: avgRenderTime });
+  }
+
+  /**
+   * Update memory usage
+   */
+  updateMemoryUsage(): void {
+    if (!this.isActive) return;
+
+    let memoryUsage = 0;
+
+    // Use performance.memory if available (Chrome)
+    if ('memory' in performance) {
+      const memory = (performance as any).memory;
+      memoryUsage = memory.usedJSHeapSize || 0;
+    }
+
+    this.updateMetrics({ memoryUsage });
+  }
+
+  /**
+   * Update buffer utilization
+   */
+  updateBufferUtilization(utilization: number): void {
+    if (!this.isActive) return;
+
+    this.updateMetrics({ bufferUtilization: utilization });
+  }
+
+  /**
+   * Update custom metric
+   */
+  updateCustomMetric(name: string, value: number): void {
+    if (!this.isActive) return;
+
+    const customMetrics = { ...this.metrics.customMetrics };
+    customMetrics[name] = value;
+    this.updateMetrics({ customMetrics });
+  }
+
+  /**
+   * Update multiple metrics at once
+   */
+  updateMetrics(updates: Partial<PerformanceMetrics>): void {
+    if (!this.isActive) return;
+
+    this.metrics = {
+      ...this.metrics,
+      ...updates,
+      timestamp: performance.now(),
+    };
+
+    // Check thresholds
+    this.checkThresholds();
+
+    // Notify listeners
+    this.notifyListeners();
+  }
+
+  /**
+   * Get current metrics
+   */
+  getMetrics(): PerformanceMetrics {
+    return { ...this.metrics };
+  }
+
+  /**
+   * Update performance thresholds
+   */
+  updateThresholds(newThresholds: Partial<PerformanceThresholds>): void {
+    this.thresholds = { ...this.thresholds, ...newThresholds };
+  }
+
+  /**
+   * Get current thresholds
+   */
+  getThresholds(): PerformanceThresholds {
+    return { ...this.thresholds };
+  }
+
+  /**
+   * Start performance monitoring
+   */
+  start(): void {
+    this.isActive = true;
+    this.lastUpdateTime = performance.now();
+    this.frameCount = 0;
+  }
+
+  /**
+   * Stop performance monitoring
+   */
+  stop(): void {
+    this.isActive = false;
+  }
+
+  /**
+   * Reset all metrics
+   */
+  reset(): void {
+    this.metrics = {
+      fps: 0,
+      renderTime: 0,
+      memoryUsage: 0,
+      bufferUtilization: 0,
+      customMetrics: {},
+      timestamp: performance.now(),
+    };
+    this.frameCount = 0;
+    this.renderTimes = [];
+    this.lastUpdateTime = performance.now();
+  }
+
+  /**
+   * Cleanup resources
+   */
+  cleanup(): void {
+    this.listeners.clear();
+    this.alertListeners.clear();
+    this.renderTimes = [];
+    this.isActive = false;
+  }
+
+  /**
+   * Check if metrics exceed thresholds
+   */
+  private checkThresholds(): void {
+    const alerts: PerformanceAlert[] = [];
+
+    // Check FPS threshold
+    if (this.metrics.fps > 0 && this.metrics.fps < this.thresholds.minFps) {
+      alerts.push({
+        type: 'warning',
+        metric: 'fps',
+        value: this.metrics.fps,
+        threshold: this.thresholds.minFps,
+        message: `Low FPS detected: ${this.metrics.fps} (threshold: ${this.thresholds.minFps})`,
+        timestamp: performance.now(),
+      });
+    }
+
+    // Check render time threshold
+    if (this.metrics.renderTime > this.thresholds.maxRenderTime) {
+      alerts.push({
+        type: 'warning',
+        metric: 'renderTime',
+        value: this.metrics.renderTime,
+        threshold: this.thresholds.maxRenderTime,
+        message: `High render time: ${this.metrics.renderTime.toFixed(2)}ms (threshold: ${this.thresholds.maxRenderTime}ms)`,
+        timestamp: performance.now(),
+      });
+    }
+
+    // Check memory usage threshold
+    if (this.metrics.memoryUsage > this.thresholds.maxMemoryUsage) {
+      alerts.push({
+        type: 'critical',
+        metric: 'memoryUsage',
+        value: this.metrics.memoryUsage,
+        threshold: this.thresholds.maxMemoryUsage,
+        message: `High memory usage: ${(this.metrics.memoryUsage / (1024 * 1024)).toFixed(2)}MB (threshold: ${(this.thresholds.maxMemoryUsage / (1024 * 1024)).toFixed(2)}MB)`,
+        timestamp: performance.now(),
+      });
+    }
+
+    // Check buffer utilization threshold
+    if (this.metrics.bufferUtilization > this.thresholds.maxBufferUtilization) {
+      alerts.push({
+        type: 'warning',
+        metric: 'bufferUtilization',
+        value: this.metrics.bufferUtilization,
+        threshold: this.thresholds.maxBufferUtilization,
+        message: `High buffer utilization: ${(this.metrics.bufferUtilization * 100).toFixed(1)}% (threshold: ${(this.thresholds.maxBufferUtilization * 100).toFixed(1)}%)`,
+        timestamp: performance.now(),
+      });
+    }
+
+    // Check custom thresholds
+    Object.entries(this.thresholds.customThresholds).forEach(([metric, threshold]) => {
+      const value = this.metrics.customMetrics[metric];
+      if (value !== undefined) {
+        if (threshold.min !== undefined && value < threshold.min) {
+          alerts.push({
+            type: 'warning',
+            metric,
+            value,
+            threshold: threshold.min,
+            message: `${metric} below threshold: ${value} (min: ${threshold.min})`,
+            timestamp: performance.now(),
+          });
+        }
+        if (threshold.max !== undefined && value > threshold.max) {
+          alerts.push({
+            type: 'warning',
+            metric,
+            value,
+            threshold: threshold.max,
+            message: `${metric} above threshold: ${value} (max: ${threshold.max})`,
+            timestamp: performance.now(),
+          });
+        }
+      }
+    });
+
+    // Emit alerts
+    alerts.forEach((alert) => {
+      this.alertListeners.forEach((listener) => listener(alert));
+    });
+  }
+
+  /**
+   * Notify all listeners
+   */
+  private notifyListeners(): void {
+    this.listeners.forEach((listener) => listener(this.metrics));
+  }
+
+  /**
+   * Initialize memory monitoring
+   */
+  private initializeMemoryMonitoring(): void {
+    if ('memory' in performance) {
+      // Update memory usage periodically
+      const updateMemory = () => {
+        if (this.isActive) {
+          this.updateMemoryUsage();
+        }
+      };
+
+      // Update memory every 5 seconds
+      setInterval(updateMemory, 5000);
+    }
+  }
+}
+
+// Helper functions for common use cases
+
+/**
+ * Measure render time of a function
+ */
+export function measureRenderTime<T>(fn: () => T): T {
+  const startTime = performance.now();
+  const result = fn();
+  const endTime = performance.now();
+
+  PerformanceMonitor.getInstance().recordRenderTime(endTime - startTime);
+  return result;
+}
+
+/**
+ * Performance decorator for methods
+ */
+export function performanceMonitored(metricName?: string) {
+  return function (target: any, propertyKey: string, descriptor: PropertyDescriptor) {
+    const originalMethod = descriptor.value;
+    const name = metricName || `${target.constructor.name}.${propertyKey}`;
+
+    descriptor.value = function (...args: any[]) {
+      const startTime = performance.now();
+      const result = originalMethod.apply(this, args);
+      const endTime = performance.now();
+
+      PerformanceMonitor.getInstance().updateCustomMetric(`${name}_duration`, endTime - startTime);
+      return result;
+    };
+
+    return descriptor;
+  };
+}

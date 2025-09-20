@@ -119,6 +119,21 @@
       "purpose": "Error boundary components for React error isolation and recovery",
       "location": "durable-code-app/frontend/src/core/errors/",
       "example_files": ["durable-code-app/frontend/src/core/errors/MinimalErrorBoundary.tsx", "durable-code-app/frontend/src/core/errors/ErrorBoundary.tsx"]
+    },
+    "react-performance-hook.ts.template": {
+      "purpose": "High-performance React hooks for real-time data handling with event-driven patterns",
+      "location": "durable-code-app/frontend/src/features/[feature-name]/hooks/",
+      "example_files": ["durable-code-app/frontend/src/features/demo/hooks/useOscilloscope.ts", "durable-code-app/frontend/src/features/demo/hooks/useWebSocket.ts"]
+    },
+    "circular-buffer.ts.template": {
+      "purpose": "High-performance circular buffer using Float32Array for real-time data handling",
+      "location": "durable-code-app/frontend/src/features/[feature-name]/utils/",
+      "example_files": ["durable-code-app/frontend/src/features/demo/utils/CircularBuffer.ts"]
+    },
+    "performance-monitor.ts.template": {
+      "purpose": "Application-wide performance monitoring singleton with threshold alerts",
+      "location": "durable-code-app/frontend/src/core/performance/",
+      "example_files": ["durable-code-app/frontend/src/core/performance/PerformanceMonitor.ts"]
     }
   },
   "features": {
@@ -157,8 +172,8 @@
     "error-boundaries": {
       "file": "features/error-boundaries.md",
       "summary": "Comprehensive React error boundary system with 3-tier architecture and recovery mechanisms",
-      "key_files": ["durable-code-app/frontend/src/core/errors/", "scripts/", "scripts/check-page.py"],
-      "usage": "make check-page, make check-page-python, node test-rendered-content.js"
+      "key_files": ["durable-code-app/frontend/src/core/errors/", "scripts/", "scripts/check-page-content.js"],
+      "usage": "make check-page, make check-page-full, node scripts/test-rendered-content.js"
     }
   },
   "standards": {
@@ -179,6 +194,14 @@
     "BRANCH_PROTECTION.md": {
       "purpose": "Git workflow and collaborative development standards",
       "enforcement": "GitHub branch protection rules"
+    },
+    "PERFORMANCE_OPTIMIZATION_STANDARDS.md": {
+      "purpose": "Performance optimization patterns for React applications with real-time data handling",
+      "enforcement": "Code reviews, performance monitoring, linting rules"
+    },
+    "DOCKER_EXECUTION_STANDARDS.md": {
+      "purpose": "Docker-only execution requirements for all development tools and scripts",
+      "enforcement": "Documentation standards, Make targets, no local execution patterns"
     }
   },
   "howto": {
@@ -214,7 +237,7 @@
     },
     "implement-error-boundaries.md": {
       "purpose": "Implement React error boundaries with 3-tier architecture and testing",
-      "key_commands": ["make check-page", "node test-rendered-content.js", "use MinimalErrorBoundary for stability"]
+      "key_commands": ["make check-page", "docker exec durable-code-frontend-dev node /app/scripts/test-rendered-content.js", "use MinimalErrorBoundary for stability"]
     },
     "test-page-content.md": {
       "purpose": "Verify React app renders correctly using various testing tools",
@@ -272,8 +295,20 @@
       "details_in": ".ai/howto/implement-error-boundaries.md"
     },
     "test_page_functionality": {
-      "steps": ["Use make check-page for basic verification", "Use make check-page-full for complete testing", "Use make check-page-watch for continuous monitoring", "Debug with node test-rendered-content.js"],
+      "steps": ["Use make check-page for basic verification", "Use make check-page-full for complete testing", "Use make check-page-watch for continuous monitoring", "Debug with docker exec durable-code-frontend-dev node /app/scripts/test-rendered-content.js"],
       "details_in": ".ai/howto/test-page-content.md"
+    },
+    "optimize_performance": {
+      "steps": ["Identify performance bottlenecks", "Eliminate polling loops with event-driven patterns", "Use CircularBuffer for high-frequency data", "Implement PerformanceMonitor for tracking", "Use Float32Array instead of number[]", "Data-driven rendering instead of continuous animation"],
+      "details_in": ".ai/docs/PERFORMANCE_OPTIMIZATION_STANDARDS.md"
+    },
+    "create_performance_hook": {
+      "steps": ["Use react-performance-hook.ts.template", "Implement event-driven state updates", "Use CircularBuffer for data storage", "Add performance monitoring integration", "Test for eliminated polling patterns"],
+      "details_in": ".ai/templates/react-performance-hook.ts.template"
+    },
+    "implement_docker_script": {
+      "steps": ["Place script in scripts/ directory", "Create corresponding Make target with docker exec", "Update documentation to show Docker execution only", "Test script execution in container", "Remove any local execution references"],
+      "details_in": ".ai/docs/DOCKER_EXECUTION_STANDARDS.md"
     }
   }
 }

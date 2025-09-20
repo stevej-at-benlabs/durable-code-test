@@ -102,15 +102,14 @@ import { MinimalErrorBoundary } from '../../core/errors/MinimalErrorBoundary';
 - `make check-page-watch` - Continuous monitoring of page content
 
 ### Testing Tools
-- `node test-rendered-content.js` - Simple HTTP-based content verification
+- `node scripts/test-rendered-content.js` - Simple HTTP-based content verification
 - `scripts/simple-check.js` - Container-based quick verification
-- `scripts/check-page-content.js` - Advanced content verification
-- `scripts/check-page.py` - Python-based Playwright verification
+- `scripts/check-page-content.js` - Comprehensive Playwright verification
 
 ### Verification Process
 1. **Start development**: `make dev`
 2. **Basic check**: `make check-page`
-3. **Content verification**: `node test-rendered-content.js`
+3. **Content verification**: `docker exec durable-code-frontend-dev node /app/scripts/test-rendered-content.js`
 4. **Continuous monitoring**: `make check-page-watch`
 
 ## Error Boundary Requirements

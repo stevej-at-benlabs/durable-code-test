@@ -1,0 +1,188 @@
+/**
+ * Purpose: High-performance React hook template for real-time data handling
+ * Scope: {{HOOK_DESCRIPTION}}
+ * Overview: Performance-optimized React hook implementing event-driven patterns,
+ *     efficient data structures, and proper memory management for real-time applications.
+ *     Eliminates polling loops and uses CircularBuffer for high-frequency data updates.
+ * Dependencies: React hooks, CircularBuffer utility, performance monitoring
+ * Exports: {{HOOK_NAME}} hook
+ * Interfaces: Hook return type with state, stats, and optimized data handling methods
+ * Implementation: Event-driven hook with performance monitoring and efficient data structures
+ */
+
+import { useCallback, useEffect, useRef, useState } from 'react';
+import type { {{DATA_TYPE}}, {{STATS_TYPE}} } from '../types/{{FEATURE_NAME}}.types';
+import { {{CONSTANTS}} } from '../constants/{{FEATURE_NAME}}.constants';
+import { CircularBuffer } from '../utils/CircularBuffer';
+{{#if USE_WEBSOCKET}}
+import { useWebSocket } from './useWebSocket';
+{{/if}}
+{{#if USE_PERFORMANCE_MONITORING}}
+import { PerformanceMonitor } from '../../core/performance/PerformanceMonitor';
+{{/if}}
+
+interface {{HOOK_RETURN_TYPE}} {
+  state: {{STATE_TYPE}};
+  stats: {{STATS_TYPE}};
+  dataBuffer: Float32Array; // Use Float32Array for performance
+  {{METHODS}}
+  error: Error | null;
+}
+
+const DEFAULT_STATE: {{STATE_TYPE}} = {
+  {{DEFAULT_STATE_VALUES}}
+};
+
+export function {{HOOK_NAME}}(): {{HOOK_RETURN_TYPE}} {
+  const [state, setState] = useState<{{STATE_TYPE}}>(DEFAULT_STATE);
+  const [stats, setStats] = useState<{{STATS_TYPE}}>({
+    {{DEFAULT_STATS_VALUES}}
+  });
+
+  // Use CircularBuffer for efficient data handling
+  const dataBufferRef = useRef<CircularBuffer>(
+    new CircularBuffer({{BUFFER_SIZE}}),
+  );
+
+  // Performance monitoring refs
+  const frameCountRef = useRef<number>(0);
+  const lastStatsUpdateRef = useRef<number>(performance.now());
+
+{{#if USE_WEBSOCKET}}
+  // Event-driven WebSocket connection (no polling!)
+  const { isConnected, lastData, send, error } = useWebSocket();
+
+  // Event-driven connection state sync
+  useEffect(() => {
+    setState((prev) => ({
+      ...prev,
+      isConnected,
+      {{CONNECTION_STATE_UPDATES}}
+    }));
+  }, [isConnected]);
+{{/if}}
+
+{{#if USE_PERFORMANCE_MONITORING}}
+  // Performance monitoring integration
+  const performanceMonitor = useRef(PerformanceMonitor.getInstance());
+
+  useEffect(() => {
+    const monitor = performanceMonitor.current;
+    return monitor.subscribe((metrics) => {
+      // Handle performance metrics updates
+      console.log('Performance metrics:', metrics);
+    });
+  }, []);
+{{/if}}
+
+  // Process incoming data efficiently
+  useEffect(() => {
+    if (!lastData || state.{{PAUSE_FLAG}}) return;
+
+    // Efficient data buffer update using CircularBuffer
+    dataBufferRef.current.push(lastData.{{DATA_SAMPLES}});
+
+    // Performance-conscious stats updates
+    const now = performance.now();
+    const timeSinceLastUpdate = now - lastStatsUpdateRef.current;
+
+    if (timeSinceLastUpdate >= {{STATS_UPDATE_INTERVAL}}) {
+      const fps = Math.round((frameCountRef.current * 1000) / timeSinceLastUpdate);
+
+      setStats((prev) => ({
+        fps,
+        {{STATS_CALCULATIONS}}
+        bufferSize: dataBufferRef.current.size,
+      }));
+
+      frameCountRef.current = 0;
+      lastStatsUpdateRef.current = now;
+    } else {
+      setStats((prev) => ({
+        ...prev,
+        {{INCREMENTAL_STATS_UPDATES}}
+        bufferSize: dataBufferRef.current.size,
+      }));
+    }
+
+    frameCountRef.current++;
+  }, [lastData, state.{{PAUSE_FLAG}}]);
+
+  // Optimized state update methods
+  const {{UPDATE_METHOD}} = useCallback(({{UPDATE_PARAMS}}) => {
+    setState((prev) => ({ ...prev, {{UPDATE_FIELD}}: {{UPDATE_VALUE}} }));
+{{#if SEND_TO_WEBSOCKET}}
+
+    // Send update to WebSocket if connected
+    if (isConnected) {
+      send({
+        command: 'update',
+        {{UPDATE_PAYLOAD}}
+      });
+    }
+{{/if}}
+  }, [{{UPDATE_DEPENDENCIES}}]);
+
+  // Clear buffer efficiently
+  const clearBuffer = useCallback(() => {
+    dataBufferRef.current.clear();
+    setStats((prev) => ({ ...prev, bufferSize: 0 }));
+  }, []);
+
+  // Reset to defaults (UI only, preserves connection state)
+  const resetToDefaults = useCallback(() => {
+    setState((prev) => ({
+      ...prev,
+      {{RESET_FIELDS}}
+    }));
+
+{{#if SEND_RESET_TO_WEBSOCKET}}
+    // Send reset configuration if connected
+    if (isConnected) {
+      send({
+        command: 'reset',
+        {{RESET_PAYLOAD}}
+      });
+    }
+{{/if}}
+  }, [{{RESET_DEPENDENCIES}}]);
+
+  // Toggle pause state
+  const togglePause = useCallback(() => {
+    setState((prev) => ({ ...prev, {{PAUSE_FLAG}}: !prev.{{PAUSE_FLAG}} }));
+  }, []);
+
+  // Memory cleanup
+  useEffect(() => {
+    return () => {
+      dataBufferRef.current.clear();
+{{#if USE_PERFORMANCE_MONITORING}}
+      performanceMonitor.current.cleanup();
+{{/if}}
+    };
+  }, []);
+
+  return {
+    state,
+    stats,
+    dataBuffer: dataBufferRef.current.getView(), // Return Float32Array view
+    {{RETURN_METHODS}}
+    clearBuffer,
+    resetToDefaults,
+    togglePause,
+    error,
+  };
+}
+
+// Performance monitoring helper (optional)
+{{#if USE_PERFORMANCE_MONITORING}}
+export function {{HOOK_NAME}}WithMonitoring(): {{HOOK_RETURN_TYPE}} & { performanceMetrics: PerformanceMetrics } {
+  const hookResult = {{HOOK_NAME}}();
+  const performanceMetrics = usePerformanceMetrics();
+
+  return {
+    ...hookResult,
+    performanceMetrics,
+  };
+}
+{{/if}}

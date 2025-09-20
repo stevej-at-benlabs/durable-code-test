@@ -30,7 +30,7 @@ function MyComponent() {
 make check-page
 
 # Or use direct verification
-node test-rendered-content.js
+docker exec durable-code-frontend-dev node /app/scripts/test-rendered-content.js
 ```
 
 ## 3-Tier Implementation Guide
@@ -155,7 +155,7 @@ make check-page
 make check-page-watch
 
 # Direct content verification
-node test-rendered-content.js
+docker exec durable-code-frontend-dev node /app/scripts/test-rendered-content.js
 
 # Advanced verification (requires Playwright)
 make check-page-full
