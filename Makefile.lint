@@ -37,7 +37,8 @@ lint-all: dev-start ## Run ALL linters (Python: Black, isort, Ruff, Flake8, MyPy
 		echo '• TypeScript...' && npm run typecheck && \
 		echo '• ESLint...' && npm run lint && \
 		echo '• Stylelint...' && npm run lint:css && \
-		echo '• Prettier...' && npm run format:check" || (echo "$(RED)✗ Frontend linting failed$(NC)" && exit 1)
+		echo '• Prettier...' && npm run format:check && \
+		echo '• HTMLHint...' && htmlhint 'public/**/*.html' 'src/**/*.html' '*.html' --config /.htmlhintrc" || (echo "$(RED)✗ Frontend linting failed$(NC)" && exit 1)
 	@echo "$(GREEN)✓ Frontend linting passed$(NC)"
 	@echo ""
 	@echo "$(YELLOW)━━━ Custom Design Linters ━━━$(NC)"
@@ -64,7 +65,7 @@ lint-tool: dev-start ## Run a specific linter tool (e.g., make lint-tool TOOL=bl
 		echo "$(YELLOW)Usage: make lint-tool TOOL=<tool>$(NC)"; \
 		echo "$(YELLOW)Available tools:$(NC)"; \
 		echo "  Python: black, isort, ruff, flake8, mypy, pylint, bandit, radon, xenon"; \
-		echo "  Frontend: eslint, prettier, typecheck"; \
+		echo "  Frontend: eslint, prettier, typecheck, htmlhint"; \
 		exit 1; \
 	fi
 	@echo "$(CYAN)Running $(TOOL)...$(NC)"
@@ -81,6 +82,7 @@ lint-tool: dev-start ## Run a specific linter tool (e.g., make lint-tool TOOL=bl
 		eslint) docker exec durable-code-frontend-dev npm run lint ;; \
 		prettier) docker exec durable-code-frontend-dev npm run format:check ;; \
 		typecheck) docker exec durable-code-frontend-dev npm run typecheck ;; \
+		htmlhint) docker exec durable-code-frontend-dev sh -c "htmlhint 'public/**/*.html' 'src/**/*.html' '*.html' --config /.htmlhintrc" ;; \
 		*) echo "$(RED)Unknown tool: $(TOOL)$(NC)" && exit 1 ;; \
 	esac
 	@echo "$(GREEN)✓ $(TOOL) completed$(NC)"

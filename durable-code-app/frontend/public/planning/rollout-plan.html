@@ -212,7 +212,7 @@
       "value": true
     },
     {
-      "condition": "percentage < 10",
+      "condition": "percentage &lt; 10",
       "value": true
     }
   ]
@@ -244,9 +244,9 @@
             <p><strong>Duration:</strong> Jan 25 - Feb 7, 2025 | <strong>Audience:</strong> 10% of development team</p>
             <h4>Success Criteria:</h4>
             <ul class="criteria-list">
-                <li><span class="checkbox"></span> Error rate < 1%</li>
-                <li><span class="checkbox"></span> Planning document generation success > 95%</li>
-                <li><span class="checkbox"></span> User satisfaction score > 4.0/5.0</li>
+                <li><span class="checkbox"></span> Error rate &lt; 1%</li>
+                <li><span class="checkbox"></span> Planning document generation success &gt; 95%</li>
+                <li><span class="checkbox"></span> User satisfaction score &gt; 4.0/5.0</li>
                 <li><span class="checkbox"></span> No critical bugs reported</li>
                 <li><span class="checkbox"></span> Performance metrics within targets</li>
             </ul>
@@ -260,8 +260,8 @@
             <p><strong>Duration:</strong> Feb 8-14, 2025 | <strong>Audience:</strong> 50% of users</p>
             <h4>Success Criteria:</h4>
             <ul class="criteria-list">
-                <li><span class="checkbox"></span> Error rate < 0.5%</li>
-                <li><span class="checkbox"></span> System uptime > 99.5%</li>
+                <li><span class="checkbox"></span> Error rate &lt; 0.5%</li>
+                <li><span class="checkbox"></span> System uptime &gt; 99.5%</li>
                 <li><span class="checkbox"></span> All automated tests passing</li>
                 <li><span class="checkbox"></span> Documentation complete and accurate</li>
                 <li><span class="checkbox"></span> Support team trained</li>
@@ -276,9 +276,9 @@
             <p><strong>Target Date:</strong> February 15, 2025 | <strong>Audience:</strong> All users</p>
             <h4>Success Criteria:</h4>
             <ul class="criteria-list">
-                <li><span class="checkbox"></span> Error rate < 0.1%</li>
+                <li><span class="checkbox"></span> Error rate &lt; 0.1%</li>
                 <li><span class="checkbox"></span> Performance meets all SLAs</li>
-                <li><span class="checkbox"></span> Positive user feedback > 90%</li>
+                <li><span class="checkbox"></span> Positive user feedback &gt; 90%</li>
                 <li><span class="checkbox"></span> All feature flags can be safely removed</li>
             </ul>
         </div>
@@ -297,38 +297,38 @@
                 <tr>
                     <td>Planning doc generation time</td>
                     <td>N/A</td>
-                    <td>< 500ms</td>
-                    <td class="alert-high">> 2000ms</td>
+                    <td>&lt; 500ms</td>
+                    <td class="alert-high">&gt; 2000ms</td>
                 </tr>
                 <tr>
                     <td>AI response time</td>
                     <td>N/A</td>
-                    <td>< 1s</td>
-                    <td class="alert-high">> 3s</td>
+                    <td>&lt; 1s</td>
+                    <td class="alert-high">&gt; 3s</td>
                 </tr>
                 <tr>
                     <td>Error rate</td>
                     <td>0%</td>
-                    <td>< 0.1%</td>
-                    <td class="alert-high">> 1%</td>
+                    <td>&lt; 0.1%</td>
+                    <td class="alert-high">&gt; 1%</td>
                 </tr>
                 <tr>
                     <td>Docker container stability</td>
                     <td>100%</td>
                     <td>100%</td>
-                    <td class="alert-med">< 99%</td>
+                    <td class="alert-med">&lt; 99%</td>
                 </tr>
                 <tr>
                     <td>Make target success rate</td>
                     <td>100%</td>
                     <td>100%</td>
-                    <td class="alert-med">< 95%</td>
+                    <td class="alert-med">&lt; 95%</td>
                 </tr>
                 <tr>
                     <td>Linting pass rate</td>
                     <td>95%</td>
-                    <td>> 98%</td>
-                    <td class="alert-low">< 90%</td>
+                    <td>&gt; 98%</td>
+                    <td class="alert-low">&lt; 90%</td>
                 </tr>
             </tbody>
         </table>
@@ -338,7 +338,7 @@
             <h3>Rollback Triggers</h3>
             <ul class="criteria-list">
                 <li><span class="checkbox checked"></span> Error rate exceeds 2%</li>
-                <li><span class="checkbox checked"></span> AI service unavailable for > 5 minutes</li>
+                <li><span class="checkbox checked"></span> AI service unavailable for &gt; 5 minutes</li>
                 <li><span class="checkbox checked"></span> Critical data loss bug discovered</li>
                 <li><span class="checkbox checked"></span> Docker environment instability</li>
                 <li><span class="checkbox checked"></span> Make targets consistently failing</li>
