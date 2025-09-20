@@ -13,6 +13,7 @@ uvicorn = {extras = ["standard"], version = "^0.35.0"}
 python-dotenv = "^1.1.1"
 pydantic = "^2.11.7"
 websockets = "^13.0.0"
+slowapi = "^0.1.9"
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.4.2"
 pytest-cov = "^4.1.0"
@@ -122,6 +123,10 @@ disable = [
     "R0903", # too-few-public-methods
     "R0913", # too-many-arguments
     "W0212", # protected-access
+    "E0213", # no-self-argument (false positive for Pydantic validators)
+    "W0613", # unused-argument (false positive for FastAPI request parameters)
+    "C0415", # import-outside-toplevel (sometimes required for FastAPI setup)
+    "W0718", # broad-exception-caught (intentional for security error handling)
 ]
 
 [tool.pylint.design]

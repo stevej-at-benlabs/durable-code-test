@@ -22,9 +22,11 @@ from datetime import datetime
 from enum import Enum
 from typing import Any
 
-from fastapi import APIRouter, WebSocket, WebSocketDisconnect
+from fastapi import APIRouter, Request, WebSocket, WebSocketDisconnect
 from loguru import logger
 from pydantic import BaseModel, Field, validator
+
+from .security import get_rate_limiter, get_security_config, validate_numeric_range
 
 # Constants for waveform generation
 SAMPLE_RATE = 1000  # Samples per second
@@ -73,7 +75,7 @@ class WaveType(str, Enum):
 
 
 class OscilloscopeCommand(BaseModel):
-    """Command model for oscilloscope control."""
+    """Command model for oscilloscope control with enhanced security validation."""
 
     command: str = Field(..., description="Command type (start, stop, configure)")
     wave_type: WaveType | None = Field(WaveType.SINE, description="Type of waveform")
@@ -83,11 +85,33 @@ class OscilloscopeCommand(BaseModel):
     amplitude: float | None = Field(DEFAULT_AMPLITUDE, ge=MIN_AMPLITUDE, le=MAX_AMPLITUDE, description="Wave amplitude")
     offset: float | None = Field(DEFAULT_OFFSET, ge=MIN_OFFSET, le=MAX_OFFSET, description="DC offset")
 
+    @validator("command")
+    def validate_command(cls, value: str) -> str:  # noqa: N805
+        """Validate command is one of allowed values."""
+        allowed_commands = {"start", "stop", "configure"}
+        if value not in allowed_commands:
+            raise ValueError(f"Command must be one of: {', '.join(allowed_commands)}")
+        return value
+
     @validator("frequency")
-    def validate_frequency(cls, value: float | None) -> float | None:  # noqa: N805  # pylint: disable=no-self-argument
-        """Validate frequency is within reasonable range."""
-        if value is not None and (value < MIN_FREQUENCY or value > MAX_FREQUENCY):
-            raise ValueError(f"Frequency must be between {MIN_FREQUENCY} and {MAX_FREQUENCY} Hz")
+    def validate_frequency(cls, value: float | None) -> float | None:  # noqa: N805
+        """Validate frequency is within secure operational range."""
+        if value is not None:
+            return validate_numeric_range(value, MIN_FREQUENCY, MAX_FREQUENCY, "frequency")
+        return value
+
+    @validator("amplitude")
+    def validate_amplitude(cls, value: float | None) -> float | None:  # noqa: N805
+        """Validate amplitude is within secure operational range."""
+        if value is not None:
+            return validate_numeric_range(value, MIN_AMPLITUDE, MAX_AMPLITUDE, "amplitude")
+        return value
+
+    @validator("offset")
+    def validate_offset(cls, value: float | None) -> float | None:  # noqa: N805
+        """Validate offset is within secure operational range."""
+        if value is not None:
+            return validate_numeric_range(value, MIN_OFFSET, MAX_OFFSET, "offset")
         return value
 
 
@@ -330,7 +354,8 @@ def _get_response_format() -> dict[str, Any]:
 
 # API endpoint to document WebSocket streaming interface
 @router.get("/stream/info", tags=["oscilloscope"])
-async def get_stream_info() -> dict[str, Any]:
+@get_rate_limiter().limit(get_security_config("api_data")["rate_limit"])
+async def get_stream_info(request: Request) -> dict[str, Any]:
     """Get information about the WebSocket streaming endpoint.
 
     The oscilloscope provides real-time data streaming via WebSocket at:
@@ -357,7 +382,8 @@ async def get_stream_info() -> dict[str, Any]:
 
 # API endpoint to get oscilloscope configuration
 @router.get("/config", tags=["oscilloscope"])
-async def get_oscilloscope_config() -> dict[str, Any]:
+@get_rate_limiter().limit(get_security_config("config")["rate_limit"])
+async def get_oscilloscope_config(request: Request) -> dict[str, Any]:
     """Get current oscilloscope configuration and supported parameters.
 
     Returns:
@@ -376,7 +402,8 @@ async def get_oscilloscope_config() -> dict[str, Any]:
 
 # Health check for oscilloscope module
 @router.get("/health", include_in_schema=False)
-async def oscilloscope_health_check() -> dict[str, Any]:
+@get_rate_limiter().limit(get_security_config("health_check")["rate_limit"])
+async def oscilloscope_health_check(request: Request) -> dict[str, Any]:
     """Health check endpoint for oscilloscope module."""
     return {
         "status": "healthy",
