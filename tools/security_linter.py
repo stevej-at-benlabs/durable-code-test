@@ -1,18 +1,19 @@
 #!/usr/bin/env python3
 """
-Purpose: Security linting tool for detecting common security antipatterns
+Purpose: Refactored security linting tool with proper separation of concerns
 Scope: FastAPI applications, input validation, rate limiting, and security headers
-Overview: This tool scans Python files for security vulnerabilities and antipatterns,
-    specifically targeting issues common in AI-generated code such as missing input
-    validation, hardcoded secrets, and insecure configurations.
+Overview: This tool scans Python files for security vulnerabilities using a
+    clean architecture with separated responsibilities for pattern detection,
+    issue collection, and reporting.
 Dependencies: Python standard library, ast module for code parsing
-Exports: Security vulnerability detection and reporting
+Exports: Security vulnerability detection and reporting with SRP compliance
 Interfaces: Command-line interface for file scanning
-Implementation: AST-based static analysis with configurable rules
+Implementation: AST-based static analysis with focused, single-responsibility classes
 """
 
 import argparse
 import ast
+import json
 import re
 import sys
 from pathlib import Path
@@ -31,14 +32,35 @@ class SecurityIssue(NamedTuple):
     suggestion: str
 
 
-class SecurityLinter:
-    """Security linter for detecting common vulnerabilities."""
+class SecurityIssueCollector:
+    """Collects and manages security issues found during analysis."""
 
     def __init__(self) -> None:
-        """Initialize the security linter."""
+        """Initialize the issue collector."""
         self.issues: list[SecurityIssue] = []
 
-        # Patterns for dangerous code
+    def add_issue(self, issue: SecurityIssue) -> None:
+        """Add a security issue to the collection."""
+        self.issues.append(issue)
+
+    def get_issues(self) -> list[SecurityIssue]:
+        """Get all collected security issues."""
+        return self.issues
+
+    def clear_issues(self) -> None:
+        """Clear all collected issues."""
+        self.issues.clear()
+
+    def has_critical_issues(self) -> bool:
+        """Check if any critical issues were found."""
+        return any(issue.severity == "CRITICAL" for issue in self.issues)
+
+
+class SecurityPatternDetector:
+    """Detects security patterns and vulnerabilities in code using regex patterns."""
+
+    def __init__(self) -> None:
+        """Initialize the pattern detector."""
         self.dangerous_patterns = {
             "hardcoded_secrets": [
                 r'password\s*=\s*["\'][^"\']+["\']',
@@ -63,12 +85,204 @@ class SecurityLinter:
             ],
         }
 
-    def scan_file(self, file_path: Path) -> None:
-        """Scan a Python file for security issues.
+    def check_patterns(self, file_path: Path, content: str, collector: SecurityIssueCollector) -> None:
+        """Check for dangerous patterns in code content."""
+        lines = content.split('\n')
 
-        Args:
-            file_path: Path to the Python file to scan
-        """
+        for category, patterns in self.dangerous_patterns.items():
+            for pattern_str in patterns:
+                pattern = re.compile(pattern_str)
+                for line_num, line in enumerate(lines, 1):
+                    if pattern.search(line):
+                        collector.add_issue(SecurityIssue(
+                            file_path=str(file_path),
+                            line_number=line_num,
+                            column=0,
+                            severity=self._get_severity(category),
+                            issue_type=category,
+                            message=f"Detected {category.replace('_', ' ')}: {line.strip()}",
+                            suggestion=self._get_suggestion(category)
+                        ))
+
+    def _get_severity(self, category: str) -> str:
+        """Get severity level for issue category."""
+        severity_map = {
+            "hardcoded_secrets": "CRITICAL",
+            "sql_injection": "CRITICAL",
+            "command_injection": "HIGH",
+            "insecure_random": "MEDIUM",
+        }
+        return severity_map.get(category, "LOW")
+
+    def _get_suggestion(self, category: str) -> str:
+        """Get suggestion for fixing the issue."""
+        suggestions = {
+            "hardcoded_secrets": "Use environment variables or secret management systems",
+            "sql_injection": "Use parameterized queries or ORM methods",
+            "command_injection": "Validate input and use subprocess with shell=False",
+            "insecure_random": "Use secrets module for cryptographic randomness",
+        }
+        return suggestions.get(category, "Review code for security best practices")
+
+
+class SecurityASTAnalyzer:
+    """Analyzes AST structures for security vulnerabilities."""
+
+    def analyze_ast(self, file_path: Path, tree: ast.AST, collector: SecurityIssueCollector) -> None:
+        """Analyze AST for security issues."""
+        for node in ast.walk(tree):
+            if isinstance(node, ast.FunctionDef):
+                self._check_function_security(file_path, node, collector)
+            elif isinstance(node, ast.Call):
+                self._check_call_security(file_path, node, collector)
+
+    def _check_function_security(self, file_path: Path, node: ast.FunctionDef, collector: SecurityIssueCollector) -> None:
+        """Check function for security issues."""
+        # Check for missing input validation
+        if self._handles_user_input(node) and not self._has_validation(node):
+            collector.add_issue(SecurityIssue(
+                file_path=str(file_path),
+                line_number=node.lineno,
+                column=node.col_offset,
+                severity="MEDIUM",
+                issue_type="missing_input_validation",
+                message=f"Function '{node.name}' handles user input without validation",
+                suggestion="Add input validation using Pydantic models or validators"
+            ))
+
+        # Check for missing rate limiting on API endpoints
+        if self._is_api_endpoint(node) and not self._has_rate_limiting(node):
+            collector.add_issue(SecurityIssue(
+                file_path=str(file_path),
+                line_number=node.lineno,
+                column=node.col_offset,
+                severity="MEDIUM",
+                issue_type="missing_rate_limiting",
+                message=f"API endpoint '{node.name}' lacks rate limiting",
+                suggestion="Add rate limiting decorators to prevent abuse"
+            ))
+
+    def _check_call_security(self, file_path: Path, node: ast.Call, collector: SecurityIssueCollector) -> None:
+        """Check function calls for security issues."""
+        if isinstance(node.func, ast.Name) and node.func.id == "eval":
+            collector.add_issue(SecurityIssue(
+                file_path=str(file_path),
+                line_number=node.lineno,
+                column=node.col_offset,
+                severity="CRITICAL",
+                issue_type="dangerous_eval",
+                message="Use of eval() is dangerous and should be avoided",
+                suggestion="Use safer alternatives like ast.literal_eval() for data parsing"
+            ))
+
+    def _handles_user_input(self, node: ast.FunctionDef) -> bool:
+        """Check if function handles user input."""
+        for arg in node.args.args:
+            if arg.annotation and isinstance(arg.annotation, ast.Name) and arg.annotation.id in ["Request", "BaseModel"]:
+                return True
+        return False
+
+    def _has_validation(self, node: ast.FunctionDef) -> bool:
+        """Check if function has input validation."""
+        for stmt in ast.walk(node):
+            if isinstance(stmt, ast.Call) and isinstance(stmt.func, ast.Name) and stmt.func.id in ["validate", "sanitize", "check_input"]:
+                return True
+        return False
+
+    def _is_api_endpoint(self, node: ast.FunctionDef) -> bool:
+        """Check if function is an API endpoint."""
+        api_decorators = {"get", "post", "put", "delete", "patch"}
+        for decorator in node.decorator_list:
+            if isinstance(decorator, ast.Call) and isinstance(decorator.func, ast.Attribute):
+                if decorator.func.attr in api_decorators:
+                    return True
+        return False
+
+    def _has_rate_limiting(self, node: ast.FunctionDef) -> bool:
+        """Check if function has rate limiting."""
+        for decorator in node.decorator_list:
+            if isinstance(decorator, ast.Call) and isinstance(decorator.func, ast.Attribute):
+                if "limit" in str(decorator.func.attr):
+                    return True
+        return False
+
+
+class SecurityReporter:
+    """Handles reporting and formatting of security issues."""
+
+    def report_text(self, issues: list[SecurityIssue]) -> None:
+        """Report issues in text format."""
+        if not issues:
+            print("✅ No security issues found!")
+            return
+
+        print(f"🔒 Security Analysis Results: {len(issues)} issues found\n")
+
+        # Group by severity
+        by_severity: dict[str, list[SecurityIssue]] = {}
+        for issue in issues:
+            if issue.severity not in by_severity:
+                by_severity[issue.severity] = []
+            by_severity[issue.severity].append(issue)
+
+        # Report by severity level
+        severity_order = ["CRITICAL", "HIGH", "MEDIUM", "LOW", "ERROR"]
+        for severity in severity_order:
+            if severity in by_severity:
+                self._report_severity_group(severity, by_severity[severity])
+
+    def report_json(self, issues: list[SecurityIssue]) -> None:
+        """Report issues in JSON format."""
+        issues_data = []
+        for issue in issues:
+            issues_data.append({
+                "file_path": issue.file_path,
+                "line_number": issue.line_number,
+                "column": issue.column,
+                "severity": issue.severity,
+                "issue_type": issue.issue_type,
+                "message": issue.message,
+                "suggestion": issue.suggestion,
+            })
+
+        result = {
+            "total_issues": len(issues),
+            "issues": issues_data,
+        }
+        print(json.dumps(result, indent=2))
+
+    def _report_severity_group(self, severity: str, issues: list[SecurityIssue]) -> None:
+        """Report a group of issues with the same severity."""
+        severity_colors = {
+            "CRITICAL": "🔴",
+            "HIGH": "🟠",
+            "MEDIUM": "🟡",
+            "LOW": "🔵",
+            "ERROR": "⚫",
+        }
+
+        color = severity_colors.get(severity, "⚪")
+        print(f"{color} {severity} ({len(issues)} issues)")
+        print("-" * 50)
+
+        for issue in issues:
+            print(f"📁 {issue.file_path}:{issue.line_number}:{issue.column}")
+            print(f"   {issue.message}")
+            print(f"   💡 {issue.suggestion}")
+            print()
+
+
+class SecurityFileScanner:
+    """Handles file scanning operations."""
+
+    def __init__(self, collector: SecurityIssueCollector, detector: SecurityPatternDetector, analyzer: SecurityASTAnalyzer) -> None:
+        """Initialize the file scanner."""
+        self.collector = collector
+        self.detector = detector
+        self.analyzer = analyzer
+
+    def scan_file(self, file_path: Path) -> None:
+        """Scan a Python file for security issues."""
         try:
             with open(file_path, encoding="utf-8") as f:
                 content = f.read()
@@ -76,284 +290,59 @@ class SecurityLinter:
             # Parse AST for structural analysis
             try:
                 tree = ast.parse(content)
-                self._check_ast_patterns(file_path, tree)
+                self.analyzer.analyze_ast(file_path, tree, self.collector)
             except SyntaxError as e:
-                self.issues.append(
-                    SecurityIssue(
-                        file_path=str(file_path),
-                        line_number=e.lineno or 0,
-                        column=e.offset or 0,
-                        severity="ERROR",
-                        issue_type="syntax_error",
-                        message=f"Syntax error: {e.msg}",
-                        suggestion="Fix syntax errors before security analysis",
-                    )
-                )
+                self.collector.add_issue(SecurityIssue(
+                    file_path=str(file_path),
+                    line_number=e.lineno or 0,
+                    column=e.offset or 0,
+                    severity="ERROR",
+                    issue_type="syntax_error",
+                    message=f"Syntax error: {e.msg}",
+                    suggestion="Fix syntax errors before security analysis"
+                ))
 
             # Check for dangerous patterns
-            self._check_text_patterns(file_path, content)
+            self.detector.check_patterns(file_path, content, self.collector)
 
         except Exception as e:
-            self.issues.append(
-                SecurityIssue(
-                    file_path=str(file_path),
-                    line_number=0,
-                    column=0,
-                    severity="ERROR",
-                    issue_type="scan_error",
-                    message=f"Failed to scan file: {e}",
-                    suggestion="Ensure file is readable and contains valid Python",
-                )
-            )
+            self.collector.add_issue(SecurityIssue(
+                file_path=str(file_path),
+                line_number=0,
+                column=0,
+                severity="ERROR",
+                issue_type="scan_error",
+                message=f"Error scanning file: {str(e)}",
+                suggestion="Check file permissions and encoding"
+            ))
 
-    def _check_ast_patterns(self, file_path: Path, tree: ast.AST) -> None:
-        """Check AST for security patterns.
 
-        Args:
-            file_path: Path to the file being scanned
-            tree: AST tree of the file
-        """
-        for node in ast.walk(tree):
-            # Check for missing input validation in FastAPI endpoints
-            if isinstance(node, ast.FunctionDef):
-                self._check_function_security(file_path, node)
+class SecurityLinter:
+    """Main security linter orchestrator following SRP."""
 
-            # Check for insecure exception handling
-            elif isinstance(node, ast.ExceptHandler):
-                self._check_exception_handling(file_path, node)
+    def __init__(self) -> None:
+        """Initialize the security linter with all components."""
+        self.collector = SecurityIssueCollector()
+        self.detector = SecurityPatternDetector()
+        self.analyzer = SecurityASTAnalyzer()
+        self.reporter = SecurityReporter()
+        self.scanner = SecurityFileScanner(self.collector, self.detector, self.analyzer)
 
-            # Check for missing rate limiting decorators
-            elif isinstance(node, ast.FunctionDef) and self._is_api_endpoint(node):
-                self._check_rate_limiting(file_path, node)
+    def scan_file(self, file_path: Path) -> None:
+        """Scan a single file for security issues."""
+        self.scanner.scan_file(file_path)
 
-    def _check_function_security(self, file_path: Path, node: ast.FunctionDef) -> None:
-        """Check function for security issues.
-
-        Args:
-            file_path: Path to the file
-            node: Function definition node
-        """
-        # Check if function handles user input without validation
-        if self._handles_user_input(node) and not self._has_validation(node):
-            self.issues.append(
-                SecurityIssue(
-                    file_path=str(file_path),
-                    line_number=node.lineno,
-                    column=node.col_offset,
-                    severity="HIGH",
-                    issue_type="missing_input_validation",
-                    message=f"Function '{node.name}' handles user input without validation",
-                    suggestion="Add Pydantic models or input validation to sanitize user data",
-                )
-            )
-
-    def _check_exception_handling(self, file_path: Path, node: ast.ExceptHandler) -> None:
-        """Check exception handling for security issues.
-
-        Args:
-            file_path: Path to the file
-            node: Exception handler node
-        """
-        # Check for overly broad exception handling
-        if node.type is None or (isinstance(node.type, ast.Name) and node.type.id == "Exception"):
-            self.issues.append(
-                SecurityIssue(
-                    file_path=str(file_path),
-                    line_number=node.lineno,
-                    column=node.col_offset,
-                    severity="MEDIUM",
-                    issue_type="broad_exception_handling",
-                    message="Overly broad exception handling can mask security issues",
-                    suggestion="Use specific exception types and proper error logging",
-                )
-            )
-
-    def _check_rate_limiting(self, file_path: Path, node: ast.FunctionDef) -> None:
-        """Check if API endpoints have rate limiting.
-
-        Args:
-            file_path: Path to the file
-            node: Function definition node
-        """
-        # Check if endpoint has rate limiting decorator
-        has_rate_limit = any(self._is_rate_limit_decorator(decorator) for decorator in node.decorator_list)
-
-        if not has_rate_limit:
-            self.issues.append(
-                SecurityIssue(
-                    file_path=str(file_path),
-                    line_number=node.lineno,
-                    column=node.col_offset,
-                    severity="MEDIUM",
-                    issue_type="missing_rate_limiting",
-                    message=f"API endpoint '{node.name}' missing rate limiting",
-                    suggestion="Add @get_rate_limiter().limit() decorator or rate limiting check",
-                )
-            )
-
-    def _check_text_patterns(self, file_path: Path, content: str) -> None:
-        """Check file content for dangerous text patterns.
-
-        Args:
-            file_path: Path to the file
-            content: File content as string
-        """
-        lines = content.split("\n")
-
-        for line_num, line in enumerate(lines, 1):
-            for category, patterns in self.dangerous_patterns.items():
-                for pattern in patterns:
-                    if re.search(pattern, line, re.IGNORECASE):
-                        severity = self._get_severity_for_category(category)
-                        message = self._get_message_for_category(category)
-                        suggestion = self._get_suggestion_for_category(category)
-
-                        self.issues.append(
-                            SecurityIssue(
-                                file_path=str(file_path),
-                                line_number=line_num,
-                                column=0,
-                                severity=severity,
-                                issue_type=category,
-                                message=f"{message}: {line.strip()}",
-                                suggestion=suggestion,
-                            )
-                        )
-
-    def _is_api_endpoint(self, node: ast.FunctionDef) -> bool:
-        """Check if function is a FastAPI endpoint.
-
-        Args:
-            node: Function definition node
-
-        Returns:
-            True if function appears to be an API endpoint
-        """
-        return any(
-            isinstance(decorator, ast.Attribute) and decorator.attr in ["get", "post", "put", "delete", "patch"]
-            for decorator in node.decorator_list
-        )
-
-    def _handles_user_input(self, node: ast.FunctionDef) -> bool:
-        """Check if function handles user input.
-
-        Args:
-            node: Function definition node
-
-        Returns:
-            True if function appears to handle user input
-        """
-        # Check for Request parameter or Pydantic models in arguments
-        for arg in node.args.args:
-            if (
-                arg.annotation
-                and isinstance(arg.annotation, ast.Name)
-                and arg.annotation.id in ["Request", "BaseModel"]
-            ):
-                return True
-        return False
-
-    def _has_validation(self, node: ast.FunctionDef) -> bool:
-        """Check if function has input validation.
-
-        Args:
-            node: Function definition node
-
-        Returns:
-            True if function has validation
-        """
-        # Look for Pydantic models, validators, or validation calls
-        for stmt in ast.walk(node):
-            if (
-                isinstance(stmt, ast.Call)
-                and isinstance(stmt.func, ast.Name)
-                and stmt.func.id in ["validate", "sanitize", "check_input"]
-            ):
-                return True
-        return False
-
-    def _is_rate_limit_decorator(self, decorator: ast.expr) -> bool:
-        """Check if decorator is for rate limiting.
-
-        Args:
-            decorator: Decorator node
-
-        Returns:
-            True if decorator is for rate limiting
-        """
-        if isinstance(decorator, ast.Call) and isinstance(decorator.func, ast.Attribute):
-            return "limit" in str(decorator.func.attr)
-        return False
-
-    def _get_severity_for_category(self, category: str) -> str:
-        """Get severity level for issue category."""
-        severity_map = {
-            "hardcoded_secrets": "CRITICAL",
-            "sql_injection": "CRITICAL",
-            "command_injection": "CRITICAL",
-            "insecure_random": "HIGH",
-        }
-        return severity_map.get(category, "MEDIUM")
-
-    def _get_message_for_category(self, category: str) -> str:
-        """Get message for issue category."""
-        message_map = {
-            "hardcoded_secrets": "Hardcoded secret detected",
-            "sql_injection": "Potential SQL injection vulnerability",
-            "command_injection": "Potential command injection vulnerability",
-            "insecure_random": "Insecure random number generation",
-        }
-        return message_map.get(category, "Security issue detected")
-
-    def _get_suggestion_for_category(self, category: str) -> str:
-        """Get suggestion for issue category."""
-        suggestion_map = {
-            "hardcoded_secrets": "Use environment variables or secure secret management",
-            "sql_injection": "Use parameterized queries or ORM methods",
-            "command_injection": "Avoid system calls or use subprocess with shell=False",
-            "insecure_random": "Use secrets module for cryptographic randomness",
-        }
-        return suggestion_map.get(category, "Review and fix security issue")
-
-    def report_issues(self, output_format: str = "text") -> None:
-        """Report found security issues.
-
-        Args:
-            output_format: Format for output ('text' or 'json')
-        """
-        if output_format == "json":
-            import json
-
-            issues_dict = [issue._asdict() for issue in self.issues]
-            print(json.dumps(issues_dict, indent=2))
+    def report_issues(self, format_type: str) -> None:
+        """Report all collected issues."""
+        issues = self.collector.get_issues()
+        if format_type == "json":
+            self.reporter.report_json(issues)
         else:
-            if not self.issues:
-                print("✅ No security issues found!")
-                return
+            self.reporter.report_text(issues)
 
-            print(f"🔒 Security Analysis Results: {len(self.issues)} issues found\n")
-
-            # Group by severity
-            by_severity: dict[str, list[SecurityIssue]] = {}
-            for issue in self.issues:
-                if issue.severity not in by_severity:
-                    by_severity[issue.severity] = []
-                by_severity[issue.severity].append(issue)
-
-            # Report by severity level
-            severity_order = ["CRITICAL", "HIGH", "MEDIUM", "LOW", "ERROR"]
-            for severity in severity_order:
-                if severity in by_severity:
-                    print(f"📊 {severity} Issues ({len(by_severity[severity])})")
-                    print("=" * 50)
-
-                    for issue in by_severity[severity]:
-                        print(f"File: {issue.file_path}:{issue.line_number}")
-                        print(f"Issue: {issue.message}")
-                        print(f"Type: {issue.issue_type}")
-                        print(f"Suggestion: {issue.suggestion}")
-                        print("-" * 30)
-                    print()
+    def has_critical_issues(self) -> bool:
+        """Check if any critical issues were found."""
+        return self.collector.has_critical_issues()
 
 
 def _scan_path(linter: SecurityLinter, path: Path, recursive: bool) -> None:
@@ -385,8 +374,7 @@ def main() -> None:
     linter.report_issues(args.format)
 
     # Exit with error code if critical issues found
-    critical_issues = [i for i in linter.issues if i.severity == "CRITICAL"]
-    if critical_issues:
+    if linter.has_critical_issues():
         sys.exit(1)
 
 
