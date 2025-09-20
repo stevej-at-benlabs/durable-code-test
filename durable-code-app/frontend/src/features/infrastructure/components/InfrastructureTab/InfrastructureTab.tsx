@@ -86,8 +86,8 @@ export function InfrastructureTab({
             }}
           >
             <div className="card-icon">{item.icon}</div>
-            <h4 className="dark-title-on-light">{item.title}</h4>
-            <p>{item.description}</p>
+            <h4 className="light-title-on-dark">{item.title}</h4>
+            <p className="light-text-on-dark">{item.description}</p>
             <div className="card-badge">{item.badge}</div>
           </div>
         ))}

@@ -49,7 +49,7 @@ export function BuildingTab(): ReactElement {
                 <span className={styles.commandType}>{cmd.type}</span>
               </div>
               <code className={styles.commandSyntax}>{cmd.syntax}</code>
-              <p className={styles.commandDesc}>{cmd.description}</p>
+              <p className="light-text-on-dark">{cmd.description}</p>
             </div>
           ))}
         </div>
@@ -73,7 +73,7 @@ export function BuildingTab(): ReactElement {
                 <span className={styles.commandType}>{cap.type}</span>
               </div>
               <code className={styles.commandSyntax}>{cap.syntax}</code>
-              <p className={styles.commandDesc}>{cap.description}</p>
+              <p className="light-text-on-dark">{cap.description}</p>
             </div>
           ))}
         </div>
@@ -93,8 +93,8 @@ export function BuildingTab(): ReactElement {
           {aiCommands.map((cmd) => (
             <div key={cmd.id} className={styles.aiCommandCard}>
               <div className={styles.aiCommandIcon}>{cmd.icon}</div>
-              <h5 className="dark-title-on-light">{cmd.name}</h5>
-              <p className={styles.aiCommandDesc}>{cmd.description}</p>
+              <h5 className="light-title-on-dark">{cmd.name}</h5>
+              <p className="light-text-on-dark">{cmd.description}</p>
               <div className={styles.aiCommandFeatures}>
                 {cmd.features.map((feature) => (
                   <span key={feature} className={styles.featureTag}>
@@ -125,8 +125,8 @@ export function BuildingTab(): ReactElement {
           {templates.map((template) => (
             <div key={template.id} className={styles.templateCard}>
               <div className={styles.templateIcon}>{template.icon}</div>
-              <h5 className="dark-title-on-light">{template.filename}</h5>
-              <p className={styles.templateDesc}>{template.description}</p>
+              <h5 className="light-title-on-dark">{template.filename}</h5>
+              <p className="light-text-on-dark">{template.description}</p>
             </div>
           ))}
         </div>
@@ -142,8 +142,8 @@ export function BuildingTab(): ReactElement {
           {howToGuides.map((guide) => (
             <div key={guide.id} className={styles.howtoCard}>
               <div className={styles.howtoIcon}>{guide.icon}</div>
-              <h5 className="dark-title-on-light">{guide.title}</h5>
-              <p className={styles.howtoDesc}>{guide.description}</p>
+              <h5 className="light-title-on-dark">{guide.title}</h5>
+              <p className="light-text-on-dark">{guide.description}</p>
             </div>
           ))}
         </div>
@@ -164,8 +164,8 @@ export function BuildingTab(): ReactElement {
               <div key={standard.id} className={styles.standardItem}>
                 <div className={styles.standardIcon}>{standard.icon}</div>
                 <div className={styles.standardContent}>
-                  <h5>{standard.title}</h5>
-                  <p>{standard.description}</p>
+                  <h5 className="light-title-on-dark">{standard.title}</h5>
+                  <p className="light-text-on-dark">{standard.description}</p>
                 </div>
               </div>
             ))}

@@ -37,32 +37,32 @@ export function MaintenanceTab(): ReactElement {
         <div className={styles.indexFeatures}>
           <div className={styles.indexFeature}>
             <div className={styles.featureIcon}>🤖</div>
-            <h5 className="dark-title-on-light">AI-First Documentation</h5>
-            <p className={styles.featureDesc}>
+            <h5 className="light-title-on-dark">AI-First Documentation</h5>
+            <p className="light-text-on-dark">
               Comprehensive index designed specifically for AI agents to understand and
               navigate your entire codebase efficiently
             </p>
           </div>
           <div className={styles.indexFeature}>
             <div className={styles.featureIcon}>🔄</div>
-            <h5 className="dark-title-on-light">Auto-Synchronized</h5>
-            <p className={styles.featureDesc}>
+            <h5 className="light-title-on-dark">Auto-Synchronized</h5>
+            <p className="light-text-on-dark">
               Documentation automatically updates as your code evolves, ensuring AI
               agents always have accurate information
             </p>
           </div>
           <div className={styles.indexFeature}>
             <div className={styles.featureIcon}>📊</div>
-            <h5 className="dark-title-on-light">Structured Knowledge</h5>
-            <p className={styles.featureDesc}>
+            <h5 className="light-title-on-dark">Structured Knowledge</h5>
+            <p className="light-text-on-dark">
               Features, templates, standards, and guides organized in a hierarchical
               structure for optimal AI comprehension
             </p>
           </div>
           <div className={styles.indexFeature}>
             <div className={styles.featureIcon}>⚡</div>
-            <h5 className="dark-title-on-light">Quick Actions</h5>
-            <p className={styles.featureDesc}>
+            <h5 className="light-title-on-dark">Quick Actions</h5>
+            <p className="light-text-on-dark">
               Pre-configured commands and workflows that AI agents can execute
               immediately for common development tasks
             </p>
@@ -98,8 +98,8 @@ export function MaintenanceTab(): ReactElement {
         <div className={styles.docCards}>
           <div className={styles.docCard}>
             <div className={styles.docIcon}>🎯</div>
-            <h5 className="dark-title-on-light">.ai/features/</h5>
-            <p className={styles.docDesc}>
+            <h5 className="light-title-on-dark">.ai/features/</h5>
+            <p className="light-text-on-dark">
               Feature-specific documentation with implementation details
             </p>
             <ul className={styles.docList}>
@@ -113,8 +113,10 @@ export function MaintenanceTab(): ReactElement {
 
           <div className={styles.docCard}>
             <div className={styles.docIcon}>📝</div>
-            <h5 className="dark-title-on-light">.ai/templates/</h5>
-            <p className={styles.docDesc}>Code generation templates for AI agents</p>
+            <h5 className="light-title-on-dark">.ai/templates/</h5>
+            <p className="light-text-on-dark">
+              Code generation templates for AI agents
+            </p>
             <ul className={styles.docList}>
               <li>linting-rule.py.template</li>
               <li>react-component.tsx.template</li>
@@ -126,8 +128,10 @@ export function MaintenanceTab(): ReactElement {
 
           <div className={styles.docCard}>
             <div className={styles.docIcon}>📋</div>
-            <h5 className="dark-title-on-light">.ai/docs/</h5>
-            <p className={styles.docDesc}>Standards and best practices documentation</p>
+            <h5 className="light-title-on-dark">.ai/docs/</h5>
+            <p className="light-text-on-dark">
+              Standards and best practices documentation
+            </p>
             <ul className={styles.docList}>
               <li>STANDARDS.md</li>
               <li>FILE_HEADER_STANDARDS.md</li>
@@ -138,8 +142,8 @@ export function MaintenanceTab(): ReactElement {
 
           <div className={styles.docCard}>
             <div className={styles.docIcon}>🔧</div>
-            <h5 className="dark-title-on-light">.ai/howto/</h5>
-            <p className={styles.docDesc}>Step-by-step guides for common tasks</p>
+            <h5 className="light-title-on-dark">.ai/howto/</h5>
+            <p className="light-text-on-dark">Step-by-step guides for common tasks</p>
             <ul className={styles.docList}>
               <li>run-tests.md</li>
               <li>run-linting.md</li>
@@ -163,7 +167,7 @@ export function MaintenanceTab(): ReactElement {
               <span className={styles.exampleIcon}>📄</span>
               <span className={styles.exampleType}>README</span>
             </div>
-            <p className={styles.exampleDesc}>
+            <p className="light-text-on-dark">
               Automatically generate README files with project overview, setup
               instructions, and API documentation
             </p>
@@ -175,7 +179,7 @@ export function MaintenanceTab(): ReactElement {
               <span className={styles.exampleIcon}>📊</span>
               <span className={styles.exampleType}>Changelog</span>
             </div>
-            <p className={styles.exampleDesc}>
+            <p className="light-text-on-dark">
               Create detailed changelogs from git history with AI-powered categorization
               and summaries
             </p>
@@ -187,7 +191,7 @@ export function MaintenanceTab(): ReactElement {
               <span className={styles.exampleIcon}>📚</span>
               <span className={styles.exampleType}>API Docs</span>
             </div>
-            <p className={styles.exampleDesc}>
+            <p className="light-text-on-dark">
               Generate comprehensive API documentation from code comments and type
               definitions
             </p>
@@ -199,7 +203,7 @@ export function MaintenanceTab(): ReactElement {
               <span className={styles.exampleIcon}>🔍</span>
               <span className={styles.exampleType}>Code Index</span>
             </div>
-            <p className={styles.exampleDesc}>
+            <p className="light-text-on-dark">
               Build searchable index of all functions, classes, and modules with
               descriptions
             </p>
@@ -217,8 +221,8 @@ export function MaintenanceTab(): ReactElement {
         <div className={styles.toolsGrid}>
           <div className={styles.toolCard}>
             <div className={styles.toolIcon}>🔄</div>
-            <h5 className="dark-title-on-light">Update Documentation</h5>
-            <p className={styles.toolDesc}>
+            <h5 className="light-title-on-dark">Update Documentation</h5>
+            <p className="light-text-on-dark">
               Sync all documentation with latest code changes
             </p>
             <code className={styles.toolCommand}>make update-docs</code>
@@ -226,8 +230,8 @@ export function MaintenanceTab(): ReactElement {
 
           <div className={styles.toolCard}>
             <div className={styles.toolIcon}>✅</div>
-            <h5 className="dark-title-on-light">Validate Links</h5>
-            <p className={styles.toolDesc}>
+            <h5 className="light-title-on-dark">Validate Links</h5>
+            <p className="light-text-on-dark">
               Check all documentation links for broken references
             </p>
             <code className={styles.toolCommand}>make check-links</code>
@@ -235,8 +239,8 @@ export function MaintenanceTab(): ReactElement {
 
           <div className={styles.toolCard}>
             <div className={styles.toolIcon}>📊</div>
-            <h5 className="dark-title-on-light">Generate Reports</h5>
-            <p className={styles.toolDesc}>
+            <h5 className="light-title-on-dark">Generate Reports</h5>
+            <p className="light-text-on-dark">
               Create documentation coverage and quality reports
             </p>
             <code className={styles.toolCommand}>make doc-reports</code>
@@ -244,8 +248,8 @@ export function MaintenanceTab(): ReactElement {
 
           <div className={styles.toolCard}>
             <div className={styles.toolIcon}>🏷️</div>
-            <h5 className="dark-title-on-light">Tag Versions</h5>
-            <p className={styles.toolDesc}>
+            <h5 className="light-title-on-dark">Tag Versions</h5>
+            <p className="light-text-on-dark">
               Version and archive documentation for releases
             </p>
             <code className={styles.toolCommand}>make tag-docs</code>
