@@ -7,17 +7,17 @@
 
 /* Size variants */
 .small {
-  font-size: 16px;
+  font-size: var(--text-base);
 }
 
 .medium {
-  font-size: 20px;
+  font-size: var(--text-xl);
 }
 
 .large {
-  font-size: 24px;
+  font-size: var(--text-2xl);
 }
 
 .xl {
-  font-size: 32px;
+  font-size: var(--text-3xl-plus);
 }

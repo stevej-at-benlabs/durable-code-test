@@ -58,20 +58,15 @@
   /* Component-specific spacing */
   --container-padding: var(--space-6);
   --container-padding-mobile: var(--space-4);
-
   --card-padding: var(--space-6);
   --card-gap: var(--space-4);
-
   --button-padding-x: var(--space-6);
   --button-padding-y: var(--space-3);
-
   --tab-padding-x: var(--space-6);
   --tab-padding-y: var(--space-4);
   --tab-gap: var(--space-2);
-
   --grid-gap: var(--space-6);
   --grid-gap-mobile: var(--space-4);
-
   --section-gap: var(--space-16);
   --section-gap-mobile: var(--space-12);
 
@@ -79,7 +74,6 @@
   --header-height: var(--space-16);
   --hero-padding: var(--space-20);
   --hero-padding-mobile: var(--space-12);
-
   --content-max-width: 1200px;
   --container-max-width: 1440px;
 }

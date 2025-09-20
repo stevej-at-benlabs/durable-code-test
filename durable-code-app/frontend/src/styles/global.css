@@ -9,8 +9,8 @@
  */
 
 /* Import theme system */
-@import './theme/index.css';
-@import './reset.css';
+@import url('./theme/index.css');
+@import url('./reset.css');
 
 /* Global base styles */
 html {

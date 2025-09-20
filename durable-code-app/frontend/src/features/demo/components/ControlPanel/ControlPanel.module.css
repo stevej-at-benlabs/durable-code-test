@@ -31,11 +31,6 @@
   min-width: 100px;
 }
 
-.controlButton:hover:not(:disabled) {
-  background: var(--color-surface-hover, #666);
-  transform: translateY(-1px);
-}
-
 .controlButton:active {
   transform: translateY(0);
 }
@@ -48,6 +43,11 @@
 .controlButton:disabled {
   opacity: 0.5;
   cursor: not-allowed;
+}
+
+.controlButton:hover:not(:disabled) {
+  background: var(--color-surface-hover, #666);
+  transform: translateY(-1px);
 }
 
 .controlButton.paused {

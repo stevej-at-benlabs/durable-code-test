@@ -395,10 +395,7 @@
 .principleCard::before {
   content: '';
   position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
+  inset: 0;
   border-radius: 16px;
   padding: 2px;
   background: linear-gradient(135deg, #d4af37, #b8860b, #cd853f);

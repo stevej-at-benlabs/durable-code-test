@@ -12,19 +12,19 @@
 /* Size variants */
 .small {
   padding: 2px 8px;
-  font-size: 11px;
+  font-size: var(--text-xs-plus);
   min-height: 16px;
 }
 
 .medium {
   padding: 4px 12px;
-  font-size: 12px;
+  font-size: var(--text-xs);
   min-height: 20px;
 }
 
 .large {
   padding: 6px 16px;
-  font-size: 14px;
+  font-size: var(--text-sm);
   min-height: 24px;
 }
 

@@ -28,7 +28,7 @@ export function QualityAssuranceTab(): ReactElement {
 
       <div className={styles.showcaseSection}>
         <div className={styles.showcaseHeader}>
-          <h4 className="light-title-on-dark">
+          <h4 className="dark-title-on-light">
             <span className={styles.showcaseIcon}>🔍</span>
             Custom Linters
           </h4>
@@ -39,7 +39,7 @@ export function QualityAssuranceTab(): ReactElement {
           <div className={styles.linterCard}>
             <div className={styles.linterIcon}>🔢</div>
             <h5 className="light-title-on-dark">Magic Number Detection</h5>
-            <p className={styles.linterDesc}>
+            <p className="light-text-on-dark">
               Identifies hardcoded values and complex literals
             </p>
             <div className={styles.linterStats}>
@@ -55,7 +55,7 @@ export function QualityAssuranceTab(): ReactElement {
           <div className={styles.linterCard}>
             <div className={styles.linterIcon}>📁</div>
             <h5 className="light-title-on-dark">File Organization</h5>
-            <p className={styles.linterDesc}>
+            <p className="light-text-on-dark">
               Ensures proper module structure and placement
             </p>
             <div className={styles.linterStats}>
@@ -71,7 +71,7 @@ export function QualityAssuranceTab(): ReactElement {
           <div className={styles.linterCard}>
             <div className={styles.linterIcon}>🖨️</div>
             <h5 className="light-title-on-dark">Print & Console Output</h5>
-            <p className={styles.linterDesc}>
+            <p className="light-text-on-dark">
               Detects print statements and console methods
             </p>
             <div className={styles.linterStats}>
@@ -87,7 +87,9 @@ export function QualityAssuranceTab(): ReactElement {
           <div className={styles.linterCard}>
             <div className={styles.linterIcon}>📊</div>
             <h5 className="light-title-on-dark">Logging Standards</h5>
-            <p className={styles.linterDesc}>Enforces structured logging with Loguru</p>
+            <p className="light-text-on-dark">
+              Enforces structured logging with Loguru
+            </p>
             <div className={styles.linterStats}>
               <span className={styles.statItem}>
                 <span className={styles.statIcon}>⚠️</span> 9 found
@@ -101,7 +103,7 @@ export function QualityAssuranceTab(): ReactElement {
           <div className={styles.linterCard}>
             <div className={styles.linterIcon}>🏗️</div>
             <h5 className="light-title-on-dark">SOLID Principles</h5>
-            <p className={styles.linterDesc}>
+            <p className="light-text-on-dark">
               Validates SRP, class size, and dependencies
             </p>
             <div className={styles.linterStats}>
@@ -117,7 +119,7 @@ export function QualityAssuranceTab(): ReactElement {
           <div className={styles.linterCard}>
             <div className={styles.linterIcon}>📏</div>
             <h5 className="light-title-on-dark">Naming Conventions</h5>
-            <p className={styles.linterDesc}>Enforces consistent naming standards</p>
+            <p className="light-text-on-dark">Enforces consistent naming standards</p>
             <div className={styles.linterStats}>
               <span className={styles.statItem}>
                 <span className={styles.statIcon}>⚠️</span> 7 found
@@ -192,7 +194,7 @@ export function QualityAssuranceTab(): ReactElement {
       </div>
 
       <div className={styles.reportsSection}>
-        <h4 className={styles.sectionTitle}>
+        <h4 className="dark-title-on-light">
           <span className={styles.sectionIcon}>📊</span>
           Latest Reports
         </h4>

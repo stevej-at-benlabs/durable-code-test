@@ -13,7 +13,7 @@
   --font-primary: 'Georgia', 'Times New Roman', 'Book Antiqua', serif;
   --font-secondary: 'Crimson Text', 'Playfair Display', serif;
   --font-mono: 'Fira Code', 'Monaco', 'Cascadia Code', monospace;
-  --font-sans: 'Inter', 'Helvetica Neue', Arial, sans-serif;
+  --font-sans: 'Inter', 'Helvetica Neue', arial, sans-serif;
 
   /* Font weights */
   --font-weight-light: 300;
@@ -23,6 +23,8 @@
   --font-weight-bold: 700;
 
   /* Font sizes */
+  --text-2xs: 0.625rem; /* 10px */
+  --text-xs-plus: 0.6875rem; /* 11px */
   --text-xs: 0.75rem; /* 12px */
   --text-sm: 0.875rem; /* 14px */
   --text-base: 1rem; /* 16px */
@@ -30,6 +32,7 @@
   --text-xl: 1.25rem; /* 20px */
   --text-2xl: 1.5rem; /* 24px */
   --text-3xl: 1.875rem; /* 30px */
+  --text-3xl-plus: 2rem; /* 32px */
   --text-4xl: 2.25rem; /* 36px */
   --text-5xl: 3rem; /* 48px */
   --text-6xl: 3.75rem; /* 60px */
@@ -54,11 +57,9 @@
   --heading-font: var(--font-primary);
   --heading-weight: var(--font-weight-bold);
   --heading-line-height: var(--leading-tight);
-
   --body-font: var(--font-primary);
   --body-weight: var(--font-weight-normal);
   --body-line-height: 1.7; /* Matches existing App.css */
-
   --code-font: var(--font-mono);
   --code-weight: var(--font-weight-normal);
   --code-line-height: var(--leading-normal);
@@ -135,6 +136,16 @@
   max-width: 800px;
   margin-left: auto;
   margin-right: auto;
+}
+
+/* Dark text classes for light backgrounds */
+.dark-title-on-light {
+  font-family: var(--heading-font);
+  font-size: var(--text-lg);
+  font-weight: var(--font-weight-semibold);
+  line-height: var(--leading-tight);
+  color: var(--color-text-primary, #1f2937);
+  margin-bottom: 0.75rem;
 }
 
 /* Light text classes for dark backgrounds */
