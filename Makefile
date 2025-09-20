@@ -194,3 +194,23 @@ db-seed: ## Seed database with sample data
 # Monitoring
 monitor: ## Show real-time resource usage
 	@docker stats --format "table {{.Container}}\t{{.CPUPerc}}\t{{.MemUsage}}\t{{.NetIO}}" durable-code-backend durable-code-frontend durable-code-backend-dev durable-code-frontend-dev 2>/dev/null || echo "$(YELLOW)No containers running$(NC)"
+
+# Page content check
+check-page: ## Check if the frontend page renders content properly
+	@echo "$(CYAN)Checking page content...$(NC)"
+	@docker exec durable-code-frontend-dev node scripts/simple-check.js || echo "$(RED)Page check failed$(NC)"
+
+check-page-full: ## Full page check with Playwright (requires setup)
+	@echo "$(CYAN)Full page content check...$(NC)"
+	@docker exec durable-code-frontend-dev node scripts/check-page-content.js || echo "$(RED)Full page check failed$(NC)"
+
+check-page-watch: ## Watch page content continuously
+	@echo "$(CYAN)Watching page content (Ctrl+C to stop)...$(NC)"
+	@while true; do \
+		clear; \
+		echo "$(CYAN)═══════════════════════════════════════════════════$(NC)"; \
+		echo "$(CYAN)  Page Content Check - $$(date +%H:%M:%S)$(NC)"; \
+		echo "$(CYAN)═══════════════════════════════════════════════════$(NC)"; \
+		docker exec durable-code-frontend-dev node scripts/check-page-content.js 2>&1; \
+		sleep 5; \
+	done

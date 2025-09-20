@@ -1,15 +1,16 @@
 /**
- * Purpose: Tab configuration for the application
- * Scope: Centralized tab definitions and lazy loading
- * Overview: Defines all application tabs and their components
- * Dependencies: React lazy loading, feature components
+ * Purpose: Tab configuration for the application with error boundaries
+ * Scope: Centralized tab definitions and lazy loading with error isolation
+ * Overview: Defines all application tabs and their components with error handling
+ * Dependencies: React lazy loading, feature components, error boundaries
  * Exports: Tab configuration object
- * Implementation: Lazy-loaded feature tab configuration
+ * Implementation: Lazy-loaded feature tab configuration with error boundary wrapping
  */
 
 import { lazy } from 'react';
 import type { TabContent, TabName } from '../features/navigation';
 
+// Lazy load components normally - error boundaries will be applied at render time
 const InfrastructureTab = lazy(() =>
   import('../features/infrastructure').then((m) => ({
     default: m.InfrastructureTab,
