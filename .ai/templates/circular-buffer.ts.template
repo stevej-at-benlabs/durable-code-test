@@ -1,0 +1,251 @@
+/**
+ * Purpose: High-performance circular buffer for real-time data handling
+ * Scope: {{BUFFER_DESCRIPTION}}
+ * Overview: Efficient circular buffer implementation using Float32Array for high-frequency
+ *     data updates without memory allocation overhead. Provides constant-time operations
+ *     for data insertion and retrieval with configurable capacity management.
+ * Dependencies: None (pure TypeScript implementation)
+ * Exports: CircularBuffer class
+ * Interfaces: Buffer operations interface with efficient data handling methods
+ * Implementation: Float32Array-based circular buffer with head/tail management
+ */
+
+export class CircularBuffer {
+  private buffer: Float32Array;
+  private head: number = 0;
+  private tail: number = 0;
+  private count: number = 0;
+  private readonly capacity: number;
+
+  constructor(capacity: number) {
+    this.capacity = capacity;
+    this.buffer = new Float32Array(capacity);
+  }
+
+  /**
+   * Add multiple items to the buffer efficiently
+   * Handles batch operations without individual array operations
+   */
+  push(items: number[]): void {
+    if (items.length === 0) return;
+
+    // Handle large batches that exceed capacity
+    if (items.length >= this.capacity) {
+      // Take only the last capacity worth of items
+      const startIndex = items.length - this.capacity;
+      this.buffer.set(items.slice(startIndex));
+      this.head = 0;
+      this.tail = 0;
+      this.count = this.capacity;
+      return;
+    }
+
+    // Efficient batch insertion
+    for (let i = 0; i < items.length; i++) {
+      this.buffer[this.head] = items[i];
+      this.head = (this.head + 1) % this.capacity;
+
+      if (this.count < this.capacity) {
+        this.count++;
+      } else {
+        // Buffer is full, advance tail
+        this.tail = (this.tail + 1) % this.capacity;
+      }
+    }
+  }
+
+  /**
+   * Add single item to buffer
+   * Use push() for better performance with multiple items
+   */
+  pushSingle(item: number): void {
+    this.buffer[this.head] = item;
+    this.head = (this.head + 1) % this.capacity;
+
+    if (this.count < this.capacity) {
+      this.count++;
+    } else {
+      this.tail = (this.tail + 1) % this.capacity;
+    }
+  }
+
+  /**
+   * Get view of current buffer data without copying
+   * Returns Float32Array slice for performance
+   */
+  getView(): Float32Array {
+    if (this.count === 0) {
+      return new Float32Array(0);
+    }
+
+    if (this.head > this.tail) {
+      // Data is contiguous
+      return this.buffer.slice(this.tail, this.head);
+    } else {
+      // Data wraps around
+      const result = new Float32Array(this.count);
+      const firstPart = this.buffer.slice(this.tail);
+      const secondPart = this.buffer.slice(0, this.head);
+      result.set(firstPart, 0);
+      result.set(secondPart, firstPart.length);
+      return result;
+    }
+  }
+
+  /**
+   * Get recent samples efficiently
+   * Returns last N samples without full buffer copy
+   */
+  getRecentSamples(sampleCount: number): Float32Array {
+    if (sampleCount <= 0 || this.count === 0) {
+      return new Float32Array(0);
+    }
+
+    const actualCount = Math.min(sampleCount, this.count);
+    const result = new Float32Array(actualCount);
+
+    // Calculate starting position for recent samples
+    let startPos = this.head - actualCount;
+    if (startPos < 0) {
+      startPos += this.capacity;
+    }
+
+    if (startPos + actualCount <= this.capacity) {
+      // Contiguous data
+      result.set(this.buffer.slice(startPos, startPos + actualCount));
+    } else {
+      // Wrapped data
+      const firstPartSize = this.capacity - startPos;
+      result.set(this.buffer.slice(startPos), 0);
+      result.set(this.buffer.slice(0, actualCount - firstPartSize), firstPartSize);
+    }
+
+    return result;
+  }
+
+  /**
+   * Get sample at specific index (0 = oldest, size-1 = newest)
+   */
+  at(index: number): number {
+    if (index < 0 || index >= this.count) {
+      throw new Error(`Index ${index} out of bounds [0, ${this.count - 1}]`);
+    }
+
+    const actualIndex = (this.tail + index) % this.capacity;
+    return this.buffer[actualIndex];
+  }
+
+  /**
+   * Clear buffer efficiently
+   */
+  clear(): void {
+    this.head = 0;
+    this.tail = 0;
+    this.count = 0;
+    // Note: We don't need to zero the buffer data for performance
+  }
+
+  /**
+   * Get current size (number of items in buffer)
+   */
+  get size(): number {
+    return this.count;
+  }
+
+  /**
+   * Get maximum capacity
+   */
+  get maxSize(): number {
+    return this.capacity;
+  }
+
+  /**
+   * Check if buffer is empty
+   */
+  get isEmpty(): boolean {
+    return this.count === 0;
+  }
+
+  /**
+   * Check if buffer is full
+   */
+  get isFull(): boolean {
+    return this.count === this.capacity;
+  }
+
+  /**
+   * Get buffer utilization (0.0 to 1.0)
+   */
+  get utilization(): number {
+    return this.count / this.capacity;
+  }
+
+  /**
+   * Resize buffer (creates new buffer, copies recent data)
+   * Use sparingly as this involves memory allocation
+   */
+  resize(newCapacity: number): void {
+    if (newCapacity <= 0) {
+      throw new Error('Capacity must be positive');
+    }
+
+    const currentData = this.getView();
+    this.capacity = newCapacity;
+    this.buffer = new Float32Array(newCapacity);
+    this.head = 0;
+    this.tail = 0;
+    this.count = 0;
+
+    if (currentData.length > 0) {
+      this.push(Array.from(currentData));
+    }
+  }
+
+  /**
+   * Get statistics about buffer performance
+   */
+  getStats(): {
+    size: number;
+    capacity: number;
+    utilization: number;
+    memoryUsage: number; // bytes
+    isEmpty: boolean;
+    isFull: boolean;
+  } {
+    return {
+      size: this.count,
+      capacity: this.capacity,
+      utilization: this.utilization,
+      memoryUsage: this.capacity * 4, // Float32Array uses 4 bytes per element
+      isEmpty: this.isEmpty,
+      isFull: this.isFull,
+    };
+  }
+
+  /**
+   * Convert to regular array (for debugging, avoid in production)
+   */
+  toArray(): number[] {
+    return Array.from(this.getView());
+  }
+
+  /**
+   * Create CircularBuffer from existing data
+   */
+  static fromArray(data: number[], capacity?: number): CircularBuffer {
+    const bufferCapacity = capacity || Math.max(data.length, 1);
+    const buffer = new CircularBuffer(bufferCapacity);
+    buffer.push(data);
+    return buffer;
+  }
+
+  /**
+   * Clone current buffer
+   */
+  clone(): CircularBuffer {
+    const cloned = new CircularBuffer(this.capacity);
+    const currentData = this.getView();
+    cloned.push(Array.from(currentData));
+    return cloned;
+  }
+}

@@ -26,7 +26,7 @@ make check-page-watch
 make check-page-full
 
 # Direct Node.js verification
-node test-rendered-content.js
+node scripts/test-rendered-content.js
 ```
 
 ## Available Testing Tools
@@ -73,13 +73,13 @@ make check-page-watch
 ### 2. Node.js Tools
 
 #### `test-rendered-content.js`
-- **Location**: Project root
+- **Location**: `scripts/` directory
 - **Purpose**: Simple HTTP-based content verification
-- **Usage**: `node test-rendered-content.js`
-- **Best for**: Quick local testing without Docker
+- **Usage**: `docker exec durable-code-frontend-dev node /app/scripts/test-rendered-content.js`
+- **Best for**: Quick verification within Docker environment
 
 ```bash
-node test-rendered-content.js
+docker exec durable-code-frontend-dev node /app/scripts/test-rendered-content.js
 
 # Output:
 # 🔍 Checking rendered content...
@@ -94,18 +94,23 @@ node test-rendered-content.js
 - **simple-check.js**: Basic container verification
 - **check-page-content.js**: Advanced container verification
 
-### 3. Python Tools
+### 3. Advanced Tools
 
-#### `check-page.py`
-- **Purpose**: Playwright-based verification with console error detection
-- **Features**: JavaScript execution, console monitoring, DOM inspection
-- **Usage**: Standalone Python script
+#### `scripts/check-page-content.js`
+- **Purpose**: Comprehensive Playwright-based verification with element checking
+- **Features**: JavaScript execution, console monitoring, DOM inspection, element validation
+- **Usage**: Comprehensive page content verification
 
 ```bash
-python check-page.py
+# Recommended: Use Make target
+make check-page-full
+
+# Or run directly from Docker container
+docker exec durable-code-frontend-dev node scripts/check-page-content.js
 
 # Automatically detects if page loads correctly
 # Reports console errors and warnings
+# Validates specific page elements
 ```
 
 ## Testing Workflow
@@ -122,7 +127,7 @@ make dev
 make check-page
 
 # 4. If issues detected, debug with:
-node test-rendered-content.js
+docker exec durable-code-frontend-dev node /app/scripts/test-rendered-content.js
 
 # 5. For continuous monitoring:
 make check-page-watch
@@ -153,7 +158,7 @@ make check-page
 # If shows empty root div, proceed with debugging
 
 # 2. Check basic HTML structure
-node test-rendered-content.js
+docker exec durable-code-frontend-dev node /app/scripts/test-rendered-content.js
 # Verify server is responding with correct HTML
 
 # 3. Check for JavaScript errors
@@ -234,7 +239,7 @@ make check-page          # Verify still works
 ```bash
 # Step-by-step debugging
 make check-page          # Confirm issue exists
-node test-rendered-content.js  # Check HTTP response
+node scripts/test-rendered-content.js  # Check HTTP response
 make check-page-full     # Check for JS errors
 
 # If JavaScript errors found:
@@ -337,7 +342,7 @@ node simple-check.js
 
 ### Tool Performance Comparison
 - `make check-page`: ~1-2 seconds (HTTP only)
-- `node test-rendered-content.js`: ~0.5-1 second (HTTP only)
+- `node scripts/test-rendered-content.js`: ~0.5-1 second (HTTP only)
 - `make check-page-full`: ~5-10 seconds (Full browser)
 - `make check-page-watch`: Continuous (5-second intervals)
 
@@ -345,7 +350,7 @@ node simple-check.js
 1. Use `make check-page` for quick development feedback
 2. Use `make check-page-full` for comprehensive testing
 3. Use `make check-page-watch` during active development
-4. Use `node test-rendered-content.js` for external scripts
+4. Use `node scripts/test-rendered-content.js` for external scripts
 
 ## Integration with Development Workflow
 
@@ -359,7 +364,7 @@ make check-page || echo "Page content verification failed"
 ```bash
 # Add to package.json scripts
 "scripts": {
-  "verify-page": "node test-rendered-content.js",
+  "verify-page": "node scripts/test-rendered-content.js",
   "check-page": "make check-page",
   "dev-with-monitoring": "make dev && make check-page-watch"
 }

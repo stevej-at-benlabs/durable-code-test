@@ -54,7 +54,7 @@ export interface WebSocketCommand {
 export interface CanvasDrawProps {
   width: number;
   height: number;
-  data: number[];
+  data: Float32Array;
   state: Pick<
     OscilloscopeState,
     'timeScale' | 'voltScale' | 'triggerLevel' | 'isPaused'
@@ -81,7 +81,7 @@ export interface StatusPanelProps {
 }
 
 export interface OscilloscopeCanvasProps {
-  data: number[];
+  data: Float32Array;
   state: Pick<
     OscilloscopeState,
     'timeScale' | 'voltScale' | 'triggerLevel' | 'isPaused' | 'frequency'

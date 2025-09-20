@@ -171,19 +171,16 @@ export function useWebSocket(url?: string): UseWebSocketReturn {
     initConnection();
   }, [service, url]);
 
-  // Periodically check and sync connection state
+  // Sync initial state with service (no polling needed - events handle updates)
   useEffect(() => {
-    const checkInterval = setInterval(() => {
-      if (service && service.isConnected !== isConnected) {
-        setIsConnected(service.isConnected);
-        if (!service.isConnected) {
-          setIsConnecting(false);
-        }
-      }
-    }, 500); // Check every 500ms
+    if (!service) return;
 
-    return () => clearInterval(checkInterval);
-  }, [service, isConnected]);
+    // One-time state sync on service change
+    setIsConnected(service.isConnected);
+    if (!service.isConnected) {
+      setIsConnecting(false);
+    }
+  }, [service]);
 
   // Cleanup on unmount
   useEffect(() => {

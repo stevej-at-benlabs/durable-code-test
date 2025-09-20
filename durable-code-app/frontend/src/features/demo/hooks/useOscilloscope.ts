@@ -21,11 +21,12 @@ import {
   DEFAULT_OSCILLOSCOPE_STATE,
 } from '../constants/oscilloscope.constants';
 import { useWebSocket } from './useWebSocket';
+import { CircularBuffer } from '../utils/CircularBuffer';
 
 interface UseOscilloscopeReturn {
   state: OscilloscopeState;
   stats: OscilloscopeStats;
-  dataBuffer: number[];
+  dataBuffer: Float32Array;
   startStreaming: () => void;
   stopStreaming: () => void;
   updateWaveform: (waveType: WaveType) => void;
@@ -49,7 +50,9 @@ export function useOscilloscope(): UseOscilloscopeReturn {
     bufferSize: 0,
   });
 
-  const dataBufferRef = useRef<number[]>([]);
+  const dataBufferRef = useRef<CircularBuffer>(
+    new CircularBuffer(DATA_CONFIG.MAX_BUFFER_SIZE),
+  );
   const frameCountRef = useRef<number>(0);
   const lastStatsUpdateRef = useRef<number>(performance.now());
 
@@ -68,9 +71,8 @@ export function useOscilloscope(): UseOscilloscopeReturn {
   useEffect(() => {
     if (!lastData || state.isPaused) return;
 
-    // Update buffer with new samples
-    const newBuffer = [...dataBufferRef.current, ...lastData.samples];
-    dataBufferRef.current = newBuffer.slice(-DATA_CONFIG.MAX_BUFFER_SIZE);
+    // Update buffer with new samples using efficient circular buffer
+    dataBufferRef.current.push(lastData.samples);
 
     // Update stats
     const now = performance.now();
@@ -82,7 +84,7 @@ export function useOscilloscope(): UseOscilloscopeReturn {
       setStats((_prev) => ({
         fps,
         dataRate: lastData.sample_rate,
-        bufferSize: dataBufferRef.current.length,
+        bufferSize: dataBufferRef.current.size,
       }));
 
       frameCountRef.current = 0;
@@ -91,7 +93,7 @@ export function useOscilloscope(): UseOscilloscopeReturn {
       setStats((prev) => ({
         ...prev,
         dataRate: lastData.sample_rate,
-        bufferSize: dataBufferRef.current.length,
+        bufferSize: dataBufferRef.current.size,
       }));
     }
 
@@ -219,7 +221,7 @@ export function useOscilloscope(): UseOscilloscopeReturn {
 
   // Clear buffer
   const clearBuffer = useCallback(() => {
-    dataBufferRef.current = [];
+    dataBufferRef.current.clear();
     setStats((prev) => ({ ...prev, bufferSize: 0 }));
   }, []);
 
@@ -250,7 +252,7 @@ export function useOscilloscope(): UseOscilloscopeReturn {
   return {
     state,
     stats,
-    dataBuffer: dataBufferRef.current,
+    dataBuffer: dataBufferRef.current.getView(),
     startStreaming,
     stopStreaming,
     updateWaveform,
