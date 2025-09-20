@@ -47,7 +47,8 @@ lint-all: dev-start ## Run ALL linters (Python: Black, isort, Ruff, Flake8, MyPy
 		echo '• Style rules...' && PYTHONPATH=/app/tools python -m design_linters --categories style --format text --recursive --fail-on-error app tools && \
 		echo '• Magic literals...' && PYTHONPATH=/app/tools python -m design_linters --categories literals --format text --recursive --fail-on-error app tools && \
 		echo '• Logging practices...' && PYTHONPATH=/app/tools python -m design_linters --categories logging --format text --recursive --fail-on-error app tools && \
-		echo '• Loguru usage...' && PYTHONPATH=/app/tools python -m design_linters --categories loguru --format text --recursive --fail-on-error app tools" || (echo "$(RED)✗ Custom linting failed$(NC)" && exit 1)
+		echo '• Loguru usage...' && PYTHONPATH=/app/tools python -m design_linters --categories loguru --format text --recursive --fail-on-error app tools && \
+		echo '• Security rules...' && PYTHONPATH=/app/tools python -m design_linters --categories security --format text --recursive --fail-on-error app tools" || (echo "$(RED)✗ Custom linting failed$(NC)" && exit 1)
 	@echo "• File organization (checking root)..." && \
 		if ls *.py 2>/dev/null 1>&2; then \
 			env PYTHONPATH=tools python -m design_linters.cli --categories organization --format text --fail-on-error *.py || (echo "$(RED)✗ File organization check failed$(NC)" && exit 1); \
@@ -92,7 +93,7 @@ lint-custom: dev-start ## Run custom linters by category (e.g., make lint-custom
 	@if [ -z "$(CAT)" ]; then \
 		echo "$(RED)Error: CAT parameter is required$(NC)"; \
 		echo "$(YELLOW)Usage: make lint-custom CAT=<category>$(NC)"; \
-		echo "$(YELLOW)Available categories: solid, style, literals, logging, loguru, organization$(NC)"; \
+		echo "$(YELLOW)Available categories: solid, style, literals, logging, loguru, organization, security$(NC)"; \
 		echo "$(YELLOW)Run 'make lint-categories' for details$(NC)"; \
 		exit 1; \
 	fi
