@@ -20,7 +20,9 @@
     "format:check": "prettier --check 'src/**/*.{ts,tsx,css}'",
     "typecheck": "tsc --noEmit",
     "validate": "npm run typecheck && npm run lint && npm run lint:css && npm run test:run",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "analyze": "npm run build && open dist/stats.html",
+    "build:analyze": "npm run build && echo 'Bundle analysis available at dist/stats.html'"
   },
   "dependencies": {
     "@tanstack/react-query": "^5.89.0",
@@ -53,6 +55,7 @@
     "globals": "^16.3.0",
     "jsdom": "^26.1.0",
     "prettier": "^3.2.5",
+    "rollup-plugin-visualizer": "^6.0.3",
     "stylelint": "^16.24.0",
     "stylelint-config-css-modules": "^4.5.1",
     "stylelint-config-standard": "^39.0.0",

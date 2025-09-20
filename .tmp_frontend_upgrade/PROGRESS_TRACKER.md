@@ -8,9 +8,9 @@ This is the **PRIMARY HANDOFF DOCUMENT** for AI agents working on the React fron
 4. **Update this document** after completing each PR
 
 ## 📍 Current Status
-**Current PR**: PR8.1 ✅ Completed
+**Current PR**: PR8.2 ✅ Completed
 **Last Updated**: 2025-09-19
-**Application State**: ✅ Fully functional - CSS linting system implemented with accessibility fixes
+**Application State**: ✅ Fully functional - HTMLHint linting implemented for HTML validation
 
 ## 📁 Required Documents Location
 ```
@@ -54,6 +54,7 @@ This is the **PRIMARY HANDOFF DOCUMENT** for AI agents working on the React fron
 | PR7 | App Shell Refactoring | ✅ Completed | feature/pr7-app-shell-refactoring | App.tsx minimal, routing extracted |
 | PR8 | Styling System | ✅ Completed | feature/pr8-styling-system-theme | Theme system with CSS variables |
 | PR8.1 | CSS Linting & Accessibility | ✅ Completed | feature/css-linting-stylelint | Stylelint implementation, accessibility fixes |
+| PR8.2 | HTMLHint Implementation | ✅ Completed | feat/add-htmlhint-linting | HTML validation, Docker integration |
 | PR9 | Performance Optimization | ⏳ Pending | - | Memoization, code splitting |
 | PR10 | Testing Infrastructure | ⏳ Pending | - | Comprehensive test coverage |
 | PR11 | Storybook Documentation | ⏳ Pending | - | Component documentation |
@@ -661,6 +662,70 @@ This is the **PRIMARY HANDOFF DOCUMENT** for AI agents working on the React fron
 - Automated tooling (fix-font-sizes.sh) available for similar systematic refactoring tasks
 - Quality-focused development approach proven effective for systematic issue resolution
 
+### PR8.2: HTMLHint Implementation for HTML Validation
+**Date**: 2025-09-19
+**Branch**: feat/add-htmlhint-linting
+**Key Commits**: b09619c
+
+**What Was Done**:
+- **HTMLHint Integration into Docker Infrastructure**:
+  - Updated Dockerfile.dev and Dockerfile to install HTMLHint globally via npm
+  - Configured HTMLHint to work within containerized development environment
+  - Created comprehensive .htmlhintrc configuration file with 24 validation rules
+- **Makefile Integration for Unified Linting Workflow**:
+  - Added HTMLHint to `make lint-all` target for comprehensive linting coverage
+  - Integrated HTMLHint as a tool option in `make lint-tool TOOL=htmlhint`
+  - Updated help documentation to include HTMLHint in available linter list
+  - Maintained consistent workflow with existing Python, JavaScript, and CSS linters
+- **Fixed 47 HTML Validation Errors**:
+  - Escaped special characters (< and >) in 5 HTML files to meet W3C standards
+  - Fixed errors in planning documents: testing-plan.html, technical-spec.html, rollout-plan.html
+  - Fixed Mermaid diagram syntax in durable-code-flow.html (21 arrow markers)
+  - Fixed coverage threshold display in ai-review-sequence.html
+  - All HTML files now pass validation with 0 errors
+- **Complete HTML Quality Assurance**:
+  - Established HTML validation as part of pre-commit hooks
+  - Added HTML linting to CI/CD pipeline through Make targets
+  - Created foundation for maintaining HTML standards across project
+
+**Deviations from Plan**:
+- This PR was not in the original React upgrade plan but was implemented as an infrastructure improvement
+- Integrated directly into existing Make targets rather than creating separate HTML linting commands
+- Fixed validation errors immediately rather than creating separate fix PR
+
+**New Files Created**:
+- .htmlhintrc (comprehensive HTMLHint configuration)
+
+**Files Modified**:
+- durable-code-app/frontend/Dockerfile (added HTMLHint installation)
+- durable-code-app/frontend/Dockerfile.dev (added HTMLHint installation)
+- Makefile.lint (integrated HTMLHint into lint-all and lint-tool)
+- 5 HTML files with validation fixes
+
+**Files Deleted**:
+- None
+
+**Tests**:
+- All existing tests continue to pass
+- HTMLHint validation passing with 0 errors
+- Make targets tested and verified working
+
+**Verification**:
+- [x] App builds successfully
+- [x] All tests pass
+- [x] HTML validation passes (0 HTMLHint errors)
+- [x] TypeScript strict mode (0 errors)
+- [x] No console errors
+- [x] All features still work
+- [x] Make lint-all includes HTML validation
+- [x] Docker containers properly configured
+
+**Notes for Next PR**:
+- HTML validation now enforced alongside Python, JavaScript, and CSS linting
+- HTMLHint available in all Docker containers
+- Special characters in HTML must be properly escaped
+- Complete linting coverage achieved: Python (Black, isort, Ruff, Flake8, MyPy, Pylint, Bandit, Xenon), JavaScript/TypeScript (ESLint, Prettier), CSS (Stylelint), HTML (HTMLHint)
+
 ### Baseline Assessment (Pre-PR1)
 **Date**: 2024-01-19
 **Branch**: main
@@ -913,5 +978,5 @@ _AI agents should list questions here if blocked_
 
 ---
 
-**Last AI Agent**: Claude - Completed PR8.1 CSS linting system implementation and accessibility fixes (2025-09-19)
+**Last AI Agent**: Claude - Completed PR8.2 HTMLHint implementation for HTML validation (2025-09-19)
 **Next AI Agent Action**: Begin PR9 - Read PR_BREAKDOWN.md PR9 section for Performance Optimization

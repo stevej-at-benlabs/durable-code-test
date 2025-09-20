@@ -10,6 +10,7 @@
  * Implementation: Feature-based architecture with modular components and hooks
  */
 
+import { useCallback } from 'react';
 import type { ReactElement } from 'react';
 import { useOscilloscope } from '../../hooks/useOscilloscope';
 import { OscilloscopeCanvas } from '../Oscilloscope';
@@ -38,21 +39,24 @@ export function DemoTab(): ReactElement {
     error,
   } = useOscilloscope();
 
-  const handleStateChange = (newState: Partial<typeof state>) => {
-    // Handle state changes that don't have specific handlers
-    if (newState.isPaused !== undefined) {
-      togglePause();
-    }
-    if (newState.timeScale !== undefined) {
-      updateTimeScale(newState.timeScale);
-    }
-    if (newState.voltScale !== undefined) {
-      updateVoltScale(newState.voltScale);
-    }
-    if (newState.triggerLevel !== undefined) {
-      updateTriggerLevel(newState.triggerLevel);
-    }
-  };
+  const handleStateChange = useCallback(
+    (newState: Partial<typeof state>) => {
+      // Handle state changes that don't have specific handlers
+      if (newState.isPaused !== undefined) {
+        togglePause();
+      }
+      if (newState.timeScale !== undefined) {
+        updateTimeScale(newState.timeScale);
+      }
+      if (newState.voltScale !== undefined) {
+        updateVoltScale(newState.voltScale);
+      }
+      if (newState.triggerLevel !== undefined) {
+        updateTriggerLevel(newState.triggerLevel);
+      }
+    },
+    [togglePause, updateTimeScale, updateVoltScale, updateTriggerLevel]
+  );
 
   return (
     <div className="tab-content demo-content">
