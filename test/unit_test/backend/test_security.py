@@ -1,5 +1,6 @@
 """
-Purpose: Test security implementations for the durable code application
+Purpose: Test security implementations for the durable code application.
+
 Scope: Rate limiting, input validation, security headers, and CORS configuration
 Overview: Comprehensive test suite for security features including rate limiting,
     input sanitization, security headers validation, and CORS policy testing.
@@ -11,19 +12,13 @@ Implementation: FastAPI TestClient for endpoint testing and mock requests
 """
 
 import pytest
-from fastapi.testclient import TestClient
-from unittest.mock import patch
-import time
-
 from app.main import app
-from app.security import (
-    sanitize_text_input,
-    validate_numeric_range,
-    SecurityMiddleware,
-)
 from app.oscilloscope import OscilloscopeCommand, WaveType
+from app.security import sanitize_text_input, validate_numeric_range
+from fastapi.testclient import TestClient
 
 client = TestClient(app)
+
 
 class TestInputValidation:
     """Test input validation and sanitization."""
@@ -78,11 +73,7 @@ class TestOscilloscopeValidation:
     def test_oscilloscope_command_valid(self) -> None:
         """Test valid oscilloscope command."""
         command = OscilloscopeCommand(
-            command="start",
-            wave_type=WaveType.SINE,
-            frequency=10.0,
-            amplitude=1.0,
-            offset=0.0
+            command="start", wave_type=WaveType.SINE, frequency=10.0, amplitude=1.0, offset=0.0
         )
         assert command.command == "start"
         assert command.frequency == 10.0
@@ -91,11 +82,7 @@ class TestOscilloscopeValidation:
         """Test invalid command validation."""
         with pytest.raises(ValueError, match="Command must be one of"):
             OscilloscopeCommand(
-                command="invalid_command",
-                wave_type=WaveType.SINE,
-                frequency=10.0,
-                amplitude=1.0,
-                offset=0.0
+                command="invalid_command", wave_type=WaveType.SINE, frequency=10.0, amplitude=1.0, offset=0.0
             )
 
     def test_oscilloscope_command_frequency_too_high(self) -> None:
@@ -106,7 +93,7 @@ class TestOscilloscopeValidation:
                 wave_type=WaveType.SINE,
                 frequency=150.0,  # Above MAX_FREQUENCY
                 amplitude=1.0,
-                offset=0.0
+                offset=0.0,
             )
 
     def test_oscilloscope_command_amplitude_too_low(self) -> None:
@@ -117,7 +104,7 @@ class TestOscilloscopeValidation:
                 wave_type=WaveType.SINE,
                 frequency=10.0,
                 amplitude=0.05,  # Below MIN_AMPLITUDE
-                offset=0.0
+                offset=0.0,
             )
 
 

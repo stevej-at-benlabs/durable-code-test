@@ -48,7 +48,8 @@
       "test_in_source": "Never put test files in source directories",
       "debug_in_root": "Don't leave debug files in project root",
       "complex_in_components": "Don't put complex features in components/",
-      "scripts_scattered": "Don't scatter scripts - organize by scope"
+      "scripts_scattered": "Don't scatter scripts - organize by scope",
+      "tools_root_files": "Don't place Python files in tools root - use subdirectories"
     }
   },
 
@@ -249,6 +250,18 @@
           "test_",
           "_test\\.py$",
           "\\.(js|ts|tsx)$"
+        ]
+      },
+      "tools/": {
+        "description": "Tools root directory - Python files must be in subdirectories",
+        "allow": [
+          "^tools/__init__\\.py$",
+          "^tools/\\.flake8$",
+          "^tools/.*\\.md$",
+          "^tools/[^/]+/.*$"
+        ],
+        "deny": [
+          "^tools/[^/]+\\.py$"
         ]
       },
       "tools/design_linters/framework/": {

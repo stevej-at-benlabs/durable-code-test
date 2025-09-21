@@ -1,7 +1,10 @@
 """
-Purpose: Integration tests for FastAPI application
+Purpose: Integration tests for FastAPI application.
+
 Scope: Testing full API integration with database
-Overview: Comprehensive integration test suite that validates the FastAPI application's core functionality including endpoint accessibility, health checks, database connectivity, and proper environment configuration setup for CI/CD pipeline execution and deployment verification.
+Overview: Comprehensive integration test suite that validates the FastAPI application's core functionality
+including endpoint accessibility, health checks, database connectivity, and proper environment
+configuration setup for CI/CD pipeline execution and deployment verification.
 Dependencies: pytest, FastAPI test client, pathlib, os for environment variables
 Exports: Integration test functions for API endpoints and database connectivity
 Interfaces: pytest test functions with standard test patterns and CI environment checks
@@ -12,11 +15,12 @@ import os
 import sys
 from pathlib import Path
 
-# Add backend app to path
-sys.path.insert(0, str(Path(__file__).parent.parent.parent / 'durable-code-app' / 'backend'))
-
 import pytest
 from fastapi.testclient import TestClient
+
+# Add backend app to path
+sys.path.insert(0, str(Path(__file__).parent.parent.parent / "durable-code-app" / "backend"))
+
 from app.main import app
 
 client = TestClient(app)
@@ -36,10 +40,7 @@ def test_api_integration() -> None:
 
 
 @pytest.mark.integration
-@pytest.mark.skipif(
-    os.getenv("TESTING") != "true",
-    reason="Integration tests only run in CI environment"
-)
+@pytest.mark.skipif(os.getenv("TESTING") != "true", reason="Integration tests only run in CI environment")
 def test_database_connection() -> None:
     """Test database connectivity in integration environment."""
     # This would test actual database connections

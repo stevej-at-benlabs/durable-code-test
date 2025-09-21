@@ -11,21 +11,21 @@ Interfaces: Standard unittest.TestCase interface for test execution
 Implementation: Comprehensive test coverage using unittest framework with AST parsing
 """
 
-import unittest
 import ast
-from pathlib import Path
-from typing import Dict, Any, List
-
 import sys
-sys.path.insert(0, '/home/stevejackson/Projects/durable-code-test/tools')
+import unittest
+from pathlib import Path
+from typing import Any, Dict, List
 
-from design_linters.framework.interfaces import LintContext, Severity, LintViolation
+sys.path.insert(0, "/home/stevejackson/Projects/durable-code-test/tools")
+
+from design_linters.framework.interfaces import LintContext, LintViolation, Severity
 from design_linters.rules.solid.srp_rules import (
+    ClassTooBigRule,
+    LowCohesionRule,
+    TooManyDependenciesRule,
     TooManyMethodsRule,
     TooManyResponsibilitiesRule,
-    LowCohesionRule,
-    ClassTooBigRule,
-    TooManyDependenciesRule
 )
 
 
@@ -35,7 +35,7 @@ class TestTooManyMethodsRule(unittest.TestCase):
     def setUp(self):
         """Set up test fixtures."""
         self.rule = TooManyMethodsRule()
-        self.context = LintContext(file_path=Path('/test.py'))
+        self.context = LintContext(file_path=Path("/test.py"))
 
     def test_rule_properties(self):
         """Test rule properties return correct values."""
@@ -52,16 +52,24 @@ class TestTooManyMethodsRule(unittest.TestCase):
 
     def test_should_check_node_with_non_class(self):
         """Test should_check_node returns False for non-ClassDef nodes."""
-        func_node = ast.FunctionDef(name="test_func", args=ast.arguments(
-            posonlyargs=[], args=[], defaults=[], kwonlyargs=[], kw_defaults=[], annotations=[]
-        ), body=[], decorator_list=[], returns=None)
+        func_node = ast.FunctionDef(
+            name="test_func",
+            args=ast.arguments(posonlyargs=[], args=[], defaults=[], kwonlyargs=[], kw_defaults=[], annotations=[]),
+            body=[],
+            decorator_list=[],
+            returns=None,
+        )
         self.assertFalse(self.rule.should_check_node(func_node, self.context))
 
     def test_check_node_with_invalid_node_type(self):
         """Test check_node raises TypeError for non-ClassDef nodes."""
-        func_node = ast.FunctionDef(name="test_func", args=ast.arguments(
-            posonlyargs=[], args=[], defaults=[], kwonlyargs=[], kw_defaults=[], annotations=[]
-        ), body=[], decorator_list=[], returns=None)
+        func_node = ast.FunctionDef(
+            name="test_func",
+            args=ast.arguments(posonlyargs=[], args=[], defaults=[], kwonlyargs=[], kw_defaults=[], annotations=[]),
+            body=[],
+            decorator_list=[],
+            returns=None,
+        )
 
         with self.assertRaises(TypeError) as cm:
             self.rule.check_node(func_node, self.context)
@@ -69,7 +77,7 @@ class TestTooManyMethodsRule(unittest.TestCase):
 
     def test_class_with_few_methods_no_violation(self):
         """Test class with few methods produces no violations."""
-        code = '''
+        code = """
 class SmallClass:
     def method1(self):
         pass
@@ -79,7 +87,7 @@ class SmallClass:
 
     def method3(self):
         pass
-'''
+"""
         tree = ast.parse(code)
         class_node = tree.body[0]
         violations = self.rule.check_node(class_node, self.context)
@@ -89,10 +97,10 @@ class SmallClass:
         """Test class with many methods produces violation."""
         # Create a class with more than 15 methods (default threshold)
         methods = [f"    def method{i}(self): pass" for i in range(20)]
-        code = f'''
+        code = f"""
 class LargeClass:
 {chr(10).join(methods)}
-'''
+"""
         tree = ast.parse(code)
         class_node = tree.body[0]
         violations = self.rule.check_node(class_node, self.context)
@@ -108,20 +116,14 @@ class LargeClass:
     def test_custom_max_methods_configuration(self):
         """Test custom max_methods configuration is respected."""
         # Set custom config with lower threshold
-        self.context.metadata = {
-            'rules': {
-                'solid.srp.too-many-methods': {
-                    'config': {'max_methods': 5}
-                }
-            }
-        }
+        self.context.metadata = {"rules": {"solid.srp.too-many-methods": {"config": {"max_methods": 5}}}}
 
         # Create a class with 7 methods (above custom threshold)
         methods = [f"    def method{i}(self): pass" for i in range(7)]
-        code = f'''
+        code = f"""
 class ModerateClass:
 {chr(10).join(methods)}
-'''
+"""
         tree = ast.parse(code)
         class_node = tree.body[0]
         violations = self.rule.check_node(class_node, self.context)
@@ -131,10 +133,10 @@ class ModerateClass:
 
     def test_class_with_no_methods(self):
         """Test class with no methods produces no violations."""
-        code = '''
+        code = """
 class EmptyClass:
     pass
-'''
+"""
         tree = ast.parse(code)
         class_node = tree.body[0]
         violations = self.rule.check_node(class_node, self.context)
@@ -142,7 +144,7 @@ class EmptyClass:
 
     def test_class_with_non_method_body_items(self):
         """Test class with variables and other statements doesn't count them."""
-        code = '''
+        code = """
 class MixedClass:
     attr = "value"
 
@@ -153,7 +155,7 @@ class MixedClass:
 
     def method2(self):
         pass
-'''
+"""
         tree = ast.parse(code)
         class_node = tree.body[0]
         violations = self.rule.check_node(class_node, self.context)
@@ -166,7 +168,7 @@ class TestTooManyResponsibilitiesRule(unittest.TestCase):
     def setUp(self):
         """Set up test fixtures."""
         self.rule = TooManyResponsibilitiesRule()
-        self.context = LintContext(file_path=Path('/test.py'))
+        self.context = LintContext(file_path=Path("/test.py"))
 
     def test_rule_properties(self):
         """Test rule properties return correct values."""
@@ -183,9 +185,13 @@ class TestTooManyResponsibilitiesRule(unittest.TestCase):
 
     def test_check_node_with_invalid_node_type(self):
         """Test check_node raises TypeError for non-ClassDef nodes."""
-        func_node = ast.FunctionDef(name="test_func", args=ast.arguments(
-            posonlyargs=[], args=[], defaults=[], kwonlyargs=[], kw_defaults=[], annotations=[]
-        ), body=[], decorator_list=[], returns=None)
+        func_node = ast.FunctionDef(
+            name="test_func",
+            args=ast.arguments(posonlyargs=[], args=[], defaults=[], kwonlyargs=[], kw_defaults=[], annotations=[]),
+            body=[],
+            decorator_list=[],
+            returns=None,
+        )
 
         with self.assertRaises(TypeError) as cm:
             self.rule.check_node(func_node, self.context)
@@ -193,7 +199,7 @@ class TestTooManyResponsibilitiesRule(unittest.TestCase):
 
     def test_class_with_single_responsibility_no_violation(self):
         """Test class with methods from single responsibility group."""
-        code = '''
+        code = """
 class DataHandler:
     def get_data(self):
         pass
@@ -206,7 +212,7 @@ class DataHandler:
 
     def load_data(self):
         pass
-'''
+"""
         tree = ast.parse(code)
         class_node = tree.body[0]
         violations = self.rule.check_node(class_node, self.context)
@@ -214,7 +220,7 @@ class DataHandler:
 
     def test_class_with_multiple_responsibilities_violation(self):
         """Test class with methods from multiple responsibility groups."""
-        code = '''
+        code = """
 class MixedClass:
     def get_data(self):
         pass
@@ -227,7 +233,7 @@ class MixedClass:
 
     def calculate_sum(self):
         pass
-'''
+"""
         tree = ast.parse(code)
         class_node = tree.body[0]
         violations = self.rule.check_node(class_node, self.context)
@@ -241,7 +247,7 @@ class MixedClass:
 
     def test_private_methods_ignored(self):
         """Test private methods (starting with _) are ignored."""
-        code = '''
+        code = """
 class TestClass:
     def get_data(self):
         pass
@@ -254,7 +260,7 @@ class TestClass:
 
     def validate_input(self):
         pass
-'''
+"""
         tree = ast.parse(code)
         class_node = tree.body[0]
         violations = self.rule.check_node(class_node, self.context)
@@ -265,21 +271,17 @@ class TestClass:
     def test_custom_max_groups_configuration(self):
         """Test custom max_responsibility_groups configuration."""
         self.context.metadata = {
-            'rules': {
-                'solid.srp.multiple-responsibilities': {
-                    'config': {'max_responsibility_groups': 1}
-                }
-            }
+            "rules": {"solid.srp.multiple-responsibilities": {"config": {"max_responsibility_groups": 1}}}
         }
 
-        code = '''
+        code = """
 class TestClass:
     def get_data(self):
         pass
 
     def validate_input(self):
         pass
-'''
+"""
         tree = ast.parse(code)
         class_node = tree.body[0]
         violations = self.rule.check_node(class_node, self.context)
@@ -289,19 +291,16 @@ class TestClass:
     def test_custom_responsibility_prefixes(self):
         """Test custom responsibility_prefixes configuration."""
         self.context.metadata = {
-            'rules': {
-                'solid.srp.multiple-responsibilities': {
-                    'config': {
-                        'responsibility_prefixes': {
-                            'custom1': ['handle', 'process'],
-                            'custom2': ['manage', 'control']
-                        }
+            "rules": {
+                "solid.srp.multiple-responsibilities": {
+                    "config": {
+                        "responsibility_prefixes": {"custom1": ["handle", "process"], "custom2": ["manage", "control"]}
                     }
                 }
             }
         }
 
-        code = '''
+        code = """
 class TestClass:
     def handle_request(self):
         pass
@@ -311,7 +310,7 @@ class TestClass:
 
     def process_data(self):
         pass
-'''
+"""
         tree = ast.parse(code)
         class_node = tree.body[0]
         violations = self.rule.check_node(class_node, self.context)
@@ -320,43 +319,49 @@ class TestClass:
 
     def test_find_method_category(self):
         """Test _find_method_category method."""
-        prefixes = {
-            'data': ['get', 'set'],
-            'validation': ['validate', 'check']
-        }
+        prefixes = {"data": ["get", "set"], "validation": ["validate", "check"]}
 
-        self.assertEqual(self.rule._find_method_category('get_value', prefixes), 'data')
-        self.assertEqual(self.rule._find_method_category('validate_input', prefixes), 'validation')
-        self.assertEqual(self.rule._find_method_category('unknown_method', prefixes), 'other')
+        self.assertEqual(self.rule._find_method_category("get_value", prefixes), "data")
+        self.assertEqual(self.rule._find_method_category("validate_input", prefixes), "validation")
+        self.assertEqual(self.rule._find_method_category("unknown_method", prefixes), "other")
 
     def test_group_methods_by_responsibility(self):
         """Test _group_methods_by_responsibility method."""
         # Create method AST nodes
         methods = [
-            ast.FunctionDef(name="get_data", args=ast.arguments(
-                posonlyargs=[], args=[], defaults=[], kwonlyargs=[], kw_defaults=[], annotations=[]
-            ), body=[], decorator_list=[], returns=None),
-            ast.FunctionDef(name="validate_input", args=ast.arguments(
-                posonlyargs=[], args=[], defaults=[], kwonlyargs=[], kw_defaults=[], annotations=[]
-            ), body=[], decorator_list=[], returns=None),
-            ast.FunctionDef(name="_private_method", args=ast.arguments(
-                posonlyargs=[], args=[], defaults=[], kwonlyargs=[], kw_defaults=[], annotations=[]
-            ), body=[], decorator_list=[], returns=None)
+            ast.FunctionDef(
+                name="get_data",
+                args=ast.arguments(posonlyargs=[], args=[], defaults=[], kwonlyargs=[], kw_defaults=[], annotations=[]),
+                body=[],
+                decorator_list=[],
+                returns=None,
+            ),
+            ast.FunctionDef(
+                name="validate_input",
+                args=ast.arguments(posonlyargs=[], args=[], defaults=[], kwonlyargs=[], kw_defaults=[], annotations=[]),
+                body=[],
+                decorator_list=[],
+                returns=None,
+            ),
+            ast.FunctionDef(
+                name="_private_method",
+                args=ast.arguments(posonlyargs=[], args=[], defaults=[], kwonlyargs=[], kw_defaults=[], annotations=[]),
+                body=[],
+                decorator_list=[],
+                returns=None,
+            ),
         ]
 
-        prefixes = {
-            'data': ['get', 'set'],
-            'validation': ['validate', 'check']
-        }
+        prefixes = {"data": ["get", "set"], "validation": ["validate", "check"]}
 
         groups = self.rule._group_methods_by_responsibility(methods, prefixes)
 
-        self.assertIn('data', groups)
-        self.assertIn('get_data', groups['data'])
-        self.assertIn('validation', groups)
-        self.assertIn('validate_input', groups['validation'])
+        self.assertIn("data", groups)
+        self.assertIn("get_data", groups["data"])
+        self.assertIn("validation", groups)
+        self.assertIn("validate_input", groups["validation"])
         # Private method should be skipped
-        self.assertNotIn('_private_method', str(groups))
+        self.assertNotIn("_private_method", str(groups))
 
 
 class TestLowCohesionRule(unittest.TestCase):
@@ -365,7 +370,7 @@ class TestLowCohesionRule(unittest.TestCase):
     def setUp(self):
         """Set up test fixtures."""
         self.rule = LowCohesionRule()
-        self.context = LintContext(file_path=Path('/test.py'))
+        self.context = LintContext(file_path=Path("/test.py"))
 
     def test_rule_properties(self):
         """Test rule properties return correct values."""
@@ -382,9 +387,13 @@ class TestLowCohesionRule(unittest.TestCase):
 
     def test_check_node_with_invalid_node_type(self):
         """Test check_node raises TypeError for non-ClassDef nodes."""
-        func_node = ast.FunctionDef(name="test_func", args=ast.arguments(
-            posonlyargs=[], args=[], defaults=[], kwonlyargs=[], kw_defaults=[], annotations=[]
-        ), body=[], decorator_list=[], returns=None)
+        func_node = ast.FunctionDef(
+            name="test_func",
+            args=ast.arguments(posonlyargs=[], args=[], defaults=[], kwonlyargs=[], kw_defaults=[], annotations=[]),
+            body=[],
+            decorator_list=[],
+            returns=None,
+        )
 
         with self.assertRaises(TypeError) as cm:
             self.rule.check_node(func_node, self.context)
@@ -392,10 +401,10 @@ class TestLowCohesionRule(unittest.TestCase):
 
     def test_class_with_no_methods_no_violation(self):
         """Test class with no methods produces no violations."""
-        code = '''
+        code = """
 class EmptyClass:
     pass
-'''
+"""
         tree = ast.parse(code)
         class_node = tree.body[0]
         violations = self.rule.check_node(class_node, self.context)
@@ -403,7 +412,7 @@ class EmptyClass:
 
     def test_class_with_no_instance_vars_no_violation(self):
         """Test class with methods but no instance variables produces no violations."""
-        code = '''
+        code = """
 class NoInstanceVars:
     def method1(self):
         local_var = 42
@@ -411,7 +420,7 @@ class NoInstanceVars:
 
     def method2(self):
         return "test"
-'''
+"""
         tree = ast.parse(code)
         class_node = tree.body[0]
         violations = self.rule.check_node(class_node, self.context)
@@ -419,7 +428,7 @@ class NoInstanceVars:
 
     def test_high_cohesion_class_no_violation(self):
         """Test class with high cohesion produces no violations."""
-        code = '''
+        code = """
 class HighCohesionClass:
     def __init__(self):
         self.data = []
@@ -434,7 +443,7 @@ class HighCohesionClass:
 
     def get_data(self):
         return self.data
-'''
+"""
         tree = ast.parse(code)
         class_node = tree.body[0]
         violations = self.rule.check_node(class_node, self.context)
@@ -444,7 +453,7 @@ class HighCohesionClass:
         """Test class with low cohesion produces violation."""
         # Create a class where methods share no instance variables
         # This ensures 0 shared pairs and thus 0.0 cohesion
-        code = '''
+        code = """
 class LowCohesionClass:
     def __init__(self):
         self.var1 = 1
@@ -467,7 +476,7 @@ class LowCohesionClass:
     def method5(self):
         # This method also doesn't use any instance variables
         return 42
-'''
+"""
         tree = ast.parse(code)
         class_node = tree.body[0]
         violations = self.rule.check_node(class_node, self.context)
@@ -483,15 +492,9 @@ class LowCohesionClass:
 
     def test_custom_min_cohesion_configuration(self):
         """Test custom min_cohesion_score configuration."""
-        self.context.metadata = {
-            'rules': {
-                'solid.srp.low-cohesion': {
-                    'config': {'min_cohesion_score': 0.8}
-                }
-            }
-        }
+        self.context.metadata = {"rules": {"solid.srp.low-cohesion": {"config": {"min_cohesion_score": 0.8}}}}
 
-        code = '''
+        code = """
 class ModeratelyCohesiveClass:
     def __init__(self):
         self.shared_var = 1
@@ -505,7 +508,7 @@ class ModeratelyCohesiveClass:
 
     def method3(self):
         return self.other_var
-'''
+"""
         tree = ast.parse(code)
         class_node = tree.body[0]
         violations = self.rule.check_node(class_node, self.context)
@@ -516,7 +519,7 @@ class ModeratelyCohesiveClass:
 
     def test_extract_instance_variables(self):
         """Test _extract_instance_variables method."""
-        code = '''
+        code = """
 class TestClass:
     def __init__(self):
         self.var1 = 1
@@ -526,39 +529,43 @@ class TestClass:
         self.var3 = 3
         local_var = 4  # Should not be included
         other.attribute = 5  # Should not be included
-'''
+"""
         tree = ast.parse(code)
         class_node = tree.body[0]
         instance_vars = self.rule._extract_instance_variables(class_node)
 
-        expected_vars = {'var1', 'var2', 'var3'}
+        expected_vars = {"var1", "var2", "var3"}
         self.assertEqual(instance_vars, expected_vars)
 
     def test_find_used_instance_vars(self):
         """Test _find_used_instance_vars method."""
-        code = '''
+        code = """
 def test_method(self):
     self.var1 = 1
     result = self.var2 + self.var3
     local_var = self.var1
     return result
-'''
+"""
         tree = ast.parse(code)
         method_node = tree.body[0]
-        instance_vars = {'var1', 'var2', 'var3', 'var4'}
+        instance_vars = {"var1", "var2", "var3", "var4"}
 
         used_vars = self.rule._find_used_instance_vars(method_node, instance_vars)
-        expected_used = {'var1', 'var2', 'var3'}
+        expected_used = {"var1", "var2", "var3"}
         self.assertEqual(used_vars, expected_used)
 
     def test_calculate_cohesion_single_method(self):
         """Test _calculate_cohesion with single method returns 1.0."""
         methods = [
-            ast.FunctionDef(name="method1", args=ast.arguments(
-                posonlyargs=[], args=[], defaults=[], kwonlyargs=[], kw_defaults=[], annotations=[]
-            ), body=[], decorator_list=[], returns=None)
+            ast.FunctionDef(
+                name="method1",
+                args=ast.arguments(posonlyargs=[], args=[], defaults=[], kwonlyargs=[], kw_defaults=[], annotations=[]),
+                body=[],
+                decorator_list=[],
+                returns=None,
+            )
         ]
-        instance_vars = {'var1', 'var2'}
+        instance_vars = {"var1", "var2"}
 
         cohesion = self.rule._calculate_cohesion(methods, instance_vars)
         self.assertEqual(cohesion, 1.0)
@@ -570,7 +577,7 @@ class TestClassTooBigRule(unittest.TestCase):
     def setUp(self):
         """Set up test fixtures."""
         self.rule = ClassTooBigRule()
-        self.context = LintContext(file_path=Path('/test.py'))
+        self.context = LintContext(file_path=Path("/test.py"))
 
     def test_rule_properties(self):
         """Test rule properties return correct values."""
@@ -587,9 +594,13 @@ class TestClassTooBigRule(unittest.TestCase):
 
     def test_check_node_with_invalid_node_type(self):
         """Test check_node raises TypeError for non-ClassDef nodes."""
-        func_node = ast.FunctionDef(name="test_func", args=ast.arguments(
-            posonlyargs=[], args=[], defaults=[], kwonlyargs=[], kw_defaults=[], annotations=[]
-        ), body=[], decorator_list=[], returns=None)
+        func_node = ast.FunctionDef(
+            name="test_func",
+            args=ast.arguments(posonlyargs=[], args=[], defaults=[], kwonlyargs=[], kw_defaults=[], annotations=[]),
+            body=[],
+            decorator_list=[],
+            returns=None,
+        )
 
         with self.assertRaises(TypeError) as cm:
             self.rule.check_node(func_node, self.context)
@@ -623,13 +634,7 @@ class TestClassTooBigRule(unittest.TestCase):
 
     def test_custom_max_lines_configuration(self):
         """Test custom max_class_lines configuration."""
-        self.context.metadata = {
-            'rules': {
-                'solid.srp.class-too-big': {
-                    'config': {'max_class_lines': 50}
-                }
-            }
-        }
+        self.context.metadata = {"rules": {"solid.srp.class-too-big": {"config": {"max_class_lines": 50}}}}
 
         # Create a class with 75 lines (above custom threshold)
         class_node = ast.ClassDef(name="ModerateClass", bases=[], keywords=[], body=[], decorator_list=[])
@@ -664,7 +669,7 @@ class TestTooManyDependenciesRule(unittest.TestCase):
     def setUp(self):
         """Set up test fixtures."""
         self.rule = TooManyDependenciesRule()
-        self.context = LintContext(file_path=Path('/test.py'))
+        self.context = LintContext(file_path=Path("/test.py"))
 
     def test_rule_properties(self):
         """Test rule properties return correct values."""
@@ -681,9 +686,13 @@ class TestTooManyDependenciesRule(unittest.TestCase):
 
     def test_check_node_with_invalid_node_type(self):
         """Test check_node raises TypeError for non-ClassDef nodes."""
-        func_node = ast.FunctionDef(name="test_func", args=ast.arguments(
-            posonlyargs=[], args=[], defaults=[], kwonlyargs=[], kw_defaults=[], annotations=[]
-        ), body=[], decorator_list=[], returns=None)
+        func_node = ast.FunctionDef(
+            name="test_func",
+            args=ast.arguments(posonlyargs=[], args=[], defaults=[], kwonlyargs=[], kw_defaults=[], annotations=[]),
+            body=[],
+            decorator_list=[],
+            returns=None,
+        )
 
         with self.assertRaises(TypeError) as cm:
             self.rule.check_node(func_node, self.context)
@@ -691,7 +700,7 @@ class TestTooManyDependenciesRule(unittest.TestCase):
 
     def test_class_with_few_dependencies_no_violation(self):
         """Test class with few dependencies produces no violations."""
-        code = '''
+        code = """
 import os
 import sys
 from pathlib import Path
@@ -699,7 +708,7 @@ from pathlib import Path
 class SimpleClass:
     def method(self):
         pass
-'''
+"""
         tree = ast.parse(code)
         class_node = tree.body[3]  # Class is the 4th statement
         violations = self.rule.check_node(class_node, self.context)
@@ -709,13 +718,13 @@ class SimpleClass:
         """Test class with many dependencies produces violation."""
         # Create a class with many import statements within the class
         imports = [f"    import module{i}" for i in range(15)]
-        code = f'''
+        code = f"""
 class DependentClass:
 {chr(10).join(imports)}
 
     def method(self):
         pass
-'''
+"""
         tree = ast.parse(code)
         class_node = tree.body[0]  # Class is the first statement
         violations = self.rule.check_node(class_node, self.context)
@@ -729,15 +738,9 @@ class DependentClass:
 
     def test_custom_max_dependencies_configuration(self):
         """Test custom max_dependencies configuration."""
-        self.context.metadata = {
-            'rules': {
-                'solid.srp.too-many-dependencies': {
-                    'config': {'max_dependencies': 3}
-                }
-            }
-        }
+        self.context.metadata = {"rules": {"solid.srp.too-many-dependencies": {"config": {"max_dependencies": 3}}}}
 
-        code = '''
+        code = """
 class ModerateClass:
     import os
     import sys
@@ -746,7 +749,7 @@ class ModerateClass:
 
     def method(self):
         pass
-'''
+"""
         tree = ast.parse(code)
         class_node = tree.body[0]  # Class is the first statement
         violations = self.rule.check_node(class_node, self.context)
@@ -755,25 +758,25 @@ class ModerateClass:
 
     def test_extract_dependencies_import_statements(self):
         """Test _extract_dependencies with import statements."""
-        code = '''
+        code = """
 class TestClass:
     import os
     import sys.path
     from pathlib import Path
     from collections.abc import Mapping
     pass
-'''
+"""
         tree = ast.parse(code)
         class_node = tree.body[0]  # Class is the first statement
         dependencies = self.rule._extract_dependencies(class_node)
 
         # Should extract top-level module names
-        expected_deps = {'os', 'sys', 'pathlib', 'collections'}
+        expected_deps = {"os", "sys", "pathlib", "collections"}
         self.assertEqual(dependencies, expected_deps)
 
     def test_extract_dependencies_nested_in_class(self):
         """Test _extract_dependencies with imports nested in class."""
-        code = '''
+        code = """
 class TestClass:
     import os
     from pathlib import Path
@@ -781,23 +784,23 @@ class TestClass:
     def method(self):
         import sys
         from collections import defaultdict
-'''
+"""
         tree = ast.parse(code)
         class_node = tree.body[0]
         dependencies = self.rule._extract_dependencies(class_node)
 
         # Should find all imports within the class
-        expected_deps = {'os', 'pathlib', 'sys', 'collections'}
+        expected_deps = {"os", "pathlib", "sys", "collections"}
         self.assertEqual(dependencies, expected_deps)
 
     def test_extract_dependencies_no_imports(self):
         """Test _extract_dependencies with no imports."""
-        code = '''
+        code = """
 class SimpleClass:
     def method(self):
         x = 1 + 1
         return x
-'''
+"""
         tree = ast.parse(code)
         class_node = tree.body[0]
         dependencies = self.rule._extract_dependencies(class_node)
@@ -807,7 +810,7 @@ class SimpleClass:
     def test_extract_dependencies_import_from_without_module(self):
         """Test _extract_dependencies handles 'from . import' correctly."""
         # Create AST nodes manually to test edge case
-        import_from = ast.ImportFrom(module=None, names=[ast.alias(name='something', asname=None)], level=1)
+        import_from = ast.ImportFrom(module=None, names=[ast.alias(name="something", asname=None)], level=1)
         class_node = ast.ClassDef(name="TestClass", bases=[], keywords=[], body=[import_from], decorator_list=[])
 
         dependencies = self.rule._extract_dependencies(class_node)
@@ -816,5 +819,5 @@ class SimpleClass:
         self.assertNotIn(None, dependencies)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

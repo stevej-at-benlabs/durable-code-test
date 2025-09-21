@@ -40,7 +40,7 @@ class FileOrganizationRule(ASTLintRule):
         layout_file = self.config.get("layout_rules_file", ".ai/layout.json")
         self._load_layout_rules(layout_file)
 
-        # Fallback to old config style if no JSON file found
+        # Fallback to default config if no JSON file found
         if not self.layout_rules:
             logger.warning(f"Layout rules file not found: {layout_file}, using default configuration")
             self._use_default_config()
@@ -54,7 +54,7 @@ class FileOrganizationRule(ASTLintRule):
                 layout_path = Path.cwd() / layout_path
 
             if layout_path.exists():
-                with open(layout_path, 'r', encoding='utf-8') as f:
+                with open(layout_path, encoding="utf-8") as f:
                     data = json.load(f)
                     if "linter_rules" in data:
                         self.layout_rules = data["linter_rules"]
@@ -78,27 +78,15 @@ class FileOrganizationRule(ASTLintRule):
                         "^[^/]+\\.toml$",
                         "^Makefile",
                         "^setup\\.py$",
-                        "^conftest\\.py$"
+                        "^conftest\\.py$",
+                        "^manage\\.py$",
                     ],
-                    "deny": [
-                        "^test[_-].*\\.py$",
-                        "^debug[_-].*\\.py$",
-                        "^tmp[_-].*\\.py$",
-                        "^temp[_-].*\\.py$"
-                    ]
+                    "deny": ["^debug[_-].*\\.py$", "^tmp[_-].*\\.py$", "^temp[_-].*\\.py$"],
                 }
             },
             "global_patterns": {
-                "test_files": {
-                    "patterns": [
-                        "test_.*\\.py$",
-                        ".*_test\\.py$"
-                    ],
-                    "must_be_in": [
-                        "^test/"
-                    ]
-                }
-            }
+                "test_files": {"patterns": ["test[_-].*\\.py$", ".*[_-]test\\.py$"], "must_be_in": ["^test/"]}
+            },
         }
 
     @property
@@ -143,13 +131,15 @@ class FileOrganizationRule(ASTLintRule):
             return violations
 
         # Convert to string for pattern matching
-        path_str = str(rel_path).replace('\\', '/')  # Normalize path separators
+        path_str = str(rel_path).replace("\\", "/")  # Normalize path separators
 
-        # Check global patterns first (like test files that shouldn't be in source)
-        violations.extend(self._check_global_patterns(path_str, rel_path))
+        # Check directory-specific rules first (includes debug/temp file checks for root)
+        dir_violations = self._check_directory_rules(path_str, rel_path)
+        violations.extend(dir_violations)
 
-        # Check specific directory rules
-        violations.extend(self._check_directory_rules(path_str, rel_path))
+        # Check global patterns only if not already flagged by directory rules
+        if not dir_violations:
+            violations.extend(self._check_global_patterns(path_str, rel_path))
 
         return violations
 
@@ -166,36 +156,41 @@ class FileOrganizationRule(ASTLintRule):
         if "deny_everywhere" in global_patterns:
             for pattern in global_patterns["deny_everywhere"]:
                 if re.search(pattern, path_str):
-                    violations.append(LintViolation(
-                        rule_id=self.rule_id,
-                        file_path=str(rel_path),
-                        line=1,
-                        column=0,
-                        severity=Severity.ERROR,
-                        message=f"File type is forbidden: {rel_path.name}",
-                        description=f"Files matching pattern '{pattern}' should not be committed",
-                        suggestion="Remove this file or add it to .gitignore"
-                    ))
+                    violations.append(
+                        LintViolation(
+                            rule_id=self.rule_id,
+                            file_path=str(rel_path),
+                            line=1,
+                            column=0,
+                            severity=Severity.ERROR,
+                            message=f"File type is forbidden: {rel_path.name}",
+                            description=f"Files matching pattern '{pattern}' should not be committed",
+                            suggestion="Remove this file or add it to .gitignore",
+                        )
+                    )
                     return violations  # No need to check further if file is forbidden
 
         # Check test file placement
         if "test_files" in global_patterns:
             test_config = global_patterns["test_files"]
-            is_test_file = any(re.search(pattern, path_str) for pattern in test_config["patterns"])
+            # Check patterns against filename only
+            is_test_file = any(re.search(pattern, rel_path.name) for pattern in test_config["patterns"])
 
             if is_test_file:
                 in_test_dir = any(re.match(pattern, path_str) for pattern in test_config["must_be_in"])
                 if not in_test_dir:
-                    violations.append(LintViolation(
-                        rule_id=self.rule_id,
-                        file_path=str(rel_path),
-                        line=1,
-                        column=0,
-                        severity=self.severity,
-                        message=f"Test file '{rel_path.name}' is not in test directory",
-                        description="Test files must be placed in the test/ directory",
-                        suggestion=f"Move to test/unit_test/ or test/integration_test/"
-                    ))
+                    violations.append(
+                        LintViolation(
+                            rule_id=self.rule_id,
+                            file_path=str(rel_path),
+                            line=1,
+                            column=0,
+                            severity=self.severity,
+                            message=f"Test file '{rel_path.name}' is not in test directory",
+                            description="Test files must be placed in the test/ directory",
+                            suggestion="Move to test/unit_test/ or test/integration_test/",
+                        )
+                    )
 
         return violations
 
@@ -205,6 +200,29 @@ class FileOrganizationRule(ASTLintRule):
 
         if "paths" not in self.layout_rules:
             return violations
+
+        # Check for test files, but exclude debug/temp prefixed files
+        # This ensures debug/temp files are handled by their specific rules
+        if "global_patterns" in self.layout_rules and "test_files" in self.layout_rules["global_patterns"]:
+            test_config = self.layout_rules["global_patterns"]["test_files"]
+            # Check patterns against filename only, but skip if it starts with debug/tmp/temp
+            if not re.match(r"^(debug|tmp|temp)[_-]", rel_path.name):
+                is_test_file = any(re.search(pattern, rel_path.name) for pattern in test_config["patterns"])
+
+                if is_test_file and len(rel_path.parts) == 1:  # Test file in root
+                    violations.append(
+                        LintViolation(
+                            rule_id=self.rule_id,
+                            file_path=str(rel_path),
+                            line=1,
+                            column=0,
+                            severity=self.severity,
+                            message=f"Test file '{rel_path.name}' should not be in the root directory",
+                            description="Test files must be placed in the test/ directory",
+                            suggestion="Move to test/unit_test/ or test/integration_test/",
+                        )
+                    )
+                    return violations  # Skip other checks if it's a misplaced test file
 
         # Find the most specific matching directory rule
         matched_rule = None
@@ -217,11 +235,10 @@ class FileOrganizationRule(ASTLintRule):
                 if len(rel_path.parts) == 1:
                     matched_rule = rules
                     matched_path = dir_path
-            elif path_str.startswith(dir_path):
+            elif path_str.startswith(dir_path) and (not matched_path or len(dir_path) > len(matched_path)):
                 # Use the most specific (longest) matching path
-                if not matched_path or len(dir_path) > len(matched_path):
-                    matched_rule = rules
-                    matched_path = dir_path
+                matched_rule = rules
+                matched_path = dir_path
 
         if not matched_rule:
             return violations
@@ -229,17 +246,31 @@ class FileOrganizationRule(ASTLintRule):
         # Check against deny patterns first
         if "deny" in matched_rule:
             for pattern in matched_rule["deny"]:
-                if re.search(pattern, path_str):
-                    violations.append(LintViolation(
-                        rule_id=self.rule_id,
-                        file_path=str(rel_path),
-                        line=1,
-                        column=0,
-                        severity=self.severity,
-                        message=f"File '{rel_path.name}' is forbidden in {matched_path or 'root'}",
-                        description=f"Files matching pattern '{pattern}' are not allowed here",
-                        suggestion=self._get_suggestion_for_file(rel_path.name, pattern)
-                    ))
+                # For root directory patterns, check against filename only
+                if matched_path == ".":
+                    check_target = rel_path.name
+                else:
+                    check_target = path_str
+
+                if re.search(pattern, check_target):
+                    # Special message for debug/temp files in root
+                    if matched_path == "." and re.match(r"^(debug|tmp|temp)[_-]", rel_path.name):
+                        message = f"File '{rel_path.name}' should not be in the root directory"
+                    else:
+                        message = f"File '{rel_path.name}' is forbidden in {matched_path or 'root'}"
+
+                    violations.append(
+                        LintViolation(
+                            rule_id=self.rule_id,
+                            file_path=str(rel_path),
+                            line=1,
+                            column=0,
+                            severity=self.severity,
+                            message=message,
+                            description=f"Files matching pattern '{pattern}' are not allowed here",
+                            suggestion=self._get_suggestion_for_file(rel_path.name, pattern),
+                        )
+                    )
                     return violations  # Don't check allow if denied
 
         # Check against allow patterns (if specified)
@@ -247,16 +278,26 @@ class FileOrganizationRule(ASTLintRule):
             file_allowed = any(re.search(pattern, path_str) for pattern in matched_rule["allow"])
             if not file_allowed:
                 # File doesn't match any allow pattern
-                violations.append(LintViolation(
-                    rule_id=self.rule_id,
-                    file_path=str(rel_path),
-                    line=1,
-                    column=0,
-                    severity=Severity.INFO,
-                    message=f"File '{rel_path.name}' may not belong in {matched_path or 'root'}",
-                    description=f"File doesn't match expected patterns for this directory",
-                    suggestion=self._get_suggestion_for_file(rel_path.name, None)
-                ))
+                # Special handling for Python files in root
+                if matched_path == "." and rel_path.name.endswith(".py"):
+                    message = f"Python file '{rel_path.name}' in root directory"
+                    description = "Consider if this file belongs in the root directory"
+                else:
+                    message = f"File '{rel_path.name}' may not belong in {matched_path or 'root'}"
+                    description = "File doesn't match expected patterns for this directory"
+
+                violations.append(
+                    LintViolation(
+                        rule_id=self.rule_id,
+                        file_path=str(rel_path),
+                        line=1,
+                        column=0,
+                        severity=Severity.INFO,
+                        message=message,
+                        description=description,
+                        suggestion=self._get_suggestion_for_file(rel_path.name, None),
+                    )
+                )
 
         return violations
 
