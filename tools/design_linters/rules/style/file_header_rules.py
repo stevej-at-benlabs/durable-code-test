@@ -73,6 +73,18 @@ class FileHeaderRule(ASTLintRule):
             "is_code": True,
             "min_header_lines": 5,
         },
+        ".css": {
+            "header_pattern": re.compile(r"^/\*\*[\s\S]*?\*/", re.MULTILINE),
+            "field_pattern": re.compile(r"^\s*\*?\s*(\w+(?:/\w+)?):?\s*(.+)$", re.MULTILINE),
+            "is_code": True,
+            "min_header_lines": 5,
+        },
+        ".sh": {
+            "header_pattern": re.compile(r"^(#!/bin/(bash|sh)\n)?# Purpose:[\s\S]*?(?=\n[^#]|\n\n|\Z)", re.MULTILINE),
+            "field_pattern": re.compile(r"^# (\w+):\s*(.+)$", re.MULTILINE),
+            "is_code": True,
+            "min_header_lines": 3,
+        },
         ".md": {
             "header_pattern": re.compile(r"^# .+?\n\n(\*\*\w+\*\*:.+?\n)+", re.MULTILINE),
             "field_pattern": re.compile(r"^\*\*(\w+)\*\*:\s*(.+)$", re.MULTILINE),
@@ -425,6 +437,44 @@ Implementation: Notable algorithms, patterns, or architectural decisions
  * Props/Interfaces: Component props and their purpose
  * State/Behavior: State management and key behaviors
  */""",
+            ".js": """Add this header at the beginning of the file:
+/**
+ * Purpose: Brief description of script/module functionality (1-2 lines)
+ * Scope: What this file handles (e.g., utilities, scripts, etc.)
+ * Overview: Comprehensive summary of what this script does and its role.
+ * Dependencies: Key libraries or modules this file depends on
+ * Exports: Main functions or constants this file provides
+ * Interfaces: Key functions or APIs this file exposes
+ * Implementation: Notable patterns or techniques used
+ */""",
+            ".jsx": """Add this header at the beginning of the file:
+/**
+ * Purpose: Brief description of component functionality (1-2 lines)
+ * Scope: What this component handles in the UI
+ * Overview: Comprehensive summary of component's role and user interactions.
+ * Dependencies: Key libraries, components, or services this file depends on
+ * Exports: Main components this file provides
+ * Props/Interfaces: Component props and their purpose
+ * State/Behavior: State management and key behaviors
+ */""",
+            ".css": """Add this header at the beginning of the file:
+/**
+ * Purpose: Brief description of stylesheet functionality (1-2 lines)
+ * Scope: What UI components or areas this stylesheet covers
+ * Overview: Comprehensive summary of styling approach and organization.
+ * Dependencies: Related stylesheets or CSS frameworks used
+ * Exports: Main CSS classes, variables, or utilities provided
+ * Interfaces: Key CSS classes and their usage
+ * Implementation: Notable styling patterns or techniques used
+ */""",
+            ".sh": """Add this header after the shebang line:
+# Purpose: Brief description of script functionality (1-2 lines)
+# Scope: What this script handles or automates
+# Overview: Comprehensive summary of what this script does and how it operates.
+# Dependencies: Required tools, environment variables, or system requirements
+# Usage: How to run this script and any parameters it accepts
+# Interfaces: Key functions or command-line options
+# Implementation: Notable techniques or patterns used""",
             ".md": """Add this header after the main title:
 # Document Title
 
@@ -448,7 +498,7 @@ Dependencies: Key libraries or frameworks used
 # Dependencies: Services or tools that use this configuration""",
         }
 
-        return templates.get(file_ext, file_ext.join([".js", ".jsx"]))
+        return templates.get(file_ext, templates.get(".js", "Add appropriate header for this file type"))
 
     def _format_missing_fields(self, fields: set[str]) -> str:
         """Format missing fields for suggestion."""

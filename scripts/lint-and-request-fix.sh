@@ -1,4 +1,13 @@
 #!/bin/bash
+# Purpose: Automated linting check for staged files with Claude assistance request
+# Scope: Git-staged files validation and developer workflow integration
+# Overview: Stages specified files, runs linting checks on staged content, and provides clear feedback to developers.
+#           On linting failures, generates detailed instructions for Claude AI to fix the detected issues.
+#           Designed for integration into development workflows and pre-commit processes.
+# Dependencies: git, make (for lint-all-staged target)
+# Usage: ./scripts/lint-and-request-fix.sh [FILE_PATH] (FILE_PATH is optional, stages current file if provided)
+# Interfaces: Git staging area operations and make lint-all-staged command
+# Implementation: Uses git add for staging, make for linting, and provides structured error reporting with exit codes
 
 # Script to lint staged files and request Claude to fix any issues
 
