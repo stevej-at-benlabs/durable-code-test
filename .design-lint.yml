@@ -218,7 +218,7 @@ organization:
     severity: "warning"
 
     # Use JSON layout file for comprehensive file placement rules
-    layout_rules_file: ".ai/layout.json"
+    layout_rules_file: ".ai/layout.yaml"
 
     message: "Files should be organized according to project structure conventions"
 

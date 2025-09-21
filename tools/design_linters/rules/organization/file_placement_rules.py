@@ -1,29 +1,35 @@
 #!/usr/bin/env python3
 """
 Purpose: File organization and placement linting rule for the design linter framework
-Scope: Organization category rule implementation with JSON-based layout configuration
+Scope: Organization category rule implementation with JSON/YAML-based layout configuration
 Overview: This module implements comprehensive file organization rules that ensure proper project
     structure and prevent common placement mistakes that can lead to maintenance issues. It detects
     files placed in incorrect directories such as debug scripts in root, test files outside test
     directories, frontend code mixed with backend, and configuration files in source directories.
-    The rule loads configuration from a JSON layout file that supports both AI-readable guidance
+    The rule loads configuration from a JSON or YAML layout file that supports both AI-readable guidance
     and machine-readable regex patterns for comprehensive file organization enforcement. It helps
     maintain clean separation of concerns, prevents accidental commits of temporary files, and
     ensures consistent project organization across team members. The implementation includes
     helpful suggestions for where files should be moved and can be configured to enforce
     organization standards specific to each project's architecture.
-Dependencies: Framework interfaces, pathlib for path analysis, json for config loading, re for regex
+Dependencies: Framework interfaces, pathlib for path analysis, json/yaml for config loading, re for regex
 Exports: FileOrganizationRule implementation
 Interfaces: Implements ASTLintRule interface from framework
 Implementation: JSON-driven path validation with regex pattern matching
 """
 
 import json
+import yaml
 import re
 from pathlib import Path
 from typing import Any
 
-from design_linters.framework.interfaces import ASTLintRule, LintContext, LintViolation, Severity
+from design_linters.framework.interfaces import (
+    ASTLintRule,
+    LintContext,
+    LintViolation,
+    Severity,
+)
 from loguru import logger
 
 
@@ -37,16 +43,18 @@ class FileOrganizationRule(ASTLintRule):
         self.layout_rules = None
 
         # Load layout rules from JSON file if specified
-        layout_file = self.config.get("layout_rules_file", ".ai/layout.json")
+        layout_file = self.config.get("layout_rules_file", ".ai/layout.yaml")
         self._load_layout_rules(layout_file)
 
         # Fallback to default config if no JSON file found
         if not self.layout_rules:
-            logger.warning(f"Layout rules file not found: {layout_file}, using default configuration")
+            logger.warning(
+                f"Layout rules file not found: {layout_file}, using default configuration"
+            )
             self._use_default_config()
 
     def _load_layout_rules(self, layout_file: str) -> None:
-        """Load layout rules from JSON file."""
+        """Load layout rules from JSON or YAML file."""
         try:
             layout_path = Path(layout_file)
             if not layout_path.is_absolute():
@@ -55,12 +63,19 @@ class FileOrganizationRule(ASTLintRule):
 
             if layout_path.exists():
                 with open(layout_path, encoding="utf-8") as f:
-                    data = json.load(f)
+                    # Determine file format from extension
+                    if layout_path.suffix in [".yaml", ".yml"]:
+                        data = yaml.safe_load(f)
+                    else:
+                        data = json.load(f)
+
                     if "linter_rules" in data:
                         self.layout_rules = data["linter_rules"]
                         logger.debug(f"Loaded layout rules from {layout_path}")
                     else:
-                        logger.error(f"No 'linter_rules' section found in {layout_path}")
+                        logger.error(
+                            f"No 'linter_rules' section found in {layout_path}"
+                        )
         except Exception as e:
             logger.error(f"Failed to load layout rules from {layout_file}: {e}")
 
@@ -81,11 +96,18 @@ class FileOrganizationRule(ASTLintRule):
                         "^conftest\\.py$",
                         "^manage\\.py$",
                     ],
-                    "deny": ["^debug[_-].*\\.py$", "^tmp[_-].*\\.py$", "^temp[_-].*\\.py$"],
+                    "deny": [
+                        "^debug[_-].*\\.py$",
+                        "^tmp[_-].*\\.py$",
+                        "^temp[_-].*\\.py$",
+                    ],
                 }
             },
             "global_patterns": {
-                "test_files": {"patterns": ["test[_-].*\\.py$", ".*[_-]test\\.py$"], "must_be_in": ["^test/"]}
+                "test_files": {
+                    "patterns": ["test[_-].*\\.py$", ".*[_-]test\\.py$"],
+                    "must_be_in": ["^test/"],
+                }
             },
         }
 
@@ -125,7 +147,9 @@ class FileOrganizationRule(ASTLintRule):
         # Get relative path from project root
         try:
             cwd = Path.cwd()
-            rel_path = file_path.relative_to(cwd) if file_path.is_absolute() else file_path
+            rel_path = (
+                file_path.relative_to(cwd) if file_path.is_absolute() else file_path
+            )
         except ValueError as e:
             logger.debug(f"File is outside project directory: {file_path}, error: {e}")
             return violations
@@ -143,7 +167,9 @@ class FileOrganizationRule(ASTLintRule):
 
         return violations
 
-    def _check_global_patterns(self, path_str: str, rel_path: Path) -> list[LintViolation]:
+    def _check_global_patterns(
+        self, path_str: str, rel_path: Path
+    ) -> list[LintViolation]:
         """Check file against global patterns that apply everywhere."""
         violations = []
 
@@ -174,10 +200,14 @@ class FileOrganizationRule(ASTLintRule):
         if "test_files" in global_patterns:
             test_config = global_patterns["test_files"]
             # Check patterns against filename only
-            is_test_file = any(re.search(pattern, rel_path.name) for pattern in test_config["patterns"])
+            is_test_file = any(
+                re.search(pattern, rel_path.name) for pattern in test_config["patterns"]
+            )
 
             if is_test_file:
-                in_test_dir = any(re.match(pattern, path_str) for pattern in test_config["must_be_in"])
+                in_test_dir = any(
+                    re.match(pattern, path_str) for pattern in test_config["must_be_in"]
+                )
                 if not in_test_dir:
                     violations.append(
                         LintViolation(
@@ -194,7 +224,9 @@ class FileOrganizationRule(ASTLintRule):
 
         return violations
 
-    def _check_directory_rules(self, path_str: str, rel_path: Path) -> list[LintViolation]:
+    def _check_directory_rules(
+        self, path_str: str, rel_path: Path
+    ) -> list[LintViolation]:
         """Check file against specific directory rules."""
         violations = []
 
@@ -203,11 +235,17 @@ class FileOrganizationRule(ASTLintRule):
 
         # Check for test files, but exclude debug/temp prefixed files
         # This ensures debug/temp files are handled by their specific rules
-        if "global_patterns" in self.layout_rules and "test_files" in self.layout_rules["global_patterns"]:
+        if (
+            "global_patterns" in self.layout_rules
+            and "test_files" in self.layout_rules["global_patterns"]
+        ):
             test_config = self.layout_rules["global_patterns"]["test_files"]
             # Check patterns against filename only, but skip if it starts with debug/tmp/temp
             if not re.match(r"^(debug|tmp|temp)[_-]", rel_path.name):
-                is_test_file = any(re.search(pattern, rel_path.name) for pattern in test_config["patterns"])
+                is_test_file = any(
+                    re.search(pattern, rel_path.name)
+                    for pattern in test_config["patterns"]
+                )
 
                 if is_test_file and len(rel_path.parts) == 1:  # Test file in root
                     violations.append(
@@ -235,7 +273,9 @@ class FileOrganizationRule(ASTLintRule):
                 if len(rel_path.parts) == 1:
                     matched_rule = rules
                     matched_path = dir_path
-            elif path_str.startswith(dir_path) and (not matched_path or len(dir_path) > len(matched_path)):
+            elif path_str.startswith(dir_path) and (
+                not matched_path or len(dir_path) > len(matched_path)
+            ):
                 # Use the most specific (longest) matching path
                 matched_rule = rules
                 matched_path = dir_path
@@ -254,7 +294,9 @@ class FileOrganizationRule(ASTLintRule):
 
                 if re.search(pattern, check_target):
                     # Special message for debug/temp files in root
-                    if matched_path == "." and re.match(r"^(debug|tmp|temp)[_-]", rel_path.name):
+                    if matched_path == "." and re.match(
+                        r"^(debug|tmp|temp)[_-]", rel_path.name
+                    ):
                         message = f"File '{rel_path.name}' should not be in the root directory"
                     else:
                         message = f"File '{rel_path.name}' is forbidden in {matched_path or 'root'}"
@@ -268,14 +310,18 @@ class FileOrganizationRule(ASTLintRule):
                             severity=self.severity,
                             message=message,
                             description=f"Files matching pattern '{pattern}' are not allowed here",
-                            suggestion=self._get_suggestion_for_file(rel_path.name, pattern),
+                            suggestion=self._get_suggestion_for_file(
+                                rel_path.name, pattern
+                            ),
                         )
                     )
                     return violations  # Don't check allow if denied
 
         # Check against allow patterns (if specified)
         if "allow" in matched_rule:
-            file_allowed = any(re.search(pattern, path_str) for pattern in matched_rule["allow"])
+            file_allowed = any(
+                re.search(pattern, path_str) for pattern in matched_rule["allow"]
+            )
             if not file_allowed:
                 # File doesn't match any allow pattern
                 # Special handling for Python files in root
@@ -284,7 +330,9 @@ class FileOrganizationRule(ASTLintRule):
                     description = "Consider if this file belongs in the root directory"
                 else:
                     message = f"File '{rel_path.name}' may not belong in {matched_path or 'root'}"
-                    description = "File doesn't match expected patterns for this directory"
+                    description = (
+                        "File doesn't match expected patterns for this directory"
+                    )
 
                 violations.append(
                     LintViolation(
@@ -319,4 +367,4 @@ class FileOrganizationRule(ASTLintRule):
                 return "Move to 'test/' directory"
             return "Move to appropriate module directory based on functionality"
         else:
-            return "Review project layout rules in .ai/layout.json for proper placement"
+            return "Review project layout rules in .ai/layout.yaml for proper placement"
