@@ -129,7 +129,7 @@ disable = [
     "E0213", # no-self-argument (false positive for Pydantic validators)
     "W0613", # unused-argument (false positive for FastAPI request parameters)
     "C0415", # import-outside-toplevel (sometimes required for FastAPI setup)
-    "W0718", # broad-exception-caught (security_linter.py needs this)
+    # NOTE: W0718 (broad-exception-caught) must NEVER be disabled per ERROR_HANDLING_STANDARDS.md
 ]
 
 [tool.pylint.design]

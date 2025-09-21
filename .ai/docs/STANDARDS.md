@@ -51,79 +51,261 @@ backend/
   - Constants: UPPER_SNAKE_CASE
   - Private methods: _leading_underscore
 
-### 3. Type Annotation Requirements (MyPy Compliance)
-- **MANDATORY**: All code must be fully compatible with MyPy strict mode
-- **Function Signatures**: All functions must have complete type annotations
-  ```python
-  def process_data(items: list[str], threshold: int = 10) -> dict[str, Any]:
-      """Process data items with optional threshold."""
-      return {"processed": len(items), "threshold": threshold}
-  ```
-- **Class Attributes**: All class attributes must be typed
-  ```python
-  class DataProcessor:
-      items: list[str]
-      threshold: int
-      results: dict[str, Any] | None = None
-  ```
-- **Method Return Types**: All methods must specify return types (including `None`)
-  ```python
-  def save_data(self, data: dict[str, Any]) -> None:
-      """Save data to storage."""
-      # Implementation here
-  ```
-- **Generic Types**: Use proper generic type annotations
-  ```python
-  from typing import Generic, TypeVar
+### 3. Type Annotation Requirements (MyPy & Pylint Compliance)
 
-  T = TypeVar('T')
+#### Core Requirements
+- **MANDATORY**: All code must pass `mypy --strict` without any errors or warnings
+- **MANDATORY**: All code must pass `pylint` with project configuration
+- **PROHIBITED**: Never use `# type: ignore` comments - fix the actual type issue
+- **PROHIBITED**: Never disable W0718 (broad-exception-caught) - catch specific exceptions
 
-  class Container(Generic[T]):
-      def __init__(self, item: T) -> None:
-          self.item = item
-  ```
-- **Import Requirements**: Use absolute imports for framework interfaces
-  ```python
-  # CORRECT - Use absolute imports
-  from design_linters.framework.interfaces import ASTLintRule, LintContext
+#### Function and Method Signatures
+All functions and methods must have complete type annotations:
 
-  # INCORRECT - Avoid relative imports that break in different contexts
-  from ...framework.interfaces import ASTLintRule, LintContext
-  ```
-- **Logging Import Requirements**: Always use loguru, never built-in logging
-  ```python
-  # CORRECT - Use loguru for all logging
-  from loguru import logger
+```python
+# ✅ CORRECT - Complete type hints
+def process_data(items: list[str], threshold: int = 10) -> dict[str, Any]:
+    """Process data items with optional threshold."""
+    return {"processed": len(items), "threshold": threshold}
 
-  # INCORRECT - Never use built-in logging module
-  import logging
-  logger = logging.getLogger(__name__)
-  ```
-- **Optional Types**: Use Union or `|` syntax correctly for optional values
-  ```python
-  def process_optional(value: str | None = None) -> bool:
-      return value is not None
-  ```
-- **Type Checking**: All code must pass `mypy --strict` without warnings
-- **No `Any` Types**: Avoid `Any` type; use specific types or proper generics
-- **Protocol Usage**: Use Protocol for structural typing when appropriate
-  ```python
-  from typing import Protocol
+# ❌ INCORRECT - Missing type hints
+def process_data(items, threshold=10):  # MyPy error: Missing type annotations
+    return {"processed": len(items), "threshold": threshold}
+```
 
-  class Drawable(Protocol):
-      def draw(self) -> None: ...
-  ```
-- **Dataclass Integration**: Use proper typing with dataclasses
-  ```python
-  from dataclasses import dataclass
-  from typing import Optional
+#### Modern Python 3.11+ Type Syntax
+Use built-in generics instead of typing module imports:
 
-  @dataclass
-  class Config:
-      name: str
-      enabled: bool = True
-      timeout: Optional[float] = None
-  ```
+```python
+# ✅ CORRECT - Python 3.11+ built-in generics
+def get_items() -> list[str]:
+    return ["item1", "item2"]
+
+def get_mapping() -> dict[str, int]:
+    return {"key": 1}
+
+# ❌ INCORRECT - Old typing module syntax
+from typing import List, Dict
+def get_items() -> List[str]:  # Use list[str] instead
+    return ["item1", "item2"]
+```
+
+#### Class Type Annotations
+All class attributes must be explicitly typed:
+
+```python
+# ✅ CORRECT - All attributes typed
+class DataProcessor:
+    items: list[str]
+    threshold: int
+    results: dict[str, Any] | None = None
+    _cache: dict[str, Any]  # Private attributes also need types
+
+    def __init__(self) -> None:
+        self.items = []
+        self.threshold = 10
+        self.results = None
+        self._cache = {}
+
+# ❌ INCORRECT - Missing attribute types
+class DataProcessor:
+    def __init__(self):  # Missing return type
+        self.items = []  # Type not declared in class body
+```
+
+#### Optional and Union Types
+Use modern `|` syntax for unions and optional types:
+
+```python
+# ✅ CORRECT - Modern union syntax
+def process(value: str | int | None = None) -> bool:
+    return value is not None
+
+# Alternative for Optional (both are acceptable)
+from typing import Optional
+def process(value: Optional[str] = None) -> bool:
+    return value is not None
+
+# ❌ INCORRECT - Missing None in union when default is None
+def process(value: str = None) -> bool:  # MyPy error: incompatible default
+    return value is not None
+```
+
+#### Avoiding Common MyPy/Pylint Errors
+
+**1. Mutable Default Arguments**
+```python
+# ❌ INCORRECT - Mutable default argument (pylint: W0102)
+def process(items: list[str] = []) -> None:
+    items.append("new")
+
+# ✅ CORRECT - Use None and create inside function
+def process(items: list[str] | None = None) -> None:
+    if items is None:
+        items = []
+    items.append("new")
+```
+
+**2. TypeVar Usage**
+```python
+# ✅ CORRECT - Properly bound TypeVar
+from typing import TypeVar
+
+T = TypeVar('T')
+NumberT = TypeVar('NumberT', bound=float)
+
+def first(items: list[T]) -> T | None:
+    return items[0] if items else None
+```
+
+**3. Self Type in Methods**
+```python
+from typing import Self  # Python 3.11+
+
+class Node:
+    def add_child(self, child: Self) -> Self:
+        # Returns same type as the class
+        return self
+```
+
+**4. Callable Types**
+```python
+from collections.abc import Callable
+
+# ✅ CORRECT - Fully typed callable
+def register_callback(
+    func: Callable[[str, int], bool]
+) -> None:
+    pass
+
+# ❌ INCORRECT - Untyped callable
+def register_callback(func: Callable) -> None:  # Missing argument and return types
+    pass
+```
+
+#### Import Requirements
+Use absolute imports for better type checking:
+
+```python
+# ✅ CORRECT - Absolute imports
+from design_linters.framework.interfaces import ASTLintRule, LintContext
+from app.models.user import UserModel
+
+# ❌ INCORRECT - Relative imports can confuse type checkers
+from ...framework.interfaces import ASTLintRule
+from ..models.user import UserModel
+```
+
+#### Logging Requirements
+Always use loguru for logging:
+
+```python
+# ✅ CORRECT - Loguru
+from loguru import logger
+
+logger.info("Processing started")
+
+# ❌ INCORRECT - Never use built-in logging module
+import logging
+logger = logging.getLogger(__name__)  # Don't use this
+```
+
+#### Protocol and ABC Usage
+Use Protocol for structural typing, ABC for inheritance:
+
+```python
+from typing import Protocol
+from abc import ABC, abstractmethod
+
+# Protocol - for structural typing (duck typing)
+class Drawable(Protocol):
+    def draw(self, canvas: Canvas) -> None: ...
+
+# ABC - for inheritance hierarchies
+class Shape(ABC):
+    @abstractmethod
+    def area(self) -> float: ...
+```
+
+#### Async Function Types
+Properly type async functions:
+
+```python
+from collections.abc import Coroutine
+from typing import Any
+
+# Direct async function
+async def fetch_data(url: str) -> dict[str, Any]:
+    ...
+
+# Function returning coroutine
+def create_task(url: str) -> Coroutine[Any, Any, dict[str, Any]]:
+    return fetch_data(url)
+```
+
+#### Context Managers
+Type context managers properly:
+
+```python
+from types import TracebackType
+from typing import Self
+
+class DatabaseConnection:
+    def __enter__(self) -> Self:
+        return self
+
+    def __exit__(
+        self,
+        exc_type: type[BaseException] | None,
+        exc_val: BaseException | None,
+        exc_tb: TracebackType | None
+    ) -> None:
+        self.close()
+```
+
+#### Dataclass Integration
+Use proper typing with dataclasses:
+
+```python
+from dataclasses import dataclass, field
+
+@dataclass
+class Config:
+    name: str
+    enabled: bool = True
+    timeout: float | None = None
+    tags: list[str] = field(default_factory=list)  # Correct mutable default
+```
+
+#### Type Checking Configuration
+Ensure mypy.ini or pyproject.toml has strict settings:
+
+```toml
+[tool.mypy]
+python_version = "3.11"
+strict = true  # Enables all strict flags
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true
+disallow_any_unimported = true
+no_implicit_optional = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+warn_no_return = true
+check_untyped_defs = true
+strict_equality = true
+```
+
+#### Common Error Solutions
+
+| Error | Solution |
+|-------|----------|
+| `Missing type annotations` | Add complete type hints to all functions |
+| `Incompatible default for argument` | Include `None` in union type when default is None |
+| `Need type annotation for variable` | Explicitly type class attributes |
+| `Cannot determine type` | Add explicit type annotation: `items: list[str] = []` |
+| `Broad exception caught (W0718)` | Catch specific exceptions, never use bare `except:` |
+| `Mutable default argument (W0102)` | Use `None` default with initialization in function |
 
 ### 4. API Design Principles
 - RESTful conventions with proper HTTP methods

@@ -11,7 +11,7 @@ Implementation: FastAPI route with comprehensive validation and error handling
 """
 
 from datetime import datetime
-from typing import Any, Dict, List, Optional
+from typing import Any, Optional
 from fastapi import APIRouter, Depends, HTTPException, Query, Path, status
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field, validator
@@ -166,13 +166,13 @@ async def {{ENDPOINT_FUNCTION_NAME}}(
 # Additional utility endpoints if needed
 @router.get(
     "/{{UTILITY_ENDPOINT_PATH}}",
-    response_model=List[Dict[str, Any]],
+    response_model=list[dict[str, Any]],
     summary="{{UTILITY_SUMMARY}}",
     description="{{UTILITY_DESCRIPTION}}",
 )
 async def {{UTILITY_FUNCTION_NAME}}(
     {{UTILITY_PARAMETERS}}
-) -> List[Dict[str, Any]]:
+) -> list[dict[str, Any]]:
     """{{UTILITY_DOCSTRING}}"""
     try:
         {{UTILITY_LOGIC}}
