@@ -2,10 +2,16 @@
 """
 Purpose: Core analyzer and orchestrator for the pluggable linter framework
 Scope: Coordinates rule execution, context management, and result aggregation
-Overview: This module implements the main orchestration logic for the pluggable
-    linter framework. It manages AST analysis, context tracking, rule execution,
-    and result aggregation. The analyzer follows the Single Responsibility
-    Principle and uses dependency injection for extensibility.
+Overview: This module implements the core orchestration and analysis engine for the pluggable
+    linter framework, serving as the central coordinator for all linting operations. It provides
+    the PythonAnalyzer class that parses Python source files into AST representations and manages
+    the analysis context including file paths, source content, and node tracking. The
+    DefaultLintOrchestrator coordinates the execution of multiple lint rules across multiple files,
+    handling rule discovery, configuration management, parallel execution, and result aggregation.
+    The module implements sophisticated context tracking with node stacks for hierarchical analysis,
+    ignore directive parsing for suppressing specific violations, and comprehensive error handling
+    to ensure robust operation even when individual rules fail. The design follows SOLID principles
+    with clear separation between analysis, orchestration, and reporting concerns.
 Dependencies: ast for Python AST parsing, pathlib for file operations
 Exports: PythonAnalyzer, LintOrchestrator, DefaultLintOrchestrator
 Interfaces: Implements LintAnalyzer and LintOrchestrator interfaces

@@ -2,10 +2,16 @@
 """
 Purpose: Loguru-specific linting rules for best practices
 Scope: Enforces loguru usage patterns and best practices
-Overview: This module provides rules specifically for loguru logging library,
-    promoting structured logging, proper configuration, and consistent usage
-    patterns. It helps teams adopt loguru effectively while avoiding common
-    pitfalls and ensuring observability best practices.
+Overview: Overview: This module enforces consistent usage of the Loguru logging framework across the codebase,
+    ensuring proper structured logging practices for production applications. It detects various
+    logging antipatterns including use of Python's built-in logging module instead of Loguru, improper
+    string formatting in log messages, missing context in log statements, and incorrect log level usage.
+    The rules check for proper use of Loguru's features like structured logging with extra fields,
+    lazy evaluation of expensive log messages, appropriate exception logging with stack traces, and
+    consistent log message formatting. Each violation provides the correct Loguru pattern to use,
+    helping maintain consistent, searchable, and performant logging throughout the application. The
+    module ensures logs are properly structured for log aggregation systems, contain sufficient context
+    for debugging, and follow severity level conventions.
 Dependencies: Framework interfaces, AST analysis utilities
 Exports: Loguru-specific linting rules
 Interfaces: All rules implement ASTLintRule interface

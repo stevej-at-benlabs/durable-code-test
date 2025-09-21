@@ -103,8 +103,8 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
       const propsChanged = Object.keys(prevProps).some(
         (key) =>
           key !== 'children' &&
-          (prevProps as Record<string, unknown>)[key] !==
-            (this.props as Record<string, unknown>)[key],
+          (prevProps as unknown as Record<string, unknown>)[key] !==
+            (this.props as unknown as Record<string, unknown>)[key],
       );
 
       if (propsChanged) {

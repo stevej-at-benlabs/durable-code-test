@@ -1,0 +1,20 @@
+# Dockerfile for running Playwright integration tests
+FROM mcr.microsoft.com/playwright/python:v1.40.0-jammy
+
+WORKDIR /tests
+
+# Install Python dependencies
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Install Playwright browsers
+RUN playwright install chromium
+
+# Copy test files
+COPY . .
+
+# Set environment variables for headless testing
+ENV PLAYWRIGHT_BROWSERS_PATH=/ms-playwright
+
+# Default command to run tests
+CMD ["pytest", "-v", "--asyncio-mode=auto", "test_oscilloscope_playwright.py"]

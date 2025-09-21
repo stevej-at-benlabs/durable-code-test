@@ -238,10 +238,10 @@ export class ErrorLogger implements IErrorLogger {
     // Integration point for analytics services
     if (
       typeof window !== 'undefined' &&
-      (window as Record<string, unknown>).analytics
+      (window as unknown as Record<string, unknown>).analytics
     ) {
       (
-        (window as Record<string, unknown>).analytics as {
+        (window as unknown as Record<string, unknown>).analytics as {
           track: (event: string, data: Record<string, unknown>) => void;
         }
       ).track(eventName, metadata);

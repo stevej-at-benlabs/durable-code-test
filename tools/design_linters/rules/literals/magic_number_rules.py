@@ -3,10 +3,15 @@
 """
 Purpose: Magic number detection rules for the pluggable framework
 Scope: Framework-based implementation for numeric literal detection
-Overview: This module provides rules for detecting magic numbers and complex
-    numbers that should be replaced with named constants. It focuses on
-    improving code maintainability by identifying hardcoded numeric values
-    that should be extracted into meaningful constants.
+Overview: Overview: This module detects and reports magic numbers and magic strings in code, encouraging
+    the use of named constants for better code maintainability and self-documentation. It identifies
+    numeric literals used in comparisons, calculations, and configurations that should be extracted
+    to constants with meaningful names. The rule intelligently filters out acceptable literals like
+    0, 1, -1 for basic operations while flagging domain-specific values that carry business meaning.
+    It also detects magic strings used repeatedly or containing configuration values that should
+    be centralized. The module provides suggestions for appropriate constant names based on context
+    and usage patterns, helping developers create more readable, maintainable code where the intent
+    of each value is clear from its name rather than requiring comments or domain knowledge.
 Dependencies: Framework interfaces, AST analysis utilities
 Exports: Numeric literal linting rules
 Interfaces: All rules implement ASTLintRule interface

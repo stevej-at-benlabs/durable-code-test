@@ -2,9 +2,16 @@
 """
 Purpose: File organization and placement linting rule for the design linter framework
 Scope: Organization category rule implementation with JSON-based layout configuration
-Overview: This module implements a file placement rule that validates files against
-    a JSON layout configuration file. It supports both AI-readable guidance and
-    machine-readable regex patterns for comprehensive file organization enforcement.
+Overview: This module implements comprehensive file organization rules that ensure proper project
+    structure and prevent common placement mistakes that can lead to maintenance issues. It detects
+    files placed in incorrect directories such as debug scripts in root, test files outside test
+    directories, frontend code mixed with backend, and configuration files in source directories.
+    The rule loads configuration from a JSON layout file that supports both AI-readable guidance
+    and machine-readable regex patterns for comprehensive file organization enforcement. It helps
+    maintain clean separation of concerns, prevents accidental commits of temporary files, and
+    ensures consistent project organization across team members. The implementation includes
+    helpful suggestions for where files should be moved and can be configured to enforce
+    organization standards specific to each project's architecture.
 Dependencies: Framework interfaces, pathlib for path analysis, json for config loading, re for regex
 Exports: FileOrganizationRule implementation
 Interfaces: Implements ASTLintRule interface from framework

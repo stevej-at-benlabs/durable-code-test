@@ -2,10 +2,16 @@
 """
 Purpose: General logging best practices rules
 Scope: Enforces general logging patterns beyond loguru-specific rules
-Overview: This module provides general logging rules that apply regardless
-    of the logging library used. It focuses on proper logging practices,
-    error handling, and avoiding anti-patterns like using print statements
-    for logging in production code.
+Overview: Overview: This module enforces general logging best practices applicable to any logging framework,
+    ensuring consistent, secure, and effective logging throughout the application. It detects common
+    logging mistakes including logging sensitive information like passwords or API keys, insufficient
+    context in error logs, missing correlation IDs for request tracing, and incorrect log levels for
+    different message types. The rules check for proper exception logging with stack traces, structured
+    logging for machine parsing, performance considerations in hot code paths, and consistent message
+    formatting. Each violation includes guidance on proper logging practices such as what to log, when
+    to log, appropriate detail levels, and security considerations. The module helps create logs that
+    are valuable for debugging, monitoring, and security auditing while avoiding common pitfalls like
+    log injection vulnerabilities and performance degradation from excessive logging.
 Dependencies: Framework interfaces, AST analysis utilities
 Exports: General logging linting rules
 Interfaces: All rules implement ASTLintRule interface

@@ -6,6 +6,9 @@ Overview: This module provides comprehensive tests for the nesting rules includi
     ExcessiveNestingRule and DeepFunctionRule. Tests cover all methods, properties,
     edge cases, and configuration scenarios.
 Dependencies: unittest, ast, framework interfaces
+Exports: TestExcessiveNestingRule, TestDeepFunctionRule, TestNestingRulesIntegration
+Interfaces: Standard unittest.TestCase interface for test execution
+Implementation: Comprehensive test coverage using unittest framework with AST parsing
 """
 
 import unittest

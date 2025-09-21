@@ -1,8 +1,18 @@
-"""
-Retry logic and resilience patterns for backend operations.
+"""Retry logic decorators and resilience patterns for fault-tolerant operations.
 
-This module provides decorators and utilities for implementing
-retry logic, circuit breakers, and other resilience patterns.
+Purpose: Retry logic decorators and resilience patterns for fault-tolerant backend operations.
+Scope: Application-wide retry mechanisms for external service calls and transient failure handling
+Overview: This module provides comprehensive retry and resilience patterns to handle transient
+    failures in backend operations. It includes exponential backoff retry decorators for both
+    synchronous and asynchronous functions, configurable retry policies, and integration with
+    circuit breaker patterns. The module helps prevent cascading failures by implementing
+    intelligent retry strategies that avoid overwhelming failing services. All retry attempts
+    are logged for observability, and the decorators support customizable retry conditions,
+    maximum attempts, and wait strategies to balance reliability with performance.
+Dependencies: tenacity for retry logic, loguru for logging, asyncio for async operations
+Exports: retry_on_exception decorator, async_retry decorator, retry configuration constants
+Interfaces: Decorators that wrap functions with retry logic, customizable retry policies
+Implementation: Uses tenacity library with exponential backoff and configurable retry conditions
 """
 
 import asyncio
