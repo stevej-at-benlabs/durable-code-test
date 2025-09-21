@@ -7,18 +7,17 @@ ensure specific exception types are used, and verify retry logic exists.
 
 import ast
 
-from design_linters.framework.rule import Rule
-from design_linters.framework.violation import Violation
+from design_linters.framework.interfaces import ASTLintRule, LintViolation, Severity
 
 
-class NoBroadExceptionsRule(Rule):
+class NoBroadExceptionsRule(ASTLintRule):
     """Detect and prevent broad exception catching."""
 
     name = "error_handling.exceptions.no-broad"
     category = "error_handling"
     description = "Prohibits catching broad exception types"
 
-    def check(self, tree: ast.AST, filepath: str, source: str) -> list[Violation]:
+    def check(self, tree: ast.AST, filepath: str, source: str) -> list[LintViolation]:
         """Check for broad exception catching in Python code."""
         violations = []
 
@@ -27,25 +26,27 @@ class NoBroadExceptionsRule(Rule):
                 if node.type is None:
                     # Bare except: clause
                     violations.append(
-                        Violation(
-                            rule=self.name,
-                            filepath=filepath,
+                        LintViolation(
+                            rule_id=self.name,
+                            file_path=filepath,
                             line=node.lineno,
                             column=node.col_offset,
                             message="Bare except clause found - catch specific exceptions",
-                            severity="error",
+                            severity=Severity.ERROR,
+                            description=self.description,
                         )
                     )
                 elif isinstance(node.type, ast.Name):
                     if node.type.id in ["Exception", "BaseException"]:
                         violations.append(
-                            Violation(
-                                rule=self.name,
-                                filepath=filepath,
+                            LintViolation(
+                                rule_id=self.name,
+                                file_path=filepath,
                                 line=node.lineno,
                                 column=node.col_offset,
                                 message=f"Broad exception type '{node.type.id}' - use specific exceptions",
-                                severity="error",
+                                severity=Severity.ERROR,
+                                description=self.description,
                             )
                         )
                 elif isinstance(node.type, ast.Tuple):
@@ -53,27 +54,28 @@ class NoBroadExceptionsRule(Rule):
                     for exc in node.type.elts:
                         if isinstance(exc, ast.Name) and exc.id in ["Exception", "BaseException"]:
                             violations.append(
-                                Violation(
-                                    rule=self.name,
-                                    filepath=filepath,
+                                LintViolation(
+                                    rule_id=self.name,
+                                    file_path=filepath,
                                     line=node.lineno,
                                     column=node.col_offset,
                                     message=f"Broad exception type '{exc.id}' in tuple - use specific exceptions",
-                                    severity="error",
+                                    severity=Severity.ERROR,
+                                    description=self.description,
                                 )
                             )
 
         return violations
 
 
-class RequireRetryLogicRule(Rule):
+class RequireRetryLogicRule(ASTLintRule):
     """Ensure external operations have retry logic."""
 
     name = "error_handling.resilience.require-retry"
     category = "error_handling"
     description = "External operations must have retry logic"
 
-    def check(self, tree: ast.AST, filepath: str, source: str) -> list[Violation]:
+    def check(self, tree: ast.AST, filepath: str, source: str) -> list[LintViolation]:
         """Check that external operations have retry decorators."""
         violations = []
 
@@ -107,13 +109,14 @@ class RequireRetryLogicRule(Rule):
 
                     if not has_retry:
                         violations.append(
-                            Violation(
-                                rule=self.name,
-                                filepath=filepath,
+                            LintViolation(
+                                rule_id=self.name,
+                                file_path=filepath,
                                 line=node.lineno,
                                 column=node.col_offset,
                                 message=f"External operation '{node.name}' should have retry logic",
-                                severity="warning",
+                                severity=Severity.WARNING,
+                                description=self.description,
                             )
                         )
 
@@ -131,14 +134,14 @@ class RequireRetryLogicRule(Rule):
         return False
 
 
-class StructuredExceptionsRule(Rule):
+class StructuredExceptionsRule(ASTLintRule):
     """Ensure custom exceptions follow structured pattern."""
 
     name = "error_handling.exceptions.structured"
     category = "error_handling"
     description = "Custom exceptions must have proper structure"
 
-    def check(self, tree: ast.AST, filepath: str, source: str) -> list[Violation]:
+    def check(self, tree: ast.AST, filepath: str, source: str) -> list[LintViolation]:
         """Check that exception classes are properly structured."""
         violations = []
 
@@ -173,39 +176,41 @@ class StructuredExceptionsRule(Rule):
 
                     if has_init and not has_status_code and node.name not in ["AppException", "AppExceptionError"]:
                         violations.append(
-                            Violation(
-                                rule=self.name,
-                                filepath=filepath,
+                            LintViolation(
+                                rule_id=self.name,
+                                file_path=filepath,
                                 line=node.lineno,
                                 column=node.col_offset,
                                 message=f"Exception '{node.name}' should define status_code",
-                                severity="warning",
+                                severity=Severity.WARNING,
+                                description=self.description,
                             )
                         )
 
                     if has_init and not has_error_code and node.name not in ["AppException", "AppExceptionError"]:
                         violations.append(
-                            Violation(
-                                rule=self.name,
-                                filepath=filepath,
+                            LintViolation(
+                                rule_id=self.name,
+                                file_path=filepath,
                                 line=node.lineno,
                                 column=node.col_offset,
                                 message=f"Exception '{node.name}' should define error_code",
-                                severity="warning",
+                                severity=Severity.WARNING,
+                                description=self.description,
                             )
                         )
 
         return violations
 
 
-class RequireErrorLoggingRule(Rule):
+class RequireErrorLoggingRule(ASTLintRule):
     """Ensure errors are properly logged."""
 
     name = "error_handling.logging.required"
     category = "error_handling"
     description = "Caught exceptions must be logged"
 
-    def check(self, tree: ast.AST, filepath: str, source: str) -> list[Violation]:
+    def check(self, tree: ast.AST, filepath: str, source: str) -> list[LintViolation]:
         """Check that caught exceptions are logged."""
         violations = []
 
@@ -230,13 +235,14 @@ class RequireErrorLoggingRule(Rule):
                         exc_type = node.type.id
 
                     violations.append(
-                        Violation(
-                            rule=self.name,
-                            filepath=filepath,
+                        LintViolation(
+                            rule_id=self.name,
+                            file_path=filepath,
                             line=node.lineno,
                             column=node.col_offset,
                             message=f"Caught {exc_type} should be logged or re-raised",
-                            severity="warning",
+                            severity=Severity.WARNING,
+                            description=self.description,
                         )
                     )
 
@@ -255,14 +261,14 @@ class RequireErrorLoggingRule(Rule):
         return any(self._contains_logging(child) for child in ast.iter_child_nodes(node))
 
 
-class CircuitBreakerUsageRule(Rule):
+class CircuitBreakerUsageRule(ASTLintRule):
     """Encourage circuit breaker pattern for external services."""
 
     name = "error_handling.resilience.circuit-breaker"
     category = "error_handling"
     description = "External service calls should use circuit breakers"
 
-    def check(self, tree: ast.AST, filepath: str, source: str) -> list[Violation]:
+    def check(self, tree: ast.AST, filepath: str, source: str) -> list[LintViolation]:
         """Check for circuit breaker usage on external calls."""
         violations = []
 
@@ -288,13 +294,14 @@ class CircuitBreakerUsageRule(Rule):
 
                         if not has_internal_cb:
                             violations.append(
-                                Violation(
-                                    rule=self.name,
-                                    filepath=filepath,
+                                LintViolation(
+                                    rule_id=self.name,
+                                    file_path=filepath,
                                     line=node.lineno,
                                     column=node.col_offset,
                                     message=f"Service call '{node.name}' could benefit from circuit breaker",
-                                    severity="info",
+                                    severity=Severity.INFO,
+                                    description=self.description,
                                 )
                             )
 

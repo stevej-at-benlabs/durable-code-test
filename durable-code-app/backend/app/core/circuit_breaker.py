@@ -6,17 +6,29 @@ cascading failures when external services are unavailable.
 """
 
 import asyncio
-import logging
 import time
 from collections.abc import Callable
 from enum import Enum
 from typing import Any, TypeVar
 
+from loguru import logger
+
 from .exceptions import ExternalServiceError
 
-logger = logging.getLogger(__name__)
-
 T = TypeVar("T")
+
+# Circuit Breaker Configuration Constants
+DATABASE_FAILURE_THRESHOLD = 3
+DATABASE_SUCCESS_THRESHOLD = 2
+DATABASE_TIMEOUT_DURATION = 30.0
+
+EXTERNAL_API_FAILURE_THRESHOLD = 5
+EXTERNAL_API_SUCCESS_THRESHOLD = 3
+EXTERNAL_API_TIMEOUT_DURATION = 60.0
+
+CACHE_FAILURE_THRESHOLD = 10
+CACHE_SUCCESS_THRESHOLD = 5
+CACHE_TIMEOUT_DURATION = 20.0
 
 
 class CircuitBreakerState(Enum):
@@ -25,6 +37,90 @@ class CircuitBreakerState(Enum):
     CLOSED = "closed"  # Normal operation
     OPEN = "open"  # Failing, reject requests
     HALF_OPEN = "half_open"  # Testing if service recovered
+
+
+class CircuitBreakerStateManager:
+    """Manages state transitions for circuit breaker."""
+
+    def __init__(self, name: str, failure_threshold: int, success_threshold: int, timeout_duration: float) -> None:
+        """Initialize state manager."""
+        self.name = name
+        self.failure_threshold = failure_threshold
+        self.success_threshold = success_threshold
+        self.timeout_duration = timeout_duration
+        self.state = CircuitBreakerState.CLOSED
+        self.failure_count = 0
+        self.success_count = 0
+        self.last_failure_time: float | None = None
+        self._lock = asyncio.Lock()
+
+    async def transition_to_open(self) -> None:
+        """Transition to OPEN state."""
+        self.state = CircuitBreakerState.OPEN
+        self.last_failure_time = time.time()
+        self.success_count = 0
+        logger.error(
+            "Circuit breaker '{name}' opened after {count} failures",
+            name=self.name,
+            count=self.failure_count,
+        )
+
+    async def transition_to_closed(self) -> None:
+        """Transition to CLOSED state."""
+        self.state = CircuitBreakerState.CLOSED
+        self.failure_count = 0
+        self.success_count = 0
+        logger.info("Circuit breaker '{name}' closed", name=self.name)
+
+    async def transition_to_half_open(self) -> None:
+        """Transition to HALF_OPEN state."""
+        self.state = CircuitBreakerState.HALF_OPEN
+        self.success_count = 0
+        logger.info("Circuit breaker '{name}' half-opened for testing", name=self.name)
+
+    async def should_attempt_reset(self) -> bool:
+        """Check if enough time has passed to attempt reset."""
+        if self.last_failure_time is None:
+            return False
+        return time.time() - self.last_failure_time >= self.timeout_duration
+
+    async def on_success(self) -> None:
+        """Handle successful call."""
+        async with self._lock:
+            if self.state == CircuitBreakerState.HALF_OPEN:
+                self.success_count += 1
+                if self.success_count >= self.success_threshold:
+                    await self.transition_to_closed()
+            elif self.state == CircuitBreakerState.CLOSED:
+                self.failure_count = 0
+
+    async def on_failure(self) -> None:
+        """Handle failed call."""
+        async with self._lock:
+            if self.state == CircuitBreakerState.HALF_OPEN:
+                await self.transition_to_open()
+                return
+
+            if self.state == CircuitBreakerState.CLOSED:
+                self.failure_count += 1
+                if self.failure_count >= self.failure_threshold:
+                    await self.transition_to_open()
+
+    async def check_state_transition(self) -> None:
+        """Check if state should transition from OPEN to HALF_OPEN."""
+        if self.state == CircuitBreakerState.OPEN and await self.should_attempt_reset():
+            await self.transition_to_half_open()
+
+    def get_status(self) -> dict[str, Any]:
+        """Get current state manager status."""
+        return {
+            "state": self.state.value,
+            "failure_count": self.failure_count,
+            "success_count": self.success_count,
+            "failure_threshold": self.failure_threshold,
+            "success_threshold": self.success_threshold,
+            "timeout_duration": self.timeout_duration,
+        }
 
 
 class CircuitBreaker:
@@ -48,6 +144,7 @@ class CircuitBreaker:
         name: str,
         failure_threshold: int = 5,
         success_threshold: int = 2,
+        *,
         timeout_duration: float = 60.0,
         expected_exceptions: tuple[type[Exception], ...] | None = None,
     ) -> None:
@@ -62,69 +159,20 @@ class CircuitBreaker:
             expected_exceptions: Exceptions that trigger the circuit breaker
         """
         self.name = name
-        self.failure_threshold = failure_threshold
-        self.success_threshold = success_threshold
-        self.timeout_duration = timeout_duration
         self.expected_exceptions = expected_exceptions or (
             ExternalServiceError,
             ConnectionError,
             TimeoutError,
         )
+        self.state_manager = CircuitBreakerStateManager(name, failure_threshold, success_threshold, timeout_duration)
 
-        # State management
-        self.state = CircuitBreakerState.CLOSED
-        self.failure_count = 0
-        self.success_count = 0
-        self.last_failure_time: float | None = None
-        self._lock = asyncio.Lock()
+    async def _execute_function(self, func: Callable[..., Any], *args: Any, **kwargs: Any) -> Any:
+        """Execute the function with proper async handling."""
+        if asyncio.iscoroutinefunction(func):
+            return await func(*args, **kwargs)
+        return func(*args, **kwargs)
 
-    async def _transition_to_open(self) -> None:
-        """Transition to OPEN state."""
-        self.state = CircuitBreakerState.OPEN
-        self.last_failure_time = time.time()
-        self.success_count = 0
-        logger.warning(f"Circuit breaker '{self.name}' opened after {self.failure_count} failures")
-
-    async def _transition_to_closed(self) -> None:
-        """Transition to CLOSED state."""
-        self.state = CircuitBreakerState.CLOSED
-        self.failure_count = 0
-        self.success_count = 0
-        logger.info(f"Circuit breaker '{self.name}' closed")
-
-    async def _transition_to_half_open(self) -> None:
-        """Transition to HALF_OPEN state."""
-        self.state = CircuitBreakerState.HALF_OPEN
-        self.success_count = 0
-        logger.info(f"Circuit breaker '{self.name}' half-opened for testing")
-
-    async def _should_attempt_reset(self) -> bool:
-        """Check if enough time has passed to attempt reset."""
-        if self.last_failure_time is None:
-            return False
-        return time.time() - self.last_failure_time >= self.timeout_duration
-
-    async def _on_success(self) -> None:
-        """Handle successful call."""
-        async with self._lock:
-            if self.state == CircuitBreakerState.HALF_OPEN:
-                self.success_count += 1
-                if self.success_count >= self.success_threshold:
-                    await self._transition_to_closed()
-            elif self.state == CircuitBreakerState.CLOSED:
-                self.failure_count = 0
-
-    async def _on_failure(self) -> None:
-        """Handle failed call."""
-        async with self._lock:
-            if self.state == CircuitBreakerState.HALF_OPEN:
-                await self._transition_to_open()
-            elif self.state == CircuitBreakerState.CLOSED:
-                self.failure_count += 1
-                if self.failure_count >= self.failure_threshold:
-                    await self._transition_to_open()
-
-    async def call(self, func: Callable[..., T], *args: Any, **kwargs: Any) -> T:
+    async def call(self, func: Callable[..., Any], *args: Any, **kwargs: Any) -> Any:
         """
         Execute function through circuit breaker.
 
@@ -140,33 +188,27 @@ class CircuitBreaker:
             ExternalServiceError: When circuit is open
             Exception: Whatever func raises
         """
-        async with self._lock:
-            # Check if we should transition from OPEN to HALF_OPEN
-            if self.state == CircuitBreakerState.OPEN and await self._should_attempt_reset():
-                await self._transition_to_half_open()
+        async with self.state_manager._lock:
+            await self.state_manager.check_state_transition()
 
             # Reject if circuit is open
-            if self.state == CircuitBreakerState.OPEN:
+            if self.state_manager.state == CircuitBreakerState.OPEN:
                 raise ExternalServiceError(
                     f"Circuit breaker '{self.name}' is open",
-                    details={"circuit_breaker": self.name, "state": self.state.value},
+                    details={"circuit_breaker": self.name, "state": self.state_manager.state.value},
                 )
 
         # Attempt the call
         try:
-            if asyncio.iscoroutinefunction(func):
-                result = await func(*args, **kwargs)
-            else:
-                result = func(*args, **kwargs)
-
-            await self._on_success()
+            result = await self._execute_function(func, *args, **kwargs)
+            await self.state_manager.on_success()
             return result
 
         except self.expected_exceptions:
-            await self._on_failure()
+            await self.state_manager.on_failure()
             raise
 
-    def __call__(self, func: Callable[..., T]) -> Callable[..., T]:
+    def __call__(self, func: Callable[..., Any]) -> Callable[..., Any]:
         """
         Decorator to wrap function with circuit breaker.
 
@@ -183,28 +225,27 @@ class CircuitBreaker:
         """
         if asyncio.iscoroutinefunction(func):
 
-            async def async_wrapper(*args: Any, **kwargs: Any) -> T:
+            async def async_wrapper(*args: Any, **kwargs: Any) -> Any:
                 return await self.call(func, *args, **kwargs)
 
             return async_wrapper
-        else:
 
-            def sync_wrapper(*args: Any, **kwargs: Any) -> T:
-                # For sync functions, we need to run in an event loop
-                loop = asyncio.get_event_loop()
-                return loop.run_until_complete(self.call(func, *args, **kwargs))
+        def sync_wrapper(*args: Any, **kwargs: Any) -> Any:
+            # For sync functions, we need to run in an event loop
+            loop = asyncio.get_event_loop()
+            return loop.run_until_complete(self.call(func, *args, **kwargs))
 
-            return sync_wrapper
+        return sync_wrapper
 
     @property
     def is_open(self) -> bool:
         """Check if circuit is open."""
-        return self.state == CircuitBreakerState.OPEN
+        return self.state_manager.state == CircuitBreakerState.OPEN
 
     @property
     def is_closed(self) -> bool:
         """Check if circuit is closed."""
-        return self.state == CircuitBreakerState.CLOSED
+        return self.state_manager.state == CircuitBreakerState.CLOSED
 
     def get_status(self) -> dict[str, Any]:
         """
@@ -213,35 +254,29 @@ class CircuitBreaker:
         Returns:
             Dictionary with status information
         """
-        return {
-            "name": self.name,
-            "state": self.state.value,
-            "failure_count": self.failure_count,
-            "success_count": self.success_count,
-            "failure_threshold": self.failure_threshold,
-            "success_threshold": self.success_threshold,
-            "timeout_duration": self.timeout_duration,
-        }
+        status = self.state_manager.get_status()
+        status["name"] = self.name
+        return status
 
 
 # Pre-configured circuit breakers for common scenarios
 database_circuit_breaker = CircuitBreaker(
     name="database",
-    failure_threshold=3,
-    success_threshold=2,
-    timeout_duration=30.0,
+    failure_threshold=DATABASE_FAILURE_THRESHOLD,
+    success_threshold=DATABASE_SUCCESS_THRESHOLD,
+    timeout_duration=DATABASE_TIMEOUT_DURATION,
 )
 
 external_api_circuit_breaker = CircuitBreaker(
     name="external_api",
-    failure_threshold=5,
-    success_threshold=3,
-    timeout_duration=60.0,
+    failure_threshold=EXTERNAL_API_FAILURE_THRESHOLD,
+    success_threshold=EXTERNAL_API_SUCCESS_THRESHOLD,
+    timeout_duration=EXTERNAL_API_TIMEOUT_DURATION,
 )
 
 cache_circuit_breaker = CircuitBreaker(
     name="cache",
-    failure_threshold=10,
-    success_threshold=5,
-    timeout_duration=20.0,
+    failure_threshold=CACHE_FAILURE_THRESHOLD,
+    success_threshold=CACHE_SUCCESS_THRESHOLD,
+    timeout_duration=CACHE_TIMEOUT_DURATION,
 )

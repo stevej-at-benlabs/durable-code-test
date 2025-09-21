@@ -7,18 +7,29 @@ retry logic, circuit breakers, and other resilience patterns.
 
 import asyncio
 import functools
-import logging
-from collections.abc import Callable
-from typing import Any, TypeVar
+from collections.abc import Callable, Coroutine
+from typing import Any, TypeVar, cast
 
-from tenacity import Retrying, retry, stop_after_attempt, wait_exponential
-from tenacity.before_sleep import before_sleep_log
+from loguru import logger
+from tenacity import AsyncRetrying, retry, retry_if_exception_type, stop_after_attempt, wait_exponential
 
 from .exceptions import ExternalServiceError
 
-logger = logging.getLogger(__name__)
-
 T = TypeVar("T")
+
+# Retry Configuration Constants
+DEFAULT_MAX_ATTEMPTS = 3
+DEFAULT_MIN_WAIT = 1.0
+DEFAULT_MAX_WAIT = 10.0
+DEFAULT_MULTIPLIER = 2
+
+AGGRESSIVE_MAX_ATTEMPTS = 5
+AGGRESSIVE_MIN_WAIT = 0.5
+AGGRESSIVE_MAX_WAIT = 30.0
+
+GENTLE_MAX_ATTEMPTS = 2
+GENTLE_MIN_WAIT = 2.0
+GENTLE_MAX_WAIT = 5.0
 
 
 class RetryConfig:
@@ -26,10 +37,11 @@ class RetryConfig:
 
     def __init__(
         self,
-        max_attempts: int = 3,
-        min_wait: float = 1.0,
-        max_wait: float = 10.0,
-        multiplier: float = 2.0,
+        max_attempts: int = DEFAULT_MAX_ATTEMPTS,
+        min_wait: float = DEFAULT_MIN_WAIT,
+        max_wait: float = DEFAULT_MAX_WAIT,
+        *,
+        multiplier: float = DEFAULT_MULTIPLIER,
         exceptions: tuple[type[Exception], ...] | None = None,
     ) -> None:
         """
@@ -51,22 +63,126 @@ class RetryConfig:
 
 # Default retry configurations for different scenarios
 DEFAULT_RETRY = RetryConfig(
-    max_attempts=3,
-    min_wait=1.0,
-    max_wait=10.0,
+    max_attempts=DEFAULT_MAX_ATTEMPTS,
+    min_wait=DEFAULT_MIN_WAIT,
+    max_wait=DEFAULT_MAX_WAIT,
 )
 
 AGGRESSIVE_RETRY = RetryConfig(
-    max_attempts=5,
-    min_wait=0.5,
-    max_wait=30.0,
+    max_attempts=AGGRESSIVE_MAX_ATTEMPTS,
+    min_wait=AGGRESSIVE_MIN_WAIT,
+    max_wait=AGGRESSIVE_MAX_WAIT,
 )
 
 GENTLE_RETRY = RetryConfig(
-    max_attempts=2,
-    min_wait=2.0,
-    max_wait=5.0,
+    max_attempts=GENTLE_MAX_ATTEMPTS,
+    min_wait=GENTLE_MIN_WAIT,
+    max_wait=GENTLE_MAX_WAIT,
 )
+
+
+def _create_retry_config(config: RetryConfig) -> dict[str, Any]:
+    """Create retry configuration for tenacity."""
+    return {
+        "stop": stop_after_attempt(config.max_attempts),
+        "wait": wait_exponential(
+            multiplier=config.multiplier,
+            min=config.min_wait,
+            max=config.max_wait,
+        ),
+        "retry": retry_if_exception_type(config.exceptions) if config.exceptions else None,
+    }
+
+
+def _handle_retry_exception(
+    func_name: str, attempt: int, max_attempts: int, e: Exception, on_retry: Callable[[Any, Any], None] | None
+) -> None:
+    """Handle exception during retry."""
+    if on_retry:
+        on_retry(attempt, e)
+    if attempt < max_attempts:
+        logger.error(
+            "Operation {func} failed (attempt {attempt}/{max}): {error}",
+            func=func_name,
+            attempt=attempt,
+            max=max_attempts,
+            error=str(e),
+        )
+    else:
+        logger.error(
+            "Operation {func} failed after {attempts} attempts: {error}",
+            func=func_name,
+            attempts=attempt,
+            error=str(e),
+        )
+
+
+async def _retry_attempt(
+    func: Callable[..., Coroutine[Any, Any, T]],
+    config: RetryConfig,
+    attempt: int,
+    on_retry: Callable[[Any, Any], None] | None,
+    *args: Any,
+    **kwargs: Any,
+) -> T:
+    """Execute a single retry attempt."""
+    try:
+        result = await func(*args, **kwargs)
+        if attempt > 1:
+            logger.info(
+                "Operation {func} succeeded after {attempts} attempts",
+                func=func.__name__,
+                attempts=attempt,
+            )
+        return result
+    except config.exceptions as e:
+        _handle_retry_exception(func.__name__, attempt, config.max_attempts, e, on_retry)
+        raise
+
+
+async def _execute_with_retry(
+    func: Callable[..., Coroutine[Any, Any, T]],
+    config: RetryConfig,
+    on_retry: Callable[[Any, Any], None] | None,
+    *args: Any,
+    **kwargs: Any,
+) -> T:
+    """Execute async function with retry logic."""
+    attempt = 0
+    retry_config = _create_retry_config(config)
+
+    async for attempt_manager in AsyncRetrying(**retry_config):
+        with attempt_manager:
+            attempt += 1
+            return await _retry_attempt(func, config, attempt, on_retry, *args, **kwargs)
+
+    raise RuntimeError(f"Unexpected retry state for {func.__name__}")
+
+
+def _create_async_retry_wrapper(
+    func: Callable[..., Coroutine[Any, Any, T]], config: RetryConfig, on_retry: Callable[[Any, Any], None] | None
+) -> Callable[..., Coroutine[Any, Any, T]]:
+    """Create async wrapper for retry logic."""
+
+    @functools.wraps(func)
+    async def async_wrapper(*args: Any, **kwargs: Any) -> T:
+        """Async wrapper with retry logic."""
+        return await _execute_with_retry(func, config, on_retry, *args, **kwargs)
+
+    return cast(Callable[..., Coroutine[Any, Any, T]], async_wrapper)
+
+
+def _create_sync_retry_wrapper(func: Callable[..., T], config: RetryConfig) -> Callable[..., T]:
+    """Create sync wrapper for retry logic."""
+
+    @functools.wraps(func)
+    def sync_wrapper(*args: Any, **kwargs: Any) -> T:
+        """Sync wrapper with retry logic."""
+        retry_config = _create_retry_config(config)
+        wrapped_func = retry(**retry_config)(func)
+        return cast(T, wrapped_func(*args, **kwargs))
+
+    return sync_wrapper
 
 
 def with_retry(
@@ -98,103 +214,14 @@ def with_retry(
         config = DEFAULT_RETRY
 
     def decorator(func: Callable[..., T]) -> Callable[..., T]:
-        @functools.wraps(func)
-        async def async_wrapper(*args: Any, **kwargs: Any) -> T:
-            """Async wrapper with retry logic."""
-            attempt = 0
-            last_exception = None
-
-            async for attempt_manager in AsyncRetrying(
-                stop=stop_after_attempt(config.max_attempts),
-                wait=wait_exponential(
-                    multiplier=config.multiplier,
-                    min=config.min_wait,
-                    max=config.max_wait,
-                ),
-                retry=(retry_if_exception_type(config.exceptions) if config.exceptions else None),
-                before_sleep=before_sleep_log(logger, logging.INFO),
-            ):
-                with attempt_manager:
-                    attempt += 1
-                    try:
-                        result = await func(*args, **kwargs)
-                        if attempt > 1:
-                            logger.info(f"Operation {func.__name__} succeeded after {attempt} attempts")
-                        return result
-                    except config.exceptions as e:
-                        last_exception = e
-                        if on_retry:
-                            on_retry(attempt, e)
-                        if attempt < config.max_attempts:
-                            logger.warning(
-                                f"Operation {func.__name__} failed (attempt {attempt}/{config.max_attempts}): {str(e)}"
-                            )
-                        else:
-                            logger.error(f"Operation {func.__name__} failed after {attempt} attempts: {str(e)}")
-                        raise
-
-            # This should not be reached, but handle it gracefully
-            if last_exception:
-                raise last_exception
-            raise RuntimeError(f"Unexpected retry state for {func.__name__}")
-
-        @functools.wraps(func)
-        def sync_wrapper(*args: Any, **kwargs: Any) -> T:
-            """Sync wrapper with retry logic."""
-            return retry(
-                stop=stop_after_attempt(config.max_attempts),
-                wait=wait_exponential(
-                    multiplier=config.multiplier,
-                    min=config.min_wait,
-                    max=config.max_wait,
-                ),
-                retry=(retry_if_exception_type(config.exceptions) if config.exceptions else None),
-                before_sleep=before_sleep_log(logger, logging.INFO),
-            )(func)(*args, **kwargs)
-
-        # Return appropriate wrapper based on function type
         if asyncio.iscoroutinefunction(func):
-            return async_wrapper
-        else:
-            return sync_wrapper
+            return cast(Callable[..., T], _create_async_retry_wrapper(func, config, on_retry))
+        return _create_sync_retry_wrapper(func, config)
 
     return decorator
 
 
-def retry_if_exception_type(exceptions: tuple[type[Exception], ...]) -> Callable[[Any], bool]:
-    """
-    Helper to determine if an exception should trigger a retry.
-
-    Args:
-        exceptions: Tuple of exception types to retry on
-
-    Returns:
-        Function that checks if exception should be retried
-    """
-
-    def _retry_if_exception_type(retry_state: Any) -> bool:
-        if retry_state.outcome.failed:
-            return isinstance(retry_state.outcome.exception(), exceptions)
-        return False
-
-    return _retry_if_exception_type
-
-
-class AsyncRetrying(Retrying):
-    """Async version of tenacity's Retrying class."""
-
-    def __aiter__(self) -> "AsyncRetrying":
-        """Make this class an async iterator."""
-        self.begin()
-        return self
-
-    async def __anext__(self) -> Any:
-        """Async version of __next__."""
-        while True:
-            do = self.iter(retry_state=self.retry_state)
-            if do is None:
-                raise StopAsyncIteration
-            return do
+# retry_if_exception_type and AsyncRetrying are already imported from tenacity
 
 
 # Convenience decorators for common scenarios
