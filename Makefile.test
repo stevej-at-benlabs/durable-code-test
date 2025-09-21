@@ -42,10 +42,10 @@
 #
 ################################################################################
 
-.PHONY: test-all test-quick test-backend test-backend-coverage test-backend-quick test-frontend test-frontend-coverage test-frontend-watch test-framework test-integration test-rules test-solid test-logging test-links test-watch test-ci
+.PHONY: test-all test-quick test-backend test-backend-coverage test-backend-quick test-frontend test-frontend-coverage test-frontend-watch test-framework test-integration test-rules test-solid test-logging test-links test-watch test-ci test-playwright-build test-playwright test-playwright-oscilloscope test-playwright-interactive test-e2e
 
 # Main testing targets
-test-all: dev-start test-backend-coverage test-frontend-coverage ## Run all tests with coverage (backend + frontend)
+test-all: dev-start test-backend-coverage test-frontend-coverage test-playwright ## Run all tests with coverage (backend + frontend + integration)
 	@echo "$(GREEN)✅ All tests completed with coverage!$(NC)"
 
 test-quick: dev-start test-backend-quick test-frontend ## Run all tests without coverage (faster)
@@ -196,3 +196,32 @@ test-list: dev-start ## List all available test files
 	@echo ""
 	@echo "$(YELLOW)Frontend test files:$(NC)"
 	@docker exec durable-code-frontend-dev find src/ -name "*.test.ts" -o -name "*.test.tsx" -o -name "*.spec.ts" -o -name "*.spec.tsx" | sort
+
+# Playwright integration tests
+test-playwright-build: ## Build Playwright test container
+	@echo "$(CYAN)Building Playwright test container...$(NC)"
+	@docker build -f test/integration_test/Dockerfile.playwright -t playwright-tests test/integration_test/
+	@echo "$(GREEN)✓ Playwright container built$(NC)"
+
+test-playwright: dev-start test-playwright-build ## Run Playwright integration tests
+	@echo "$(CYAN)Running Playwright integration tests...$(NC)"
+	@docker run --rm --network durable-code-test_durable-network-dev \
+		-e PLAYWRIGHT_BROWSERS_PATH=/ms-playwright \
+		playwright-tests
+	@echo "$(GREEN)✓ Playwright tests complete$(NC)"
+
+test-playwright-oscilloscope: dev-start test-playwright-build ## Run oscilloscope Playwright tests
+	@echo "$(CYAN)Running oscilloscope integration tests...$(NC)"
+	@docker run --rm --network durable-code-test_durable-network-dev \
+		-e PLAYWRIGHT_BROWSERS_PATH=/ms-playwright \
+		playwright-tests pytest -v test_oscilloscope_playwright.py
+	@echo "$(GREEN)✓ Oscilloscope tests complete$(NC)"
+
+test-playwright-interactive: dev-start test-playwright-build ## Run Playwright tests interactively
+	@echo "$(CYAN)Starting interactive Playwright test session...$(NC)"
+	@docker run --rm -it --network durable-code-test_durable-network-dev \
+		-e PLAYWRIGHT_BROWSERS_PATH=/ms-playwright \
+		playwright-tests /bin/bash
+	@echo "$(GREEN)✓ Interactive session ended$(NC)"
+
+test-e2e: test-playwright ## Alias for Playwright tests (end-to-end)

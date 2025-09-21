@@ -1,10 +1,11 @@
 """
 Purpose: Integration tests for FastAPI application
 Scope: Testing full API integration with database
-Created: 2025-09-14
-Updated: 2025-09-14
-Author: Development Team
-Version: 1.0
+Overview: Comprehensive integration test suite that validates the FastAPI application's core functionality including endpoint accessibility, health checks, database connectivity, and proper environment configuration setup for CI/CD pipeline execution and deployment verification.
+Dependencies: pytest, FastAPI test client, pathlib, os for environment variables
+Exports: Integration test functions for API endpoints and database connectivity
+Interfaces: pytest test functions with standard test patterns and CI environment checks
+Implementation: Uses FastAPI TestClient with environment-based test skipping for CI integration
 """
 
 import os

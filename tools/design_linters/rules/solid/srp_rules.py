@@ -2,10 +2,16 @@
 """
 Purpose: Single Responsibility Principle rules for pluggable framework
 Scope: Implements SRP violation detection as individual, focused rules
-Overview: This module converts the monolithic SRP analyzer into focused,
-    pluggable rules. Each rule checks for a specific aspect of SRP violations
-    (method count, responsibilities, cohesion, size, dependencies) enabling
-    fine-grained control and easier testing.
+Overview: Overview: This module enforces the Single Responsibility Principle (SRP) from SOLID design
+    principles, ensuring classes and functions maintain focused, cohesive responsibilities. It
+    detects violations such as classes handling multiple unrelated concerns, functions performing
+    too many distinct operations, mixed business logic with infrastructure code, and coupled
+    responsibilities that should be separated. The rules analyze method names, class structure,
+    dependency patterns, and code complexity to identify SRP violations. Each violation provides
+    refactoring suggestions showing how to extract responsibilities into separate classes or
+    methods. The module helps maintain maintainable, testable code by ensuring each component
+    has a single, well-defined reason to change, reducing coupling and improving code organization
+    across the entire codebase.
 Dependencies: Framework interfaces, AST analysis utilities
 Exports: Individual SRP-focused rules
 Interfaces: All rules implement ASTLintRule interface

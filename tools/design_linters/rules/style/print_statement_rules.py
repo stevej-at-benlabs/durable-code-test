@@ -2,9 +2,16 @@
 """
 Purpose: Print statement detection rules for the pluggable framework
 Scope: Converts print statement linter functionality to framework rules
-Overview: This module converts the monolithic print statement linter into
-    focused, pluggable rules. Rules detect print statements and console output
-    that should be replaced with proper logging mechanisms for production code.
+Overview: Overview: This module enforces proper logging practices by detecting and discouraging the use of
+    print statements and console output methods in production code. It identifies various forms of
+    console output including print() calls, sys.stdout writes, console.log in JavaScript within
+    Python strings, and other debugging output that should be replaced with proper logging. The
+    rules check for print statements in all contexts except legitimate uses like CLI output handling,
+    and suggest appropriate logging alternatives using the configured logging framework. Each
+    violation provides the correct logging method to use based on the output's purpose (debug, info,
+    warning, error). The module helps maintain clean production code, ensures consistent log
+    formatting, enables proper log level control, and prevents sensitive information from being
+    accidentally printed to console in production environments.
 Dependencies: Framework interfaces, AST analysis utilities
 Exports: Print statement detection rules
 Interfaces: All rules implement ASTLintRule interface

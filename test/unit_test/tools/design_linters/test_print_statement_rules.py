@@ -6,6 +6,9 @@ Overview: This module provides comprehensive tests for PrintStatementRule and
     ConsoleOutputRule classes, including property tests, node checking, violation
     detection, and configuration handling.
 Dependencies: unittest, ast, framework interfaces
+Exports: TestPrintStatementRule, TestConsoleOutputRule, TestRuleIntegration
+Interfaces: Standard unittest.TestCase interface for test execution
+Implementation: Comprehensive test coverage using unittest framework with AST parsing
 """
 
 import unittest

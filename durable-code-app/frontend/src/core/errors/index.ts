@@ -8,7 +8,7 @@
  */
 
 // Components
-export { ErrorBoundary, withErrorBoundary } from './ErrorBoundary';
+export { ErrorBoundary } from './ErrorBoundary';
 export { ErrorFallback } from './ErrorFallback';
 
 // Services

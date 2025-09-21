@@ -195,7 +195,7 @@ if (process.env.NODE_ENV === 'development') {
   observeLongTasks();
 
   // Expose utilities to window for debugging
-  (window as Record<string, unknown>).__PERF__ = {
+  (window as unknown as Record<string, unknown>).__PERF__ = {
     measureComponentPerf,
     getPerformanceMetrics,
     clearPerformanceMetrics,

@@ -4,8 +4,11 @@ Purpose: Comprehensive unit tests for general logging rules
 Scope: Tests all rule classes in general_logging_rules.py
 Overview: This module provides comprehensive tests for NoPlainPrintRule,
     ProperLogLevelsRule, and LoggingInExceptionsRule to ensure proper
-    logging best practices enforcement.
+    logging best practices enforcement and validate rule behavior.
 Dependencies: unittest, ast, framework modules
+Exports: TestNoPlainPrintRule, TestProperLogLevelsRule, TestLoggingInExceptionsRule
+Interfaces: Standard unittest.TestCase interface for test execution
+Implementation: Comprehensive test coverage using unittest framework with AST parsing
 """
 
 import unittest

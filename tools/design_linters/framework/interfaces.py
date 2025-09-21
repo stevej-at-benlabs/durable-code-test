@@ -2,11 +2,16 @@
 """
 Purpose: Core interfaces for the pluggable design linter framework
 Scope: Defines contracts for rules, analyzers, reporters, and orchestrators
-Overview: This module establishes the foundational interfaces that enable
-    a pluggable architecture for design linters. Rules can be added dynamically,
-    reporters can format output in multiple ways, and analyzers can process
-    different types of code structures. This follows SOLID principles with
-    clear separation of concerns and dependency injection.
+Overview: This module establishes the foundational interfaces that enable a pluggable
+    architecture for the design linter framework, providing the core abstractions that all
+    components must implement. It defines the contracts for lint rules (both AST-based and
+    file-based), violation reporting with severity levels, analysis contexts with comprehensive
+    file information, and output reporters for various formats. The interfaces support dynamic
+    rule discovery and registration, allowing new rules to be added without modifying the
+    framework core. The design follows SOLID principles with clear separation of concerns,
+    dependency injection, and extensibility points. The module also includes ignore directive
+    handling for suppressing specific violations, node stack tracking for context-aware analysis,
+    and helper functions for creating consistent violation messages across all rules.
 Dependencies: abc for abstract base classes, typing for type hints, ast for AST nodes
 Exports: LintRule, LintViolation, LintReporter, LintAnalyzer, LintOrchestrator
 Interfaces: All classes are abstract interfaces requiring implementation

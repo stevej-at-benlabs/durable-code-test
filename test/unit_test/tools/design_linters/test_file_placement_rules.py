@@ -3,7 +3,8 @@
 Purpose: Unit tests for file placement linting rules
 Scope: Tests for FileOrganizationRule to ensure proper file placement detection
 Overview: This module tests the file placement rule's ability to detect
-    improperly placed files, validate exceptions, and provide appropriate suggestions.
+    improperly placed files, validate exceptions, and provide appropriate suggestions
+    for proper organization and placement within the project structure.
 Dependencies: pytest, unittest.mock, design_linters framework
 Exports: Test classes for file placement rules
 Interfaces: Standard pytest test interface

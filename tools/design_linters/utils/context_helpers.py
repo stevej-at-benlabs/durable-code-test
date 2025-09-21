@@ -2,7 +2,16 @@
 """
 Purpose: Context-related helper functions
 Scope: Common context checking utilities
-Overview: Provides shared logic for checking allowed contexts for rules
+Overview: Overview: This utility module provides essential context extraction and formatting helpers that
+    enhance the diagnostic quality of linting violations by providing rich contextual information.
+    It includes functions for extracting surrounding code lines with configurable context windows,
+    highlighting specific violations within their code context, generating line number annotations,
+    and formatting code snippets for clear display. The module also provides AST node information
+    extraction, parent node traversal for understanding code structure, variable and function name
+    resolution from context, and import statement analysis. These utilities ensure that violation
+    reports include sufficient context for developers to understand and fix issues quickly without
+    needing to open files separately. The formatting preserves syntax highlighting compatibility
+    and supports various output formats.
 Dependencies: Framework interfaces
 Exports: Context checking functions
 Interfaces: N/A - utility functions

@@ -1,8 +1,18 @@
-"""Security utilities and validation for the durable code application.
+"""Comprehensive security utilities and middleware for application-wide protection.
 
-This module provides comprehensive security utilities including input sanitization,
-enhanced validation rules, rate limiting configuration, and security headers middleware.
-It implements defense-in-depth security practices for FastAPI applications.
+Purpose: Comprehensive security utilities and middleware for application-wide protection.
+Scope: Input validation, sanitization, rate limiting, security headers, and threat mitigation
+Overview: This module provides a complete security layer for the FastAPI application, implementing
+    defense-in-depth practices to protect against common web vulnerabilities. It includes input
+    sanitization to prevent XSS attacks, strict validation rules to ensure data integrity, rate
+    limiting to prevent abuse and DDoS attacks, and security headers middleware to protect against
+    various client-side attacks. The module implements OWASP security best practices, including
+    Content Security Policy, HSTS, X-Frame-Options, and other critical security headers. All
+    security functions are designed to be performant while maintaining strong protection levels.
+Dependencies: FastAPI, pydantic for validation, slowapi for rate limiting, html for sanitization
+Exports: SecurityMiddleware class, sanitize_input function, SecureModel base class, rate limiter
+Interfaces: Middleware dispatch method, validation decorators, sanitization utilities
+Implementation: Middleware pattern with configurable security policies and validation chains
 """
 
 import html
