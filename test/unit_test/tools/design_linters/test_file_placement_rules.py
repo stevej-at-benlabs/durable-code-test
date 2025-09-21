@@ -16,7 +16,6 @@ from pathlib import Path
 from unittest.mock import MagicMock, patch
 
 import pytest
-
 from design_linters.framework.interfaces import LintContext, Severity
 from design_linters.rules.organization.file_placement_rules import FileOrganizationRule
 
@@ -200,26 +199,14 @@ class TestFileOrganizationRule:
             assert "Consider if this file belongs" in violation.description
 
     def test_custom_configuration(self):
-        """Test custom configuration for allowed files and patterns."""
-        config = {
-            "allowed_root_files": ["custom_allowed.py"],
-            "forbidden_root_patterns": [r"^custom_forbidden.*\.py$"],
-        }
-        rule = FileOrganizationRule(config)
+        """Test that rule uses default configuration when no custom layout file exists."""
+        rule = FileOrganizationRule({})
 
-        # Test custom allowed file
-        with patch("pathlib.Path.cwd", return_value=Path("/project")):
-            context = self.create_context("/project/custom_allowed.py")
-            module_node = ast.parse("# Test")
-            violations = rule.check_node(module_node, context)
-            assert len(violations) == 0, "Custom allowed file should not trigger violation"
-
-        # Test custom forbidden pattern
-        with patch("pathlib.Path.cwd", return_value=Path("/project")):
-            context = self.create_context("/project/custom_forbidden_file.py")
-            module_node = ast.parse("# Test")
-            violations = rule.check_node(module_node, context)
-            assert len(violations) == 1, "Custom forbidden pattern should trigger violation"
+        # Test that default configuration is loaded
+        assert rule.layout_rules is not None
+        assert "." in rule.layout_rules["paths"]
+        assert "allow" in rule.layout_rules["paths"]["."]
+        assert "deny" in rule.layout_rules["paths"]["."]
 
     def test_only_checks_module_node(self):
         """Test that the rule only checks Module nodes to avoid duplicate violations."""

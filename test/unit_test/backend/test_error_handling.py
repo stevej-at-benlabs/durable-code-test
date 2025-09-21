@@ -1,44 +1,47 @@
 """
-Purpose: Unit tests for error handling and resilience patterns in the backend application
+Purpose: Unit tests for error handling and resilience patterns in the backend application.
+
 Scope: Testing exception hierarchy, retry logic, circuit breakers, and global exception handlers
-Overview: Comprehensive test suite validating the error handling framework including custom exception classes, retry mechanisms with exponential backoff, circuit breaker patterns for external services, global exception handlers, and integration testing of resilience patterns to ensure robust error management throughout the application.
+Overview: Comprehensive test suite validating the error handling framework including custom exception classes,
+retry mechanisms with exponential backoff, circuit breaker patterns for external services, global exception
+handlers, and integration testing of resilience patterns to ensure robust error management throughout the
+application.
 Dependencies: pytest, asyncio, unittest.mock, FastAPI, tenacity for retry logic, custom error handling modules
 Exports: Test classes for exception hierarchy, retry logic, circuit breakers, and error handling integration
 Interfaces: pytest test methods and fixtures following standard testing patterns with async support
-Implementation: Uses pytest with asyncio support, mocking for external dependencies, and FastAPI test client for handler testing
+Implementation: Uses pytest with asyncio support, mocking for external dependencies, and FastAPI test client for
+handler testing
 """
 
 import asyncio
-import pytest
 from typing import Any
-from unittest.mock import Mock, patch, AsyncMock
+from unittest.mock import patch
 
-from fastapi import FastAPI, Request
-from fastapi.testclient import TestClient
-from fastapi.responses import JSONResponse
-
-# Import our error handling modules - modules should be accessible directly
-from app.core.exceptions import (
-    AppExceptionError,
-    ValidationError,
-    ServiceError,
-    WebSocketError,
-    ExternalServiceError,
-    ResourceNotFoundError,
-    AuthenticationError,
-    AuthorizationError,
-    RateLimitExceededError,
-)
-from app.core.retry import (
-    RetryConfig,
-    with_retry,
-    retry_on_external_error,
-    retry_on_connection_error,
-)
+import pytest
 from app.core.circuit_breaker import (
     CircuitBreaker,
     CircuitBreakerState,
 )
+
+# Import our error handling modules - modules should be accessible directly
+from app.core.exceptions import (
+    AppExceptionError,
+    AuthenticationError,
+    AuthorizationError,
+    ExternalServiceError,
+    RateLimitExceededError,
+    ResourceNotFoundError,
+    ServiceError,
+    ValidationError,
+    WebSocketError,
+)
+from app.core.retry import (
+    RetryConfig,
+    retry_on_connection_error,
+    retry_on_external_error,
+    with_retry,
+)
+from fastapi.testclient import TestClient
 
 
 class TestExceptionHierarchy:
@@ -47,10 +50,7 @@ class TestExceptionHierarchy:
     def test_app_exception_base(self) -> None:
         """Test base AppExceptionError."""
         exc = AppExceptionError(
-            message="Test error",
-            status_code=500,
-            error_code="TEST_ERROR",
-            details={"key": "value"}
+            message="Test error", status_code=500, error_code="TEST_ERROR", details={"key": "value"}
         )
         assert exc.message == "Test error"
         assert exc.status_code == 500
@@ -59,10 +59,7 @@ class TestExceptionHierarchy:
 
     def test_validation_error(self) -> None:
         """Test ValidationError specific defaults."""
-        exc = ValidationError(
-            message="Invalid input",
-            details={"field": "email", "error": "invalid format"}
-        )
+        exc = ValidationError(message="Invalid input", details={"field": "email", "error": "invalid format"})
         assert exc.status_code == 422
         assert exc.error_code == "VALIDATION_ERROR"
         assert exc.details["field"] == "email"
@@ -87,11 +84,7 @@ class TestExceptionHierarchy:
 
     def test_resource_not_found_error(self) -> None:
         """Test ResourceNotFoundError."""
-        exc = ResourceNotFoundError(
-            message="User not found",
-            resource_type="User",
-            resource_id="123"
-        )
+        exc = ResourceNotFoundError(message="User not found", resource_type="User", resource_id="123")
         assert exc.status_code == 404
         assert exc.error_code == "RESOURCE_NOT_FOUND"
         assert exc.details["resource_type"] == "User"
@@ -111,10 +104,7 @@ class TestExceptionHierarchy:
 
     def test_rate_limit_error(self) -> None:
         """Test RateLimitExceededError."""
-        exc = RateLimitExceededError(
-            message="Too many requests",
-            retry_after=60
-        )
+        exc = RateLimitExceededError(message="Too many requests", retry_after=60)
         assert exc.status_code == 429
         assert exc.error_code == "RATE_LIMIT_EXCEEDED"
         assert exc.details["retry_after"] == 60
@@ -144,12 +134,7 @@ class TestRetryLogic:
     async def test_retry_with_custom_config(self) -> None:
         """Test retry with custom configuration."""
         call_count = 0
-        config = RetryConfig(
-            max_attempts=2,
-            min_wait=0.01,
-            max_wait=0.1,
-            exceptions=(ValueError,)
-        )
+        config = RetryConfig(max_attempts=2, min_wait=0.01, max_wait=0.1, exceptions=(ValueError,))
 
         @with_retry(config=config)
         async def custom_retry_operation() -> str:
@@ -166,12 +151,7 @@ class TestRetryLogic:
     @pytest.mark.asyncio
     async def test_retry_exhaustion(self) -> None:
         """Test retry exhaustion raises exception."""
-        config = RetryConfig(
-            max_attempts=2,
-            min_wait=0.01,
-            max_wait=0.1,
-            exceptions=(ExternalServiceError,)
-        )
+        config = RetryConfig(max_attempts=2, min_wait=0.01, max_wait=0.1, exceptions=(ExternalServiceError,))
 
         @with_retry(config=config)
         async def always_failing_operation() -> None:
@@ -208,12 +188,7 @@ class TestCircuitBreaker:
     @pytest.mark.asyncio
     async def test_circuit_breaker_closed_to_open(self) -> None:
         """Test circuit breaker transitions from closed to open."""
-        cb = CircuitBreaker(
-            name="test",
-            failure_threshold=2,
-            success_threshold=1,
-            timeout_duration=0.1
-        )
+        cb = CircuitBreaker(name="test", failure_threshold=2, success_threshold=1, timeout_duration=0.1)
 
         async def failing_operation() -> Any:
             raise ExternalServiceError("Failed")
@@ -233,11 +208,7 @@ class TestCircuitBreaker:
     @pytest.mark.asyncio
     async def test_circuit_breaker_open_rejects_calls(self) -> None:
         """Test that open circuit breaker rejects calls."""
-        cb = CircuitBreaker(
-            name="test",
-            failure_threshold=1,
-            timeout_duration=10  # Long timeout
-        )
+        cb = CircuitBreaker(name="test", failure_threshold=1, timeout_duration=10)  # Long timeout
 
         async def failing_operation() -> Any:
             raise ExternalServiceError("Failed")
@@ -256,10 +227,7 @@ class TestCircuitBreaker:
     async def test_circuit_breaker_half_open_to_closed(self) -> None:
         """Test circuit breaker recovers from half-open to closed."""
         cb = CircuitBreaker(
-            name="test",
-            failure_threshold=1,
-            success_threshold=2,
-            timeout_duration=0.01  # Very short timeout
+            name="test", failure_threshold=1, success_threshold=2, timeout_duration=0.01  # Very short timeout
         )
 
         call_count = 0
@@ -295,12 +263,7 @@ class TestCircuitBreaker:
 
     def test_circuit_breaker_get_status(self) -> None:
         """Test circuit breaker status reporting."""
-        cb = CircuitBreaker(
-            name="test_cb",
-            failure_threshold=5,
-            success_threshold=3,
-            timeout_duration=60.0
-        )
+        cb = CircuitBreaker(name="test_cb", failure_threshold=5, success_threshold=3, timeout_duration=60.0)
 
         status = cb.get_status()
         assert status["name"] == "test_cb"
@@ -316,18 +279,17 @@ class TestGlobalExceptionHandlers:
     def setup_method(self) -> None:
         """Set up test FastAPI app with exception handlers."""
         from app.main import create_application
+
         self.app = create_application()
         self.client = TestClient(self.app, raise_server_exceptions=False)
 
     @patch("app.main.logger")
     def test_app_exception_handler(self, mock_logger: Any) -> None:
         """Test AppExceptionError handler returns structured response."""
+
         @self.app.get("/test-app-error")
         async def test_endpoint() -> None:
-            raise ServiceError(
-                message="Service operation failed",
-                details={"operation": "test"}
-            )
+            raise ServiceError(message="Service operation failed", details={"operation": "test"})
 
         response = self.client.get("/test-app-error")
         assert response.status_code == 500
@@ -339,12 +301,10 @@ class TestGlobalExceptionHandlers:
     @patch("app.main.logger")
     def test_validation_exception_handler(self, mock_logger: Any) -> None:
         """Test ValidationError handler."""
+
         @self.app.get("/test-validation-error")
         async def test_endpoint() -> None:
-            raise ValidationError(
-                message="Invalid input",
-                details={"field": "email"}
-            )
+            raise ValidationError(message="Invalid input", details={"field": "email"})
 
         response = self.client.get("/test-validation-error")
         assert response.status_code == 422
@@ -355,6 +315,7 @@ class TestGlobalExceptionHandlers:
     @patch("app.main.logger")
     def test_general_exception_handler(self, mock_logger: Any) -> None:
         """Test general exception handler doesn't expose internals."""
+
         @self.app.get("/test-general-error")
         async def test_endpoint() -> None:
             raise RuntimeError("Internal error details")
@@ -374,12 +335,7 @@ class TestErrorHandlingIntegration:
     @pytest.mark.asyncio
     async def test_retry_with_circuit_breaker(self) -> None:
         """Test combining retry logic with circuit breaker."""
-        cb = CircuitBreaker(
-            name="integration_test",
-            failure_threshold=3,
-            success_threshold=1,
-            timeout_duration=0.1
-        )
+        cb = CircuitBreaker(name="integration_test", failure_threshold=3, success_threshold=1, timeout_duration=0.1)
 
         call_count = 0
 
@@ -394,6 +350,7 @@ class TestErrorHandlingIntegration:
                 return "success"
 
             return await cb.call(inner_operation)
+
         # Should succeed after retries
         result = await operation_with_cb()
         assert result == "success"
@@ -411,13 +368,11 @@ class TestErrorHandlingIntegration:
 
         async def service_layer() -> None:
             from tenacity import RetryError
+
             try:
                 await data_layer()
             except (ExternalServiceError, RetryError) as e:
-                raise ServiceError(
-                    message="Service operation failed",
-                    details={"cause": str(e)}
-                )
+                raise ServiceError(message="Service operation failed", details={"cause": str(e)})
 
         async def api_layer() -> None:
             try:
@@ -428,7 +383,7 @@ class TestErrorHandlingIntegration:
                     message="Operation temporarily unavailable",
                     status_code=503,
                     error_code="TEMP_UNAVAILABLE",
-                    details=e.details
+                    details=e.details,
                 )
 
         with pytest.raises(AppExceptionError) as exc_info:

@@ -21,7 +21,7 @@ lint-all: dev-start ## Run ALL linters (Python: Black, isort, Ruff, Flake8, MyPy
 	@echo "$(CYAN)╚════════════════════════════════════════════════════════════╝$(NC)"
 	@echo ""
 	@echo "$(YELLOW)━━━ Python Linters ━━━$(NC)"
-	@docker exec durable-code-backend-dev bash -c "cd /app && \
+	@docker exec durable-code-backend-$(BRANCH_NAME)-dev bash -c "cd /app && \
 		echo '• Black...' && poetry run black --check app tools && \
 		echo '• isort...' && poetry run isort --check-only app tools && \
 		echo '• Ruff...' && poetry run ruff check app tools && \
@@ -33,7 +33,7 @@ lint-all: dev-start ## Run ALL linters (Python: Black, isort, Ruff, Flake8, MyPy
 	@echo "$(GREEN)✓ Python linting passed$(NC)"
 	@echo ""
 	@echo "$(YELLOW)━━━ TypeScript/React Linters ━━━$(NC)"
-	@docker exec durable-code-frontend-dev sh -c "\
+	@docker exec durable-code-frontend-$(BRANCH_NAME)-dev sh -c "\
 		echo '• TypeScript...' && npm run typecheck && \
 		echo '• ESLint...' && npm run lint && \
 		echo '• Stylelint...' && npm run lint:css && \
@@ -42,7 +42,7 @@ lint-all: dev-start ## Run ALL linters (Python: Black, isort, Ruff, Flake8, MyPy
 	@echo "$(GREEN)✓ Frontend linting passed$(NC)"
 	@echo ""
 	@echo "$(YELLOW)━━━ Custom Design Linters ━━━$(NC)"
-	@docker exec durable-code-backend-dev bash -c "cd /app && \
+	@docker exec durable-code-backend-$(BRANCH_NAME)-dev bash -c "cd /app && \
 		echo '• File headers...' && PYTHONPATH=/app/tools python -m design_linters --rules style.file-header --format text --recursive --fail-on-error . && \
 		echo '• SOLID principles...' && PYTHONPATH=/app/tools python -m design_linters --categories solid --format text --recursive --fail-on-error app && \
 		echo '• Style rules...' && PYTHONPATH=/app/tools python -m design_linters --categories style --format text --recursive --fail-on-error app && \
@@ -73,19 +73,19 @@ lint-tool: dev-start ## Run a specific linter tool (e.g., make lint-tool TOOL=bl
 	fi
 	@echo "$(CYAN)Running $(TOOL)...$(NC)"
 	@case "$(TOOL)" in \
-		black) docker exec durable-code-backend-dev bash -c "cd /app && poetry run black --check app tools" ;; \
-		isort) docker exec durable-code-backend-dev bash -c "cd /app && poetry run isort --check-only app tools" ;; \
-		ruff) docker exec durable-code-backend-dev bash -c "cd /app && poetry run ruff check app tools" ;; \
-		flake8) docker exec durable-code-backend-dev bash -c "cd /app && echo 'Checking app...' && flake8_app=\$$(poetry run flake8 app --count 2>/dev/null || echo '0') && echo \"App violations: \$$flake8_app\" && echo 'Checking tools...' && flake8_tools=\$$(poetry run flake8 tools --config tools/.flake8 --count 2>/dev/null || echo '0') && echo \"Tools violations: \$$flake8_tools\"" ;; \
-		mypy) docker exec durable-code-backend-dev bash -c "cd /app && MYPY_CACHE_DIR=/tmp/mypy_cache poetry run mypy ." ;; \
-		pylint) docker exec durable-code-backend-dev bash -c "cd /app && poetry run pylint app tools" ;; \
-		bandit) docker exec durable-code-backend-dev bash -c "cd /app && poetry run bandit -r app tools" ;; \
-		radon) docker exec durable-code-backend-dev bash -c "cd /app && poetry run radon cc app tools -s -n A" ;; \
-		xenon) docker exec durable-code-backend-dev bash -c "cd /app && poetry run xenon --max-absolute B --max-modules B --max-average A app" ;; \
-		eslint) docker exec durable-code-frontend-dev npm run lint ;; \
-		prettier) docker exec durable-code-frontend-dev npm run format:check ;; \
-		typecheck) docker exec durable-code-frontend-dev npm run typecheck ;; \
-		htmlhint) docker exec durable-code-frontend-dev sh -c "htmlhint 'public/**/*.html' 'src/**/*.html' '*.html' --config /.htmlhintrc" ;; \
+		black) docker exec durable-code-backend-$(BRANCH_NAME)-dev bash -c "cd /app && poetry run black --check app tools" ;; \
+		isort) docker exec durable-code-backend-$(BRANCH_NAME)-dev bash -c "cd /app && poetry run isort --check-only app tools" ;; \
+		ruff) docker exec durable-code-backend-$(BRANCH_NAME)-dev bash -c "cd /app && poetry run ruff check app tools" ;; \
+		flake8) docker exec durable-code-backend-$(BRANCH_NAME)-dev bash -c "cd /app && echo 'Checking app...' && flake8_app=\$$(poetry run flake8 app --count 2>/dev/null || echo '0') && echo \"App violations: \$$flake8_app\" && echo 'Checking tools...' && flake8_tools=\$$(poetry run flake8 tools --config tools/.flake8 --count 2>/dev/null || echo '0') && echo \"Tools violations: \$$flake8_tools\"" ;; \
+		mypy) docker exec durable-code-backend-$(BRANCH_NAME)-dev bash -c "cd /app && MYPY_CACHE_DIR=/tmp/mypy_cache poetry run mypy ." ;; \
+		pylint) docker exec durable-code-backend-$(BRANCH_NAME)-dev bash -c "cd /app && poetry run pylint app tools" ;; \
+		bandit) docker exec durable-code-backend-$(BRANCH_NAME)-dev bash -c "cd /app && poetry run bandit -r app tools" ;; \
+		radon) docker exec durable-code-backend-$(BRANCH_NAME)-dev bash -c "cd /app && poetry run radon cc app tools -s -n A" ;; \
+		xenon) docker exec durable-code-backend-$(BRANCH_NAME)-dev bash -c "cd /app && poetry run xenon --max-absolute B --max-modules B --max-average A app" ;; \
+		eslint) docker exec durable-code-frontend-$(BRANCH_NAME)-dev npm run lint ;; \
+		prettier) docker exec durable-code-frontend-$(BRANCH_NAME)-dev npm run format:check ;; \
+		typecheck) docker exec durable-code-frontend-$(BRANCH_NAME)-dev npm run typecheck ;; \
+		htmlhint) docker exec durable-code-frontend-$(BRANCH_NAME)-dev sh -c "htmlhint 'public/**/*.html' 'src/**/*.html' '*.html' --config /.htmlhintrc" ;; \
 		*) echo "$(RED)Unknown tool: $(TOOL)$(NC)" && exit 1 ;; \
 	esac
 	@echo "$(GREEN)✓ $(TOOL) completed$(NC)"
@@ -102,7 +102,7 @@ lint-custom: dev-start ## Run custom linters by category (e.g., make lint-custom
 	@echo "$(CYAN)╔════════════════════════════════════════════════════════════╗$(NC)"
 	@echo "$(CYAN)║              Custom Linter: $(CAT)                         ║$(NC)"
 	@echo "$(CYAN)╚════════════════════════════════════════════════════════════╝$(NC)"
-	@docker exec durable-code-backend-dev bash -c "cd /app && PYTHONPATH=/app/tools python -m design_linters --categories $(CAT) --format text --recursive app"
+	@docker exec durable-code-backend-$(BRANCH_NAME)-dev bash -c "cd /app && PYTHONPATH=/app/tools python -m design_linters --categories $(CAT) --format text --recursive app"
 	@echo "$(GREEN)✓ Category '$(CAT)' check complete$(NC)"
 
 # Auto-fix formatting issues
@@ -115,7 +115,7 @@ lint-fix: dev-start ## Auto-fix linting issues (Black, isort, Ruff, ESLint, Pret
 		poetry run ruff check --fix app tools && \
 		chown -R 1001:1001 /app/tools"
 	@echo "$(YELLOW)Fixing TypeScript/React code...$(NC)"
-	@docker exec durable-code-frontend-dev sh -c "\
+	@docker exec durable-code-frontend-$(BRANCH_NAME)-dev sh -c "\
 		npm run lint:fix && \
 		npm run lint:css:fix && \
 		npm run format"
@@ -126,14 +126,14 @@ lint-list-rules: dev-start ## List all available custom linting rules
 	@echo "$(CYAN)╔════════════════════════════════════════════════════════════╗$(NC)"
 	@echo "$(CYAN)║                Available Linting Rules                    ║$(NC)"
 	@echo "$(CYAN)╚════════════════════════════════════════════════════════════╝$(NC)"
-	@docker exec durable-code-backend-dev bash -c "cd /app && PYTHONPATH=/app/tools python -m design_linters --list-rules"
+	@docker exec durable-code-backend-$(BRANCH_NAME)-dev bash -c "cd /app && PYTHONPATH=/app/tools python -m design_linters --list-rules"
 
 # List all custom rule categories
 lint-categories: dev-start ## List all custom rule categories with descriptions
 	@echo "$(CYAN)╔════════════════════════════════════════════════════════════╗$(NC)"
 	@echo "$(CYAN)║                 Custom Rule Categories                    ║$(NC)"
 	@echo "$(CYAN)╚════════════════════════════════════════════════════════════╝$(NC)"
-	@docker exec durable-code-backend-dev bash -c "cd /app && PYTHONPATH=/app/tools python -m design_linters --list-categories"
+	@docker exec durable-code-backend-$(BRANCH_NAME)-dev bash -c "cd /app && PYTHONPATH=/app/tools python -m design_linters --list-categories"
 
 # Run all linters on staged files only (for pre-commit hooks and lint watcher)
 lint-all-staged: dev-start ## Run all linters on staged files only
@@ -150,7 +150,7 @@ lint-all-staged: dev-start ## Run all linters on staged files only
 	fi; \
 	if [ -n "$$STAGED_PY" ]; then \
 		echo "$(YELLOW)━━━ Python Linters ($$STAGED_PY)━━━$(NC)"; \
-		docker exec durable-code-backend-dev bash -c "cd /app && \
+		docker exec durable-code-backend-$(BRANCH_NAME)-dev bash -c "cd /app && \
 			echo '• Black...' && poetry run black --check $$STAGED_PY && \
 			echo '• isort...' && poetry run isort --check-only $$STAGED_PY && \
 			echo '• Ruff...' && poetry run ruff check $$STAGED_PY && \
@@ -165,7 +165,7 @@ lint-all-staged: dev-start ## Run all linters on staged files only
 	fi; \
 	if [ -n "$$STAGED_TS" ]; then \
 		echo "$(YELLOW)━━━ TypeScript/React Linters ━━━$(NC)"; \
-		docker exec durable-code-frontend-dev sh -c "\
+		docker exec durable-code-frontend-$(BRANCH_NAME)-dev sh -c "\
 			echo '• ESLint...' && npx eslint $$STAGED_TS && \
 			echo '• Prettier...' && npx prettier --check $$STAGED_TS && \
 			echo '• TypeScript...' && npx tsc --noEmit" || (echo "$(RED)✗ Frontend linting failed$(NC)" && exit 1); \

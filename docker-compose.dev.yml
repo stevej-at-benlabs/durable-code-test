@@ -18,7 +18,7 @@ services:
     build:
       context: ./durable-code-app/backend
       dockerfile: Dockerfile.dev
-    container_name: durable-code-backend-dev
+    container_name: durable-code-backend-${BRANCH_NAME:-main}-dev
     ports:
       - "8000:8000"
     environment:
@@ -37,7 +37,7 @@ services:
     build:
       context: ./durable-code-app/frontend
       dockerfile: Dockerfile.dev
-    container_name: durable-code-frontend-dev
+    container_name: durable-code-frontend-${BRANCH_NAME:-main}-dev
     ports:
       - "5173:5173"
     depends_on:
