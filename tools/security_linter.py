@@ -341,7 +341,7 @@ class SecurityFileScanner:
             # Check for dangerous patterns
             self.detector.check_patterns(file_path, content, self.collector)
 
-        except Exception as e:
+        except (OSError, UnicodeDecodeError, SyntaxError, ValueError) as e:
             self.collector.add_issue(
                 SecurityIssue(
                     file_path=str(file_path),
