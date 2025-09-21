@@ -1,8 +1,15 @@
 """
-Main FastAPI application module.
-
-This module demonstrates durable code practices with
-strict complexity limits and comprehensive type safety.
+Purpose: Main FastAPI application entry point with middleware configuration and error handling
+Scope: Application initialization, middleware setup, route registration, and global error handlers
+Overview: This module serves as the central configuration point for the FastAPI application,
+    establishing CORS policies, security middleware, rate limiting, and comprehensive error
+    handling. It demonstrates durable code practices with strict complexity limits and type
+    safety. The application includes health endpoints, WebSocket support for real-time features,
+    and structured exception handling that provides consistent error responses across all endpoints.
+Dependencies: FastAPI framework, loguru for logging, custom security and exception modules
+Exports: create_app factory function that returns configured FastAPI application instance
+Interfaces: Root endpoint (/), health check (/health), and mounted routers for feature modules
+Implementation: Uses FastAPI's dependency injection, middleware stack, and exception handler registration
 """
 
 from fastapi import FastAPI, Request

@@ -2,9 +2,15 @@
 """
 Purpose: Refactored security linting tool with proper separation of concerns
 Scope: FastAPI applications, input validation, rate limiting, and security headers
-Overview: This tool scans Python files for security vulnerabilities using a
-    clean architecture with separated responsibilities for pattern detection,
-    issue collection, and reporting.
+Overview: This comprehensive security linting tool performs static analysis on Python files
+    to detect potential security vulnerabilities in FastAPI applications and general Python code.
+    It uses AST-based pattern matching to identify issues such as missing input validation,
+    inadequate rate limiting, absent security headers, SQL injection risks, XSS vulnerabilities,
+    and insecure configurations. The tool follows a clean architecture with separated concerns:
+    pattern detectors for specific vulnerability types, an issue collector for aggregating findings,
+    and flexible reporters for various output formats. It provides detailed vulnerability reports
+    with line numbers, severity levels, and remediation suggestions to help developers fix
+    security issues before deployment.
 Dependencies: Python standard library, ast module for code parsing
 Exports: Security vulnerability detection and reporting with SRP compliance
 Interfaces: Command-line interface for file scanning

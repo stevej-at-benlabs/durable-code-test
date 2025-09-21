@@ -1,14 +1,17 @@
 """
-Custom exception hierarchy for backend error handling.
-
-This module provides a structured exception hierarchy for the application,
-ensuring consistent error handling and proper error responses.
-
-Key features:
-- Base exception class with structured error information
-- Specific exception types for different error scenarios
-- Consistent error codes and status codes
-- Detailed error messages and context
+Purpose: Structured exception hierarchy for consistent backend error handling and API responses
+Scope: Application-wide exception classes for all error scenarios in the backend system
+Overview: This module provides a comprehensive exception hierarchy that ensures consistent
+    error handling across the entire application. It defines base and specific exception
+    classes with structured error information including HTTP status codes, error codes for
+    client identification, human-readable messages, and optional debugging details. The
+    hierarchy supports various error scenarios including validation errors, authentication
+    failures, authorization issues, resource not found, rate limiting, and service unavailable
+    conditions. All exceptions integrate seamlessly with FastAPI's error handling middleware.
+Dependencies: FastAPI status codes, typing for type hints
+Exports: AppExceptionError base class and specific exceptions (ValidationError, AuthenticationError, etc.)
+Interfaces: Exception classes with status_code, error_code, message, and details attributes
+Implementation: Inheritance-based hierarchy with structured error data for consistent API responses
 """
 
 from typing import Any

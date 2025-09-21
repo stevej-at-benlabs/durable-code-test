@@ -11,10 +11,13 @@ Interfaces: All rules implement LintRule interface
 Implementation: Rule-based architecture with proper separation of concerns
 """
 
+from .file_header_rules import FileHeaderRule
 from .nesting_rules import DeepFunctionRule, ExcessiveNestingRule
 from .print_statement_rules import ConsoleOutputRule, PrintStatementRule
 
 __all__ = [
+    # File header rules
+    "FileHeaderRule",
     # Print statement rules
     "PrintStatementRule",
     "ConsoleOutputRule",

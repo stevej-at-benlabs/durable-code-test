@@ -43,6 +43,7 @@ lint-all: dev-start ## Run ALL linters (Python: Black, isort, Ruff, Flake8, MyPy
 	@echo ""
 	@echo "$(YELLOW)━━━ Custom Design Linters ━━━$(NC)"
 	@docker exec durable-code-backend-dev bash -c "cd /app && \
+		echo '• File headers...' && PYTHONPATH=/app/tools python -m design_linters --rules style.file-header --format text --recursive --fail-on-error . && \
 		echo '• SOLID principles...' && PYTHONPATH=/app/tools python -m design_linters --categories solid --format text --recursive --fail-on-error app && \
 		echo '• Style rules...' && PYTHONPATH=/app/tools python -m design_linters --categories style --format text --recursive --fail-on-error app && \
 		echo '• Magic literals...' && PYTHONPATH=/app/tools python -m design_linters --categories literals --format text --recursive --fail-on-error app && \

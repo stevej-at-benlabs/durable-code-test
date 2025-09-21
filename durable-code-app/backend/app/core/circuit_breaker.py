@@ -1,8 +1,18 @@
 """
-Circuit breaker pattern implementation for resilient services.
-
-This module provides circuit breaker functionality to prevent
-cascading failures when external services are unavailable.
+Purpose: Circuit breaker pattern implementation for preventing cascading failures in distributed systems
+Scope: Service resilience and fault isolation for external service dependencies
+Overview: This module implements the circuit breaker pattern to protect the application from
+    cascading failures when external services become unavailable or unresponsive. The circuit
+    breaker monitors the success and failure rates of service calls, automatically opening
+    when failure thresholds are exceeded, preventing further attempts that would likely fail.
+    It includes three states: CLOSED (normal operation), OPEN (failures exceeded threshold),
+    and HALF_OPEN (testing recovery). The implementation provides configurable thresholds,
+    timeout periods, and recovery testing intervals, ensuring system stability while allowing
+    for automatic recovery when services become available again.
+Dependencies: asyncio for async operations, loguru for logging, time for timeout tracking
+Exports: CircuitBreaker class, CircuitState enum, circuit_breaker decorator
+Interfaces: CircuitBreaker.call() method, decorator interface for wrapping service calls
+Implementation: State machine pattern with automatic state transitions based on failure metrics
 """
 
 import asyncio
