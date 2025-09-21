@@ -26,7 +26,7 @@ export const DEFAULT_OSCILLOSCOPE_STATE: OscilloscopeState = {
 };
 
 export const WEBSOCKET_CONFIG = {
-  BACKEND_PORT: 8001,
+  BACKEND_PORT: 8000,
   ENDPOINT: '/api/oscilloscope/stream',
   RECONNECT_DELAY: 3000,
   MAX_RECONNECT_ATTEMPTS: 5,
