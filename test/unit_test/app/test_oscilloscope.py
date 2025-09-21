@@ -1,7 +1,10 @@
 """
-Purpose: Unit tests for oscilloscope WebSocket streaming endpoint
+Purpose: Unit tests for oscilloscope WebSocket streaming endpoint.
+
 Scope: Test WebSocket connection, command processing, and data streaming functionality
-Overview: Comprehensive test suite for the oscilloscope module including connection tests, command validation, waveform generation verification, and error handling scenarios, ensuring robust WebSocket communication and accurate signal generation capabilities for real-time data streaming and visualization.
+Overview: Comprehensive test suite for the oscilloscope module including connection tests, command validation,
+waveform generation verification, and error handling scenarios, ensuring robust WebSocket communication and
+accurate signal generation capabilities for real-time data streaming and visualization.
 Dependencies: pytest, pytest-asyncio, FastAPI test client, WebSocket test support
 Exports: Test cases for oscilloscope functionality
 Interfaces: pytest test functions
@@ -32,9 +35,7 @@ class TestWaveformGenerator:
     def test_configure_parameters(self) -> None:
         """Test configuration of waveform parameters."""
         generator = WaveformGenerator()
-        generator.configure(
-            wave_type=WaveType.SQUARE, frequency=20.0, amplitude=2.0, offset=0.5
-        )
+        generator.configure(wave_type=WaveType.SQUARE, frequency=20.0, amplitude=2.0, offset=0.5)
         assert generator.wave_type == WaveType.SQUARE
         assert generator.frequency == 20.0
         assert generator.amplitude == 2.0
@@ -60,7 +61,7 @@ class TestWaveformGenerator:
 
         assert len(samples) == 100
         # Square wave should only have two values (plus/minus amplitude)
-        unique_values = set(round(s, 5) for s in samples)
+        unique_values = {round(s, 5) for s in samples}
         assert len(unique_values) <= 2
 
     def test_generate_noise_samples(self) -> None:
@@ -109,13 +110,7 @@ class TestOscilloscopeWebSocket:
             # Connection should be established
             # Send a test command
             websocket.send_json(
-                {
-                    "command": "start",
-                    "wave_type": "sine",
-                    "frequency": 10.0,
-                    "amplitude": 1.0,
-                    "offset": 0.0,
-                }
+                {"command": "start", "wave_type": "sine", "frequency": 10.0, "amplitude": 1.0, "offset": 0.0}
             )
 
             # Should receive data
@@ -127,13 +122,7 @@ class TestOscilloscopeWebSocket:
         with client.websocket_connect("/api/oscilloscope/stream") as websocket:
             # Send start command
             websocket.send_json(
-                {
-                    "command": "start",
-                    "wave_type": "sine",
-                    "frequency": 20.0,
-                    "amplitude": 2.0,
-                    "offset": 0.5,
-                }
+                {"command": "start", "wave_type": "sine", "frequency": 20.0, "amplitude": 2.0, "offset": 0.5}
             )
 
             # Receive multiple data packets
@@ -167,18 +156,14 @@ class TestOscilloscopeWebSocket:
         """Test configuration change during streaming."""
         with client.websocket_connect("/api/oscilloscope/stream") as websocket:
             # Start with sine wave
-            websocket.send_json(
-                {"command": "start", "wave_type": "sine", "frequency": 10.0}
-            )
+            websocket.send_json({"command": "start", "wave_type": "sine", "frequency": 10.0})
 
             # Get initial data
             data1 = websocket.receive_json()
             assert data1["wave_type"] == "sine"
 
             # Configure to square wave
-            websocket.send_json(
-                {"command": "configure", "wave_type": "square", "frequency": 15.0}
-            )
+            websocket.send_json({"command": "configure", "wave_type": "square", "frequency": 15.0})
 
             # Get data after configuration
             # May need to receive a few packets for the change to take effect
@@ -196,21 +181,13 @@ class TestOscilloscopeWebSocket:
 
             # Should receive error response
             data = websocket.receive_json()
-            assert (
-                "error" in data or "samples" in data
-            )  # Either error or continue streaming
+            assert "error" in data or "samples" in data  # Either error or continue streaming
 
     def test_invalid_parameters(self) -> None:
         """Test validation of command parameters."""
         with client.websocket_connect("/api/oscilloscope/stream") as websocket:
             # Send command with invalid frequency
-            websocket.send_json(
-                {
-                    "command": "start",
-                    "wave_type": "sine",
-                    "frequency": 200.0,  # Out of range
-                }
-            )
+            websocket.send_json({"command": "start", "wave_type": "sine", "frequency": 200.0})  # Out of range
 
             # Should handle gracefully (either error or use default)
             data = websocket.receive_json()
@@ -274,9 +251,7 @@ class TestOscilloscopePerformance:
     def test_streaming_rate(self) -> None:
         """Test that streaming maintains expected data rate."""
         with client.websocket_connect("/api/oscilloscope/stream") as websocket:
-            websocket.send_json(
-                {"command": "start", "wave_type": "sine", "frequency": 50.0}
-            )
+            websocket.send_json({"command": "start", "wave_type": "sine", "frequency": 50.0})
 
             # Collect data for a short period
             import time

@@ -16,13 +16,12 @@ import ast
 import sys
 import unittest
 from pathlib import Path
+from typing import Any, Dict, List
 
 sys.path.insert(0, "/home/stevejackson/Projects/durable-code-test/tools")
 
-from design_linters.framework.interfaces import (LintContext,
-                                                 Severity)
-from design_linters.rules.literals.magic_number_rules import (MagicComplexRule,
-                                                              MagicNumberRule)
+from design_linters.framework.interfaces import LintContext, LintViolation, Severity
+from design_linters.rules.literals.magic_number_rules import MagicComplexRule, MagicNumberRule
 
 
 class TestMagicNumberRule(unittest.TestCase):
@@ -38,13 +37,10 @@ class TestMagicNumberRule(unittest.TestCase):
         self.assertEqual(self.rule.rule_id, "literals.magic-number")
         self.assertEqual(self.rule.rule_name, "Magic Number")
         self.assertEqual(
-            self.rule.description,
-            "Numeric literals should be replaced with named constants for better maintainability",
+            self.rule.description, "Numeric literals should be replaced with named constants for better maintainability"
         )
         self.assertEqual(self.rule.severity, Severity.WARNING)
-        self.assertEqual(
-            self.rule.categories, {"literals", "constants", "maintainability"}
-        )
+        self.assertEqual(self.rule.categories, {"literals", "constants", "maintainability"})
 
     def test_should_check_node_with_integer_constant(self):
         """Test should_check_node returns True for integer constants."""
@@ -91,9 +87,7 @@ class TestMagicNumberRule(unittest.TestCase):
         # Set up context that won't trigger acceptable context exceptions
         self.context.file_path = Path("/src/main.py")  # Not a test file
         self.context.current_function = "normal_function"  # Not config/setup/init
-        self.context.node_stack = [
-            ast.Constant(value=42)
-        ]  # Not in range or math context
+        self.context.node_stack = [ast.Constant(value=42)]  # Not in range or math context
 
         node = ast.Constant(value=42)
         violations = self.rule.check_node(node, self.context)
@@ -111,16 +105,10 @@ class TestMagicNumberRule(unittest.TestCase):
         # Set up context that won't trigger acceptable context exceptions
         self.context.file_path = Path("/src/main.py")  # Not a test file
         self.context.current_function = "normal_function"  # Not config/setup/init
-        self.context.node_stack = [
-            ast.Constant(value=42)
-        ]  # Not in range or math context
+        self.context.node_stack = [ast.Constant(value=42)]  # Not in range or math context
 
         # Configure context with custom allowed numbers
-        self.context.metadata = {
-            "rules": {
-                "literals.magic-number": {"config": {"allowed_numbers": {42, 100}}}
-            }
-        }
+        self.context.metadata = {"rules": {"literals.magic-number": {"config": {"allowed_numbers": {42, 100}}}}}
 
         node = ast.Constant(value=42)
         violations = self.rule.check_node(node, self.context)
@@ -175,9 +163,7 @@ class TestMagicNumberRule(unittest.TestCase):
         """Test small integers are acceptable in range contexts."""
         # Set up context with range function in node stack
         node = ast.Constant(value=5)
-        range_node = ast.Call(
-            func=ast.Name(id="range", ctx=ast.Load()), args=[node], keywords=[]
-        )
+        range_node = ast.Call(func=ast.Name(id="range", ctx=ast.Load()), args=[node], keywords=[])
         # Need at least 3 nodes for range context detection (dummy, range, constant)
         dummy_node = ast.Module(body=[], type_ignores=[])
         self.context.node_stack = [dummy_node, range_node, node]
@@ -190,9 +176,7 @@ class TestMagicNumberRule(unittest.TestCase):
         """Test numbers are acceptable in mathematical operations."""
         # Set up context with binary operation in node stack
         node = ast.Constant(value=42)
-        binop_node = ast.BinOp(
-            left=ast.Name(id="x", ctx=ast.Load()), op=ast.Add(), right=node
-        )
+        binop_node = ast.BinOp(left=ast.Name(id="x", ctx=ast.Load()), op=ast.Add(), right=node)
         self.context.node_stack = [binop_node, node]
         config = {}
 
@@ -204,9 +188,7 @@ class TestMagicNumberRule(unittest.TestCase):
         # Set up context that doesn't match any exception patterns
         self.context.file_path = Path("/src/main.py")  # Not a test file
         self.context.current_function = "normal_function"  # Not config/setup/init
-        self.context.node_stack = [
-            ast.Constant(value=42)
-        ]  # Not in range or math context
+        self.context.node_stack = [ast.Constant(value=42)]  # Not in range or math context
 
         node = ast.Constant(value=42)
         config = {}
@@ -218,9 +200,7 @@ class TestMagicNumberRule(unittest.TestCase):
         """Test detection of range function context."""
         # Create range call node and build proper stack
         constant_node = ast.Constant(value=5)
-        range_node = ast.Call(
-            func=ast.Name(id="range", ctx=ast.Load()), args=[constant_node], keywords=[]
-        )
+        range_node = ast.Call(func=ast.Name(id="range", ctx=ast.Load()), args=[constant_node], keywords=[])
         # The stack should have nodes in order, with current node at the end
         # For _is_in_range_context to find the range call at index -2, we need the range call as parent
         dummy_node = ast.Module(body=[], type_ignores=[])
@@ -232,11 +212,7 @@ class TestMagicNumberRule(unittest.TestCase):
     def test_is_in_range_context_with_enumerate_call(self):
         """Test detection of enumerate function context."""
         constant_node = ast.Constant(value=1)
-        enum_node = ast.Call(
-            func=ast.Name(id="enumerate", ctx=ast.Load()),
-            args=[constant_node],
-            keywords=[],
-        )
+        enum_node = ast.Call(func=ast.Name(id="enumerate", ctx=ast.Load()), args=[constant_node], keywords=[])
         # Need at least 3 nodes for the algorithm to find the enumerate call at index -2
         dummy_node = ast.Module(body=[], type_ignores=[])
         self.context.node_stack = [dummy_node, enum_node, constant_node]
@@ -261,9 +237,7 @@ class TestMagicNumberRule(unittest.TestCase):
     def test_is_in_math_context_with_binop(self):
         """Test detection of binary operation context."""
         constant_node = ast.Constant(value=42)
-        binop_node = ast.BinOp(
-            left=ast.Name(id="x", ctx=ast.Load()), op=ast.Add(), right=constant_node
-        )
+        binop_node = ast.BinOp(left=ast.Name(id="x", ctx=ast.Load()), op=ast.Add(), right=constant_node)
         # Stack should have binop as parent of constant (binop at -2, constant at -1)
         self.context.node_stack = [binop_node, constant_node]
 
@@ -283,11 +257,7 @@ class TestMagicNumberRule(unittest.TestCase):
     def test_is_in_math_context_with_compare(self):
         """Test detection of comparison context."""
         constant_node = ast.Constant(value=42)
-        compare_node = ast.Compare(
-            left=ast.Name(id="x", ctx=ast.Load()),
-            ops=[ast.Lt()],
-            comparators=[constant_node],
-        )
+        compare_node = ast.Compare(left=ast.Name(id="x", ctx=ast.Load()), ops=[ast.Lt()], comparators=[constant_node])
         # Stack should have compare as parent of constant
         self.context.node_stack = [compare_node, constant_node]
 
@@ -304,9 +274,7 @@ class TestMagicNumberRule(unittest.TestCase):
     def test_is_in_math_context_no_math_parent(self):
         """Test math context detection with non-math parent."""
         constant_node = ast.Constant(value=42)
-        assign_node = ast.Assign(
-            targets=[ast.Name(id="x", ctx=ast.Store())], value=constant_node
-        )
+        assign_node = ast.Assign(targets=[ast.Name(id="x", ctx=ast.Store())], value=constant_node)
         # Stack should have assign as parent of constant
         self.context.node_stack = [assign_node, constant_node]
 
@@ -350,9 +318,7 @@ class TestMagicNumberRule(unittest.TestCase):
         """Test generic suggestion generation."""
         value = 987
         result = self.rule._generate_constant_suggestion(value, self.context)
-        self.assertEqual(
-            result, "Consider extracting to a named constant: CONSTANT_NAME = 987"
-        )
+        self.assertEqual(result, "Consider extracting to a named constant: CONSTANT_NAME = 987")
 
     def test_get_common_pattern_suggestion_unknown_value(self):
         """Test common pattern suggestion for unknown values."""
@@ -370,9 +336,7 @@ class TestMagicNumberRule(unittest.TestCase):
         self.context.file_path = Path("/src/main.py")  # Not a test file
         self.context.current_function = "normal_function"  # Not config/setup/init
         self.context.current_class = "TestClass"
-        self.context.node_stack = [
-            ast.Constant(value=42)
-        ]  # Not in range or math context
+        self.context.node_stack = [ast.Constant(value=42)]  # Not in range or math context
 
         node = ast.Constant(value=42)
         violations = self.rule.check_node(node, self.context)
@@ -400,15 +364,9 @@ class TestMagicComplexRule(unittest.TestCase):
         """Test that rule properties return expected values."""
         self.assertEqual(self.rule.rule_id, "literals.magic-complex")
         self.assertEqual(self.rule.rule_name, "Magic Complex Number")
-        self.assertEqual(
-            self.rule.description,
-            "Complex number literals should be replaced with named constants",
-        )
+        self.assertEqual(self.rule.description, "Complex number literals should be replaced with named constants")
         self.assertEqual(self.rule.severity, Severity.WARNING)
-        self.assertEqual(
-            self.rule.categories,
-            {"literals", "constants", "complex", "maintainability"},
-        )
+        self.assertEqual(self.rule.categories, {"literals", "constants", "complex", "maintainability"})
 
     def test_should_check_node_with_complex_constant(self):
         """Test should_check_node returns True for complex constants."""
@@ -510,9 +468,7 @@ class TestMagicComplexRule(unittest.TestCase):
     def test_generate_complex_constant_suggestion_generic(self):
         """Test generic suggestion generation for complex numbers."""
         result = self.rule._generate_complex_constant_suggestion(7 + 8j, self.context)
-        self.assertEqual(
-            result, "COMPLEX_CONSTANT = (7+8j)  # Consider a more descriptive name"
-        )
+        self.assertEqual(result, "COMPLEX_CONSTANT = (7+8j)  # Consider a more descriptive name")
 
     def test_get_complex_math_suggestion_edge_cases(self):
         """Test math suggestion for edge cases."""
@@ -579,19 +535,13 @@ class TestMagicNumberRuleIntegration(unittest.TestCase):
         for code, should_violate, file_path in code_snippets:
             with self.subTest(code=code):
                 tree = ast.parse(code)
-                context = LintContext(
-                    file_path=file_path, ast_tree=tree, file_content=code, node_stack=[]
-                )
+                context = LintContext(file_path=file_path, ast_tree=tree, file_content=code, node_stack=[])
 
                 violations = self.rule.check(context)
                 if should_violate:
-                    self.assertGreater(
-                        len(violations), 0, f"Expected violation for: {code}"
-                    )
+                    self.assertGreater(len(violations), 0, f"Expected violation for: {code}")
                 else:
-                    self.assertEqual(
-                        len(violations), 0, f"Unexpected violation for: {code}"
-                    )
+                    self.assertEqual(len(violations), 0, f"Unexpected violation for: {code}")
 
     def test_range_context_integration(self):
         """Test that numbers in range contexts are properly handled."""
@@ -607,9 +557,7 @@ class TestMagicNumberRuleIntegration(unittest.TestCase):
         """Test that numbers in math operations are properly handled."""
         code = "result = x + 42 * 2"
         tree = ast.parse(code)
-        context = LintContext(
-            file_path=Path("/src/main.py"), ast_tree=tree, node_stack=[]
-        )
+        context = LintContext(file_path=Path("/src/main.py"), ast_tree=tree, node_stack=[])
 
         violations = self.rule.check(context)
         # Numbers in math operations should not trigger violations
@@ -636,28 +584,16 @@ class TestMagicComplexRuleIntegration(unittest.TestCase):
         for code in code_snippets:
             with self.subTest(code=code):
                 tree = ast.parse(code)
-                context = LintContext(
-                    file_path=Path("/src/main.py"),
-                    ast_tree=tree,
-                    file_content=code,
-                    node_stack=[],
-                )
+                context = LintContext(file_path=Path("/src/main.py"), ast_tree=tree, file_content=code, node_stack=[])
 
                 violations = self.rule.check(context)
-                self.assertGreater(
-                    len(violations), 0, f"Expected violation for: {code}"
-                )
+                self.assertGreater(len(violations), 0, f"Expected violation for: {code}")
 
     def test_complex_math_operations(self):
         """Test complex numbers in mathematical operations."""
         code = "result = (2+3j) * (1-1j)"
         tree = ast.parse(code)
-        context = LintContext(
-            file_path=Path("/src/main.py"),
-            ast_tree=tree,
-            file_content=code,
-            node_stack=[],
-        )
+        context = LintContext(file_path=Path("/src/main.py"), ast_tree=tree, file_content=code, node_stack=[])
 
         violations = self.rule.check(context)
         # All complex literals should trigger violations

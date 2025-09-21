@@ -15,12 +15,12 @@ import ast
 import sys
 import unittest
 from pathlib import Path
+from unittest.mock import Mock, patch
 
 sys.path.insert(0, "/home/stevejackson/Projects/durable-code-test/tools")
 
 from design_linters.framework.interfaces import LintContext, Severity
-from design_linters.rules.style.nesting_rules import (DeepFunctionRule,
-                                                      ExcessiveNestingRule)
+from design_linters.rules.style.nesting_rules import DeepFunctionRule, ExcessiveNestingRule
 
 
 class TestExcessiveNestingRule(unittest.TestCase):
@@ -36,8 +36,7 @@ class TestExcessiveNestingRule(unittest.TestCase):
         self.assertEqual(self.rule.rule_id, "style.excessive-nesting")
         self.assertEqual(self.rule.rule_name, "Excessive Nesting")
         self.assertEqual(
-            self.rule.description,
-            "Functions should not have excessive nesting depth for better readability",
+            self.rule.description, "Functions should not have excessive nesting depth for better readability"
         )
         self.assertEqual(self.rule.severity, Severity.WARNING)
         self.assertEqual(self.rule.categories, {"style", "complexity", "readability"})
@@ -47,13 +46,7 @@ class TestExcessiveNestingRule(unittest.TestCase):
         func_node = ast.FunctionDef(
             name="test_func",
             args=ast.arguments(
-                posonlyargs=[],
-                args=[],
-                defaults=[],
-                kwonlyargs=[],
-                kw_defaults=[],
-                vararg=None,
-                kwarg=None,
+                posonlyargs=[], args=[], defaults=[], kwonlyargs=[], kw_defaults=[], vararg=None, kwarg=None
             ),
             body=[],
             decorator_list=[],
@@ -67,13 +60,7 @@ class TestExcessiveNestingRule(unittest.TestCase):
         async_func_node = ast.AsyncFunctionDef(
             name="async_test_func",
             args=ast.arguments(
-                posonlyargs=[],
-                args=[],
-                defaults=[],
-                kwonlyargs=[],
-                kw_defaults=[],
-                vararg=None,
-                kwarg=None,
+                posonlyargs=[], args=[], defaults=[], kwonlyargs=[], kw_defaults=[], vararg=None, kwarg=None
             ),
             body=[],
             decorator_list=[],
@@ -84,28 +71,20 @@ class TestExcessiveNestingRule(unittest.TestCase):
 
     def test_should_check_node_other_nodes(self):
         """Test should_check_node returns False for non-function nodes."""
-        class_node = ast.ClassDef(
-            name="TestClass", bases=[], keywords=[], decorator_list=[], body=[]
-        )
-        assign_node = ast.Assign(
-            targets=[ast.Name(id="x", ctx=ast.Store())], value=ast.Constant(value=1)
-        )
+        class_node = ast.ClassDef(name="TestClass", bases=[], keywords=[], decorator_list=[], body=[])
+        assign_node = ast.Assign(targets=[ast.Name(id="x", ctx=ast.Store())], value=ast.Constant(value=1))
 
         self.assertFalse(self.rule.should_check_node(class_node, self.context))
         self.assertFalse(self.rule.should_check_node(assign_node, self.context))
 
     def test_check_node_with_invalid_node_type(self):
         """Test check_node raises TypeError for invalid node types."""
-        class_node = ast.ClassDef(
-            name="TestClass", bases=[], keywords=[], decorator_list=[], body=[]
-        )
+        class_node = ast.ClassDef(name="TestClass", bases=[], keywords=[], decorator_list=[], body=[])
 
         with self.assertRaises(TypeError) as cm:
             self.rule.check_node(class_node, self.context)
 
-        self.assertIn(
-            "ExcessiveNestingRule should only receive function nodes", str(cm.exception)
-        )
+        self.assertIn("ExcessiveNestingRule should only receive function nodes", str(cm.exception))
 
     def test_check_node_simple_function_no_violations(self):
         """Test check_node with simple function that has no violations."""
@@ -170,9 +149,7 @@ def excessive_nesting():
     def test_check_node_with_custom_configuration(self):
         """Test check_node with custom max_nesting_depth configuration."""
         # Set up context with custom configuration
-        self.context.metadata = {
-            "rules": {"style.excessive-nesting": {"config": {"max_nesting_depth": 2}}}
-        }
+        self.context.metadata = {"rules": {"style.excessive-nesting": {"config": {"max_nesting_depth": 2}}}}
 
         # Create function with nesting depth 4 (should violate limit of 2)
         func_code = """
@@ -189,9 +166,7 @@ def custom_limit_violation():
         self.assertEqual(len(violations), 1)
 
         violation = violations[0]
-        self.assertEqual(
-            violation.context["depth"], 4
-        )  # Actual depth is function(1) + if(2) + for(3) + while(4)
+        self.assertEqual(violation.context["depth"], 4)  # Actual depth is function(1) + if(2) + for(3) + while(4)
         self.assertEqual(violation.context["max_allowed"], 2)
 
     def test_calculate_max_nesting_depth_simple(self):
@@ -263,9 +238,7 @@ def match_function(value):
 
     def test_calculate_max_nesting_depth_invalid_node(self):
         """Test _calculate_max_nesting_depth with invalid node type."""
-        class_node = ast.ClassDef(
-            name="TestClass", bases=[], keywords=[], decorator_list=[], body=[]
-        )
+        class_node = ast.ClassDef(name="TestClass", bases=[], keywords=[], decorator_list=[], body=[])
 
         with self.assertRaises(TypeError) as cm:
             self.rule._calculate_max_nesting_depth(class_node)
@@ -314,26 +287,17 @@ class TestDeepFunctionRule(unittest.TestCase):
         self.assertEqual(self.rule.rule_id, "style.deep-function")
         self.assertEqual(self.rule.rule_name, "Complex Function")
         self.assertEqual(
-            self.rule.description,
-            "Functions should not be overly complex with deep nesting and many lines",
+            self.rule.description, "Functions should not be overly complex with deep nesting and many lines"
         )
         self.assertEqual(self.rule.severity, Severity.INFO)
-        self.assertEqual(
-            self.rule.categories, {"style", "complexity", "maintainability"}
-        )
+        self.assertEqual(self.rule.categories, {"style", "complexity", "maintainability"})
 
     def test_should_check_node_function_def(self):
         """Test should_check_node returns True for FunctionDef."""
         func_node = ast.FunctionDef(
             name="test_func",
             args=ast.arguments(
-                posonlyargs=[],
-                args=[],
-                defaults=[],
-                kwonlyargs=[],
-                kw_defaults=[],
-                vararg=None,
-                kwarg=None,
+                posonlyargs=[], args=[], defaults=[], kwonlyargs=[], kw_defaults=[], vararg=None, kwarg=None
             ),
             body=[],
             decorator_list=[],
@@ -347,13 +311,7 @@ class TestDeepFunctionRule(unittest.TestCase):
         async_func_node = ast.AsyncFunctionDef(
             name="async_test_func",
             args=ast.arguments(
-                posonlyargs=[],
-                args=[],
-                defaults=[],
-                kwonlyargs=[],
-                kw_defaults=[],
-                vararg=None,
-                kwarg=None,
+                posonlyargs=[], args=[], defaults=[], kwonlyargs=[], kw_defaults=[], vararg=None, kwarg=None
             ),
             body=[],
             decorator_list=[],
@@ -364,28 +322,20 @@ class TestDeepFunctionRule(unittest.TestCase):
 
     def test_should_check_node_other_nodes(self):
         """Test should_check_node returns False for non-function nodes."""
-        class_node = ast.ClassDef(
-            name="TestClass", bases=[], keywords=[], decorator_list=[], body=[]
-        )
-        assign_node = ast.Assign(
-            targets=[ast.Name(id="x", ctx=ast.Store())], value=ast.Constant(value=1)
-        )
+        class_node = ast.ClassDef(name="TestClass", bases=[], keywords=[], decorator_list=[], body=[])
+        assign_node = ast.Assign(targets=[ast.Name(id="x", ctx=ast.Store())], value=ast.Constant(value=1))
 
         self.assertFalse(self.rule.should_check_node(class_node, self.context))
         self.assertFalse(self.rule.should_check_node(assign_node, self.context))
 
     def test_check_node_with_invalid_node_type(self):
         """Test check_node raises TypeError for invalid node types."""
-        class_node = ast.ClassDef(
-            name="TestClass", bases=[], keywords=[], decorator_list=[], body=[]
-        )
+        class_node = ast.ClassDef(name="TestClass", bases=[], keywords=[], decorator_list=[], body=[])
 
         with self.assertRaises(TypeError) as cm:
             self.rule.check_node(class_node, self.context)
 
-        self.assertIn(
-            "DeepFunctionRule should only receive function nodes", str(cm.exception)
-        )
+        self.assertIn("DeepFunctionRule should only receive function nodes", str(cm.exception))
 
     def test_check_node_simple_function_no_violations(self):
         """Test check_node with simple function that has no violations."""
@@ -495,11 +445,7 @@ def complex_function():
         """Test check_node with custom configuration limits."""
         # Set up context with custom configuration
         self.context.metadata = {
-            "rules": {
-                "style.deep-function": {
-                    "config": {"max_function_lines": 5, "max_nesting_depth": 2}
-                }
-            }
+            "rules": {"style.deep-function": {"config": {"max_function_lines": 5, "max_nesting_depth": 2}}}
         }
 
         func_code = """
@@ -516,9 +462,7 @@ def custom_limit_function():
         func_node.end_lineno = 7  # 6 lines, exceeds limit of 5
 
         violations = self.rule.check_node(func_node, self.context)
-        self.assertEqual(
-            len(violations), 2
-        )  # Both length and nesting violations with custom limits
+        self.assertEqual(len(violations), 2)  # Both length and nesting violations with custom limits
 
     def test_calculate_max_nesting_depth_simple(self):
         """Test _calculate_max_nesting_depth with simple function."""
@@ -550,9 +494,7 @@ def nested_function():
 
     def test_calculate_max_nesting_depth_invalid_node(self):
         """Test _calculate_max_nesting_depth with invalid node type."""
-        class_node = ast.ClassDef(
-            name="TestClass", bases=[], keywords=[], decorator_list=[], body=[]
-        )
+        class_node = ast.ClassDef(name="TestClass", bases=[], keywords=[], decorator_list=[], body=[])
 
         with self.assertRaises(TypeError) as cm:
             self.rule._calculate_max_nesting_depth(class_node)
@@ -609,16 +551,12 @@ def function_with_match():
         func_node.end_lineno = 5
 
         # Create context with low nesting limit to trigger violation
-        self.context.metadata = {
-            "rules": {"style.deep-function": {"config": {"max_nesting_depth": 3}}}
-        }
+        self.context.metadata = {"rules": {"style.deep-function": {"config": {"max_nesting_depth": 3}}}}
 
         violations = self.rule.check_node(func_node, self.context)
 
         # Should have nesting violation (depth 4 > limit 3)
-        nesting_violations = [
-            v for v in violations if v.context.get("issue") == "nesting"
-        ]
+        nesting_violations = [v for v in violations if v.context.get("issue") == "nesting"]
         self.assertEqual(len(nesting_violations), 1)
 
 
@@ -654,9 +592,7 @@ def complex_function():
         func_node.end_lineno = 60
 
         # Test ExcessiveNestingRule
-        excessive_violations = self.excessive_nesting_rule.check_node(
-            func_node, self.context
-        )
+        excessive_violations = self.excessive_nesting_rule.check_node(func_node, self.context)
         self.assertGreater(len(excessive_violations), 0)
 
         # Test DeepFunctionRule
@@ -672,9 +608,7 @@ def complex_function():
         self.context.metadata = {
             "rules": {
                 "style.excessive-nesting": {"config": {"max_nesting_depth": 2}},
-                "style.deep-function": {
-                    "config": {"max_nesting_depth": 5, "max_function_lines": 10}
-                },
+                "style.deep-function": {"config": {"max_nesting_depth": 5, "max_function_lines": 10}},
             }
         }
 
@@ -691,16 +625,12 @@ def test_function():
         func_node.end_lineno = 5
 
         # ExcessiveNestingRule should violate (depth 4 > limit 2)
-        excessive_violations = self.excessive_nesting_rule.check_node(
-            func_node, self.context
-        )
+        excessive_violations = self.excessive_nesting_rule.check_node(func_node, self.context)
         self.assertEqual(len(excessive_violations), 1)
 
         # DeepFunctionRule should not violate nesting (depth 4 < limit 5) but might violate length
         deep_violations = self.deep_function_rule.check_node(func_node, self.context)
-        nesting_violations = [
-            v for v in deep_violations if v.context.get("issue") == "nesting"
-        ]
+        nesting_violations = [v for v in deep_violations if v.context.get("issue") == "nesting"]
         self.assertEqual(len(nesting_violations), 0)
 
 

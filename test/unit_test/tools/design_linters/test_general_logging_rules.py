@@ -21,7 +21,10 @@ sys.path.insert(0, "/home/stevejackson/Projects/durable-code-test/tools")
 
 from design_linters.framework.interfaces import LintContext, Severity
 from design_linters.rules.logging.general_logging_rules import (
-    LoggingInExceptionsRule, NoPlainPrintRule, ProperLogLevelsRule)
+    LoggingInExceptionsRule,
+    NoPlainPrintRule,
+    ProperLogLevelsRule,
+)
 
 
 class TestNoPlainPrintRule(unittest.TestCase):
@@ -36,9 +39,7 @@ class TestNoPlainPrintRule(unittest.TestCase):
         self.assertEqual(self.rule.rule_id, "logging.no-print")
         self.assertEqual(self.rule.rule_name, "No Print Statements")
         self.assertEqual(self.rule.severity, Severity.WARNING)
-        self.assertEqual(
-            self.rule.categories, {"logging", "production", "anti-patterns"}
-        )
+        self.assertEqual(self.rule.categories, {"logging", "production", "anti-patterns"})
         self.assertIn("print statements", self.rule.description.lower())
 
     def test_should_check_node_print_call(self):
@@ -203,9 +204,7 @@ class TestNoPlainPrintRule(unittest.TestCase):
 
     def test_is_allowed_context_main_function(self):
         """Test _is_allowed_context allows main function."""
-        main_context = LintContext(
-            file_path=Path("/script.py"), current_function="__main__"
-        )
+        main_context = LintContext(file_path=Path("/script.py"), current_function="__main__")
         config: Dict[str, Any] = {}
 
         result = self.rule._is_allowed_context(main_context, config)
@@ -265,18 +264,12 @@ class TestProperLogLevelsRule(unittest.TestCase):
 
     def test_is_logging_call_logger_name(self):
         """Test _is_logging_call identifies various logger names."""
-        test_cases = [
-            "logger.info('test')",
-            "log.error('test')",
-            "logging.debug('test')",
-        ]
+        test_cases = ["logger.info('test')", "log.error('test')", "logging.debug('test')"]
 
         for code in test_cases:
             tree = ast.parse(code)
             call_node = tree.body[0].value
-            self.assertTrue(
-                self.rule._is_logging_call(call_node), f"Failed for: {code}"
-            )
+            self.assertTrue(self.rule._is_logging_call(call_node), f"Failed for: {code}")
 
     def test_is_logging_call_getlogger_pattern(self):
         """Test _is_logging_call identifies getLogger pattern."""
@@ -313,9 +306,7 @@ for i in range(10):
         call_node = for_node.body[0].value
 
         # Set up context with loop in stack
-        loop_context = LintContext(
-            file_path=Path("/production.py"), node_stack=[for_node]
-        )
+        loop_context = LintContext(file_path=Path("/production.py"), node_stack=[for_node])
 
         violations = self.rule.check_node(call_node, loop_context)
 
@@ -388,9 +379,7 @@ while True:
         tree = ast.parse(code)
         while_node = tree.body[0]
 
-        loop_context = LintContext(
-            file_path=Path("/production.py"), node_stack=[while_node]
-        )
+        loop_context = LintContext(file_path=Path("/production.py"), node_stack=[while_node])
 
         self.assertTrue(self.rule._is_in_loop(loop_context))
 
@@ -408,14 +397,10 @@ def func():
 """
         tree = ast.parse(code)
         func_node = tree.body[0]
-        # Get for loop node for potential future use
-        _ = func_node.body[0]
+        for_node = func_node.body[0]
 
         # Context inside function but outside loop scope
-        context = LintContext(
-            file_path=Path("/production.py"),
-            node_stack=[func_node],  # Only function in stack
-        )
+        context = LintContext(file_path=Path("/production.py"), node_stack=[func_node])  # Only function in stack
 
         self.assertFalse(self.rule._is_in_loop(context))
 
@@ -704,18 +689,12 @@ except Exception:
 
     def test_is_logging_call_various_loggers(self):
         """Test _is_logging_call with various logger names."""
-        test_cases = [
-            "logger.error('test')",
-            "log.exception('test')",
-            "logging.critical('test')",
-        ]
+        test_cases = ["logger.error('test')", "log.exception('test')", "logging.critical('test')"]
 
         for code in test_cases:
             tree = ast.parse(code)
             call_node = tree.body[0].value
-            self.assertTrue(
-                self.rule._is_logging_call(call_node), f"Failed for: {code}"
-            )
+            self.assertTrue(self.rule._is_logging_call(call_node), f"Failed for: {code}")
 
     def test_is_logging_call_includes_exception_method(self):
         """Test _is_logging_call includes exception method."""

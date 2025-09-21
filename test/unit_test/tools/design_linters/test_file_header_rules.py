@@ -17,6 +17,8 @@ Implementation: Uses pytest fixtures and parameterized tests for comprehensive c
 """
 
 import ast
+import tempfile
+from pathlib import Path
 
 import pytest
 from design_linters.framework.interfaces import LintContext, Severity
@@ -201,9 +203,7 @@ Content starts here...
 
     def test_skip_test_files(self):
         """Test that test files can be skipped when configured."""
-        rule = FileHeaderRule(
-            config={"skip_test_files": True}
-        )  # Changed from check_test_files
+        rule = FileHeaderRule(config={"skip_test_files": True})  # Changed from check_test_files
         context = LintContext()
         context.file_path = "test_something.py"
         context.file_content = "# No header needed for test files"

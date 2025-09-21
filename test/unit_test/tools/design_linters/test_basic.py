@@ -1,8 +1,11 @@
 #!/usr/bin/env python3
 """
-Purpose: Basic working tests for design linters
+Purpose: Basic working tests for design linters.
+
 Scope: Simple smoke tests that actually work
-Overview: This module provides comprehensive basic tests that verify the design linters framework loads correctly, basic components exist and can be imported without errors, core functionality works as expected, and integration between different modules functions properly without testing complex advanced functionality or edge cases.
+Overview: This module provides comprehensive basic tests that verify the design linters framework loads correctly,
+basic components exist and can be imported without errors, core functionality works as expected, and integration
+between different modules functions properly without testing complex advanced functionality or edge cases.
 Dependencies: unittest, framework modules
 Exports: Test classes for basic imports, functionality, categories filter, and ignore functionality
 Interfaces: Standard unittest test methods and pytest-style fixtures for framework testing
@@ -23,13 +26,9 @@ class TestBasicImports(unittest.TestCase):
     def test_framework_imports(self):
         """Test framework module imports."""
         try:
-            from design_linters.framework import (analyzer, interfaces,
-                                                  reporters, rule_registry)
-            # Verify imports worked by accessing them
-            self.assertIsNotNone(analyzer)
-            self.assertIsNotNone(interfaces)
-            self.assertIsNotNone(reporters)
-            self.assertIsNotNone(rule_registry)
+            from design_linters.framework import analyzer, interfaces, reporters, rule_registry
+
+            self.assertTrue(True)  # If we get here, imports worked
         except ImportError as e:
             self.fail(f"Framework import failed: {e}")
 
@@ -37,18 +36,11 @@ class TestBasicImports(unittest.TestCase):
         """Test rules module imports."""
         try:
             from design_linters.rules.literals import magic_number_rules
-            from design_linters.rules.logging import (general_logging_rules,
-                                                      loguru_rules)
+            from design_linters.rules.logging import general_logging_rules, loguru_rules
             from design_linters.rules.solid import srp_rules
-            from design_linters.rules.style import (nesting_rules,
-                                                    print_statement_rules)
-            # Verify imports worked by accessing them
-            self.assertIsNotNone(magic_number_rules)
-            self.assertIsNotNone(general_logging_rules)
-            self.assertIsNotNone(loguru_rules)
-            self.assertIsNotNone(srp_rules)
-            self.assertIsNotNone(nesting_rules)
-            self.assertIsNotNone(print_statement_rules)
+            from design_linters.rules.style import nesting_rules, print_statement_rules
+
+            self.assertTrue(True)  # If we get here, imports worked
         except ImportError as e:
             self.fail(f"Rules import failed: {e}")
 
@@ -56,8 +48,8 @@ class TestBasicImports(unittest.TestCase):
         """Test CLI module import."""
         try:
             from design_linters import cli
-            # Verify import worked by accessing it
-            self.assertIsNotNone(cli)
+
+            self.assertTrue(True)
         except ImportError as e:
             self.fail(f"CLI import failed: {e}")
 
@@ -137,16 +129,14 @@ class TestBasicFunctionality(unittest.TestCase):
 
     def test_magic_number_rule_exists(self):
         """Test MagicNumberRule can be created."""
-        from design_linters.rules.literals.magic_number_rules import \
-            MagicNumberRule
+        from design_linters.rules.literals.magic_number_rules import MagicNumberRule
 
         rule = MagicNumberRule()
         self.assertEqual(rule.rule_id, "literals.magic-number")
 
     def test_print_statement_rule_exists(self):
         """Test PrintStatementRule can be created."""
-        from design_linters.rules.style.print_statement_rules import \
-            PrintStatementRule
+        from design_linters.rules.style.print_statement_rules import PrintStatementRule
 
         rule = PrintStatementRule()
         self.assertEqual(rule.rule_id, "style.print-statement")
@@ -159,11 +149,9 @@ class TestCategoriesFilter(unittest.TestCase):
         """Set up test fixtures."""
         from design_linters.cli import ConfigurationManager, DesignLinterCLI
         from design_linters.framework.rule_registry import DefaultRuleRegistry
-        from design_linters.rules.literals.magic_number_rules import \
-            MagicNumberRule
+        from design_linters.rules.literals.magic_number_rules import MagicNumberRule
         from design_linters.rules.solid.srp_rules import ClassTooBigRule
-        from design_linters.rules.style.print_statement_rules import \
-            PrintStatementRule
+        from design_linters.rules.style.print_statement_rules import PrintStatementRule
 
         self.config_manager = ConfigurationManager()
         self.cli = DesignLinterCLI()
@@ -243,9 +231,7 @@ class VeryLongClassWithManyLines:
 
         try:
             # Test with categories filter for literals only
-            self.cli.run(
-                ["--categories", "literals", "--format", "json", test_file]
-            )
+            result = self.cli.run(["--categories", "literals", "--format", "json", test_file])
 
             # The result should only contain literals violations, not style violations
             # Note: We can't easily check the actual violations without running the full
@@ -280,17 +266,13 @@ class TestIgnoreFunctionality(unittest.TestCase):
 
     def setUp(self):
         """Set up test fixtures."""
-        from design_linters.framework.analyzer import (DefaultLintOrchestrator,
-                                                       PythonAnalyzer)
+        from design_linters.framework.analyzer import DefaultLintOrchestrator, PythonAnalyzer
         from design_linters.framework.rule_registry import DefaultRuleRegistry
-        from design_linters.rules.literals.magic_number_rules import (
-            MagicComplexRule, MagicNumberRule)
+        from design_linters.rules.literals.magic_number_rules import MagicComplexRule, MagicNumberRule
 
         self.registry = DefaultRuleRegistry()
         self.analyzer = PythonAnalyzer()
-        self.orchestrator = DefaultLintOrchestrator(
-            rule_registry=self.registry, analyzers={".py": self.analyzer}
-        )
+        self.orchestrator = DefaultLintOrchestrator(rule_registry=self.registry, analyzers={".py": self.analyzer})
 
         # Register literal rules
         self.registry.register_rule(MagicNumberRule())
@@ -315,13 +297,9 @@ def calculate():
         try:
             violations = self.orchestrator.lint_file(test_file)
             # Should have no violations because of the ignore directive
-            magic_number_violations = [
-                v for v in violations if v.rule_id == "literals.magic-number"
-            ]
+            magic_number_violations = [v for v in violations if v.rule_id == "literals.magic-number"]
             self.assertEqual(
-                len(magic_number_violations),
-                0,
-                "Line-level ignore should suppress magic number violation",
+                len(magic_number_violations), 0, "Line-level ignore should suppress magic number violation"
             )
         finally:
             os.unlink(test_file)
@@ -351,9 +329,7 @@ def test_function():
         try:
             violations = self.orchestrator.lint_file(test_file)
             # Should have no literal violations
-            literal_violations = [
-                v for v in violations if v.rule_id.startswith("literals.")
-            ]
+            literal_violations = [v for v in violations if v.rule_id.startswith("literals.")]
             self.assertEqual(
                 len(literal_violations),
                 0,
@@ -386,24 +362,14 @@ def test_function():
         try:
             violations = self.orchestrator.lint_file(test_file)
             # Should have no magic number violations
-            magic_number_violations = [
-                v for v in violations if v.rule_id == "literals.magic-number"
-            ]
+            magic_number_violations = [v for v in violations if v.rule_id == "literals.magic-number"]
             self.assertEqual(
-                len(magic_number_violations),
-                0,
-                "File-level ignore should suppress magic number violations",
+                len(magic_number_violations), 0, "File-level ignore should suppress magic number violations"
             )
 
             # Should also have no complex number violations
-            complex_violations = [
-                v for v in violations if v.rule_id == "literals.magic-complex"
-            ]
-            self.assertEqual(
-                len(complex_violations),
-                0,
-                "File-level ignore should suppress complex number violations",
-            )
+            complex_violations = [v for v in violations if v.rule_id == "literals.magic-complex"]
+            self.assertEqual(len(complex_violations), 0, "File-level ignore should suppress complex number violations")
         finally:
             os.unlink(test_file)
 
@@ -428,16 +394,10 @@ def calculate():
 
         try:
             violations = self.orchestrator.lint_file(test_file)
-            magic_number_violations = [
-                v for v in violations if v.rule_id == "literals.magic-number"
-            ]
+            magic_number_violations = [v for v in violations if v.rule_id == "literals.magic-number"]
 
             # Should have exactly one violation (the 99, not the 42)
-            self.assertEqual(
-                len(magic_number_violations),
-                1,
-                "Should have one magic number violation",
-            )
+            self.assertEqual(len(magic_number_violations), 1, "Should have one magic number violation")
             self.assertIn("99", magic_number_violations[0].message)
         finally:
             os.unlink(test_file)
@@ -455,22 +415,14 @@ def test_complex_math():
     return result
 """
 
-        with tempfile.NamedTemporaryFile(
-            mode="w", suffix="_test.py", delete=False
-        ) as f:
+        with tempfile.NamedTemporaryFile(mode="w", suffix="_test.py", delete=False) as f:
             f.write(test_code)
             test_file = Path(f.name)
 
         try:
             violations = self.orchestrator.lint_file(test_file)
-            complex_violations = [
-                v for v in violations if v.rule_id == "literals.magic-complex"
-            ]
-            self.assertEqual(
-                len(complex_violations),
-                0,
-                "Complex numbers in test files should not be flagged",
-            )
+            complex_violations = [v for v in violations if v.rule_id == "literals.magic-complex"]
+            self.assertEqual(len(complex_violations), 0, "Complex numbers in test files should not be flagged")
         finally:
             os.unlink(test_file)
 
@@ -502,9 +454,7 @@ def calculate():
 
         try:
             violations = self.orchestrator.lint_file(test_file)
-            magic_number_violations = [
-                v for v in violations if v.rule_id == "literals.magic-number"
-            ]
+            magic_number_violations = [v for v in violations if v.rule_id == "literals.magic-number"]
 
             # Should only have one violation (the 42 in the function)
             self.assertEqual(
@@ -516,15 +466,9 @@ def calculate():
 
             # Verify that none of the constant values are in the violations
             violation_messages = " ".join(v.message for v in magic_number_violations)
-            self.assertNotIn(
-                "60", violation_messages, "SECONDS_PER_MINUTE should not be flagged"
-            )
-            self.assertNotIn(
-                "100", violation_messages, "MAX_CONNECTIONS should not be flagged"
-            )
-            self.assertNotIn(
-                "8080", violation_messages, "DEFAULT_PORT should not be flagged"
-            )
+            self.assertNotIn("60", violation_messages, "SECONDS_PER_MINUTE should not be flagged")
+            self.assertNotIn("100", violation_messages, "MAX_CONNECTIONS should not be flagged")
+            self.assertNotIn("8080", violation_messages, "DEFAULT_PORT should not be flagged")
         finally:
             os.unlink(test_file)
 
@@ -534,10 +478,8 @@ def calculate():
         import tempfile
         from pathlib import Path
 
-        from design_linters.rules.logging.general_logging_rules import \
-            NoPlainPrintRule
-        from design_linters.rules.style.print_statement_rules import \
-            PrintStatementRule
+        from design_linters.rules.logging.general_logging_rules import NoPlainPrintRule
+        from design_linters.rules.style.print_statement_rules import PrintStatementRule
 
         # Register the print statement rules
         self.registry.register_rule(NoPlainPrintRule())
@@ -571,9 +513,7 @@ def test_function():
 
             # Magic numbers should still be caught (not ignored)
             magic_violations = [v for v in violations if "magic" in v.rule_id]
-            self.assertEqual(
-                len(magic_violations), 1, "Magic number should still be caught"
-            )
+            self.assertEqual(len(magic_violations), 1, "Magic number should still be caught")
         finally:
             os.unlink(test_file)
 
@@ -598,10 +538,8 @@ def test():
         self.assertFalse(has_file_level_ignore(test_code1, "other.rule"))
 
         # Now test with actual linting
-        from design_linters.rules.logging.general_logging_rules import \
-            NoPlainPrintRule
-        from design_linters.rules.style.print_statement_rules import \
-            PrintStatementRule
+        from design_linters.rules.logging.general_logging_rules import NoPlainPrintRule
+        from design_linters.rules.style.print_statement_rules import PrintStatementRule
 
         # Register the print statement rules
         self.registry.register_rule(NoPlainPrintRule())
@@ -615,11 +553,7 @@ def test():
             violations = self.orchestrator.lint_file(test_file)
             print_violations = [v for v in violations if "print" in v.rule_id]
             print(f"DEBUG: Found violations: {[v.rule_id for v in print_violations]}")
-            self.assertEqual(
-                len(print_violations),
-                0,
-                "Should have no print violations with ignore directive",
-            )
+            self.assertEqual(len(print_violations), 0, "Should have no print violations with ignore directive")
         finally:
             os.unlink(test_file)
 

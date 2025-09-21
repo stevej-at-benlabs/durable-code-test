@@ -16,16 +16,18 @@ import ast
 import sys
 import unittest
 from pathlib import Path
+from unittest.mock import Mock, patch
 
 sys.path.insert(0, "/home/stevejackson/Projects/durable-code-test/tools")
 
-from design_linters.framework.interfaces import (LintContext,
-                                                 Severity)
-from design_linters.rules.logging.loguru_rules import (LogLevelConsistencyRule,
-                                                       LoguruConfigurationRule,
-                                                       LoguruImportRule,
-                                                       StructuredLoggingRule,
-                                                       UseLoguruRule)
+from design_linters.framework.interfaces import LintContext, LintViolation, Severity
+from design_linters.rules.logging.loguru_rules import (
+    LogLevelConsistencyRule,
+    LoguruConfigurationRule,
+    LoguruImportRule,
+    StructuredLoggingRule,
+    UseLoguruRule,
+)
 
 
 class TestUseLoguruRule(unittest.TestCase):
@@ -588,11 +590,7 @@ class TestLoguruConfigurationRule(unittest.TestCase):
 
     def test_check_node_stderr_sink_no_suggestions(self):
         """Test that stderr/stdout sinks don't get file-specific suggestions."""
-        stderr_cases = [
-            "logger.add('<stderr>')",
-            "logger.add('<stdout>')",
-            "logger.add(sys.stderr)",
-        ]
+        stderr_cases = ["logger.add('<stderr>')", "logger.add('<stdout>')", "logger.add(sys.stderr)"]
 
         for code in stderr_cases[:2]:  # Skip sys.stderr as it's more complex to parse
             with self.subTest(code=code):
@@ -694,9 +692,7 @@ class TestRuleIntegration(unittest.TestCase):
                     violations = rule.check(empty_context)
                     self.assertIsInstance(violations, list)
                 except Exception as e:
-                    self.fail(
-                        f"Rule {rule.__class__.__name__} failed with empty context: {e}"
-                    )
+                    self.fail(f"Rule {rule.__class__.__name__} failed with empty context: {e}")
 
     def test_violation_creation_consistency(self):
         """Test that all rules create violations with consistent structure."""

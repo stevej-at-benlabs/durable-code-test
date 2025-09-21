@@ -46,113 +46,98 @@ make lint-fix
 git diff --stat
 ```
 
-### 3. Iterative Linting Fix Loop
-Continuously run linting and fix errors until clean:
+### 3. Parallel Fix Phase
+Launch two specialized agents in parallel to fix lint and test issues simultaneously:
 
-```bash
-LINT_ATTEMPTS=0
-MAX_LINT_ATTEMPTS=50  # Prevent infinite loops while being persistent
+**CRITICAL**: Both agents run concurrently using the Task tool with parallel execution.
 
-while [ $LINT_ATTEMPTS -lt $MAX_LINT_ATTEMPTS ]; do
-    LINT_ATTEMPTS=$((LINT_ATTEMPTS + 1))
-    echo "🔍 Linting attempt $LINT_ATTEMPTS"
-
-    # Run lint-all and capture output
-    make lint-all 2>&1 | tee /tmp/lint_output.txt
-
-    # Check if linting passed
-    if [ $? -eq 0 ]; then
-        echo "✅ All linting checks passed!"
-        break
-    fi
-
-    # Parse lint errors and fix them programmatically
-    # This will involve:
-    # - Reading the lint output
-    # - Identifying specific error types
-    # - Applying appropriate fixes
-    # - Using Edit/MultiEdit tools to fix issues
-
-    # Continue to next iteration
-done
+```
+🚀 Launching parallel fix agents:
+  - Lint Fix Agent: Iteratively fixes all linting errors and warnings
+  - Test Fix Agent: Iteratively fixes all test failures
 ```
 
-### 4. Iterative Test Fix Loop
-Continuously run tests and fix failures until all pass:
+#### Lint Fix Agent Task
+The lint fix agent will:
+1. Run `make lint-all` to identify issues
+2. Parse and categorize errors by type and file
+3. Apply fixes using MultiEdit for batch changes
+4. Re-run linting after each batch of fixes
+5. Continue until all linting passes with zero errors/warnings
+6. Maximum 50 iterations to prevent infinite loops
+
+#### Test Fix Agent Task
+The test fix agent will:
+1. Run `make test-all` to identify failures
+2. Analyze failure patterns and root causes
+3. Fix test implementation or source code issues
+4. Re-run tests after each batch of fixes
+5. Continue until all tests pass
+6. Maximum 50 iterations to prevent infinite loops
+
+Both agents work independently and report their progress. The parallel execution significantly reduces total fix time.
+
+### 4. Sequential Cleanup Phase
+After both parallel agents complete, perform final sequential cleanup:
+
+This phase ensures that fixes from one agent didn't break the other's domain and that everything works together:
 
 ```bash
-TEST_ATTEMPTS=0
-MAX_TEST_ATTEMPTS=50  # Prevent infinite loops while being persistent
+echo "🔄 Starting sequential cleanup phase..."
 
-while [ $TEST_ATTEMPTS -lt $MAX_TEST_ATTEMPTS ]; do
-    TEST_ATTEMPTS=$((TEST_ATTEMPTS + 1))
-    echo "🧪 Test attempt $TEST_ATTEMPTS"
+# Step 1: Verify both lint and tests pass after parallel fixes
+make lint-all
+LINT_STATUS=$?
 
-    # Run test-all and capture output
-    make test-all 2>&1 | tee /tmp/test_output.txt
+make test-all
+TEST_STATUS=$?
 
-    # Check if tests passed
-    if [ $? -eq 0 ]; then
-        echo "✅ All tests passed!"
-        break
+if [ $LINT_STATUS -eq 0 ] && [ $TEST_STATUS -eq 0 ]; then
+    echo "✅ Both linting and tests passed after parallel fixes!"
+else
+    echo "⚠️ Conflicts detected between parallel fixes, resolving sequentially..."
+
+    # Step 2: Fix any conflicts sequentially
+    # This uses a simpler approach since most issues are already fixed
+
+    if [ $LINT_STATUS -ne 0 ]; then
+        echo "🔧 Fixing remaining lint issues..."
+        # Run targeted lint fixes for any remaining issues
+        # Maximum 5 iterations since most work is done
     fi
 
-    # Parse test failures and fix them
-    # This will involve:
-    # - Reading test output
-    # - Identifying failing tests
-    # - Analyzing failure reasons
-    # - Fixing implementation or test issues
-    # - Using Edit/MultiEdit tools to apply fixes
+    if [ $TEST_STATUS -ne 0 ]; then
+        echo "🔧 Fixing remaining test issues..."
+        # Run targeted test fixes for any remaining failures
+        # Maximum 5 iterations since most work is done
+    fi
+fi
 
-    # Continue to next iteration
-done
-```
-
-### 5. Alternating Verification Loop
-Ensure both linting and tests pass consistently:
-
-```bash
+# Step 3: Final stability check - ensure both pass twice consecutively
 STABLE_PASSES=0
-REQUIRED_STABLE_PASSES=2  # Both must pass twice in a row
-VERIFICATION_ATTEMPTS=0
-MAX_VERIFICATION_ATTEMPTS=20
+REQUIRED_STABLE_PASSES=2
 
-while [ $STABLE_PASSES -lt $REQUIRED_STABLE_PASSES ] && [ $VERIFICATION_ATTEMPTS -lt $MAX_VERIFICATION_ATTEMPTS ]; do
-    VERIFICATION_ATTEMPTS=$((VERIFICATION_ATTEMPTS + 1))
-    echo "🔄 Verification attempt $VERIFICATION_ATTEMPTS"
+for i in 1 2; do
+    echo "🔍 Stability check $i/$REQUIRED_STABLE_PASSES"
 
-    # Run linting
     make lint-all
     LINT_STATUS=$?
 
-    # Run tests
     make test-all
     TEST_STATUS=$?
 
-    # Check if both passed
     if [ $LINT_STATUS -eq 0 ] && [ $TEST_STATUS -eq 0 ]; then
         STABLE_PASSES=$((STABLE_PASSES + 1))
-        echo "✅ Both linting and tests passed ($STABLE_PASSES/$REQUIRED_STABLE_PASSES)"
+        echo "✅ Stability check passed ($STABLE_PASSES/$REQUIRED_STABLE_PASSES)"
     else
-        STABLE_PASSES=0  # Reset counter if either failed
-        echo "❌ Verification failed, fixing issues..."
-
-        # Fix whichever failed
-        if [ $LINT_STATUS -ne 0 ]; then
-            # Return to linting fix loop
-            # Apply fixes for linting issues
-        fi
-
-        if [ $TEST_STATUS -ne 0 ]; then
-            # Return to test fix loop
-            # Apply fixes for test failures
-        fi
+        echo "❌ Stability check failed, applying final fixes..."
+        # Apply minimal targeted fixes
+        break
     fi
 done
 ```
 
-### 6. Final Validation
+### 5. Final Validation
 Confirm everything is working:
 
 ```bash
@@ -331,69 +316,72 @@ $ make lint-fix
 Remaining issues: 27
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-🔍 Phase 3: Iterative Linting Fixes
-Fixing remaining linting errors...
+🚀 Phase 3: Parallel Fix Phase
+Launching two specialized agents in parallel to fix remaining issues...
 
-[Attempt 1/50]
-📝 Fixing: app/services/auth.py:45 - Missing type hint
-✅ Added type hint: def authenticate(username: str, password: str) -> Optional[User]
+🤖 LINT FIX AGENT                    🤖 TEST FIX AGENT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━        ━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Starting lint fix iterations...      Starting test fix iterations...
 
-📝 Fixing: app/utils/validators.py:23 - Unused import
-✅ Removed unused import: from typing import Dict
+[Iteration 1/50]                     [Iteration 1/50]
+Running make lint-all...            Running make test-all...
+Found 11 errors to fix               Found 8 failures to fix
 
-[Attempt 2/50]
-📝 Fixing: app/models/user.py:67 - Class too complex (complexity: 12)
-✅ Refactored into smaller methods
+📝 Fixing type hints in:            📝 Fixing test failures in:
+  - app/services/auth.py:45          - tests/test_auth.py::test_login
+  - app/models/user.py:23            - tests/test_user.py::test_create
+  - app/utils/validators.py:12       - tests/test_api.py::test_endpoint
 
-[... continues fixing each error ...]
+[Iteration 2/50]                     [Iteration 2/50]
+Running make lint-all...            Running make test-all...
+Found 5 errors remaining             Found 3 failures remaining
 
-✅ All linting errors fixed after 4 iterations!
+📝 Fixing complexity issues:         📝 Fixing mock issues:
+  - Refactoring user.py methods      - Database mock in test_user.py
+  - Splitting auth.py functions      - API mock in test_integration.py
+
+[Iteration 3/50]                     [Iteration 3/50]
+Running make lint-all...            Running make test-all...
+✅ All linting passed!               Found 1 failure remaining
+
+Agent complete in 2m 34s             📝 Fixing assertion:
+                                       - Updated expected response
+
+                                     [Iteration 4/50]
+                                     Running make test-all...
+                                     ✅ All tests passed!
+
+                                     Agent complete in 3m 12s
+
+⏱️ Parallel execution completed in 3m 12s (vs ~5m 46s sequential)
+✅ Both agents reported success!
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-🧪 Phase 4: Iterative Test Fixes
-Fixing test failures...
+🔄 Phase 4: Sequential Cleanup
+Verifying parallel fixes work together...
 
-[Attempt 1/50]
-📝 Fixing: tests/test_auth.py::test_login - AssertionError
-   Expected: {"status": "success"}
-   Actual: {"status": "error", "message": "Invalid credentials"}
-✅ Fixed mock user data in test fixture
-
-📝 Fixing: tests/test_user.py::test_create - Database connection error
-✅ Added proper database mock for test isolation
-
-[Attempt 2/50]
-📝 Fixing: tests/test_api.py::test_endpoint - 404 Not Found
-✅ Updated test URL to match new route
-
-[... continues fixing each test ...]
-
-✅ All tests passing after 3 iterations!
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-🔄 Phase 5: Alternating Verification
-Ensuring both linting and tests pass consistently...
-
-[Verification 1/2]
 $ make lint-all
 ✅ Linting passed!
 
 $ make test-all
-❌ New test failure introduced by linting fixes
-📝 Fixing: Import order change broke mock patch
-✅ Updated mock patch path
+❌ 1 test failure detected (conflict from parallel fixes)
 
-[Verification 2/2]
-$ make lint-all
-✅ Linting passed!
+🔧 Resolving conflict...
+📝 Import order changed by lint agent broke test mock path
+✅ Updated mock path to match new import structure
 
-$ make test-all
-✅ All tests passed!
+🔍 Stability check 1/2
+$ make lint-all && make test-all
+✅ Both passed!
 
-✅ Both checks passed consecutively!
+🔍 Stability check 2/2
+$ make lint-all && make test-all
+✅ Both passed!
+
+✅ Sequential cleanup complete!
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-🏁 Phase 6: Final Validation
+🏁 Phase 5: Final Validation
 Running final checks...
 
 $ make lint-all
@@ -419,7 +407,9 @@ $ make test-all
   ✅ Fixed 3 SOLID violations
   ✅ Improved coverage from 72% to 85%
 
-⏱️ Total Time: 7m 23s
+⏱️ Total Time: 4m 28s (40% faster with parallel execution)
+  - Parallel fix phase: 3m 12s
+  - Sequential cleanup: 1m 16s
 📝 Files Modified: 18
 🔧 Total Fixes Applied: 39
 
@@ -459,10 +449,12 @@ The command respects project configuration:
 ## Notes
 
 - **Hands-Off Operation**: Once started, runs to completion without user interaction
+- **Parallel Execution**: Runs lint and test fixing agents concurrently for ~40% time savings
 - **Persistent**: Will not give up on fixable errors
 - **Comprehensive**: Fixes root causes, not symptoms
 - **Safe**: Creates proper fixes without breaking functionality
-- **Thorough**: Alternates between checks to ensure stability
+- **Conflict Resolution**: Sequential cleanup phase handles any conflicts from parallel fixes
+- **Thorough**: Final stability checks ensure everything works together
 - **Transparent**: Provides clear progress updates throughout
 
-This command embodies the principle of "make it work, make it right" by ensuring all quality checks pass through persistent, automated fixing.
+This command embodies the principle of "make it work, make it right" by ensuring all quality checks pass through persistent, automated fixing with optimized parallel execution.

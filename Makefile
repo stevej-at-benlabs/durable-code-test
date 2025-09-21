@@ -7,8 +7,12 @@
 .DEFAULT_GOAL := help
 
 # Variables
+# Get current git branch name, sanitized for Docker container names
+BRANCH_NAME := $(shell git rev-parse --abbrev-ref HEAD 2>/dev/null | tr '/' '-' | tr '[:upper:]' '[:lower:]' || echo "main")
+export BRANCH_NAME
+
 DOCKER_COMPOSE = docker compose
-DOCKER_COMPOSE_DEV = docker compose -f docker-compose.dev.yml
+DOCKER_COMPOSE_DEV = BRANCH_NAME=$(BRANCH_NAME) docker compose -f docker-compose.dev.yml
 FRONTEND_URL = http://localhost:3000
 FRONTEND_DEV_URL = http://localhost:5173
 BACKEND_URL = http://localhost:8000
@@ -137,10 +141,10 @@ clean: ## Remove all containers, networks, and volumes
 	@echo "$(GREEN)✓ Cleanup complete!$(NC)"
 
 shell-backend: ## Open shell in backend container
-	@docker exec -it durable-code-backend /bin/bash || docker exec -it durable-code-backend-dev /bin/bash
+	@docker exec -it durable-code-backend /bin/bash || docker exec -it durable-code-backend-$(BRANCH_NAME)-dev /bin/bash
 
 shell-frontend: ## Open shell in frontend container
-	@docker exec -it durable-code-frontend /bin/sh || docker exec -it durable-code-frontend-dev /bin/sh
+	@docker exec -it durable-code-frontend /bin/sh || docker exec -it durable-code-frontend-$(BRANCH_NAME)-dev /bin/sh
 
 # Pre-commit hooks
 install-hooks: ## Install pre-commit hooks
@@ -163,16 +167,16 @@ pre-commit: lint-all-staged ## Run pre-commit checks on staged files only
 check-deps: ## Check for outdated dependencies
 	@echo "$(CYAN)Checking dependencies...$(NC)"
 	@echo "$(YELLOW)Backend dependencies:$(NC)"
-	@docker exec durable-code-backend poetry show --outdated || docker exec durable-code-backend-dev poetry show --outdated || echo "$(YELLOW)Backend container not running$(NC)"
+	@docker exec durable-code-backend poetry show --outdated || docker exec durable-code-backend-$(BRANCH_NAME)-dev poetry show --outdated || echo "$(YELLOW)Backend container not running$(NC)"
 	@echo "$(YELLOW)Frontend dependencies:$(NC)"
-	@docker exec durable-code-frontend npm outdated || docker exec durable-code-frontend-dev npm outdated || echo "$(YELLOW)Frontend container not running$(NC)"
+	@docker exec durable-code-frontend npm outdated || docker exec durable-code-frontend-$(BRANCH_NAME)-dev npm outdated || echo "$(YELLOW)Frontend container not running$(NC)"
 
 update-deps: ## Update dependencies
 	@echo "$(CYAN)Updating dependencies...$(NC)"
 	@echo "$(YELLOW)Backend dependencies:$(NC)"
-	@docker exec durable-code-backend poetry update || docker exec durable-code-backend-dev poetry update || echo "$(YELLOW)Backend container not running$(NC)"
+	@docker exec durable-code-backend poetry update || docker exec durable-code-backend-$(BRANCH_NAME)-dev poetry update || echo "$(YELLOW)Backend container not running$(NC)"
 	@echo "$(YELLOW)Frontend dependencies:$(NC)"
-	@docker exec durable-code-frontend npm update || docker exec durable-code-frontend-dev npm update || echo "$(YELLOW)Frontend container not running$(NC)"
+	@docker exec durable-code-frontend npm update || docker exec durable-code-frontend-$(BRANCH_NAME)-dev npm update || echo "$(YELLOW)Frontend container not running$(NC)"
 
 # Health check
 health: ## Check health of all services

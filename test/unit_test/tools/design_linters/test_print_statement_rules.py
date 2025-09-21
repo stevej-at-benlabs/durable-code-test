@@ -15,13 +15,12 @@ import ast
 import sys
 import unittest
 from pathlib import Path
+from typing import Any, Dict
 
 sys.path.insert(0, "/home/stevejackson/Projects/durable-code-test/tools")
 
-from design_linters.framework.interfaces import (LintContext,
-                                                 Severity)
-from design_linters.rules.style.print_statement_rules import (
-    ConsoleOutputRule, PrintStatementRule)
+from design_linters.framework.interfaces import LintContext, LintViolation, Severity
+from design_linters.rules.style.print_statement_rules import ConsoleOutputRule, PrintStatementRule
 
 
 class TestPrintStatementRule(unittest.TestCase):
@@ -30,20 +29,14 @@ class TestPrintStatementRule(unittest.TestCase):
     def setUp(self):
         """Set up test fixtures."""
         self.rule = PrintStatementRule()
-        self.context = LintContext(
-            file_path=Path("/src/module.py"),
-            file_content="",
-            ast_tree=None,
-            node_stack=[],
-        )
+        self.context = LintContext(file_path=Path("/src/module.py"), file_content="", ast_tree=None, node_stack=[])
 
     def test_rule_properties(self):
         """Test rule property getters."""
         self.assertEqual(self.rule.rule_id, "style.print-statement")
         self.assertEqual(self.rule.rule_name, "Print Statement Usage")
         self.assertEqual(
-            self.rule.description,
-            "Print statements should be replaced with proper logging for production code",
+            self.rule.description, "Print statements should be replaced with proper logging for production code"
         )
         self.assertEqual(self.rule.severity, Severity.WARNING)
         self.assertEqual(self.rule.categories, {"style", "logging", "production"})
@@ -100,9 +93,7 @@ class TestPrintStatementRule(unittest.TestCase):
         violation = violations[0]
         self.assertEqual(violation.rule_id, "style.print-statement")
         self.assertEqual(violation.severity, Severity.WARNING)
-        self.assertEqual(
-            violation.message, "Print statement found - use logging instead"
-        )
+        self.assertEqual(violation.message, "Print statement found - use logging instead")
         self.assertIn("Print statements should be replaced", violation.description)
         self.assertIn("logger.", violation.suggestion)
 
@@ -115,9 +106,7 @@ class TestPrintStatementRule(unittest.TestCase):
         with self.assertRaises(TypeError) as cm:
             self.rule.check_node(name_node, self.context)
 
-        self.assertIn(
-            "PrintStatementRule should only receive ast.Call nodes", str(cm.exception)
-        )
+        self.assertIn("PrintStatementRule should only receive ast.Call nodes", str(cm.exception))
 
     def test_check_node_in_allowed_context_test_file(self):
         """Test check_node returns no violations in test files."""
@@ -248,9 +237,7 @@ class TestPrintStatementRule(unittest.TestCase):
         call_node = tree.body[0].value
 
         suggestion = self.rule._generate_logging_suggestion(call_node, self.context)
-        self.assertEqual(
-            suggestion, "logger.info('...')  # Use appropriate logging level"
-        )
+        self.assertEqual(suggestion, "logger.info('...')  # Use appropriate logging level")
 
     def test_generate_logging_suggestion_no_args(self):
         """Test _generate_logging_suggestion for print with no args."""
@@ -259,9 +246,7 @@ class TestPrintStatementRule(unittest.TestCase):
         call_node = tree.body[0].value
 
         suggestion = self.rule._generate_logging_suggestion(call_node, self.context)
-        self.assertEqual(
-            suggestion, "logger.info('...')  # Use appropriate logging level"
-        )
+        self.assertEqual(suggestion, "logger.info('...')  # Use appropriate logging level")
 
     def test_generate_logging_suggestion_non_string_arg(self):
         """Test _generate_logging_suggestion for non-string arguments."""
@@ -270,9 +255,7 @@ class TestPrintStatementRule(unittest.TestCase):
         call_node = tree.body[0].value
 
         suggestion = self.rule._generate_logging_suggestion(call_node, self.context)
-        self.assertEqual(
-            suggestion, "logger.info('...')  # Use appropriate logging level"
-        )
+        self.assertEqual(suggestion, "logger.info('...')  # Use appropriate logging level")
 
     def test_violation_context_includes_function_and_class(self):
         """Test that violations include function and class context."""
@@ -300,11 +283,7 @@ class TestPrintStatementRule(unittest.TestCase):
         """Test check_node with custom configuration."""
         # Set metadata with custom config
         self.context.metadata = {
-            "rules": {
-                "style.print-statement": {
-                    "config": {"allowed_patterns": ["custom_debug_"]}
-                }
-            }
+            "rules": {"style.print-statement": {"config": {"allowed_patterns": ["custom_debug_"]}}}
         }
         self.context.current_function = "custom_debug_function"
 
@@ -322,21 +301,13 @@ class TestConsoleOutputRule(unittest.TestCase):
     def setUp(self):
         """Set up test fixtures."""
         self.rule = ConsoleOutputRule()
-        self.context = LintContext(
-            file_path=Path("/src/module.py"),
-            file_content="",
-            ast_tree=None,
-            node_stack=[],
-        )
+        self.context = LintContext(file_path=Path("/src/module.py"), file_content="", ast_tree=None, node_stack=[])
 
     def test_rule_properties(self):
         """Test rule property getters."""
         self.assertEqual(self.rule.rule_id, "style.console-output")
         self.assertEqual(self.rule.rule_name, "Console Output Usage")
-        self.assertEqual(
-            self.rule.description,
-            "Console output methods should be replaced with proper logging",
-        )
+        self.assertEqual(self.rule.description, "Console output methods should be replaced with proper logging")
         self.assertEqual(self.rule.severity, Severity.INFO)
         self.assertEqual(self.rule.categories, {"style", "logging", "console"})
 
@@ -445,9 +416,7 @@ class TestConsoleOutputRule(unittest.TestCase):
         with self.assertRaises(TypeError) as cm:
             self.rule.check_node(attr_node, self.context)
 
-        self.assertIn(
-            "ConsoleOutputRule should only receive ast.Call nodes", str(cm.exception)
-        )
+        self.assertIn("ConsoleOutputRule should only receive ast.Call nodes", str(cm.exception))
 
     def test_check_node_in_allowed_context_test_file(self):
         """Test check_node returns no violations in test files."""
@@ -633,16 +602,12 @@ class TestConsoleOutputRule(unittest.TestCase):
     def test_generate_suggestion_for_console(self):
         """Test _generate_suggestion for console output."""
         suggestion = self.rule._generate_suggestion("console.log")
-        self.assertEqual(
-            suggestion, "logger.debug('...')  # Use appropriate logging level"
-        )
+        self.assertEqual(suggestion, "logger.debug('...')  # Use appropriate logging level")
 
     def test_generate_suggestion_for_unknown(self):
         """Test _generate_suggestion for unknown output method."""
         suggestion = self.rule._generate_suggestion("unknown.method")
-        self.assertEqual(
-            suggestion, "logger.debug('...')  # Use appropriate logging level"
-        )
+        self.assertEqual(suggestion, "logger.debug('...')  # Use appropriate logging level")
 
     def test_get_configuration_method(self):
         """Test get_configuration method."""
@@ -728,9 +693,7 @@ sys.stdout.write('world')
 console.log('debug')
 """
         tree = ast.parse(code)
-        context = LintContext(
-            file_path=Path("/src/module.py"), file_content=code, ast_tree=tree
-        )
+        context = LintContext(file_path=Path("/src/module.py"), file_content=code, ast_tree=tree)
 
         # Test print rule
         print_violations = print_rule.check(context)
