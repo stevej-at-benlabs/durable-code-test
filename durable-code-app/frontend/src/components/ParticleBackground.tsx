@@ -1,3 +1,16 @@
+/**
+ * Purpose: React component providing an animated particle background effect with canvas rendering
+ * Scope: Full-screen animated background overlay with interactive particle system
+ * Overview: Creates a fixed-position canvas that renders animated particles with physics simulation,
+ *     mouse interaction, and connecting lines between nearby particles. Provides an immersive
+ *     background effect for the application with configurable particle behavior through dependency
+ *     injection. Handles canvas resizing, animation loops, and proper cleanup of event listeners.
+ *     Optimized for performance with requestAnimationFrame and includes test environment safety.
+ * Dependencies: React hooks (useEffect, useRef), ParticleSystem utilities (ParticleFactory, ParticlePhysics, ParticleRenderer, MouseTracker), HTML5 Canvas API
+ * Exports: ParticleBackground component as default export
+ * Props/Interfaces: ParticleBackgroundProps with optional dependency injection for particle system components
+ * State/Behavior: Manages canvas ref, handles window resize events, runs continuous animation loop, tracks mouse interactions for particle repulsion effects
+ */
 import { useEffect, useRef } from 'react';
 import type { Particle } from '../utils/ParticleSystem';
 import {

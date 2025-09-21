@@ -57,7 +57,7 @@ test-backend-coverage: dev-start ## Run backend tests with coverage (pytest --co
 	@echo "$(CYAN)║              Backend Tests with Coverage                  ║$(NC)"
 	@echo "$(CYAN)╚════════════════════════════════════════════════════════════╝$(NC)"
 	@echo "$(YELLOW)Running backend and framework tests with coverage...$(NC)"
-	@docker exec durable-code-backend-$(BRANCH_NAME)-dev bash -c "cd /tmp && PYTHONPATH=/app:/app/tools COVERAGE_FILE=/tmp/.coverage pytest /app/test/ --cov=/app/app --cov=/app/tools/design_linters --cov-report=term --cov-report=term:skip-covered --tb=short -v" || echo "$(YELLOW)Tests completed with some failures$(NC)"
+	@docker exec durable-code-backend-$(BRANCH_NAME)-dev bash -c "cd /app && PYTHONPATH=/app:/app/tools COVERAGE_FILE=/tmp/.coverage poetry run pytest test/ --cov=app --cov=tools/design_linters --cov-report=term --cov-report=term:skip-covered --tb=short -v" || echo "$(YELLOW)Tests completed with some failures$(NC)"
 	@echo "$(GREEN)✓ Backend coverage tests complete$(NC)"
 
 # Backend Python tests without coverage (pytest)
@@ -66,7 +66,7 @@ test-backend-quick: dev-start ## Run backend tests without coverage (pytest)
 	@echo "$(CYAN)║              Backend Tests (Quick Mode)                   ║$(NC)"
 	@echo "$(CYAN)╚════════════════════════════════════════════════════════════╝$(NC)"
 	@echo "$(YELLOW)Running all backend and framework tests...$(NC)"
-	@docker exec durable-code-backend-$(BRANCH_NAME)-dev bash -c "cd /app && PYTHONPATH=/app:/app/tools pytest test/ -v" || echo "$(YELLOW)Tests completed with some failures$(NC)"
+	@docker exec durable-code-backend-$(BRANCH_NAME)-dev bash -c "cd /app && PYTHONPATH=/app:/app/tools poetry run pytest test/ -v" || echo "$(YELLOW)Tests completed with some failures$(NC)"
 	@echo "$(GREEN)✓ Backend quick tests complete$(NC)"
 
 # Alias for backward compatibility

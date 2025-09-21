@@ -1,8 +1,16 @@
 #!/usr/bin/env node
 
 /**
- * Script to check if the page renders content properly
- * Uses Playwright to render the page and check the DOM
+ * Purpose: Comprehensive page content validation using browser automation to verify React app rendering
+ * Scope: End-to-end browser testing for React application content and DOM structure validation
+ * Overview: This script uses Playwright to launch a headless Chromium browser, navigate to the development
+ *           server, and perform detailed checks on the rendered DOM content. It validates both HTML structure
+ *           and text content, checks for specific UI elements (headers, navigation, sections), and provides
+ *           comprehensive reporting on page rendering success or failure.
+ * Dependencies: Playwright (chromium browser automation library)
+ * Exports: No exports - standalone script
+ * Interfaces: Command-line script with detailed console logging and exit codes for CI/CD integration
+ * Implementation: Async/await pattern with Playwright browser automation, DOM querying, and element validation
  */
 
 import { chromium } from 'playwright';

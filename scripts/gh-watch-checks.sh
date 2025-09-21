@@ -1,11 +1,14 @@
 #!/bin/bash
-# File: scripts/gh-watch-checks.sh
-# Purpose: Dashboard-style monitor for GitHub CI/CD checks
-# Scope: GitHub Actions monitoring for pull requests
-# Overview: Interactive dashboard showing real-time check status
-# Dependencies: gh cli, jq
-# Usage: ./scripts/gh-watch-checks.sh [PR_NUMBER]
-# Implementation: Uses gh CLI to poll PR checks and display formatted status
+# Purpose: Real-time dashboard monitoring for GitHub Actions CI/CD checks on pull requests
+# Scope: GitHub Actions workflow monitoring and pull request status tracking
+# Overview: Interactive terminal dashboard that continuously monitors GitHub Actions check status for pull requests.
+#           Auto-detects current PR or accepts PR number as argument, displays real-time check progress with colored status indicators,
+#           provides comprehensive summary statistics, and automatically exits when all checks pass successfully.
+#           Designed for developer workflow integration during code review and CI/CD monitoring.
+# Dependencies: gh (GitHub CLI), jq (JSON processor), bash with color support, active GitHub repository context
+# Usage: ./scripts/gh-watch-checks.sh [PR_NUMBER] (auto-detects current PR if number not provided)
+# Interfaces: GitHub CLI API calls, JSON processing, and formatted terminal dashboard output
+# Implementation: Polling-based monitoring with configurable refresh intervals, ANSI color formatting, and graceful exit handling
 
 set -euo pipefail
 

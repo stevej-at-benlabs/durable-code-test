@@ -1,4 +1,15 @@
 #!/bin/bash
+# Purpose: Validates local environment matches CI/CD pipeline requirements
+# Scope: Pre-push validation for all automated checks that run in GitHub Actions
+# Overview: Comprehensive validation script that runs the same checks locally as configured in CI/CD pipelines.
+#           Includes breadcrumb navigation checks, Single Responsibility Principle analysis, print statement detection,
+#           magic number detection, file placement validation, header standards compliance, and backend tests.
+#           Provides detailed pass/fail reporting to ensure code readiness before pushing to remote repositories.
+# Dependencies: python3, docker, design linter tools (breadcrumb_linter.py, srp_analyzer.py, print_statement_linter.py, magic_number_detector.py, file_placement_linter.py, header_linter.py), pytest
+# Usage: ./scripts/ci-cd-parity-check.sh (runs all CI/CD checks locally)
+# Interfaces: Python design linter tools, Docker container execution, and file system validation
+# Implementation: Sequential check execution with colored output, summary reporting, and exit code handling for CI integration
+
 # CI/CD Parity Check Script
 # Ensures local checks match what will run in CI/CD
 

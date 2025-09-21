@@ -1,7 +1,16 @@
 #!/usr/bin/env node
 
 /**
- * Simple HTTP check to see if the dev server is responding
+ * Purpose: Simple HTTP health check for the development server to verify basic connectivity and response
+ * Scope: Development server validation and basic HTML structure verification
+ * Overview: This script performs a lightweight HTTP GET request to localhost:5173 to check if the Vite
+ *           development server is running and responding with valid HTML content. It validates the presence
+ *           of key HTML elements like the root div and main script tag, providing detailed console output
+ *           for debugging server startup issues.
+ * Dependencies: Node.js built-in http module
+ * Exports: No exports - standalone script
+ * Interfaces: Command-line script with console output and exit codes (0 for success, 1 for failure)
+ * Implementation: Promise-based HTTP client with timeout handling and response content validation
  */
 
 import http from 'http';

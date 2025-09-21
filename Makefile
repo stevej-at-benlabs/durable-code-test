@@ -11,8 +11,8 @@
 BRANCH_NAME := $(shell git rev-parse --abbrev-ref HEAD 2>/dev/null | tr '/' '-' | tr '[:upper:]' '[:lower:]' || echo "main")
 export BRANCH_NAME
 
-DOCKER_COMPOSE = docker-compose
-DOCKER_COMPOSE_DEV = BRANCH_NAME=$(BRANCH_NAME) docker-compose -f docker-compose.dev.yml
+DOCKER_COMPOSE = docker compose
+DOCKER_COMPOSE_DEV = BRANCH_NAME=$(BRANCH_NAME) docker compose -f docker-compose.dev.yml
 FRONTEND_URL = http://localhost:3000
 FRONTEND_DEV_URL = http://localhost:5173
 BACKEND_URL = http://localhost:8000
