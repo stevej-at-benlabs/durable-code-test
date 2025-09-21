@@ -1,3 +1,16 @@
+/**
+ * Purpose: Application entry point that initializes and renders the React application
+ * Scope: Handles application bootstrapping, error handling, and provider setup
+ * Overview: This is the main entry file that sets up the React application with all necessary
+ *           providers and error boundaries. It includes global error handling for uncaught
+ *           errors and promise rejections, implements error storm protection, and renders
+ *           the app within StrictMode for development safety.
+ * Dependencies: React, React DOM, React Router, AppProviders, MinimalErrorBoundary, App component
+ * Exports: No exports - this is an entry point file
+ * Props/Interfaces: No props - bootstraps the application
+ * State/Behavior: Sets up global error handlers, finds root DOM element, and renders app tree
+ */
+
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { BrowserRouter } from 'react-router-dom';

@@ -1,3 +1,16 @@
+/**
+ * Purpose: Lightweight HTML structure validation using curl to verify basic Vite development server setup
+ * Scope: Basic server response testing and HTML structure validation for development workflows
+ * Overview: This script uses curl via child_process to fetch the HTML response from the development server
+ *           and performs basic validation checks on the response content. It verifies the presence of essential
+ *           Vite/React elements like the root div, main script tag, and Vite client injection, providing
+ *           a quick sanity check for development server functionality without browser overhead.
+ * Dependencies: Node.js child_process module, system curl command
+ * Exports: No exports - standalone script
+ * Interfaces: Command-line utility with console output and process exit codes
+ * Implementation: Synchronous child process execution with string content validation and structured reporting
+ */
+
 const { execSync } = require('child_process');
 
 function checkRenderedContent() {

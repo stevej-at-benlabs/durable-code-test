@@ -1,4 +1,13 @@
 #!/bin/bash
+# Purpose: Real-time dashboard monitoring for code linting across the project
+# Scope: Monitors Python and TypeScript files in app/, tools/, src/, durable-code-app/ directories
+# Overview: Interactive terminal dashboard that continuously monitors code quality by running linting checks every 30 seconds.
+#           Displays real-time status with visual indicators, statistics, error summaries, and system notifications.
+#           Provides a comprehensive overview of linting health with pass/fail rates and detailed error reporting.
+# Dependencies: make (for lint-all target), find, wc, grep, bash terminal with color support, optional notification tools (osascript/notify-send/powershell)
+# Usage: ./scripts/lint-watch-dashboard.sh (runs in foreground with interactive dashboard)
+# Interfaces: Uses 'make lint-all' command and provides visual dashboard with status indicators
+# Implementation: Uses ANSI escape codes for terminal control, cursor positioning, and color output with notification system integration
 
 # Dashboard-style file watcher for linting
 
