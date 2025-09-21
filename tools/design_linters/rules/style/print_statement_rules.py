@@ -79,7 +79,10 @@ class PrintStatementRule(ASTLintRule):  # design-lint: ignore[solid.srp.too-many
                     "for better control and production readiness"
                 ),
                 suggestion=suggestion,
-                violation_context={"function": context.current_function, "class": context.current_class},
+                violation_context={
+                    "function": context.current_function,
+                    "class": context.current_class,
+                },
             )
         ]
 
@@ -135,7 +138,14 @@ class PrintStatementRule(ASTLintRule):  # design-lint: ignore[solid.srp.too-many
 
         # Only allow in specific CLI output functions, not general code
         function_name = context.current_function or ""
-        cli_output_functions = ["print_", "display_", "show_", "output_", "list_", "_print_"]
+        cli_output_functions = [
+            "print_",
+            "display_",
+            "show_",
+            "output_",
+            "list_",
+            "_print_",
+        ]
         return any(pattern in function_name.lower() for pattern in cli_output_functions)
 
     def _is_test_function_context(self, context: LintContext) -> bool:
@@ -258,7 +268,15 @@ class ConsoleOutputRule(ASTLintRule):  # design-lint: ignore[solid.srp.too-many-
     def _is_test_or_script_context(self, context: LintContext) -> bool:
         """Check if context is in test or script environment."""
         file_path = str(context.file_path)
-        allowed_patterns = ["test_", "/test", "example", "/examples/", "demo", "script", "/scripts/"]
+        allowed_patterns = [
+            "test_",
+            "/test",
+            "example",
+            "/examples/",
+            "demo",
+            "script",
+            "/scripts/",
+        ]
         return any(pattern in file_path for pattern in allowed_patterns)
 
     def _is_special_function_context(self, context: LintContext) -> bool:
@@ -280,7 +298,14 @@ class ConsoleOutputRule(ASTLintRule):  # design-lint: ignore[solid.srp.too-many-
             return False
 
         function_name = context.current_function or ""
-        cli_output_functions = ["print_", "display_", "show_", "output_", "list_", "_print_"]
+        cli_output_functions = [
+            "print_",
+            "display_",
+            "show_",
+            "output_",
+            "list_",
+            "_print_",
+        ]
         return any(pattern in function_name.lower() for pattern in cli_output_functions)
 
     def _get_output_method(self, node: ast.Call) -> str:

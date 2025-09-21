@@ -121,7 +121,10 @@ class SecureTextInput(BaseModel):
     """Secure text input model with comprehensive validation."""
 
     text: str = Field(
-        ..., min_length=MIN_TEXT_LENGTH, max_length=MAX_TEXT_LENGTH, description="Text input with security validation"
+        ...,
+        min_length=MIN_TEXT_LENGTH,
+        max_length=MAX_TEXT_LENGTH,
+        description="Text input with security validation",
     )
 
     @validator("text")
@@ -134,12 +137,23 @@ class SecureNumericInput(BaseModel):
     """Secure numeric input model with range validation."""
 
     frequency: float = Field(
-        ..., ge=MIN_FREQUENCY, le=MAX_FREQUENCY, description="Frequency value with security validation"
+        ...,
+        ge=MIN_FREQUENCY,
+        le=MAX_FREQUENCY,
+        description="Frequency value with security validation",
     )
     amplitude: float = Field(
-        ..., ge=MIN_AMPLITUDE, le=MAX_AMPLITUDE, description="Amplitude value with security validation"
+        ...,
+        ge=MIN_AMPLITUDE,
+        le=MAX_AMPLITUDE,
+        description="Amplitude value with security validation",
     )
-    offset: float = Field(..., ge=MIN_OFFSET, le=MAX_OFFSET, description="Offset value with security validation")
+    offset: float = Field(
+        ...,
+        ge=MIN_OFFSET,
+        le=MAX_OFFSET,
+        description="Offset value with security validation",
+    )
 
     @validator("frequency")
     def validate_frequency_range(cls, value: float) -> float:  # noqa: N805

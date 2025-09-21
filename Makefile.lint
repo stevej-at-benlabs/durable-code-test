@@ -50,7 +50,8 @@ lint-all: dev-start ## Run ALL linters (Python: Black, isort, Ruff, Flake8, MyPy
 		echo '• Logging practices...' && PYTHONPATH=/app/tools python -m design_linters --categories logging --format text --recursive --fail-on-error app && \
 		echo '• Loguru usage...' && PYTHONPATH=/app/tools python -m design_linters --categories loguru --format text --recursive --fail-on-error app && \
 		echo '• Security rules...' && PYTHONPATH=/app/tools python -m design_linters --categories security --format text --recursive --fail-on-error app && \
-		echo '• Error handling...' && PYTHONPATH=/app/tools python -m design_linters --categories error_handling --format text --recursive --fail-on-error app" || (echo "$(RED)✗ Custom linting failed$(NC)" && exit 1)
+		echo '• Error handling...' && PYTHONPATH=/app/tools python -m design_linters --categories error_handling --format text --recursive --fail-on-error app && \
+		echo '• Testing practices...' && PYTHONPATH=/app/tools python -m design_linters --categories testing --format text --recursive --fail-on-error test" || (echo "$(RED)✗ Custom linting failed$(NC)" && exit 1)
 	@echo "• File organization (checking root)..." && \
 		if ls *.py 2>/dev/null 1>&2; then \
 			env PYTHONPATH=tools python -m design_linters.cli --categories organization --format text --fail-on-error *.py || (echo "$(RED)✗ File organization check failed$(NC)" && exit 1); \

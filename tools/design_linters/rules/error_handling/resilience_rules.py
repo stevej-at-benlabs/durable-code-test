@@ -55,7 +55,10 @@ class NoBroadExceptionsRule(ASTLintRule):
                 elif isinstance(node.type, ast.Tuple):
                     # Check tuple of exceptions
                     for exc in node.type.elts:
-                        if isinstance(exc, ast.Name) and exc.id in ["Exception", "BaseException"]:
+                        if isinstance(exc, ast.Name) and exc.id in [
+                            "Exception",
+                            "BaseException",
+                        ]:
                             violations.append(
                                 LintViolation(
                                     rule_id=self.name,
@@ -258,7 +261,14 @@ class RequireErrorLoggingRule(ASTLintRule):
             and isinstance(node.value, ast.Call)
             and isinstance(node.value.func, ast.Attribute)
         ):
-            return node.value.func.attr in ["debug", "info", "warning", "error", "exception", "critical"]
+            return node.value.func.attr in [
+                "debug",
+                "info",
+                "warning",
+                "error",
+                "exception",
+                "critical",
+            ]
 
         # Recursively check in nested structures
         return any(self._contains_logging(child) for child in ast.iter_child_nodes(node))
@@ -284,7 +294,14 @@ class CircuitBreakerUsageRule(ASTLintRule):
                 # Check if it's an external service call
                 is_service_call = any(
                     keyword in node.name.lower()
-                    for keyword in ["service", "api", "external", "remote", "database", "cache"]
+                    for keyword in [
+                        "service",
+                        "api",
+                        "external",
+                        "remote",
+                        "database",
+                        "cache",
+                    ]
                 )
 
                 if is_service_call:

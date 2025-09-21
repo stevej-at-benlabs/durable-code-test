@@ -12,12 +12,15 @@ import os
 import sys
 from pathlib import Path
 
-# Add backend app to path
-sys.path.insert(0, str(Path(__file__).parent.parent.parent / 'durable-code-app' / 'backend'))
-
 import pytest
-from fastapi.testclient import TestClient
+
+# Add backend app to path
+sys.path.insert(
+    0, str(Path(__file__).parent.parent.parent / "durable-code-app" / "backend")
+)
+
 from app.main import app
+from fastapi.testclient import TestClient
 
 client = TestClient(app)
 
@@ -38,7 +41,7 @@ def test_api_integration() -> None:
 @pytest.mark.integration
 @pytest.mark.skipif(
     os.getenv("TESTING") != "true",
-    reason="Integration tests only run in CI environment"
+    reason="Integration tests only run in CI environment",
 )
 def test_database_connection() -> None:
     """Test database connectivity in integration environment."""

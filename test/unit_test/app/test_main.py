@@ -12,10 +12,12 @@ import sys
 from pathlib import Path
 
 # Add backend app to path
-sys.path.insert(0, str(Path(__file__).parent.parent.parent.parent / 'durable-code-app' / 'backend'))
+sys.path.insert(
+    0, str(Path(__file__).parent.parent.parent.parent / "durable-code-app" / "backend")
+)
 
-from fastapi.testclient import TestClient
 from app.main import app
+from fastapi.testclient import TestClient
 
 client = TestClient(app)
 
@@ -39,4 +41,6 @@ def test_cors_headers() -> None:
     response = client.get("/")
     assert response.status_code == 200
     # CORS middleware should be configured
-    assert "access-control-allow-origin" in response.headers or True  # TestClient doesn't always show CORS headers
+    assert (
+        "access-control-allow-origin" in response.headers or True
+    )  # TestClient doesn't always show CORS headers

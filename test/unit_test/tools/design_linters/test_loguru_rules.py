@@ -12,22 +12,20 @@ Interfaces: Standard unittest test methods with setUp fixtures and parameterized
 Implementation: Uses unittest with AST parsing, mock objects, and comprehensive test coverage patterns
 """
 
-import unittest
 import ast
-from pathlib import Path
-from unittest.mock import Mock, patch
-
 import sys
-sys.path.insert(0, '/home/stevejackson/Projects/durable-code-test/tools')
+import unittest
+from pathlib import Path
 
-from design_linters.framework.interfaces import LintContext, LintViolation, Severity
-from design_linters.rules.logging.loguru_rules import (
-    UseLoguruRule,
-    LoguruImportRule,
-    StructuredLoggingRule,
-    LogLevelConsistencyRule,
-    LoguruConfigurationRule
-)
+sys.path.insert(0, "/home/stevejackson/Projects/durable-code-test/tools")
+
+from design_linters.framework.interfaces import (LintContext,
+                                                 Severity)
+from design_linters.rules.logging.loguru_rules import (LogLevelConsistencyRule,
+                                                       LoguruConfigurationRule,
+                                                       LoguruImportRule,
+                                                       StructuredLoggingRule,
+                                                       UseLoguruRule)
 
 
 class TestUseLoguruRule(unittest.TestCase):
@@ -36,7 +34,7 @@ class TestUseLoguruRule(unittest.TestCase):
     def setUp(self):
         """Set up test fixtures."""
         self.rule = UseLoguruRule()
-        self.context = LintContext(file_path=Path('/test.py'))
+        self.context = LintContext(file_path=Path("/test.py"))
 
     def test_rule_properties(self):
         """Test rule properties are correctly defined."""
@@ -66,7 +64,7 @@ class TestUseLoguruRule(unittest.TestCase):
         self.assertEqual(violation.rule_id, "logging.use-loguru")
         self.assertIn("Consider using loguru instead", violation.message)
         self.assertIn("logging", violation.message)
-        self.assertEqual(violation.context['logging_type'], 'logging')
+        self.assertEqual(violation.context["logging_type"], "logging")
 
     def test_check_node_import_logging_with_alias(self):
         """Test detection of aliased logging import."""
@@ -84,7 +82,7 @@ class TestUseLoguruRule(unittest.TestCase):
         self.assertEqual(len(violations), 1)
         violation = violations[0]
         self.assertIn("Consider using loguru instead", violation.message)
-        self.assertEqual(violation.context['logging_type'], 'logging')
+        self.assertEqual(violation.context["logging_type"], "logging")
 
     def test_check_node_non_logging_import(self):
         """Test that non-logging imports are ignored."""
@@ -105,13 +103,13 @@ class TestUseLoguruRule(unittest.TestCase):
     def test_create_violation(self):
         """Test _create_violation method."""
         node = ast.parse("import logging").body[0]
-        violation = self.rule._create_violation(node, self.context, 'logging')
+        violation = self.rule._create_violation(node, self.context, "logging")
 
         self.assertEqual(violation.rule_id, "logging.use-loguru")
         self.assertEqual(violation.severity, Severity.INFO)
         self.assertIn("Consider using loguru instead", violation.message)
         self.assertIn("Replace with: from loguru import logger", violation.suggestion)
-        self.assertEqual(violation.context['logging_type'], 'logging')
+        self.assertEqual(violation.context["logging_type"], "logging")
 
 
 class TestLoguruImportRule(unittest.TestCase):
@@ -120,7 +118,7 @@ class TestLoguruImportRule(unittest.TestCase):
     def setUp(self):
         """Set up test fixtures."""
         self.rule = LoguruImportRule()
-        self.context = LintContext(file_path=Path('/test.py'))
+        self.context = LintContext(file_path=Path("/test.py"))
 
     def test_rule_properties(self):
         """Test rule properties are correctly defined."""
@@ -155,7 +153,7 @@ class TestLoguruImportRule(unittest.TestCase):
         violation = violations[0]
         self.assertIn("Import loguru.Logger not recommended", violation.message)
         self.assertIn("Use: from loguru import logger", violation.suggestion)
-        self.assertEqual(violation.context['imported_name'], 'Logger')
+        self.assertEqual(violation.context["imported_name"], "Logger")
 
     def test_check_node_multiple_incorrect_imports(self):
         """Test detection of multiple incorrect imports."""
@@ -163,8 +161,8 @@ class TestLoguruImportRule(unittest.TestCase):
         violations = self.rule.check_node(node, self.context)
 
         self.assertEqual(len(violations), 2)
-        imported_names = {v.context['imported_name'] for v in violations}
-        self.assertEqual(imported_names, {'Logger', 'config'})
+        imported_names = {v.context["imported_name"] for v in violations}
+        self.assertEqual(imported_names, {"Logger", "config"})
 
     def test_check_node_full_module_import(self):
         """Test detection of full module import."""
@@ -174,7 +172,7 @@ class TestLoguruImportRule(unittest.TestCase):
         self.assertEqual(len(violations), 1)
         violation = violations[0]
         self.assertIn("Use 'from loguru import logger'", violation.message)
-        self.assertEqual(violation.context['import_type'], 'full_module')
+        self.assertEqual(violation.context["import_type"], "full_module")
 
     def test_check_node_aliased_module_import(self):
         """Test detection of aliased module import."""
@@ -201,7 +199,7 @@ class TestStructuredLoggingRule(unittest.TestCase):
     def setUp(self):
         """Set up test fixtures."""
         self.rule = StructuredLoggingRule()
-        self.context = LintContext(file_path=Path('/test.py'))
+        self.context = LintContext(file_path=Path("/test.py"))
 
     def test_rule_properties(self):
         """Test rule properties are correctly defined."""
@@ -243,8 +241,8 @@ class TestStructuredLoggingRule(unittest.TestCase):
         violation = violations[0]
         self.assertIn("Use structured logging instead", violation.message)
         self.assertIn("string formatting", violation.message)
-        self.assertEqual(violation.context['method'], 'info')
-        self.assertEqual(violation.context['issue'], 'string_formatting')
+        self.assertEqual(violation.context["method"], "info")
+        self.assertEqual(violation.context["issue"], "string_formatting")
 
     def test_check_node_format_method_logging(self):
         """Test detection of .format() method in logging."""
@@ -273,7 +271,7 @@ class TestStructuredLoggingRule(unittest.TestCase):
         self.assertEqual(len(violations), 1)
         violation = violations[0]
         self.assertIn("Consider adding context variables", violation.message)
-        self.assertEqual(violation.context['issue'], 'missing_context')
+        self.assertEqual(violation.context["issue"], "missing_context")
 
     def test_check_node_simple_message_no_violation(self):
         """Test that simple messages don't trigger violations."""
@@ -299,7 +297,7 @@ class TestStructuredLoggingRule(unittest.TestCase):
             "logger.warning('test')",
             "logger.error('test')",
             "logger.critical('test')",
-            "logger.success('test')"
+            "logger.success('test')",
         ]
 
         for code in valid_calls:
@@ -307,11 +305,7 @@ class TestStructuredLoggingRule(unittest.TestCase):
                 node = ast.parse(code).body[0].value
                 self.assertTrue(self.rule._is_logger_call(node))
 
-        invalid_calls = [
-            "logger.add('test')",
-            "other.info('test')",
-            "print('test')"
-        ]
+        invalid_calls = ["logger.add('test')", "other.info('test')", "print('test')"]
 
         for code in invalid_calls:
             with self.subTest(code=code):
@@ -323,7 +317,7 @@ class TestStructuredLoggingRule(unittest.TestCase):
         formatting_cases = [
             "logger.info(f'test {var}')",
             "logger.info('test {}'.format(var))",
-            "logger.info('test %s' % var)"
+            "logger.info('test %s' % var)",
         ]
 
         for code in formatting_cases:
@@ -331,10 +325,7 @@ class TestStructuredLoggingRule(unittest.TestCase):
                 node = ast.parse(code).body[0].value
                 self.assertTrue(self.rule._uses_string_formatting(node))
 
-        non_formatting_cases = [
-            "logger.info('test')",
-            "logger.info('test', var=var)"
-        ]
+        non_formatting_cases = ["logger.info('test')", "logger.info('test', var=var)"]
 
         for code in non_formatting_cases:
             with self.subTest(code=code):
@@ -347,7 +338,7 @@ class TestStructuredLoggingRule(unittest.TestCase):
             "logger.info('This is a very long message that exceeds fifty characters')",
             "logger.info('Operation completed successfully')",
             "logger.info('Processing started for user data')",
-            "logger.info('Started')"  # Contains 'started' keyword
+            "logger.info('Started')",  # Contains 'started' keyword
         ]
 
         for code in complex_cases:
@@ -358,7 +349,7 @@ class TestStructuredLoggingRule(unittest.TestCase):
         simple_cases = [
             "logger.info('OK')",
             "logger.info('Done')",
-            "logger.info('Simple message', context=value)"  # Has keywords
+            "logger.info('Simple message', context=value)",  # Has keywords
         ]
 
         for code in simple_cases:
@@ -382,7 +373,7 @@ class TestLogLevelConsistencyRule(unittest.TestCase):
     def setUp(self):
         """Set up test fixtures."""
         self.rule = LogLevelConsistencyRule()
-        self.context = LintContext(file_path=Path('/test.py'))
+        self.context = LintContext(file_path=Path("/test.py"))
 
     def test_rule_properties(self):
         """Test rule properties are correctly defined."""
@@ -416,8 +407,8 @@ class TestLogLevelConsistencyRule(unittest.TestCase):
         violation = violations[0]
         self.assertIn("suggests 'error' level", violation.message)
         self.assertIn("using 'info'", violation.message)
-        self.assertEqual(violation.context['current_level'], 'info')
-        self.assertEqual(violation.context['suggested_level'], 'error')
+        self.assertEqual(violation.context["current_level"], "info")
+        self.assertEqual(violation.context["suggested_level"], "error")
 
     def test_check_node_warning_message_with_error_level(self):
         """Test detection of warning message using error level."""
@@ -428,7 +419,7 @@ class TestLogLevelConsistencyRule(unittest.TestCase):
         self.assertEqual(len(violations), 1)
         violation = violations[0]
         self.assertIn("suggests 'warning' level", violation.message)
-        self.assertEqual(violation.context['suggested_level'], 'warning')
+        self.assertEqual(violation.context["suggested_level"], "warning")
 
     def test_check_node_success_message_with_info_level(self):
         """Test detection of success message using info level."""
@@ -437,7 +428,7 @@ class TestLogLevelConsistencyRule(unittest.TestCase):
         violations = self.rule.check_node(node, self.context)
 
         self.assertEqual(len(violations), 1)
-        self.assertEqual(violations[0].context['suggested_level'], 'success')
+        self.assertEqual(violations[0].context["suggested_level"], "success")
 
     def test_check_node_debug_message_with_info_level(self):
         """Test detection of debug message using info level."""
@@ -446,7 +437,7 @@ class TestLogLevelConsistencyRule(unittest.TestCase):
         violations = self.rule.check_node(node, self.context)
 
         self.assertEqual(len(violations), 1)
-        self.assertEqual(violations[0].context['suggested_level'], 'debug')
+        self.assertEqual(violations[0].context["suggested_level"], "debug")
 
     def test_check_node_correct_level_no_violation(self):
         """Test that correct level usage doesn't trigger violations."""
@@ -455,7 +446,7 @@ class TestLogLevelConsistencyRule(unittest.TestCase):
             "logger.warning('This is deprecated')",
             "logger.success('Operation completed successfully')",
             "logger.debug('Debug information')",
-            "logger.info('General information')"
+            "logger.info('General information')",
         ]
 
         for code in correct_cases:
@@ -492,7 +483,7 @@ class TestLogLevelConsistencyRule(unittest.TestCase):
             ("Operation completed successfully", "success"),
             ("Debug information", "debug"),
             ("Variable state", "debug"),
-            ("General message", None)
+            ("General message", None),
         ]
 
         for message, expected in test_cases:
@@ -508,7 +499,7 @@ class TestLogLevelConsistencyRule(unittest.TestCase):
             "logger.warning('test')",
             "logger.error('test')",
             "logger.critical('test')",
-            "logger.success('test')"
+            "logger.success('test')",
         ]
 
         for code in valid_calls:
@@ -516,11 +507,7 @@ class TestLogLevelConsistencyRule(unittest.TestCase):
                 node = ast.parse(code).body[0].value
                 self.assertTrue(self.rule._is_logger_call(node))
 
-        invalid_calls = [
-            "logger.add('test')",
-            "other.info('test')",
-            "print('test')"
-        ]
+        invalid_calls = ["logger.add('test')", "other.info('test')", "print('test')"]
 
         for code in invalid_calls:
             with self.subTest(code=code):
@@ -534,7 +521,7 @@ class TestLoguruConfigurationRule(unittest.TestCase):
     def setUp(self):
         """Set up test fixtures."""
         self.rule = LoguruConfigurationRule()
-        self.context = LintContext(file_path=Path('/test.py'))
+        self.context = LintContext(file_path=Path("/test.py"))
 
     def test_rule_properties(self):
         """Test rule properties are correctly defined."""
@@ -569,7 +556,7 @@ class TestLoguruConfigurationRule(unittest.TestCase):
         self.assertEqual(len(violations), 1)
         violation = violations[0]
         self.assertIn("called without sink argument", violation.message)
-        self.assertEqual(violation.context['issue'], 'missing_sink')
+        self.assertEqual(violation.context["issue"], "missing_sink")
 
     def test_check_node_file_sink_missing_options(self):
         """Test suggestions for missing configuration options with file sink."""
@@ -579,8 +566,8 @@ class TestLoguruConfigurationRule(unittest.TestCase):
 
         # Should suggest all recommended options for file sinks
         self.assertEqual(len(violations), 4)
-        suggested_options = {v.context['missing_option'] for v in violations}
-        expected_options = {'level', 'format', 'rotation', 'retention'}
+        suggested_options = {v.context["missing_option"] for v in violations}
+        expected_options = {"level", "format", "rotation", "retention"}
         self.assertEqual(suggested_options, expected_options)
 
         # All should be INFO severity
@@ -595,8 +582,8 @@ class TestLoguruConfigurationRule(unittest.TestCase):
 
         # Should only suggest missing options
         self.assertEqual(len(violations), 2)
-        suggested_options = {v.context['missing_option'] for v in violations}
-        expected_options = {'format', 'retention'}
+        suggested_options = {v.context["missing_option"] for v in violations}
+        expected_options = {"format", "retention"}
         self.assertEqual(suggested_options, expected_options)
 
     def test_check_node_stderr_sink_no_suggestions(self):
@@ -604,7 +591,7 @@ class TestLoguruConfigurationRule(unittest.TestCase):
         stderr_cases = [
             "logger.add('<stderr>')",
             "logger.add('<stdout>')",
-            "logger.add(sys.stderr)"
+            "logger.add(sys.stderr)",
         ]
 
         for code in stderr_cases[:2]:  # Skip sys.stderr as it's more complex to parse
@@ -646,7 +633,7 @@ class TestRuleIntegration(unittest.TestCase):
 
     def setUp(self):
         """Set up test fixtures."""
-        self.context = LintContext(file_path=Path('/test.py'))
+        self.context = LintContext(file_path=Path("/test.py"))
 
     def test_all_rules_implement_interface(self):
         """Test that all rules properly implement ASTLintRule interface."""
@@ -655,7 +642,7 @@ class TestRuleIntegration(unittest.TestCase):
             LoguruImportRule(),
             StructuredLoggingRule(),
             LogLevelConsistencyRule(),
-            LoguruConfigurationRule()
+            LoguruConfigurationRule(),
         ]
 
         for rule in rules:
@@ -668,11 +655,11 @@ class TestRuleIntegration(unittest.TestCase):
                 self.assertIsInstance(rule.categories, set)
 
                 # Test required methods exist and are callable
-                self.assertTrue(hasattr(rule, 'should_check_node'))
+                self.assertTrue(hasattr(rule, "should_check_node"))
                 self.assertTrue(callable(rule.should_check_node))
-                self.assertTrue(hasattr(rule, 'check_node'))
+                self.assertTrue(hasattr(rule, "check_node"))
                 self.assertTrue(callable(rule.check_node))
-                self.assertTrue(hasattr(rule, 'check'))
+                self.assertTrue(hasattr(rule, "check"))
                 self.assertTrue(callable(rule.check))
 
     def test_rules_unique_ids(self):
@@ -682,7 +669,7 @@ class TestRuleIntegration(unittest.TestCase):
             LoguruImportRule(),
             StructuredLoggingRule(),
             LogLevelConsistencyRule(),
-            LoguruConfigurationRule()
+            LoguruConfigurationRule(),
         ]
 
         rule_ids = [rule.rule_id for rule in rules]
@@ -695,7 +682,7 @@ class TestRuleIntegration(unittest.TestCase):
             LoguruImportRule(),
             StructuredLoggingRule(),
             LogLevelConsistencyRule(),
-            LoguruConfigurationRule()
+            LoguruConfigurationRule(),
         ]
 
         empty_context = LintContext()
@@ -707,7 +694,9 @@ class TestRuleIntegration(unittest.TestCase):
                     violations = rule.check(empty_context)
                     self.assertIsInstance(violations, list)
                 except Exception as e:
-                    self.fail(f"Rule {rule.__class__.__name__} failed with empty context: {e}")
+                    self.fail(
+                        f"Rule {rule.__class__.__name__} failed with empty context: {e}"
+                    )
 
     def test_violation_creation_consistency(self):
         """Test that all rules create violations with consistent structure."""
@@ -732,5 +721,5 @@ class TestRuleIntegration(unittest.TestCase):
                 self.assertIsInstance(violation.context, dict)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

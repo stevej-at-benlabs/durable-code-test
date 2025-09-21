@@ -188,7 +188,10 @@ class ProperLogLevelsRule(ASTLintRule):
                     message="Debug level used for potentially important information",
                     description="Consider using info level for important operational information",
                     suggestion="Use logger.info() for operational information that should be visible",
-                    violation_context={"level": method_name, "issue": "debug_for_important"},
+                    violation_context={
+                        "level": method_name,
+                        "issue": "debug_for_important",
+                    },
                 )
             )
 

@@ -70,7 +70,11 @@ class ExcessiveNestingRule(ASTLintRule):
                     message=f"Function '{node.name}' has excessive nesting depth ({max_found_depth})",
                     description=f"Maximum nesting depth of {max_found_depth} exceeds limit of {max_depth}",
                     suggestion="Consider extracting nested logic into separate functions or using early returns",
-                    violation_context={"function_name": node.name, "depth": max_found_depth, "max_allowed": max_depth},
+                    violation_context={
+                        "function_name": node.name,
+                        "depth": max_found_depth,
+                        "max_allowed": max_depth,
+                    },
                 )
             ]
 
@@ -161,7 +165,11 @@ class DeepFunctionRule(ASTLintRule):
                         message=f"Function '{node.name}' is too long ({line_count} lines)",
                         description=(f"Function length of {line_count} lines exceeds recommended limit of {max_lines}"),
                         suggestion="Consider breaking this function into smaller, focused functions",
-                        violation_context={"function_name": node.name, "length": line_count, "issue": "length"},
+                        violation_context={
+                            "function_name": node.name,
+                            "length": line_count,
+                            "issue": "length",
+                        },
                     )
                 )
 
@@ -175,7 +183,11 @@ class DeepFunctionRule(ASTLintRule):
                     message=f"Function '{node.name}' has deep nesting ({nesting_depth} levels)",
                     description=(f"Nesting depth of {nesting_depth} exceeds recommended limit of {max_depth}"),
                     suggestion="Consider using early returns or extracting nested logic into helper functions",
-                    violation_context={"function_name": node.name, "depth": nesting_depth, "issue": "nesting"},
+                    violation_context={
+                        "function_name": node.name,
+                        "depth": nesting_depth,
+                        "issue": "nesting",
+                    },
                 )
             )
 
@@ -190,7 +202,18 @@ class DeepFunctionRule(ASTLintRule):
             max_depth = max(max_depth, current_depth)
 
             # Nodes that increase nesting depth
-            if isinstance(n, (ast.If, ast.For, ast.While, ast.With, ast.AsyncWith, ast.Try, ast.ExceptHandler)):
+            if isinstance(
+                n,
+                (
+                    ast.If,
+                    ast.For,
+                    ast.While,
+                    ast.With,
+                    ast.AsyncWith,
+                    ast.Try,
+                    ast.ExceptHandler,
+                ),
+            ):
                 current_depth += 1
 
             # Visit children

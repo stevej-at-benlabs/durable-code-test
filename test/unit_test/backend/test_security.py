@@ -11,19 +11,14 @@ Implementation: FastAPI TestClient for endpoint testing and mock requests
 """
 
 import pytest
-from fastapi.testclient import TestClient
-from unittest.mock import patch
-import time
-
 from app.main import app
-from app.security import (
-    sanitize_text_input,
-    validate_numeric_range,
-    SecurityMiddleware,
-)
 from app.oscilloscope import OscilloscopeCommand, WaveType
+from app.security import (sanitize_text_input,
+                          validate_numeric_range)
+from fastapi.testclient import TestClient
 
 client = TestClient(app)
+
 
 class TestInputValidation:
     """Test input validation and sanitization."""
@@ -82,7 +77,7 @@ class TestOscilloscopeValidation:
             wave_type=WaveType.SINE,
             frequency=10.0,
             amplitude=1.0,
-            offset=0.0
+            offset=0.0,
         )
         assert command.command == "start"
         assert command.frequency == 10.0
@@ -95,7 +90,7 @@ class TestOscilloscopeValidation:
                 wave_type=WaveType.SINE,
                 frequency=10.0,
                 amplitude=1.0,
-                offset=0.0
+                offset=0.0,
             )
 
     def test_oscilloscope_command_frequency_too_high(self) -> None:
@@ -106,7 +101,7 @@ class TestOscilloscopeValidation:
                 wave_type=WaveType.SINE,
                 frequency=150.0,  # Above MAX_FREQUENCY
                 amplitude=1.0,
-                offset=0.0
+                offset=0.0,
             )
 
     def test_oscilloscope_command_amplitude_too_low(self) -> None:
@@ -117,7 +112,7 @@ class TestOscilloscopeValidation:
                 wave_type=WaveType.SINE,
                 frequency=10.0,
                 amplitude=0.05,  # Below MIN_AMPLITUDE
-                offset=0.0
+                offset=0.0,
             )
 
 
@@ -214,7 +209,10 @@ class TestCORSConfiguration:
 
         # Should have CORS origin header but not allow all methods
         assert "access-control-allow-origin" in response.headers
-        assert response.headers.get("access-control-allow-origin") == "http://localhost:5173"
+        assert (
+            response.headers.get("access-control-allow-origin")
+            == "http://localhost:5173"
+        )
 
         # Check that we don't allow all origins (wildcard)
         assert response.headers.get("access-control-allow-origin") != "*"

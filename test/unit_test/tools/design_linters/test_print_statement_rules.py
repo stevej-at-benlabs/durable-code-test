@@ -11,16 +11,17 @@ Interfaces: Standard unittest.TestCase interface for test execution
 Implementation: Comprehensive test coverage using unittest framework with AST parsing
 """
 
-import unittest
 import ast
-from pathlib import Path
-from typing import Dict, Any
-
 import sys
-sys.path.insert(0, '/home/stevejackson/Projects/durable-code-test/tools')
+import unittest
+from pathlib import Path
 
-from design_linters.framework.interfaces import LintContext, Severity, LintViolation
-from design_linters.rules.style.print_statement_rules import PrintStatementRule, ConsoleOutputRule
+sys.path.insert(0, "/home/stevejackson/Projects/durable-code-test/tools")
+
+from design_linters.framework.interfaces import (LintContext,
+                                                 Severity)
+from design_linters.rules.style.print_statement_rules import (
+    ConsoleOutputRule, PrintStatementRule)
 
 
 class TestPrintStatementRule(unittest.TestCase):
@@ -30,19 +31,19 @@ class TestPrintStatementRule(unittest.TestCase):
         """Set up test fixtures."""
         self.rule = PrintStatementRule()
         self.context = LintContext(
-            file_path=Path('/src/module.py'),
-            file_content='',
+            file_path=Path("/src/module.py"),
+            file_content="",
             ast_tree=None,
-            node_stack=[]
+            node_stack=[],
         )
 
     def test_rule_properties(self):
         """Test rule property getters."""
-        self.assertEqual(self.rule.rule_id, 'style.print-statement')
-        self.assertEqual(self.rule.rule_name, 'Print Statement Usage')
+        self.assertEqual(self.rule.rule_id, "style.print-statement")
+        self.assertEqual(self.rule.rule_name, "Print Statement Usage")
         self.assertEqual(
             self.rule.description,
-            "Print statements should be replaced with proper logging for production code"
+            "Print statements should be replaced with proper logging for production code",
         )
         self.assertEqual(self.rule.severity, Severity.WARNING)
         self.assertEqual(self.rule.categories, {"style", "logging", "production"})
@@ -81,7 +82,7 @@ class TestPrintStatementRule(unittest.TestCase):
         """Test should_check_node returns False for non-Call nodes."""
         # Create a Name node
         code = "print"
-        tree = ast.parse(code, mode='eval')
+        tree = ast.parse(code, mode="eval")
         name_node = tree.body  # Extract the Name node
 
         result = self.rule.should_check_node(name_node, self.context)
@@ -97,27 +98,31 @@ class TestPrintStatementRule(unittest.TestCase):
 
         self.assertEqual(len(violations), 1)
         violation = violations[0]
-        self.assertEqual(violation.rule_id, 'style.print-statement')
+        self.assertEqual(violation.rule_id, "style.print-statement")
         self.assertEqual(violation.severity, Severity.WARNING)
-        self.assertEqual(violation.message, "Print statement found - use logging instead")
+        self.assertEqual(
+            violation.message, "Print statement found - use logging instead"
+        )
         self.assertIn("Print statements should be replaced", violation.description)
         self.assertIn("logger.", violation.suggestion)
 
     def test_check_node_with_invalid_node_type(self):
         """Test check_node raises TypeError for non-Call nodes."""
         code = "print"
-        tree = ast.parse(code, mode='eval')
+        tree = ast.parse(code, mode="eval")
         name_node = tree.body  # Extract the Name node
 
         with self.assertRaises(TypeError) as cm:
             self.rule.check_node(name_node, self.context)
 
-        self.assertIn("PrintStatementRule should only receive ast.Call nodes", str(cm.exception))
+        self.assertIn(
+            "PrintStatementRule should only receive ast.Call nodes", str(cm.exception)
+        )
 
     def test_check_node_in_allowed_context_test_file(self):
         """Test check_node returns no violations in test files."""
         # Set context to a test file
-        self.context.file_path = Path('/test_module.py')
+        self.context.file_path = Path("/test_module.py")
 
         code = "print('hello world')"
         tree = ast.parse(code)
@@ -129,7 +134,7 @@ class TestPrintStatementRule(unittest.TestCase):
     def test_check_node_in_allowed_context_test_function(self):
         """Test check_node returns no violations in test functions."""
         # Set context to a test function
-        self.context.current_function = 'test_something'
+        self.context.current_function = "test_something"
 
         code = "print('hello world')"
         tree = ast.parse(code)
@@ -141,7 +146,7 @@ class TestPrintStatementRule(unittest.TestCase):
     def test_check_node_in_allowed_context_main_function(self):
         """Test check_node returns no violations in __main__ context."""
         # Set context to __main__
-        self.context.current_function = '__main__'
+        self.context.current_function = "__main__"
 
         code = "print('hello world')"
         tree = ast.parse(code)
@@ -153,7 +158,7 @@ class TestPrintStatementRule(unittest.TestCase):
     def test_check_node_in_allowed_context_debug_function(self):
         """Test check_node returns no violations in debug functions."""
         # Set context to a debug function
-        self.context.current_function = 'debug_output'
+        self.context.current_function = "debug_output"
 
         code = "print('hello world')"
         tree = ast.parse(code)
@@ -165,7 +170,7 @@ class TestPrintStatementRule(unittest.TestCase):
     def test_check_node_in_allowed_context_example_file(self):
         """Test check_node returns no violations in example files."""
         # Set context to an example file
-        self.context.file_path = Path('/examples/demo.py')
+        self.context.file_path = Path("/examples/demo.py")
 
         code = "print('hello world')"
         tree = ast.parse(code)
@@ -176,7 +181,7 @@ class TestPrintStatementRule(unittest.TestCase):
 
     def test_is_allowed_context_with_test_file(self):
         """Test _is_allowed_context returns True for test files."""
-        self.context.file_path = Path('/test_something.py')
+        self.context.file_path = Path("/test_something.py")
         config = {}
 
         result = self.rule._is_allowed_context(self.context, config)
@@ -184,7 +189,7 @@ class TestPrintStatementRule(unittest.TestCase):
 
     def test_is_allowed_context_with_regular_file(self):
         """Test _is_allowed_context returns False for regular files."""
-        self.context.file_path = Path('/regular_module.py')
+        self.context.file_path = Path("/regular_module.py")
         config = {}
 
         result = self.rule._is_allowed_context(self.context, config)
@@ -243,7 +248,9 @@ class TestPrintStatementRule(unittest.TestCase):
         call_node = tree.body[0].value
 
         suggestion = self.rule._generate_logging_suggestion(call_node, self.context)
-        self.assertEqual(suggestion, "logger.info('...')  # Use appropriate logging level")
+        self.assertEqual(
+            suggestion, "logger.info('...')  # Use appropriate logging level"
+        )
 
     def test_generate_logging_suggestion_no_args(self):
         """Test _generate_logging_suggestion for print with no args."""
@@ -252,7 +259,9 @@ class TestPrintStatementRule(unittest.TestCase):
         call_node = tree.body[0].value
 
         suggestion = self.rule._generate_logging_suggestion(call_node, self.context)
-        self.assertEqual(suggestion, "logger.info('...')  # Use appropriate logging level")
+        self.assertEqual(
+            suggestion, "logger.info('...')  # Use appropriate logging level"
+        )
 
     def test_generate_logging_suggestion_non_string_arg(self):
         """Test _generate_logging_suggestion for non-string arguments."""
@@ -261,12 +270,14 @@ class TestPrintStatementRule(unittest.TestCase):
         call_node = tree.body[0].value
 
         suggestion = self.rule._generate_logging_suggestion(call_node, self.context)
-        self.assertEqual(suggestion, "logger.info('...')  # Use appropriate logging level")
+        self.assertEqual(
+            suggestion, "logger.info('...')  # Use appropriate logging level"
+        )
 
     def test_violation_context_includes_function_and_class(self):
         """Test that violations include function and class context."""
-        self.context.current_function = 'my_function'
-        self.context.current_class = 'MyClass'
+        self.context.current_function = "my_function"
+        self.context.current_class = "MyClass"
 
         code = "print('hello world')"
         tree = ast.parse(code)
@@ -276,8 +287,8 @@ class TestPrintStatementRule(unittest.TestCase):
 
         self.assertEqual(len(violations), 1)
         violation = violations[0]
-        self.assertEqual(violation.context['function'], 'my_function')
-        self.assertEqual(violation.context['class'], 'MyClass')
+        self.assertEqual(violation.context["function"], "my_function")
+        self.assertEqual(violation.context["class"], "MyClass")
 
     def test_get_configuration_method(self):
         """Test get_configuration method."""
@@ -289,15 +300,13 @@ class TestPrintStatementRule(unittest.TestCase):
         """Test check_node with custom configuration."""
         # Set metadata with custom config
         self.context.metadata = {
-            'rules': {
-                'style.print-statement': {
-                    'config': {
-                        'allowed_patterns': ['custom_debug_']
-                    }
+            "rules": {
+                "style.print-statement": {
+                    "config": {"allowed_patterns": ["custom_debug_"]}
                 }
             }
         }
-        self.context.current_function = 'custom_debug_function'
+        self.context.current_function = "custom_debug_function"
 
         code = "print('hello world')"
         tree = ast.parse(code)
@@ -314,19 +323,19 @@ class TestConsoleOutputRule(unittest.TestCase):
         """Set up test fixtures."""
         self.rule = ConsoleOutputRule()
         self.context = LintContext(
-            file_path=Path('/src/module.py'),
-            file_content='',
+            file_path=Path("/src/module.py"),
+            file_content="",
             ast_tree=None,
-            node_stack=[]
+            node_stack=[],
         )
 
     def test_rule_properties(self):
         """Test rule property getters."""
-        self.assertEqual(self.rule.rule_id, 'style.console-output')
-        self.assertEqual(self.rule.rule_name, 'Console Output Usage')
+        self.assertEqual(self.rule.rule_id, "style.console-output")
+        self.assertEqual(self.rule.rule_name, "Console Output Usage")
         self.assertEqual(
             self.rule.description,
-            "Console output methods should be replaced with proper logging"
+            "Console output methods should be replaced with proper logging",
         )
         self.assertEqual(self.rule.severity, Severity.INFO)
         self.assertEqual(self.rule.categories, {"style", "logging", "console"})
@@ -379,7 +388,7 @@ class TestConsoleOutputRule(unittest.TestCase):
     def test_should_check_node_with_non_call_node(self):
         """Test should_check_node returns False for non-Call nodes."""
         code = "sys.stdout"
-        tree = ast.parse(code, mode='eval')
+        tree = ast.parse(code, mode="eval")
         attr_node = tree.body
 
         result = self.rule.should_check_node(attr_node, self.context)
@@ -395,11 +404,11 @@ class TestConsoleOutputRule(unittest.TestCase):
 
         self.assertEqual(len(violations), 1)
         violation = violations[0]
-        self.assertEqual(violation.rule_id, 'style.console-output')
+        self.assertEqual(violation.rule_id, "style.console-output")
         self.assertEqual(violation.severity, Severity.INFO)
         self.assertIn("Console output method", violation.message)
         self.assertIn("sys.stdout.write", violation.message)
-        self.assertEqual(violation.context['output_method'], 'sys.stdout.write')
+        self.assertEqual(violation.context["output_method"], "sys.stdout.write")
 
     def test_check_node_with_sys_stderr_write(self):
         """Test check_node detects sys.stderr.write violation."""
@@ -412,7 +421,7 @@ class TestConsoleOutputRule(unittest.TestCase):
         self.assertEqual(len(violations), 1)
         violation = violations[0]
         self.assertIn("sys.stderr.write", violation.message)
-        self.assertEqual(violation.context['output_method'], 'sys.stderr.write')
+        self.assertEqual(violation.context["output_method"], "sys.stderr.write")
 
     def test_check_node_with_console_log(self):
         """Test check_node detects console.log violation."""
@@ -425,22 +434,24 @@ class TestConsoleOutputRule(unittest.TestCase):
         self.assertEqual(len(violations), 1)
         violation = violations[0]
         self.assertIn("console.log", violation.message)
-        self.assertEqual(violation.context['output_method'], 'console.log')
+        self.assertEqual(violation.context["output_method"], "console.log")
 
     def test_check_node_with_invalid_node_type(self):
         """Test check_node raises TypeError for non-Call nodes."""
         code = "sys.stdout"
-        tree = ast.parse(code, mode='eval')
+        tree = ast.parse(code, mode="eval")
         attr_node = tree.body
 
         with self.assertRaises(TypeError) as cm:
             self.rule.check_node(attr_node, self.context)
 
-        self.assertIn("ConsoleOutputRule should only receive ast.Call nodes", str(cm.exception))
+        self.assertIn(
+            "ConsoleOutputRule should only receive ast.Call nodes", str(cm.exception)
+        )
 
     def test_check_node_in_allowed_context_test_file(self):
         """Test check_node returns no violations in test files."""
-        self.context.file_path = Path('/test_module.py')
+        self.context.file_path = Path("/test_module.py")
 
         code = "sys.stdout.write('hello')"
         tree = ast.parse(code)
@@ -451,7 +462,7 @@ class TestConsoleOutputRule(unittest.TestCase):
 
     def test_check_node_in_allowed_context_example_file(self):
         """Test check_node returns no violations in example files."""
-        self.context.file_path = Path('/examples/demo.py')
+        self.context.file_path = Path("/examples/demo.py")
 
         code = "sys.stdout.write('hello')"
         tree = ast.parse(code)
@@ -462,7 +473,7 @@ class TestConsoleOutputRule(unittest.TestCase):
 
     def test_check_node_in_allowed_context_script_file(self):
         """Test check_node returns no violations in script files."""
-        self.context.file_path = Path('/scripts/utility.py')
+        self.context.file_path = Path("/scripts/utility.py")
 
         code = "sys.stdout.write('hello')"
         tree = ast.parse(code)
@@ -473,7 +484,7 @@ class TestConsoleOutputRule(unittest.TestCase):
 
     def test_check_node_in_allowed_context_test_function(self):
         """Test check_node returns no violations in test functions."""
-        self.context.current_function = 'test_something'
+        self.context.current_function = "test_something"
 
         code = "sys.stdout.write('hello')"
         tree = ast.parse(code)
@@ -484,7 +495,7 @@ class TestConsoleOutputRule(unittest.TestCase):
 
     def test_check_node_in_allowed_context_debug_function(self):
         """Test check_node returns no violations in debug functions."""
-        self.context.current_function = 'debug_something'
+        self.context.current_function = "debug_something"
 
         code = "sys.stdout.write('hello')"
         tree = ast.parse(code)
@@ -495,7 +506,7 @@ class TestConsoleOutputRule(unittest.TestCase):
 
     def test_check_node_in_allowed_context_main_function(self):
         """Test check_node returns no violations in main context."""
-        self.context.current_function = 'main'
+        self.context.current_function = "main"
 
         code = "sys.stdout.write('hello')"
         tree = ast.parse(code)
@@ -506,7 +517,7 @@ class TestConsoleOutputRule(unittest.TestCase):
 
     def test_is_allowed_context_with_test_file(self):
         """Test _is_allowed_context returns True for test files."""
-        self.context.file_path = Path('/test_something.py')
+        self.context.file_path = Path("/test_something.py")
         config = {}
 
         result = self.rule._is_allowed_context(self.context, config)
@@ -514,7 +525,7 @@ class TestConsoleOutputRule(unittest.TestCase):
 
     def test_is_allowed_context_with_example_file(self):
         """Test _is_allowed_context returns True for example files."""
-        self.context.file_path = Path('/example_something.py')
+        self.context.file_path = Path("/example_something.py")
         config = {}
 
         result = self.rule._is_allowed_context(self.context, config)
@@ -522,7 +533,7 @@ class TestConsoleOutputRule(unittest.TestCase):
 
     def test_is_allowed_context_with_demo_file(self):
         """Test _is_allowed_context returns True for demo files."""
-        self.context.file_path = Path('/demo_something.py')
+        self.context.file_path = Path("/demo_something.py")
         config = {}
 
         result = self.rule._is_allowed_context(self.context, config)
@@ -530,7 +541,7 @@ class TestConsoleOutputRule(unittest.TestCase):
 
     def test_is_allowed_context_with_script_file(self):
         """Test _is_allowed_context returns True for script files."""
-        self.context.file_path = Path('/scripts/utility.py')
+        self.context.file_path = Path("/scripts/utility.py")
         config = {}
 
         result = self.rule._is_allowed_context(self.context, config)
@@ -538,8 +549,8 @@ class TestConsoleOutputRule(unittest.TestCase):
 
     def test_is_allowed_context_with_test_function(self):
         """Test _is_allowed_context returns True for test functions."""
-        self.context.file_path = Path('/regular.py')
-        self.context.current_function = 'test_something'
+        self.context.file_path = Path("/regular.py")
+        self.context.current_function = "test_something"
         config = {}
 
         result = self.rule._is_allowed_context(self.context, config)
@@ -547,8 +558,8 @@ class TestConsoleOutputRule(unittest.TestCase):
 
     def test_is_allowed_context_with_debug_function(self):
         """Test _is_allowed_context returns True for debug functions."""
-        self.context.file_path = Path('/regular.py')
-        self.context.current_function = 'debug_something'
+        self.context.file_path = Path("/regular.py")
+        self.context.current_function = "debug_something"
         config = {}
 
         result = self.rule._is_allowed_context(self.context, config)
@@ -556,8 +567,8 @@ class TestConsoleOutputRule(unittest.TestCase):
 
     def test_is_allowed_context_with_main_function(self):
         """Test _is_allowed_context returns True for main function."""
-        self.context.file_path = Path('/regular.py')
-        self.context.current_function = 'main'
+        self.context.file_path = Path("/regular.py")
+        self.context.current_function = "main"
         config = {}
 
         result = self.rule._is_allowed_context(self.context, config)
@@ -565,8 +576,8 @@ class TestConsoleOutputRule(unittest.TestCase):
 
     def test_is_allowed_context_with_regular_context(self):
         """Test _is_allowed_context returns False for regular context."""
-        self.context.file_path = Path('/regular.py')
-        self.context.current_function = 'regular_function'
+        self.context.file_path = Path("/regular.py")
+        self.context.current_function = "regular_function"
         config = {}
 
         result = self.rule._is_allowed_context(self.context, config)
@@ -579,7 +590,7 @@ class TestConsoleOutputRule(unittest.TestCase):
         call_node = tree.body[0].value
 
         method = self.rule._get_output_method(call_node)
-        self.assertEqual(method, 'sys.stdout.write')
+        self.assertEqual(method, "sys.stdout.write")
 
     def test_get_output_method_sys_stderr_write(self):
         """Test _get_output_method for sys.stderr.write."""
@@ -588,7 +599,7 @@ class TestConsoleOutputRule(unittest.TestCase):
         call_node = tree.body[0].value
 
         method = self.rule._get_output_method(call_node)
-        self.assertEqual(method, 'sys.stderr.write')
+        self.assertEqual(method, "sys.stderr.write")
 
     def test_get_output_method_console_log(self):
         """Test _get_output_method for console.log."""
@@ -597,7 +608,7 @@ class TestConsoleOutputRule(unittest.TestCase):
         call_node = tree.body[0].value
 
         method = self.rule._get_output_method(call_node)
-        self.assertEqual(method, 'console.log')
+        self.assertEqual(method, "console.log")
 
     def test_get_output_method_unknown(self):
         """Test _get_output_method for unknown method."""
@@ -607,27 +618,31 @@ class TestConsoleOutputRule(unittest.TestCase):
         call_node = tree.body[0].value
 
         method = self.rule._get_output_method(call_node)
-        self.assertEqual(method, 'unknown')
+        self.assertEqual(method, "unknown")
 
     def test_generate_suggestion_for_stderr(self):
         """Test _generate_suggestion for stderr output."""
-        suggestion = self.rule._generate_suggestion('sys.stderr.write')
+        suggestion = self.rule._generate_suggestion("sys.stderr.write")
         self.assertEqual(suggestion, "logger.error('...')  # For error output")
 
     def test_generate_suggestion_for_stdout(self):
         """Test _generate_suggestion for stdout output."""
-        suggestion = self.rule._generate_suggestion('sys.stdout.write')
+        suggestion = self.rule._generate_suggestion("sys.stdout.write")
         self.assertEqual(suggestion, "logger.info('...')   # For standard output")
 
     def test_generate_suggestion_for_console(self):
         """Test _generate_suggestion for console output."""
-        suggestion = self.rule._generate_suggestion('console.log')
-        self.assertEqual(suggestion, "logger.debug('...')  # Use appropriate logging level")
+        suggestion = self.rule._generate_suggestion("console.log")
+        self.assertEqual(
+            suggestion, "logger.debug('...')  # Use appropriate logging level"
+        )
 
     def test_generate_suggestion_for_unknown(self):
         """Test _generate_suggestion for unknown output method."""
-        suggestion = self.rule._generate_suggestion('unknown.method')
-        self.assertEqual(suggestion, "logger.debug('...')  # Use appropriate logging level")
+        suggestion = self.rule._generate_suggestion("unknown.method")
+        self.assertEqual(
+            suggestion, "logger.debug('...')  # Use appropriate logging level"
+        )
 
     def test_get_configuration_method(self):
         """Test get_configuration method."""
@@ -659,7 +674,7 @@ class TestRuleIntegration(unittest.TestCase):
     def test_create_violation_helper_method(self):
         """Test create_violation helper method works correctly."""
         rule = PrintStatementRule()
-        context = LintContext(file_path=Path('/src/module.py'))
+        context = LintContext(file_path=Path("/src/module.py"))
 
         code = "print('hello')"
         tree = ast.parse(code)
@@ -671,15 +686,15 @@ class TestRuleIntegration(unittest.TestCase):
             message="Test message",
             description="Test description",
             suggestion="Test suggestion",
-            violation_context={'test': 'value'}
+            violation_context={"test": "value"},
         )
 
-        self.assertEqual(violation.rule_id, 'style.print-statement')
-        self.assertEqual(violation.file_path, '/src/module.py')
+        self.assertEqual(violation.rule_id, "style.print-statement")
+        self.assertEqual(violation.file_path, "/src/module.py")
         self.assertEqual(violation.message, "Test message")
         self.assertEqual(violation.description, "Test description")
         self.assertEqual(violation.suggestion, "Test suggestion")
-        self.assertEqual(violation.context['test'], 'value')
+        self.assertEqual(violation.context["test"], "value")
         self.assertEqual(violation.severity, Severity.WARNING)
 
     def test_is_enabled_method(self):
@@ -693,11 +708,11 @@ class TestRuleIntegration(unittest.TestCase):
         self.assertTrue(rule.is_enabled({}))
 
         # Test with rule enabled
-        config = {'rules': {'style.print-statement': {'enabled': True}}}
+        config = {"rules": {"style.print-statement": {"enabled": True}}}
         self.assertTrue(rule.is_enabled(config))
 
         # Test with rule disabled
-        config = {'rules': {'style.print-statement': {'enabled': False}}}
+        config = {"rules": {"style.print-statement": {"enabled": False}}}
         self.assertFalse(rule.is_enabled(config))
 
     def test_rules_work_with_ast_traversal(self):
@@ -714,22 +729,20 @@ console.log('debug')
 """
         tree = ast.parse(code)
         context = LintContext(
-            file_path=Path('/src/module.py'),
-            file_content=code,
-            ast_tree=tree
+            file_path=Path("/src/module.py"), file_content=code, ast_tree=tree
         )
 
         # Test print rule
         print_violations = print_rule.check(context)
         self.assertEqual(len(print_violations), 1)
-        self.assertEqual(print_violations[0].rule_id, 'style.print-statement')
+        self.assertEqual(print_violations[0].rule_id, "style.print-statement")
 
         # Test console rule
         console_violations = console_rule.check(context)
         self.assertEqual(len(console_violations), 2)  # sys.stdout.write and console.log
-        self.assertEqual(console_violations[0].rule_id, 'style.console-output')
-        self.assertEqual(console_violations[1].rule_id, 'style.console-output')
+        self.assertEqual(console_violations[0].rule_id, "style.console-output")
+        self.assertEqual(console_violations[1].rule_id, "style.console-output")
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

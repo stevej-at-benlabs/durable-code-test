@@ -11,20 +11,17 @@ Interfaces: Standard unittest.TestCase interface for test execution
 Implementation: Comprehensive test coverage using unittest framework with AST parsing
 """
 
-import unittest
 import ast
-from pathlib import Path
-from typing import Dict, Any
-
 import sys
-sys.path.insert(0, '/home/stevejackson/Projects/durable-code-test/tools')
+import unittest
+from pathlib import Path
+from typing import Any, Dict
+
+sys.path.insert(0, "/home/stevejackson/Projects/durable-code-test/tools")
 
 from design_linters.framework.interfaces import LintContext, Severity
 from design_linters.rules.logging.general_logging_rules import (
-    NoPlainPrintRule,
-    ProperLogLevelsRule,
-    LoggingInExceptionsRule
-)
+    LoggingInExceptionsRule, NoPlainPrintRule, ProperLogLevelsRule)
 
 
 class TestNoPlainPrintRule(unittest.TestCase):
@@ -32,15 +29,17 @@ class TestNoPlainPrintRule(unittest.TestCase):
 
     def setUp(self):
         self.rule = NoPlainPrintRule()
-        self.context = LintContext(file_path=Path('/production.py'))
+        self.context = LintContext(file_path=Path("/production.py"))
 
     def test_rule_properties(self):
         """Test rule properties are correctly defined."""
-        self.assertEqual(self.rule.rule_id, 'logging.no-print')
-        self.assertEqual(self.rule.rule_name, 'No Print Statements')
+        self.assertEqual(self.rule.rule_id, "logging.no-print")
+        self.assertEqual(self.rule.rule_name, "No Print Statements")
         self.assertEqual(self.rule.severity, Severity.WARNING)
-        self.assertEqual(self.rule.categories, {'logging', 'production', 'anti-patterns'})
-        self.assertIn('print statements', self.rule.description.lower())
+        self.assertEqual(
+            self.rule.categories, {"logging", "production", "anti-patterns"}
+        )
+        self.assertIn("print statements", self.rule.description.lower())
 
     def test_should_check_node_print_call(self):
         """Test should_check_node identifies print calls."""
@@ -78,9 +77,9 @@ class TestNoPlainPrintRule(unittest.TestCase):
 
         self.assertEqual(len(violations), 1)
         violation = violations[0]
-        self.assertEqual(violation.rule_id, 'logging.no-print')
-        self.assertIn('Print statement found', violation.message)
-        self.assertIn('logger.info', violation.suggestion)
+        self.assertEqual(violation.rule_id, "logging.no-print")
+        self.assertIn("Print statement found", violation.message)
+        self.assertIn("logger.info", violation.suggestion)
 
     def test_check_node_error_print_suggestion(self):
         """Test check_node suggests error level for error messages."""
@@ -91,7 +90,7 @@ class TestNoPlainPrintRule(unittest.TestCase):
         violations = self.rule.check_node(print_node, self.context)
 
         self.assertEqual(len(violations), 1)
-        self.assertIn('logger.error', violations[0].suggestion)
+        self.assertIn("logger.error", violations[0].suggestion)
 
     def test_check_node_warning_print_suggestion(self):
         """Test check_node suggests warning level for warning messages."""
@@ -102,7 +101,7 @@ class TestNoPlainPrintRule(unittest.TestCase):
         violations = self.rule.check_node(print_node, self.context)
 
         self.assertEqual(len(violations), 1)
-        self.assertIn('logger.warning', violations[0].suggestion)
+        self.assertIn("logger.warning", violations[0].suggestion)
 
     def test_check_node_debug_print_suggestion(self):
         """Test check_node suggests debug level for debug messages."""
@@ -113,7 +112,7 @@ class TestNoPlainPrintRule(unittest.TestCase):
         violations = self.rule.check_node(print_node, self.context)
 
         self.assertEqual(len(violations), 1)
-        self.assertIn('logger.debug', violations[0].suggestion)
+        self.assertIn("logger.debug", violations[0].suggestion)
 
     def test_check_node_success_print_suggestion(self):
         """Test check_node suggests success level for success messages."""
@@ -124,7 +123,7 @@ class TestNoPlainPrintRule(unittest.TestCase):
         violations = self.rule.check_node(print_node, self.context)
 
         self.assertEqual(len(violations), 1)
-        self.assertIn('logger.success', violations[0].suggestion)
+        self.assertIn("logger.success", violations[0].suggestion)
 
     def test_check_node_empty_print(self):
         """Test check_node handles print with no arguments."""
@@ -135,7 +134,7 @@ class TestNoPlainPrintRule(unittest.TestCase):
         violations = self.rule.check_node(print_node, self.context)
 
         self.assertEqual(len(violations), 1)
-        self.assertIn('logger.info', violations[0].suggestion)
+        self.assertIn("logger.info", violations[0].suggestion)
 
     def test_check_node_non_string_print(self):
         """Test check_node handles print with non-string arguments."""
@@ -146,7 +145,7 @@ class TestNoPlainPrintRule(unittest.TestCase):
         violations = self.rule.check_node(print_node, self.context)
 
         self.assertEqual(len(violations), 1)
-        self.assertIn('logger.info', violations[0].suggestion)
+        self.assertIn("logger.info", violations[0].suggestion)
 
     def test_check_node_wrong_type_raises_error(self):
         """Test check_node raises TypeError for non-Call nodes."""
@@ -164,39 +163,39 @@ class TestNoPlainPrintRule(unittest.TestCase):
         tree = ast.parse(code)
         print_node = tree.body[0].value
         suggestion = self.rule._get_logging_suggestion(print_node)
-        self.assertIn('logger.error', suggestion)
+        self.assertIn("logger.error", suggestion)
 
         # Test exception keyword
         code = "print('Exception caught')"
         tree = ast.parse(code)
         print_node = tree.body[0].value
         suggestion = self.rule._get_logging_suggestion(print_node)
-        self.assertIn('logger.error', suggestion)
+        self.assertIn("logger.error", suggestion)
 
         # Test warn keyword
         code = "print('Warn user about issue')"
         tree = ast.parse(code)
         print_node = tree.body[0].value
         suggestion = self.rule._get_logging_suggestion(print_node)
-        self.assertIn('logger.warning', suggestion)
+        self.assertIn("logger.warning", suggestion)
 
         # Test trace keyword
         code = "print('Trace information')"
         tree = ast.parse(code)
         print_node = tree.body[0].value
         suggestion = self.rule._get_logging_suggestion(print_node)
-        self.assertIn('logger.debug', suggestion)
+        self.assertIn("logger.debug", suggestion)
 
         # Test done keyword
         code = "print('Task is done')"
         tree = ast.parse(code)
         print_node = tree.body[0].value
         suggestion = self.rule._get_logging_suggestion(print_node)
-        self.assertIn('logger.success', suggestion)
+        self.assertIn("logger.success", suggestion)
 
     def test_is_allowed_context_test_file(self):
         """Test _is_allowed_context allows test files."""
-        test_context = LintContext(file_path=Path('/test_module.py'))
+        test_context = LintContext(file_path=Path("/test_module.py"))
         config: Dict[str, Any] = {}
 
         result = self.rule._is_allowed_context(test_context, config)
@@ -205,8 +204,7 @@ class TestNoPlainPrintRule(unittest.TestCase):
     def test_is_allowed_context_main_function(self):
         """Test _is_allowed_context allows main function."""
         main_context = LintContext(
-            file_path=Path('/script.py'),
-            current_function='__main__'
+            file_path=Path("/script.py"), current_function="__main__"
         )
         config: Dict[str, Any] = {}
 
@@ -216,7 +214,7 @@ class TestNoPlainPrintRule(unittest.TestCase):
     def test_allowed_context_skips_violation(self):
         """Test that allowed contexts skip violation creation."""
         # Set up a test file context
-        test_context = LintContext(file_path=Path('/test_file.py'))
+        test_context = LintContext(file_path=Path("/test_file.py"))
 
         code = "print('hello')"
         tree = ast.parse(code)
@@ -231,15 +229,15 @@ class TestProperLogLevelsRule(unittest.TestCase):
 
     def setUp(self):
         self.rule = ProperLogLevelsRule()
-        self.context = LintContext(file_path=Path('/production.py'))
+        self.context = LintContext(file_path=Path("/production.py"))
 
     def test_rule_properties(self):
         """Test rule properties are correctly defined."""
-        self.assertEqual(self.rule.rule_id, 'logging.proper-levels')
-        self.assertEqual(self.rule.rule_name, 'Proper Log Levels')
+        self.assertEqual(self.rule.rule_id, "logging.proper-levels")
+        self.assertEqual(self.rule.rule_name, "Proper Log Levels")
         self.assertEqual(self.rule.severity, Severity.INFO)
-        self.assertEqual(self.rule.categories, {'logging', 'best-practices', 'levels'})
-        self.assertIn('log levels', self.rule.description.lower())
+        self.assertEqual(self.rule.categories, {"logging", "best-practices", "levels"})
+        self.assertIn("log levels", self.rule.description.lower())
 
     def test_should_check_node_logger_call(self):
         """Test should_check_node identifies logger calls."""
@@ -270,13 +268,15 @@ class TestProperLogLevelsRule(unittest.TestCase):
         test_cases = [
             "logger.info('test')",
             "log.error('test')",
-            "logging.debug('test')"
+            "logging.debug('test')",
         ]
 
         for code in test_cases:
             tree = ast.parse(code)
             call_node = tree.body[0].value
-            self.assertTrue(self.rule._is_logging_call(call_node), f"Failed for: {code}")
+            self.assertTrue(
+                self.rule._is_logging_call(call_node), f"Failed for: {code}"
+            )
 
     def test_is_logging_call_getlogger_pattern(self):
         """Test _is_logging_call identifies getLogger pattern."""
@@ -314,16 +314,15 @@ for i in range(10):
 
         # Set up context with loop in stack
         loop_context = LintContext(
-            file_path=Path('/production.py'),
-            node_stack=[for_node]
+            file_path=Path("/production.py"), node_stack=[for_node]
         )
 
         violations = self.rule.check_node(call_node, loop_context)
 
         self.assertEqual(len(violations), 1)
         violation = violations[0]
-        self.assertIn('Error logging inside loop', violation.message)
-        self.assertIn('rate limiting', violation.suggestion)
+        self.assertIn("Error logging inside loop", violation.message)
+        self.assertIn("rate limiting", violation.suggestion)
 
     def test_check_node_debug_for_important_info(self):
         """Test check_node detects debug level for important information."""
@@ -335,8 +334,8 @@ for i in range(10):
 
         self.assertEqual(len(violations), 1)
         violation = violations[0]
-        self.assertIn('Debug level used for potentially important', violation.message)
-        self.assertIn('logger.info', violation.suggestion)
+        self.assertIn("Debug level used for potentially important", violation.message)
+        self.assertIn("logger.info", violation.suggestion)
 
     def test_check_node_normal_debug_no_violation(self):
         """Test check_node doesn't flag normal debug messages."""
@@ -376,10 +375,7 @@ for i in range(10):
         tree = ast.parse(code)
         for_node = tree.body[0]
 
-        loop_context = LintContext(
-            file_path=Path('/test.py'),
-            node_stack=[for_node]
-        )
+        loop_context = LintContext(file_path=Path("/test.py"), node_stack=[for_node])
 
         self.assertTrue(self.rule._is_in_loop(loop_context))
 
@@ -393,15 +389,14 @@ while True:
         while_node = tree.body[0]
 
         loop_context = LintContext(
-            file_path=Path('/production.py'),
-            node_stack=[while_node]
+            file_path=Path("/production.py"), node_stack=[while_node]
         )
 
         self.assertTrue(self.rule._is_in_loop(loop_context))
 
     def test_is_in_loop_no_loop(self):
         """Test _is_in_loop returns False when not in loop."""
-        context = LintContext(file_path=Path('/production.py'))
+        context = LintContext(file_path=Path("/production.py"))
         self.assertFalse(self.rule._is_in_loop(context))
 
     def test_is_in_loop_function_boundary(self):
@@ -413,12 +408,13 @@ def func():
 """
         tree = ast.parse(code)
         func_node = tree.body[0]
-        for_node = func_node.body[0]
+        # Get for loop node for potential future use
+        _ = func_node.body[0]
 
         # Context inside function but outside loop scope
         context = LintContext(
-            file_path=Path('/production.py'),
-            node_stack=[func_node]  # Only function in stack
+            file_path=Path("/production.py"),
+            node_stack=[func_node],  # Only function in stack
         )
 
         self.assertFalse(self.rule._is_in_loop(context))
@@ -426,8 +422,16 @@ def func():
     def test_appears_production_critical_keywords(self):
         """Test _appears_production_critical detects important keywords."""
         important_keywords = [
-            'started', 'starting', 'initialized', 'connected', 'loaded',
-            'finished', 'completed', 'processed', 'received', 'sent'
+            "started",
+            "starting",
+            "initialized",
+            "connected",
+            "loaded",
+            "finished",
+            "completed",
+            "processed",
+            "received",
+            "sent",
         ]
 
         for keyword in important_keywords:
@@ -471,15 +475,15 @@ class TestLoggingInExceptionsRule(unittest.TestCase):
 
     def setUp(self):
         self.rule = LoggingInExceptionsRule()
-        self.context = LintContext(file_path=Path('/production.py'))
+        self.context = LintContext(file_path=Path("/production.py"))
 
     def test_rule_properties(self):
         """Test rule properties are correctly defined."""
-        self.assertEqual(self.rule.rule_id, 'logging.exception-logging')
-        self.assertEqual(self.rule.rule_name, 'Exception Logging')
+        self.assertEqual(self.rule.rule_id, "logging.exception-logging")
+        self.assertEqual(self.rule.rule_name, "Exception Logging")
         self.assertEqual(self.rule.severity, Severity.WARNING)
-        self.assertEqual(self.rule.categories, {'logging', 'exceptions', 'debugging'})
-        self.assertIn('exception handlers', self.rule.description.lower())
+        self.assertEqual(self.rule.categories, {"logging", "exceptions", "debugging"})
+        self.assertIn("exception handlers", self.rule.description.lower())
 
     def test_should_check_node_except_handler(self):
         """Test should_check_node identifies exception handlers."""
@@ -518,8 +522,8 @@ except Exception:
 
         self.assertEqual(len(violations), 1)
         violation = violations[0]
-        self.assertIn('Exception handler without logging', violation.message)
-        self.assertIn('logger.exception', violation.suggestion)
+        self.assertIn("Exception handler without logging", violation.message)
+        self.assertIn("logger.exception", violation.suggestion)
 
     def test_check_node_with_logging_no_violation(self):
         """Test check_node doesn't flag exception handler with proper logging."""
@@ -567,12 +571,12 @@ except Exception:
 
         self.assertEqual(len(violations), 1)
         violation = violations[0]
-        self.assertIn('Using info level for exception', violation.message)
+        self.assertIn("Using info level for exception", violation.message)
         self.assertEqual(violation.severity, Severity.INFO)
 
     def test_check_node_proper_exception_logging(self):
         """Test check_node accepts proper exception logging methods."""
-        proper_methods = ['error', 'exception', 'critical']
+        proper_methods = ["error", "exception", "critical"]
 
         for method in proper_methods:
             code = f"""
@@ -703,13 +707,15 @@ except Exception:
         test_cases = [
             "logger.error('test')",
             "log.exception('test')",
-            "logging.critical('test')"
+            "logging.critical('test')",
         ]
 
         for code in test_cases:
             tree = ast.parse(code)
             call_node = tree.body[0].value
-            self.assertTrue(self.rule._is_logging_call(call_node), f"Failed for: {code}")
+            self.assertTrue(
+                self.rule._is_logging_call(call_node), f"Failed for: {code}"
+            )
 
     def test_is_logging_call_includes_exception_method(self):
         """Test _is_logging_call includes exception method."""
@@ -754,8 +760,8 @@ except Exception:
 
         # Should flag the outer exception handler for missing logging
         self.assertEqual(len(violations), 1)
-        self.assertIn('Exception handler without logging', violations[0].message)
+        self.assertIn("Exception handler without logging", violations[0].message)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

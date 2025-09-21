@@ -92,7 +92,10 @@ class PythonAnalyzer(LintAnalyzer):
     def _handle_analysis_error(self, file_path: Path) -> LintContext:
         """Handle general errors during file analysis."""
         # Error already logged with exception details in the caller
-        return LintContext(file_path=file_path, metadata={"error": "Analysis failed", "ast_parsed": False})
+        return LintContext(
+            file_path=file_path,
+            metadata={"error": "Analysis failed", "ast_parsed": False},
+        )
 
     def get_supported_extensions(self) -> set[str]:
         """Get file extensions this analyzer supports."""
@@ -243,7 +246,11 @@ class _FileDiscoveryService:
     """Service for discovering files to analyze."""
 
     def find_files_to_analyze(
-        self, directory: Path, include_patterns: list[str], exclude_patterns: list[str], recursive: bool
+        self,
+        directory: Path,
+        include_patterns: list[str],
+        exclude_patterns: list[str],
+        recursive: bool,
     ) -> list[Path]:
         """Find files to analyze based on patterns."""
         import fnmatch  # pylint: disable=import-outside-toplevel
@@ -373,7 +380,10 @@ class DefaultLintOrchestrator(LintOrchestrator):
         return bool(context.ast_tree or not (context.metadata or {}).get("ast_parsed", True))
 
     def lint_directory(
-        self, directory_path: Path, config: dict[str, Any] | None = None, recursive: bool = True
+        self,
+        directory_path: Path,
+        config: dict[str, Any] | None = None,
+        recursive: bool = True,
     ) -> list[LintViolation]:
         """Lint all supported files in a directory."""
         config = config or self._get_default_config()

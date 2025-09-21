@@ -31,14 +31,14 @@ Implementation:
 
 import asyncio
 import json
-import time
-from typing import Any, AsyncGenerator, Dict, Optional
+from typing import Any, AsyncGenerator
 
 import pytest
 import pytest_asyncio
 
 try:
-    from playwright.async_api import Page, WebSocket, async_playwright  # type: ignore[import-not-found]
+    from playwright.async_api import (Page,  # type: ignore[import-not-found]
+                                      WebSocket, async_playwright)
 except ImportError:
     # For type checking when playwright is not installed
     Page = Any
@@ -69,7 +69,6 @@ async def page(browser: Any) -> Any:
     await context.close()
 
 
-@pytest.mark.skip(reason="UI structure has changed, needs update")
 class TestOscilloscopeIntegration:
     """Integration tests for oscilloscope functionality."""
 
@@ -90,10 +89,10 @@ class TestOscilloscopeIntegration:
         await demo_tab.click()
 
         # Wait for oscilloscope components to load
-        await page.wait_for_selector('canvas', timeout=5000)
+        await page.wait_for_selector("canvas", timeout=5000)
 
         # Verify canvas is present
-        canvas = await page.query_selector('canvas')
+        canvas = await page.query_selector("canvas")
         assert canvas is not None, "Oscilloscope canvas not found"
 
     @pytest.mark.asyncio
@@ -111,7 +110,7 @@ class TestOscilloscopeIntegration:
                 try:
                     data = json.loads(message)
                     ws_messages.append(data)
-                except:
+                except (json.JSONDecodeError, TypeError):
                     pass
 
             ws.on("framereceived", lambda event: on_message(event.get("payload", "")))
@@ -149,23 +148,23 @@ class TestOscilloscopeIntegration:
             await asyncio.sleep(1)
 
         # Test waveform selector if present
-        waveform_selector = await page.query_selector('select')
+        waveform_selector = await page.query_selector("select")
         if waveform_selector:
             # Change waveform type
-            await waveform_selector.select_option('square')
+            await waveform_selector.select_option("square")
             await asyncio.sleep(0.5)
 
-            await waveform_selector.select_option('triangle')
+            await waveform_selector.select_option("triangle")
             await asyncio.sleep(0.5)
 
-            await waveform_selector.select_option('sine')
+            await waveform_selector.select_option("sine")
             await asyncio.sleep(0.5)
 
         # Test frequency control if present
         frequency_input = await page.query_selector('input[type="range"]')
         if frequency_input:
             # Adjust frequency
-            await frequency_input.fill('5')
+            await frequency_input.fill("5")
             await asyncio.sleep(0.5)
 
     @pytest.mark.asyncio
@@ -177,7 +176,7 @@ class TestOscilloscopeIntegration:
         await page.click('button:has-text("Demo")')
 
         # Wait for canvas
-        await page.wait_for_selector('canvas', timeout=5000)
+        await page.wait_for_selector("canvas", timeout=5000)
 
         # Click Connect if button exists
         connect_button = await page.query_selector('button:has-text("Connect")')
@@ -188,7 +187,7 @@ class TestOscilloscopeIntegration:
         await asyncio.sleep(3)
 
         # Check if canvas has been rendered (by checking its data URL changes)
-        canvas = await page.query_selector('canvas')
+        canvas = await page.query_selector("canvas")
         if canvas:
             # Take two snapshots of the canvas
             snapshot1 = await canvas.screenshot()
@@ -196,7 +195,9 @@ class TestOscilloscopeIntegration:
             snapshot2 = await canvas.screenshot()
 
             # If data is streaming, the snapshots should be different
-            assert snapshot1 != snapshot2, "Canvas is not updating - no data streaming detected"
+            assert (
+                snapshot1 != snapshot2
+            ), "Canvas is not updating - no data streaming detected"
 
     @pytest.mark.asyncio
     async def test_oscilloscope_disconnect_reconnect(self, page: Any) -> None:
@@ -213,7 +214,9 @@ class TestOscilloscopeIntegration:
             await asyncio.sleep(1)
 
             # Look for Disconnect button
-            disconnect_button = await page.query_selector('button:has-text("Disconnect")')
+            disconnect_button = await page.query_selector(
+                'button:has-text("Disconnect")'
+            )
             if disconnect_button:
                 # Disconnect
                 await disconnect_button.click()
@@ -226,7 +229,9 @@ class TestOscilloscopeIntegration:
                     await asyncio.sleep(1)
 
                     # Verify connection is re-established
-                    disconnect_button = await page.query_selector('button:has-text("Disconnect")')
+                    disconnect_button = await page.query_selector(
+                        'button:has-text("Disconnect")'
+                    )
                     assert disconnect_button is not None, "Reconnection failed"
 
     @pytest.mark.asyncio
@@ -241,8 +246,8 @@ class TestOscilloscopeIntegration:
         await page.click('button:has-text("Demo")')
 
         # The app should still load even if WebSocket fails
-        await page.wait_for_selector('canvas', timeout=5000)
-        canvas = await page.query_selector('canvas')
+        await page.wait_for_selector("canvas", timeout=5000)
+        canvas = await page.query_selector("canvas")
         assert canvas is not None, "App failed to load canvas element"
 
 

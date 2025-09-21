@@ -530,7 +530,10 @@ class LintOrchestrator(ABC):
 
     @abstractmethod
     def lint_directory(
-        self, directory_path: Path, config: dict[str, Any] | None = None, recursive: bool = True
+        self,
+        directory_path: Path,
+        config: dict[str, Any] | None = None,
+        recursive: bool = True,
     ) -> list[LintViolation]:
         """Lint all files in a directory."""
         raise NotImplementedError("Subclasses must implement lint_directory")

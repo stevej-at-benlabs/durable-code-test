@@ -69,8 +69,19 @@ class FileOrganizationRule(ASTLintRule):
                 r"^test_.*\.py$": ["test/"],  # Files starting with test_
                 r".*_test\.py$": ["test/"],  # Files ending with _test
                 r".*\.tsx?$": ["durable-code-app/frontend/", "frontend/", "src/"],
-                r".*\.jsx?$": ["durable-code-app/frontend/", "frontend/", "src/", "scripts/"],
-                r".*\.html$": ["durable-code-app/", "templates/", "static/", "public/", ".ai/"],
+                r".*\.jsx?$": [
+                    "durable-code-app/frontend/",
+                    "frontend/",
+                    "src/",
+                    "scripts/",
+                ],
+                r".*\.html$": [
+                    "durable-code-app/",
+                    "templates/",
+                    "static/",
+                    "public/",
+                    ".ai/",
+                ],
                 r".*\.css$": ["durable-code-app/", "static/", "public/", "src/"],
             },
         )
@@ -117,7 +128,11 @@ class FileOrganizationRule(ASTLintRule):
             rel_path = file_path.relative_to(cwd) if file_path.is_absolute() else file_path
         except ValueError as e:
             # File is outside project directory
-            logger.debug("File is outside project directory", file_path=str(file_path), error=str(e))
+            logger.debug(
+                "File is outside project directory",
+                file_path=str(file_path),
+                error=str(e),
+            )
             return violations
 
         # Check if file is in root directory

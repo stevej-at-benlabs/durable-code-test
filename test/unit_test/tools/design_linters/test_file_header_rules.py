@@ -17,11 +17,8 @@ Implementation: Uses pytest fixtures and parameterized tests for comprehensive c
 """
 
 import ast
-import tempfile
-from pathlib import Path
 
 import pytest
-
 from design_linters.framework.interfaces import LintContext, Severity
 from design_linters.rules.style.file_header_rules import FileHeaderRule
 
@@ -72,9 +69,9 @@ def test_function():
 
     def test_python_file_missing_header(self, rule, context):
         """Test Python file with no header."""
-        content = '''def test_function():
+        content = """def test_function():
     pass
-'''
+"""
         context.file_content = content
         context.ast_tree = ast.parse(content)
 
@@ -154,7 +151,7 @@ def test_function():
 
     def test_typescript_file_header(self, rule, context):
         """Test TypeScript file header validation."""
-        content = '''/**
+        content = """/**
  * Purpose: React component for displaying user profile information
  * Scope: User interface components for profile management
  * Overview: This component renders user profile data including avatar, name, bio,
@@ -170,7 +167,7 @@ def test_function():
 export default function UserProfile() {
     return null;
 }
-'''
+"""
         context.file_path = "test_file.tsx"
         context.file_content = content
         # For TypeScript files, we still need an AST (even if minimal)
@@ -183,7 +180,7 @@ export default function UserProfile() {
 
     def test_markdown_file_header(self, rule, context):
         """Test Markdown file header validation."""
-        content = '''# Documentation Title
+        content = """# Documentation Title
 
 **Purpose**: Comprehensive guide for using the application features
 **Scope**: End-user documentation for all application modules
@@ -192,7 +189,7 @@ export default function UserProfile() {
 
 ## Overview
 Content starts here...
-'''
+"""
         context.file_path = "test_file.md"
         context.file_content = content
         context.ast_tree = ast.parse("")
@@ -204,7 +201,9 @@ Content starts here...
 
     def test_skip_test_files(self):
         """Test that test files can be skipped when configured."""
-        rule = FileHeaderRule(config={'skip_test_files': True})  # Changed from check_test_files
+        rule = FileHeaderRule(
+            config={"skip_test_files": True}
+        )  # Changed from check_test_files
         context = LintContext()
         context.file_path = "test_something.py"
         context.file_content = "# No header needed for test files"
@@ -227,7 +226,7 @@ Content starts here...
 
     def test_html_file_header(self, rule, context):
         """Test HTML file header validation."""
-        content = '''<!DOCTYPE html>
+        content = """<!DOCTYPE html>
 <!--
 Purpose: Main application template for the web interface
 Scope: HTML structure for single-page application
@@ -240,7 +239,7 @@ Dependencies: Bootstrap CSS, Vue.js framework
 <body>
 </body>
 </html>
-'''
+"""
         context.file_path = "test_file.html"
         context.file_content = content
         context.ast_tree = ast.parse("")
@@ -252,13 +251,13 @@ Dependencies: Bootstrap CSS, Vue.js framework
 
     def test_yaml_file_header(self, rule, context):
         """Test YAML file header validation."""
-        content = '''# Purpose: Configuration for CI/CD pipeline
+        content = """# Purpose: Configuration for CI/CD pipeline
 # Scope: GitHub Actions workflow configuration
 # Dependencies: Node.js, Python, Docker
 
 name: CI Pipeline
 on: [push, pull_request]
-'''
+"""
         context.file_path = "test_file.yml"
         context.file_content = content
         context.ast_tree = ast.parse("")
@@ -342,13 +341,16 @@ def test_function():
         assert any("Missing recommended header field" in v.message for v in violations)
         assert any(v.severity == Severity.WARNING for v in violations)
 
-    @pytest.mark.parametrize("file_ext,header_start", [
-        (".py", '"""'),
-        (".ts", "/**"),
-        (".tsx", "/**"),
-        (".js", "/**"),
-        (".jsx", "/**"),
-    ])
+    @pytest.mark.parametrize(
+        "file_ext,header_start",
+        [
+            (".py", '"""'),
+            (".ts", "/**"),
+            (".tsx", "/**"),
+            (".js", "/**"),
+            (".jsx", "/**"),
+        ],
+    )
     def test_file_type_detection(self, rule, file_ext, header_start):
         """Test that different file types are detected correctly."""
         context = LintContext()
@@ -382,49 +384,49 @@ Dependencies: pytest, unittest
 Exports: TestClass, test_function
 """'''
 
-        pattern = rule.FILE_CONFIGS['.py']['field_pattern']
+        pattern = rule.FILE_CONFIGS[".py"]["field_pattern"]
         fields = rule._parse_header_fields(header_content, pattern)
 
-        assert 'purpose' in fields
-        assert fields['purpose'] == 'Test module for validation'
-        assert 'scope' in fields
-        assert fields['scope'] == 'Unit testing'
-        assert 'overview' in fields
+        assert "purpose" in fields
+        assert fields["purpose"] == "Test module for validation"
+        assert "scope" in fields
+        assert fields["scope"] == "Unit testing"
+        assert "overview" in fields
         # Check that multi-line Overview is fully captured
-        assert 'multiple lines' in fields['overview']
-        assert 'more text here' in fields['overview']
+        assert "multiple lines" in fields["overview"]
+        assert "more text here" in fields["overview"]
 
     def test_parse_typescript_header_fields(self, rule):
         """Test parsing of TypeScript comment header fields."""
-        header_content = '''/**
+        header_content = """/**
  * Purpose: Component for user interface
  * Scope: UI components
  * Overview: A detailed overview that
  *     continues on multiple lines
  *     with proper indentation.
  * Dependencies: React, Redux
- */'''
+ */"""
 
-        pattern = rule.FILE_CONFIGS['.ts']['field_pattern']
+        pattern = rule.FILE_CONFIGS[".ts"]["field_pattern"]
         fields = rule._parse_header_fields(header_content, pattern)
 
-        assert 'purpose' in fields
-        assert 'overview' in fields
-        assert 'multiple lines' in fields['overview']
-        assert 'proper indentation' in fields['overview']
+        assert "purpose" in fields
+        assert "overview" in fields
+        assert "multiple lines" in fields["overview"]
+        assert "proper indentation" in fields["overview"]
 
     def test_parse_markdown_header_fields(self, rule):
         """Test parsing of Markdown header fields."""
-        header_content = '''# Title
+        header_content = """# Title
 
 **Purpose**: Documentation for the system
 **Scope**: All system components
 
----'''
+---"""
 
-        pattern = rule.FILE_CONFIGS['.md']['field_pattern']
+        pattern = rule.FILE_CONFIGS[".md"]["field_pattern"]
         fields = rule._parse_header_fields(header_content, pattern)
 
-        assert 'purpose' in fields
-        assert fields['purpose'] == 'Documentation for the system'
-        assert 'scope' in fields
+        assert "purpose" in fields
+        assert fields["purpose"] == "Documentation for the system"
+        assert "scope" in fields
