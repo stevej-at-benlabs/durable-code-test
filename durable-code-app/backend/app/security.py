@@ -1,5 +1,6 @@
-"""
-Purpose: Comprehensive security utilities and middleware for application-wide protection
+"""Comprehensive security utilities and middleware for application-wide protection.
+
+Purpose: Comprehensive security utilities and middleware for application-wide protection.
 Scope: Input validation, sanitization, rate limiting, security headers, and threat mitigation
 Overview: This module provides a complete security layer for the FastAPI application, implementing
     defense-in-depth practices to protect against common web vulnerabilities. It includes input

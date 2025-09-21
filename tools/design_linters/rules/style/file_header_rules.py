@@ -2,10 +2,16 @@
 """
 Purpose: File header validation linting rule for the design linter framework
 Scope: Style category rule implementation for enforcing file header standards
-Overview: This module implements a file header rule that validates all code and documentation
-    files have proper headers according to FILE_HEADER_STANDARDS.md. It checks for required
-    fields (Purpose, Scope, Overview) and validates their content quality. Supports multiple
-    file types including Python, TypeScript, JavaScript, HTML, YAML, and Markdown files.
+Overview: This module validates that all source files contain comprehensive documentation headers
+    according to project standards, ensuring consistent documentation across the codebase. It checks
+    for required fields including Purpose, Scope, and Overview in all files, plus additional fields
+    like Dependencies, Exports, and Interfaces for code files. The rule supports multiple file types
+    with format-specific header patterns for Python, TypeScript, JavaScript, HTML, YAML, and Markdown.
+    It validates not just the presence of fields but also their content quality, ensuring descriptions
+    are substantive rather than placeholders. The module provides file-type specific templates for
+    missing headers and helpful suggestions for improving incomplete headers. This ensures every file
+    in the project is self-documenting, helping developers understand file purposes without examining
+    implementation details, which is especially valuable for onboarding and maintenance.
 Dependencies: Framework interfaces, pathlib for file operations, re for pattern matching
 Exports: FileHeaderRule implementation
 Interfaces: Implements ASTLintRule interface from framework
@@ -128,6 +134,7 @@ class FileHeaderRule(ASTLintRule):
         self.strict_mode = self.config.get("strict_mode", True)
         self.min_overview_words = self.config.get("min_overview_words", 20)
         self.check_all_files = self.config.get("check_all_files", True)
+        self.skip_test_files = self.config.get("skip_test_files", False)  # Don't skip test files by default
 
     @property
     def rule_id(self) -> str:
@@ -173,12 +180,15 @@ class FileHeaderRule(ASTLintRule):
 
         config = self.FILE_CONFIGS[file_ext]
 
-        # Read file content
-        try:
-            content = file_path.read_text(encoding="utf-8")
-        except Exception as e:
-            logger.error(f"Could not read file {file_path}: {e}")
-            return violations
+        # Get file content from context or read from disk
+        if context.file_content is not None:
+            content = context.file_content
+        else:
+            try:
+                content = file_path.read_text(encoding="utf-8")
+            except Exception as e:
+                logger.error(f"Could not read file {file_path}: {e}")
+                return violations
 
         # Extract header
         header_match = config["header_pattern"].search(content[:2000])  # Check first 2000 chars
@@ -295,10 +305,8 @@ class FileHeaderRule(ASTLintRule):
             elif pattern in path_str:
                 return True
 
-        # Skip test files unless explicitly configured
-        return not self.config.get("check_test_files", False) and (
-            "test" in path_str.lower() or "spec" in path_str.lower()
-        )
+        # Skip test files only if explicitly configured to skip them
+        return self.skip_test_files and ("test" in path_str.lower() or "spec" in path_str.lower())
 
     def _parse_header_fields(self, header_content: str, field_pattern: re.Pattern) -> dict[str, str]:
         """Parse header fields from content."""
@@ -310,23 +318,34 @@ class FileHeaderRule(ASTLintRule):
         current_value = []
 
         for line in lines:
-            # Try to match a field
-            match = field_pattern.match(line.strip())
-            if match:
-                # Save previous field if exists
-                if current_field:
-                    fields[current_field.lower()] = " ".join(current_value).strip()
-                # Start new field
-                current_field = match.group(1)
-                current_value = [match.group(2)] if len(match.groups()) > 1 else []
-            elif current_field:
-                # Continuation of current field
+            # Check if this line starts with significant indentation (continuation line)
+            is_continuation = line.startswith("    ") or (line.startswith(" *") and ":" not in line)
+
+            # Try to match a field only if not a continuation line
+            if not is_continuation:
+                match = field_pattern.match(line.strip())
+                if match and ":" in line:  # Ensure it has a colon to be a field
+                    # Save previous field if exists
+                    if current_field:
+                        fields[current_field.lower()] = " ".join(current_value).strip()
+                    # Start new field
+                    current_field = match.group(1)
+                    current_value = [match.group(2)] if len(match.groups()) > 1 else []
+                    continue
+
+            # Handle continuation lines
+            if current_field and line.strip():
                 cleaned_line = line.strip()
                 # Remove comment markers
                 cleaned_line = re.sub(r"^\*\s*", "", cleaned_line)
                 cleaned_line = re.sub(r"^#\s*", "", cleaned_line)
-                cleaned_line = re.sub(r"^\s*", "", cleaned_line)
-                if cleaned_line and not cleaned_line.startswith('"""') and not cleaned_line.startswith("*/"):
+                # Skip docstring delimiters
+                if (
+                    cleaned_line
+                    and not cleaned_line.startswith('"""')
+                    and not cleaned_line.startswith("*/")
+                    and not (match and ":" in line and not is_continuation)
+                ):
                     current_value.append(cleaned_line)
 
         # Save last field

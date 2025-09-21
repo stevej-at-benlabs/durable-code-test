@@ -7,6 +7,9 @@ Overview: This module provides comprehensive tests for all loguru-specific
     and edge cases. Tests verify proper implementation of the ASTLintRule
     interface and correct violation reporting.
 Dependencies: unittest, ast, framework interfaces, loguru rules
+Exports: Test classes for all loguru rule implementations including UseLoguruRule, LoguruImportRule, StructuredLoggingRule, LogLevelConsistencyRule, and LoguruConfigurationRule
+Interfaces: Standard unittest test methods with setUp fixtures and parameterized test cases
+Implementation: Uses unittest with AST parsing, mock objects, and comprehensive test coverage patterns
 """
 
 import unittest

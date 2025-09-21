@@ -2,10 +2,15 @@
 """
 Purpose: Unified reporting system for linting violations
 Scope: Provides multiple output formats and filtering capabilities
-Overview: This module implements a comprehensive reporting system that can
-    format linting violations in multiple output formats (text, JSON, SARIF,
-    GitHub Actions). It supports filtering, severity-based formatting,
-    and customizable output templates for different use cases.
+Overview: Overview: This module provides comprehensive reporting capabilities for the design linter framework,
+    implementing various output formats to suit different use cases and integration requirements.
+    It includes a text reporter for human-readable console output with colored formatting and
+    clear violation grouping, a JSON reporter for machine-readable output suitable for CI/CD
+    integration and automated processing, and extensibility for custom formats. Each reporter
+    handles violation aggregation, sorting, filtering by severity, and summary statistics
+    generation. The module ensures consistent output formatting across all rules while allowing
+    customization of display styles, verbosity levels, and output destinations. All reporters
+    follow the same interface for seamless integration with the orchestrator.
 Dependencies: json for JSON output, typing for type hints
 Exports: TextReporter, JSONReporter, SARIFReporter, GitHubActionsReporter
 Interfaces: Implements LintReporter interface

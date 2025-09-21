@@ -13,16 +13,10 @@ Scope:
     - Waveform visualization
     - Error handling
 
-Overview: End-to-end integration tests using Playwright to validate oscilloscope functionality including WebSocket connections, real-time data streaming, user interface interactions, waveform visualization, control panel operations, and error handling scenarios across the complete technology stack from frontend to backend.
-
 Dependencies:
     - playwright
     - pytest
     - asyncio
-
-Exports: Playwright-based integration test classes and browser automation fixtures for oscilloscope testing
-
-Interfaces: Async pytest fixtures and test methods using Playwright browser automation API
 
 Implementation:
     Uses Playwright to automate browser interactions and validate
@@ -45,11 +39,8 @@ except ImportError:
     WebSocket = Any
     async_playwright = None
 
-# Enable auto mode for async fixtures
-pytestmark = pytest.mark.asyncio
 
-
-@pytest_asyncio.fixture(scope="function")
+@pytest_asyncio.fixture
 async def browser() -> AsyncGenerator[Any, None]:
     """Create a browser instance for testing."""
     if async_playwright is None:
@@ -60,8 +51,8 @@ async def browser() -> AsyncGenerator[Any, None]:
         await browser.close()
 
 
-@pytest_asyncio.fixture(scope="function")
-async def page(browser: Any) -> Any:
+@pytest_asyncio.fixture
+async def page(browser: Any) -> AsyncGenerator[Any, None]:
     """Create a page instance for testing."""
     context = await browser.new_context()
     page = await context.new_page()
@@ -69,15 +60,14 @@ async def page(browser: Any) -> Any:
     await context.close()
 
 
-@pytest.mark.skip(reason="UI structure has changed, needs update")
 class TestOscilloscopeIntegration:
     """Integration tests for oscilloscope functionality."""
 
     @pytest.mark.asyncio
     async def test_oscilloscope_page_loads(self, page: Any) -> None:
         """Test that the oscilloscope page loads successfully."""
-        # Navigate to the app - use container name for Docker network
-        await page.goto("http://durable-code-frontend-dev:5173")
+        # Navigate to the app
+        await page.goto("http://localhost:5173")
 
         # Wait for the app to load
         await page.wait_for_selector("#root", timeout=10000)
@@ -119,7 +109,7 @@ class TestOscilloscopeIntegration:
         page.on("websocket", on_websocket)
 
         # Navigate to the app
-        await page.goto("http://durable-code-frontend-dev:5173")
+        await page.goto("http://localhost:5173")
 
         # Wait for the Demo tab and click it
         await page.wait_for_selector('button:has-text("Demo")', timeout=10000)
@@ -135,7 +125,7 @@ class TestOscilloscopeIntegration:
     async def test_oscilloscope_controls(self, page: Any) -> None:
         """Test oscilloscope control interactions."""
         # Navigate to the Demo tab
-        await page.goto("http://durable-code-frontend-dev:5173")
+        await page.goto("http://localhost:5173")
         await page.wait_for_selector('button:has-text("Demo")', timeout=10000)
         await page.click('button:has-text("Demo")')
 
@@ -172,7 +162,7 @@ class TestOscilloscopeIntegration:
     async def test_oscilloscope_data_streaming(self, page: Any) -> None:
         """Test that oscilloscope receives and displays streaming data."""
         # Navigate to Demo tab
-        await page.goto("http://durable-code-frontend-dev:5173")
+        await page.goto("http://localhost:5173")
         await page.wait_for_selector('button:has-text("Demo")', timeout=10000)
         await page.click('button:has-text("Demo")')
 
@@ -202,7 +192,7 @@ class TestOscilloscopeIntegration:
     async def test_oscilloscope_disconnect_reconnect(self, page: Any) -> None:
         """Test disconnect and reconnect functionality."""
         # Navigate to Demo tab
-        await page.goto("http://durable-code-frontend-dev:5173")
+        await page.goto("http://localhost:5173")
         await page.wait_for_selector('button:has-text("Demo")', timeout=10000)
         await page.click('button:has-text("Demo")')
 
@@ -236,7 +226,7 @@ class TestOscilloscopeIntegration:
         # This would need to be coordinated with Docker commands
 
         # For now, test that the UI handles errors gracefully
-        await page.goto("http://durable-code-frontend-dev:5173")
+        await page.goto("http://localhost:5173")
         await page.wait_for_selector('button:has-text("Demo")', timeout=10000)
         await page.click('button:has-text("Demo")')
 

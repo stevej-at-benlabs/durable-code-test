@@ -1,5 +1,6 @@
-"""
-Purpose: Main FastAPI application entry point with middleware configuration and error handling
+"""Main FastAPI application entry point with middleware configuration.
+
+Purpose: Main FastAPI application entry point with middleware configuration and error handling.
 Scope: Application initialization, middleware setup, route registration, and global error handlers
 Overview: This module serves as the central configuration point for the FastAPI application,
     establishing CORS policies, security middleware, rate limiting, and comprehensive error

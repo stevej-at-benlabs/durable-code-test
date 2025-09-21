@@ -2,9 +2,16 @@
 """
 Purpose: Nesting depth analysis rules for the pluggable framework
 Scope: Converts nesting depth linter functionality to framework rules
-Overview: This module converts the monolithic nesting depth linter into
-    focused, pluggable rules. Rules detect excessive nesting that reduces
-    code readability and maintainability by checking control flow depth.
+Overview: Overview: This module enforces code complexity limits by detecting excessive nesting and overly
+    deep function structures that harm code readability and maintainability. It identifies functions
+    with too many nested blocks, deeply nested conditional statements, complex nested loops, and
+    excessive indentation levels that make code difficult to understand and test. The rules analyze
+    the AST to measure nesting depth, considering different statement types and their impact on
+    complexity. Each violation includes refactoring suggestions such as early returns, guard clauses,
+    extracting nested logic to separate functions, and using functional approaches to reduce nesting.
+    The module helps maintain clean, readable code by enforcing maximum nesting levels, encouraging
+    flat code structures, and promoting techniques that reduce cognitive load when reading and
+    maintaining code.
 Dependencies: Framework interfaces, AST analysis utilities
 Exports: Nesting depth analysis rules
 Interfaces: All rules implement ASTLintRule interface

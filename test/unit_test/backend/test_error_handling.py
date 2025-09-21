@@ -1,8 +1,11 @@
 """
-Unit tests for error handling and resilience patterns.
-
-Tests the exception hierarchy, retry logic, circuit breakers,
-and global exception handlers.
+Purpose: Unit tests for error handling and resilience patterns in the backend application
+Scope: Testing exception hierarchy, retry logic, circuit breakers, and global exception handlers
+Overview: Comprehensive test suite validating the error handling framework including custom exception classes, retry mechanisms with exponential backoff, circuit breaker patterns for external services, global exception handlers, and integration testing of resilience patterns to ensure robust error management throughout the application.
+Dependencies: pytest, asyncio, unittest.mock, FastAPI, tenacity for retry logic, custom error handling modules
+Exports: Test classes for exception hierarchy, retry logic, circuit breakers, and error handling integration
+Interfaces: pytest test methods and fixtures following standard testing patterns with async support
+Implementation: Uses pytest with asyncio support, mocking for external dependencies, and FastAPI test client for handler testing
 """
 
 import asyncio

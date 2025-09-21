@@ -6,6 +6,9 @@ Overview: This module provides comprehensive tests for all Single Responsibility
     Principle rules including property tests, method behavior tests, and
     violation detection with various scenarios.
 Dependencies: unittest, ast, framework interfaces
+Exports: TestTooManyMethodsRule, TestTooManyResponsibilitiesRule, TestLowCohesionRule, TestClassTooBigRule, TestTooManyDependenciesRule
+Interfaces: Standard unittest.TestCase interface for test execution
+Implementation: Comprehensive test coverage using unittest framework with AST parsing
 """
 
 import unittest

@@ -2,9 +2,16 @@
 """
 Purpose: API security rules for FastAPI applications
 Scope: Rate limiting, input validation, and endpoint security checks
-Overview: This module provides security-focused rules for API endpoints,
-    detecting missing rate limiting, input validation, and other security
-    antipatterns common in AI-generated FastAPI code.
+Overview: Overview: This module provides comprehensive security validation for API implementations, focusing
+    on FastAPI applications but applicable to other frameworks. It detects missing or inadequate
+    security controls including absent input validation, missing rate limiting, lack of security
+    headers, unprotected endpoints, and potential injection vulnerabilities. The rules check for
+    proper use of Pydantic models for request validation, implementation of rate limiting decorators,
+    presence of security middleware, authentication and authorization decorators, and secure
+    handling of user input. Each violation includes specific remediation guidance with code
+    examples showing how to implement the missing security controls. The module helps ensure
+    APIs follow OWASP security best practices and maintain defense-in-depth protection against
+    common web application vulnerabilities.
 Dependencies: Framework interfaces, AST analysis utilities
 Exports: API security-focused rules
 Interfaces: All rules implement ASTLintRule interface

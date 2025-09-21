@@ -1,5 +1,6 @@
-"""
-Purpose: Circuit breaker pattern implementation for preventing cascading failures in distributed systems
+"""Circuit breaker pattern implementation for preventing cascading failures.
+
+Purpose: Circuit breaker pattern implementation for preventing cascading failures in distributed systems.
 Scope: Service resilience and fault isolation for external service dependencies
 Overview: This module implements the circuit breaker pattern to protect the application from
     cascading failures when external services become unavailable or unresponsive. The circuit

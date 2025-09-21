@@ -1,5 +1,6 @@
-"""
-Purpose: Retry logic decorators and resilience patterns for fault-tolerant backend operations
+"""Retry logic decorators and resilience patterns for fault-tolerant operations.
+
+Purpose: Retry logic decorators and resilience patterns for fault-tolerant backend operations.
 Scope: Application-wide retry mechanisms for external service calls and transient failure handling
 Overview: This module provides comprehensive retry and resilience patterns to handle transient
     failures in backend operations. It includes exponential backoff retry decorators for both

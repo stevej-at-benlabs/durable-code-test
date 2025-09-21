@@ -3,9 +3,16 @@
 """
 Purpose: Utilities for handling ignore/suppress directives in code
 Scope: Framework utilities for skipping specific linting violations
-Overview: Provides functionality to detect and process ignore directives
-    (like # design-lint: ignore) in source code, allowing developers to
-    selectively disable specific linting rules for lines or blocks of code.
+Overview: Overview: This module provides comprehensive ignore directive handling for the design linter
+    framework, allowing developers to suppress specific violations when necessary while
+    maintaining code quality standards. It supports multiple ignore patterns including file-level
+    ignores for entire files, line-level ignores for specific lines, next-line ignores for the
+    following line, and rule-specific patterns using wildcards. The module parses special comments
+    in source code to identify ignore directives, validates their syntax, and efficiently matches
+    violations against ignore patterns. It maintains ignore state throughout the analysis process,
+    integrates with the context tracking system, and provides detailed reporting of which
+    violations were suppressed. The implementation ensures ignored violations are tracked for
+    audit purposes while preventing them from appearing in final reports.
 Dependencies: AST, re for pattern matching
 Exports: Functions for checking and processing ignore directives
 Interfaces: Used by linting rules to determine if violations should be skipped

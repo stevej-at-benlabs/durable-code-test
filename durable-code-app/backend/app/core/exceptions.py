@@ -1,5 +1,6 @@
-"""
-Purpose: Structured exception hierarchy for consistent backend error handling and API responses
+"""Structured exception hierarchy for consistent backend error handling.
+
+Purpose: Structured exception hierarchy for consistent backend error handling and API responses.
 Scope: Application-wide exception classes for all error scenarios in the backend system
 Overview: This module provides a comprehensive exception hierarchy that ensures consistent
     error handling across the entire application. It defines base and specific exception

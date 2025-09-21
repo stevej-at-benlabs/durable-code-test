@@ -2,9 +2,11 @@
 """
 Purpose: Basic working tests for design linters
 Scope: Simple smoke tests that actually work
-Overview: This module provides basic tests that verify the framework loads
-    and basic components exist without testing complex functionality.
+Overview: This module provides comprehensive basic tests that verify the design linters framework loads correctly, basic components exist and can be imported without errors, core functionality works as expected, and integration between different modules functions properly without testing complex advanced functionality or edge cases.
 Dependencies: unittest, framework modules
+Exports: Test classes for basic imports, functionality, categories filter, and ignore functionality
+Interfaces: Standard unittest test methods and pytest-style fixtures for framework testing
+Implementation: Uses unittest with temporary files and mock configurations for testing framework components
 """
 
 import sys

@@ -2,10 +2,16 @@
 """
 Purpose: Rule registry for managing and discovering linting rules
 Scope: Provides dynamic registration and discovery of linting rules
-Overview: This module implements a pluggable rule registry that allows
-    dynamic registration, discovery, and management of linting rules.
-    It supports automatic discovery from packages, categorization,
-    and runtime rule management for a flexible plugin architecture.
+Overview: Overview: This module implements the dynamic rule discovery and registration system that forms
+    the backbone of the pluggable linter framework's extensibility. It automatically discovers
+    all rule classes in the rules directory structure, validates they implement the correct
+    interfaces, and registers them for use by the orchestrator. The registry maintains mappings
+    between rule IDs, categories, and implementation classes, enabling rules to be selected by
+    ID, category, or custom filters. It supports lazy loading for performance, caching of
+    discovered rules, and hot-reloading during development. The module also provides rule
+    metadata querying, dependency resolution between rules, and configuration management for
+    individual rule settings. This centralized registry ensures new rules can be added simply
+    by placing them in the appropriate directory without modifying any framework code.
 Dependencies: importlib for dynamic imports, pkgutil for package discovery
 Exports: DefaultRuleRegistry, RuleDiscoveryService
 Interfaces: Implements RuleRegistry interface

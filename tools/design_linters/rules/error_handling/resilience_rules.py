@@ -1,8 +1,11 @@
 """
-Error handling and resilience pattern linting rules.
-
-This module provides rules to enforce proper error handling patterns,
-ensure specific exception types are used, and verify retry logic exists.
+Purpose: Error handling and resilience pattern linting rules for code quality enforcement
+Scope: Linting rules for exception handling, retry logic, circuit breakers, and structured error patterns
+Overview: Comprehensive collection of AST-based linting rules that enforce proper error handling patterns including prevention of broad exception catching, requirement of retry logic for external operations, structured exception class validation, mandatory error logging, and circuit breaker usage recommendations for resilient system design and robust error management.
+Dependencies: ast module for AST traversal, design_linters framework interfaces for rule implementation
+Exports: NoBroadExceptionsRule, RequireRetryLogicRule, StructuredExceptionsRule, RequireErrorLoggingRule, CircuitBreakerUsageRule
+Interfaces: ASTLintRule interface implementations with check methods for AST node analysis
+Implementation: AST-based rule implementations using node traversal and pattern matching for error handling validation
 """
 
 import ast
