@@ -124,10 +124,12 @@ disable = [
     "C0103", # invalid-name
     "R0903", # too-few-public-methods
     "R0913", # too-many-arguments
+    "R0902", # too-many-instance-attributes (CircuitBreaker needs them)
     "W0212", # protected-access
     "E0213", # no-self-argument (false positive for Pydantic validators)
     "W0613", # unused-argument (false positive for FastAPI request parameters)
     "C0415", # import-outside-toplevel (sometimes required for FastAPI setup)
+    "W0718", # broad-exception-caught (security_linter.py needs this)
 ]
 
 [tool.pylint.design]
@@ -145,6 +147,7 @@ skips = ["B101"]  # Skip assert_used test
 [tool.pytest.ini_options]
 testpaths = ["test"]  # Use mounted test directory
 python_files = ["test_*.py", "*_test.py"]
+asyncio_mode = "auto"
 addopts = "--tb=short"
 cache_dir = "/tmp/.pytest_cache"
 markers = [

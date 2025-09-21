@@ -25,6 +25,9 @@ MIN_AMPLITUDE = 0.1
 MAX_OFFSET = 10.0
 MIN_OFFSET = -10.0
 
+# HTTP Status Codes
+HTTP_TOO_MANY_REQUESTS = 429
+
 # Input sanitization patterns
 ALLOWED_TEXT_PATTERN = re.compile(r"^[a-zA-Z0-9\s\-_.,!?()]+$")
 DANGEROUS_PATTERNS = [
@@ -237,7 +240,7 @@ async def _rate_limit_exceeded_handler(request: Request, exc: Exception) -> Resp
 
     response = Response(
         content='{"error": "Rate limit exceeded", "message": "Too many requests"}',
-        status_code=429,
+        status_code=HTTP_TOO_MANY_REQUESTS,
         headers={"Content-Type": "application/json", "Retry-After": retry_after},
     )
     return response

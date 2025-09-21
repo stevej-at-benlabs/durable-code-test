@@ -5,17 +5,14 @@ This module demonstrates durable code practices with
 strict complexity limits and comprehensive type safety.
 """
 
-import logging
-
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
+from loguru import logger
 
 from .core.exceptions import AppExceptionError, ValidationError
 from .oscilloscope import router as oscilloscope_router
 from .security import SecurityMiddleware, get_rate_limiter, get_security_config
-
-logger = logging.getLogger(__name__)
 
 # Application configuration
 API_TITLE = "Durable Code API"
@@ -39,16 +36,78 @@ HEALTH_ENDPOINT_PATH = "/health"
 HEALTH_ENDPOINT_DESCRIPTION = "Health check endpoint for monitoring."
 HEALTH_STATUS_OK = "healthy"
 
+# HTTP Status Codes
+HTTP_INTERNAL_SERVER_ERROR = 500
 
-def create_application() -> FastAPI:
-    """Create and configure the FastAPI application with security hardening."""
-    application = FastAPI(
-        title=API_TITLE,
-        description=API_DESCRIPTION,
-        version=API_VERSION,
+
+async def handle_app_exception(request: Request, exc: Exception) -> JSONResponse:
+    """Handle application-specific exceptions with structured responses."""
+    if not isinstance(exc, AppExceptionError):
+        # Should never happen due to exception handler registration
+        return await handle_general_exception(request, exc)
+
+    logger.error(
+        "Application error: %s",
+        exc.error_code,
+        extra={
+            "error_code": exc.error_code,
+            "status_code": exc.status_code,
+            "details": exc.details,
+            "path": request.url.path,
+        },
+    )
+    return JSONResponse(
+        status_code=exc.status_code,
+        content={
+            "error": exc.error_code,
+            "message": exc.message,
+            "details": exc.details,
+        },
     )
 
-    # Configure rate limiting for the app
+
+async def handle_validation_error(request: Request, exc: Exception) -> JSONResponse:
+    """Handle validation errors with detailed field information."""
+    if not isinstance(exc, ValidationError):
+        # Should never happen due to exception handler registration
+        return await handle_general_exception(request, exc)
+
+    logger.error(
+        "Validation error on {path}",
+        path=request.url.path,
+        details=exc.details,
+    )
+    return JSONResponse(
+        status_code=exc.status_code,
+        content={
+            "error": exc.error_code,
+            "message": exc.message,
+            "details": exc.details,
+        },
+    )
+
+
+async def handle_general_exception(request: Request, exc: Exception) -> JSONResponse:
+    """Handle unexpected exceptions safely without exposing internals."""
+    logger.exception(
+        "Unexpected error on %s",
+        request.url.path,
+        extra={"path": request.url.path, "method": request.method},
+    )
+    # Don't expose internal error details in production
+    return JSONResponse(
+        status_code=HTTP_INTERNAL_SERVER_ERROR,
+        content={
+            "error": "INTERNAL_ERROR",
+            "message": "An unexpected error occurred",
+            "details": {},
+        },
+    )
+
+
+def _configure_exception_handlers(application: FastAPI) -> None:
+    """Configure exception handlers for the application."""
+    # Configure rate limiting
     from slowapi.errors import RateLimitExceeded
 
     from .security import RATE_LIMITER, _rate_limit_exceeded_handler
@@ -57,60 +116,13 @@ def create_application() -> FastAPI:
     application.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
     # Add global exception handlers
-    @application.exception_handler(AppExceptionError)
-    async def app_exception_handler(request: Request, exc: AppExceptionError) -> JSONResponse:
-        """Handle application-specific exceptions with structured responses."""
-        logger.error(
-            f"Application error: {exc.error_code}",
-            extra={
-                "error_code": exc.error_code,
-                "status_code": exc.status_code,
-                "details": exc.details,
-                "path": request.url.path,
-            },
-        )
-        return JSONResponse(
-            status_code=exc.status_code,
-            content={
-                "error": exc.error_code,
-                "message": exc.message,
-                "details": exc.details,
-            },
-        )
+    application.add_exception_handler(AppExceptionError, handle_app_exception)
+    application.add_exception_handler(ValidationError, handle_validation_error)
+    application.add_exception_handler(Exception, handle_general_exception)
 
-    @application.exception_handler(ValidationError)
-    async def validation_exception_handler(request: Request, exc: ValidationError) -> JSONResponse:
-        """Handle validation errors with detailed field information."""
-        logger.warning(
-            f"Validation error on {request.url.path}",
-            extra={"details": exc.details, "path": request.url.path},
-        )
-        return JSONResponse(
-            status_code=exc.status_code,
-            content={
-                "error": exc.error_code,
-                "message": exc.message,
-                "details": exc.details,
-            },
-        )
 
-    @application.exception_handler(Exception)
-    async def general_exception_handler(request: Request, exc: Exception) -> JSONResponse:
-        """Handle unexpected exceptions safely without exposing internals."""
-        logger.exception(
-            f"Unexpected error on {request.url.path}",
-            extra={"path": request.url.path, "method": request.method},
-        )
-        # Don't expose internal error details in production
-        return JSONResponse(
-            status_code=500,
-            content={
-                "error": "INTERNAL_ERROR",
-                "message": "An unexpected error occurred",
-                "details": {},
-            },
-        )
-
+def _configure_middleware(application: FastAPI) -> None:
+    """Configure middleware for the application."""
     # Add security middleware
     application.add_middleware(SecurityMiddleware)
 
@@ -123,6 +135,18 @@ def create_application() -> FastAPI:
         allow_headers=ALLOWED_HEADERS,  # Only necessary headers
         max_age=3600,  # Cache preflight for 1 hour
     )
+
+
+def create_application() -> FastAPI:
+    """Create and configure the FastAPI application with security hardening."""
+    application = FastAPI(
+        title=API_TITLE,
+        description=API_DESCRIPTION,
+        version=API_VERSION,
+    )
+
+    _configure_exception_handlers(application)
+    _configure_middleware(application)
 
     return application
 
