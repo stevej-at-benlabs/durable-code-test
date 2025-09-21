@@ -205,7 +205,7 @@ from loguru import logger
 
 logger.info("Processing started")
 
-# ❌ INCORRECT - Built-in logging
+# ❌ INCORRECT - Never use built-in logging module
 import logging
 logger = logging.getLogger(__name__)  # Don't use this
 ```
