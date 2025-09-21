@@ -217,45 +217,8 @@ organization:
     enabled: true
     severity: "warning"
 
-    # Files allowed in the root directory
-    allowed_root_files:
-      - "setup.py"
-      - "conftest.py"
-      - "manage.py"
-      - "wsgi.py"
-      - "asgi.py"
-      - "__init__.py"
-      - "README.md"
-      - "LICENSE"
-      - "requirements.txt"
-      - "pyproject.toml"
-      - "poetry.lock"
-      - "package.json"
-      - "package-lock.json"
-      - "tsconfig.json"
-      - ".gitignore"
-      - ".env.example"
-      - "Dockerfile"
-      - "docker-compose.yml"
-      - "Makefile"
-
-    # Patterns for files that should never be in root
-    forbidden_root_patterns:
-      - "^debug[_\\-].*\\.py$"
-      - "^test[_\\-].*\\.py$"
-      - "^tmp[_\\-].*\\.py$"
-      - "^temp[_\\-].*\\.py$"
-      - ".*_test\\.py$"
-      - ".*_spec\\.py$"
-
-    # Directory placement rules (pattern -> allowed directories)
-    placement_rules:
-      "test_.*\\.py$": ["test/"]
-      ".*_test\\.py$": ["test/"]
-      ".*\\.tsx?$": ["durable-code-app/frontend/", "frontend/", "src/"]
-      ".*\\.jsx?$": ["durable-code-app/frontend/", "frontend/", "src/", "scripts/"]
-      ".*\\.html$": ["durable-code-app/", "templates/", "static/", "public/", ".ai/"]
-      ".*\\.css$": ["durable-code-app/", "static/", "public/", "src/"]
+    # Use JSON layout file for comprehensive file placement rules
+    layout_rules_file: ".ai/layout.json"
 
     message: "Files should be organized according to project structure conventions"
 
