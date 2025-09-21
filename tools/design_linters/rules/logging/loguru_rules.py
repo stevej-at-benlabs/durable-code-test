@@ -289,6 +289,10 @@ class StructuredLoggingRule(ASTLintRule):
         if not self._format_analyzer.has_complex_message(node):
             return []
 
+        # Check if context variables are already present via keyword arguments
+        if node.keywords:
+            return []  # Context variables already present
+
         return [
             self.create_violation(
                 context,

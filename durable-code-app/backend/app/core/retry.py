@@ -110,7 +110,10 @@ def _handle_retry_exception(
         )
     else:
         logger.error(
-            "Operation {func} failed after {attempts} attempts: {error}", func=func_name, attempts=attempt, error=str(e)
+            "Operation {func} failed after {attempts} attempts: {error}",
+            func=func_name,
+            attempts=attempt,
+            error=str(e),
         )
 
 
@@ -126,7 +129,11 @@ async def _retry_attempt(
     try:
         result = await func(*args, **kwargs)
         if attempt > 1:
-            logger.info("Operation {func} succeeded after {attempts} attempts", func=func.__name__, attempts=attempt)
+            logger.info(
+                "Operation {func} succeeded after {attempts} attempts",
+                func=func.__name__,
+                attempts=attempt,
+            )
         return result
     except config.exceptions as e:
         _handle_retry_exception(func.__name__, attempt, config.max_attempts, e, on_retry)

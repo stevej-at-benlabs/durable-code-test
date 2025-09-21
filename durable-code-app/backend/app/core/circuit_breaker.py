@@ -59,7 +59,11 @@ class CircuitBreakerStateManager:
         self.state = CircuitBreakerState.OPEN
         self.last_failure_time = time.time()
         self.success_count = 0
-        logger.error("Circuit breaker '{name}' opened after {count} failures", name=self.name, count=self.failure_count)
+        logger.error(
+            "Circuit breaker '{name}' opened after {count} failures",
+            name=self.name,
+            count=self.failure_count,
+        )
 
     async def transition_to_closed(self) -> None:
         """Transition to CLOSED state."""

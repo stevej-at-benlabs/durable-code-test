@@ -365,16 +365,36 @@ class MissingSecurityHeadersRule(ASTLintRule):
         """Check if FastAPI app has security headers middleware."""
         violations = []
 
-        # This is a simplified check - in a real implementation,
-        # we'd need to track the app variable and check for middleware additions
-        violations.append(
-            self.create_violation(
-                context=context,
-                node=node,
-                message="Ensure FastAPI application includes security headers middleware",
-                description=self.description,
-                suggestion="Add SecurityMiddleware to set proper security headers",
+        # Check if SecurityMiddleware is added anywhere in the module
+        # Use the full AST tree from the context
+        if not context.ast_tree:
+            return violations
+
+        has_security_middleware = False
+        for child_node in ast.walk(context.ast_tree):
+            # Check for add_middleware(SecurityMiddleware) pattern
+            if (
+                isinstance(child_node, ast.Call)
+                and isinstance(child_node.func, ast.Attribute)
+                and child_node.func.attr == "add_middleware"
+                and child_node.args
+            ):
+                # Check if first arg is SecurityMiddleware
+                first_arg = child_node.args[0]
+                if isinstance(first_arg, ast.Name) and first_arg.id == "SecurityMiddleware":
+                    has_security_middleware = True
+                    break
+
+        # Only create violation if we didn't find SecurityMiddleware
+        if not has_security_middleware:
+            violations.append(
+                self.create_violation(
+                    context=context,
+                    node=node,
+                    message="Ensure FastAPI application includes security headers middleware",
+                    description=self.description,
+                    suggestion="Add SecurityMiddleware to set proper security headers",
+                )
             )
-        )
 
         return violations
