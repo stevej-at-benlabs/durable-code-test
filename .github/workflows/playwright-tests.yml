@@ -23,9 +23,9 @@ jobs:
       - name: Wait for services
         run: |
           echo "Waiting for frontend..."
-          timeout 60 bash -c 'until curl -s http://localhost:5173 > /dev/null; do sleep 1; done'
+          timeout 60 bash -c 'until curl -s http://localhost:5570 > /dev/null; do sleep 1; done'
           echo "Waiting for backend..."
-          timeout 60 bash -c 'until curl -s http://localhost:8000/health > /dev/null; do sleep 1; done'
+          timeout 60 bash -c 'until curl -s http://localhost:8397/health > /dev/null; do sleep 1; done'
 
       - name: Build Playwright container
         run: make test-playwright-build
