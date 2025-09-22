@@ -11,7 +11,7 @@
  * State/Behavior: Fetches infrastructure data via hook, displays modular content sections
  */
 
-import { useCallback, useMemo } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import type { ReactElement } from 'react';
 import { ErrorMessage, LoadingSpinner } from '../../../../components/common';
 import { useInfrastructure } from '../../hooks/useInfrastructure';
@@ -42,6 +42,9 @@ export function InfrastructureTab({
     error,
   } = useInfrastructure();
 
+  // State for clicked popup
+  const [selectedItem, setSelectedItem] = useState<string | null>(null);
+
   // Component classes
   const componentClasses = useMemo(() => {
     return [
@@ -58,8 +61,8 @@ export function InfrastructureTab({
 
   // Event handlers
   const handleItemClick = useCallback((item: InfrastructureItem) => {
-    if (item.link) {
-      window.open(item.link, '_blank', 'noopener,noreferrer');
+    if (item.popup) {
+      setSelectedItem(item.id);
     }
   }, []);
 
@@ -85,10 +88,11 @@ export function InfrastructureTab({
               }
             }}
           >
-            <div className="card-icon">{item.icon}</div>
-            <h4 className="light-title-on-dark">{item.title}</h4>
-            <p className="light-text-on-dark">{item.description}</p>
-            <div className="card-badge">{item.badge}</div>
+            <div className={styles.cardContent}>
+              <div className={styles.cardIcon}>{item.icon}</div>
+              <h4 className={styles.cardTitle}>{item.title}</h4>
+              <span className={styles.clickHint}>Click to explore</span>
+            </div>
           </div>
         ))}
       </div>
@@ -161,11 +165,13 @@ export function InfrastructureTab({
 
   const renderMakeTargets = useCallback(() => {
     const benefits = [
-      '🎯 Same command = same result',
-      '🎯 Dockerized environments eliminate drift',
-      '🎯 Pinned dependencies prevent surprises',
-      '🎯 AI can author targets, humans verify',
-      '🎯 Automation reduces human inconsistency',
+      '🔴 Problem: "Works on my machine" syndrome',
+      '✅ Solution: Docker wraps everything, pinned versions',
+      '🔴 Problem: AI code works once, fails later',
+      '✅ Solution: Deterministic execution via make targets',
+      '🔴 Problem: Environment drift between dev/prod',
+      '✅ Solution: Identical containers everywhere',
+      '🔴 Example: make test = same result on any machine',
     ];
 
     const makeTargetItems: FolderItem[] = makeTargets.map((target, index) => ({
@@ -192,9 +198,9 @@ export function InfrastructureTab({
 
     return renderFolderStructure(
       allItems,
-      'Make Targets: Determinism Against AI Chaos',
+      'Make Targets: Your Shield Against "It Worked Yesterday"',
       '⚙️',
-      'Determinism vs AI Variability',
+      'Abstract: Deterministic Operations',
       benefits,
     );
   }, [makeTargets, renderFolderStructure]);
@@ -296,18 +302,20 @@ export function InfrastructureTab({
     ];
 
     const benefits = [
-      '🎯 Catch violations early',
-      '🎯 Prevent technical debt',
-      '🎯 Automate code reviews',
-      '🎯 Scale team consistency',
-      '🎯 Reduce AI hallucinations',
+      '🔴 Problem: Standard linters miss architecture issues',
+      '✅ Solution: Custom rules for SOLID, patterns, security',
+      '🔴 Problem: AI generates anti-patterns',
+      '✅ Solution: Gate specific violations before commit',
+      '🔴 Problem: Manual code review misses issues',
+      '✅ Solution: Automated enforcement, consistent standards',
+      '🔴 Example: Block print(), enforce error handling',
     ];
 
     return renderFolderStructure(
       allItems,
-      'Custom Linters: Gate Everything You Care About',
+      'Custom Design Linters: Beyond Syntax to Architecture',
       '🔧',
-      'If You Care About It, Gate It',
+      'Abstract: Enforce What Matters to YOUR Project',
       benefits,
     );
   }, [renderFolderStructure]);
@@ -360,6 +368,12 @@ export function InfrastructureTab({
     );
   }, [actionLinks]);
 
+  // Find selected item for popup
+  const selectedInfraItem = useMemo(() => {
+    if (!selectedItem) return null;
+    return infrastructureItems.find((item) => item.id === selectedItem);
+  }, [selectedItem, infrastructureItems]);
+
   // Loading state
   if (loading) {
     return (
@@ -392,52 +406,116 @@ export function InfrastructureTab({
       <div className={styles.infrastructureHero}>
         <h3 className="hero-title">
           <span className={styles.titleIcon}>🏗️</span>
-          Rigid Infrastructure: The Foundation for AI
+          Why Rigid Infrastructure Matters for AI Development
         </h3>
         <p className="subtitle">
-          AI collaboration at scale requires uncompromising infrastructure discipline.
-          This project shows some examples of the rigid standards, automated quality
-          controls, and structured documentation that make AI-assisted development
-          predictable and reliable.
+          AI coding assistants are powerful but unpredictable. Without strict repository controls,
+          they create inconsistent code, violate conventions, and introduce subtle bugs that compound over time.
+          The solution isn't to restrict AI, but to create <strong>rigid infrastructure</strong> that channels its
+          creativity productively. When every file has a defined location, every operation runs identically,
+          and every violation gets caught automatically, AI becomes a reliable engineering partner instead of
+          a source of technical debt. The patterns below show how to build this foundation.
         </p>
       </div>
 
       {/* Infrastructure grid */}
       {renderInfrastructureGrid()}
 
-      {/* Folder structure section */}
-      {renderFolderStructure(
-        folderStructure,
-        'The .ai Repository Structure',
-        '📂',
-        'Infrastructure Benefits',
-        [
-          '✅ AI agents navigate efficiently with structured index',
-          '✅ Template-driven consistent code generation',
-          '✅ Comprehensive standards prevent drift',
-          '✅ Step-by-step guides ensure reproducibility',
-          '✅ Feature docs maintain architectural integrity',
-          '✅ Quality gates prevent regressions',
-        ],
+      {/* Popup rendered at component level */}
+      {selectedInfraItem && selectedInfraItem.popup && (
+        <>
+          <div
+            className={styles.popupBackdrop}
+            onClick={() => setSelectedItem(null)}
+          />
+          <div className={styles.structuredPopup}>
+            {/* Document Header */}
+            <div className={styles.documentHeader}>
+              <h2 className={styles.documentTitle}>
+                <span className={styles.documentIcon}>{selectedInfraItem.icon}</span>
+                {selectedInfraItem.title}
+              </h2>
+              <button
+                className={styles.closeButton}
+                onClick={() => setSelectedItem(null)}
+                aria-label="Close"
+              >
+                ×
+              </button>
+            </div>
+
+            <div className={styles.popupContainer}>
+              {/* Problem Section */}
+              <div className={styles.popupSection}>
+                <h3 className={styles.sectionTitle}>
+                  <span className={styles.sectionIcon}>🔴</span>
+                  The Problem
+                </h3>
+                <div className={styles.sectionContent}>
+                  <h4>{selectedInfraItem.popup.problem.title}</h4>
+                  <ul className={styles.pointsList}>
+                    {selectedInfraItem.popup.problem.points.map((point, index) => (
+                      <li key={index}>{point}</li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+
+              {/* Solution Section */}
+              <div className={styles.popupSection}>
+                <h3 className={styles.sectionTitle}>
+                  <span className={styles.sectionIcon}>✅</span>
+                  Our Solution
+                </h3>
+                <div className={styles.sectionContent}>
+                  <h4>{selectedInfraItem.popup.solution.title}</h4>
+                  <ul className={styles.pointsList}>
+                    {selectedInfraItem.popup.solution.points.map((point, index) => (
+                      <li key={index}>{point}</li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+
+              {/* Example Section */}
+              <div className={styles.popupSection}>
+                <h3 className={styles.sectionTitle}>
+                  <span className={styles.sectionIcon}>💻</span>
+                  Example from Our Code
+                </h3>
+                <div className={styles.exampleHeader}>
+                  <span className={styles.exampleTitle}>{selectedInfraItem.popup.example.title}</span>
+                  {selectedInfraItem.popup.example.file && (
+                    <span className={styles.exampleFile}>{selectedInfraItem.popup.example.file}</span>
+                  )}
+                </div>
+                <pre className={styles.codeBlock}>
+                  <code className={`language-${selectedInfraItem.popup.example.language}`}>
+                    {selectedInfraItem.popup.example.code}
+                  </code>
+                </pre>
+              </div>
+            </div>
+
+            {/* Links Section - Outside scrollable area */}
+            {selectedInfraItem.popup.links && (
+              <div className={styles.popupLinks}>
+                {selectedInfraItem.popup.links.map((link, index) => (
+                  <a
+                    key={index}
+                    href={link.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className={styles.popupLink}
+                  >
+                    {link.text} →
+                  </a>
+                ))}
+              </div>
+            )}
+          </div>
+        </>
       )}
-
-      {/* Make targets section */}
-      {renderMakeTargets()}
-
-      <div style={{ marginTop: '3rem' }} />
-
-      {/* Custom linters section */}
-      {renderCustomLinters()}
-
-      <div style={{ marginTop: '3rem' }} />
-
-      {/* Stats section */}
-      {renderStats()}
-
-      <div style={{ marginTop: '3rem' }} />
-
-      {/* Action links section */}
-      {renderActionLinks()}
     </div>
   );
 }

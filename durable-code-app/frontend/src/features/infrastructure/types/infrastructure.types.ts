@@ -14,10 +14,28 @@ export interface InfrastructureItem {
   id: string;
   icon: string;
   title: string;
-  description: string;
-  badge: 'Critical' | 'Important' | 'Optional';
-  link?: string;
-  category: 'automation' | 'quality' | 'ai' | 'security' | 'development';
+  badge: 'Critical' | 'Important' | 'Optional' | 'Foundation' | 'Essential';
+  category: 'automation' | 'quality' | 'ai' | 'security' | 'development' | 'structure' | 'infrastructure' | 'documentation' | 'resilience' | 'testing';
+  popup?: {
+    problem: {
+      title: string;
+      points: string[];
+    };
+    solution: {
+      title: string;
+      points: string[];
+    };
+    example: {
+      title: string;
+      language: string;
+      code: string;
+      file?: string;
+    };
+    links?: {
+      text: string;
+      url: string;
+    }[];
+  };
 }
 
 export interface FolderItem {
