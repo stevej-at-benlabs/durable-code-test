@@ -49,6 +49,7 @@ gh-help: ## Show GitHub integration targets
 
 # Main dashboard-style check watcher
 gh-watch-checks: ## Watch GitHub checks with dashboard display
+	@echo "$(GH_YELLOW)⏱️  NOTE: GitHub checks may take up to 3 minutes to start$(GH_NC)"
 	@GH_CHECK_INTERVAL=$(GH_CHECK_INTERVAL) GH_BASE_BRANCH=$(GH_BASE_BRANCH) \
 		./scripts/gh-watch-checks.sh $(GH_PR_NUMBER)
 
