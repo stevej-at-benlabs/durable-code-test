@@ -57,10 +57,7 @@ class FileOrganizationRule(ASTLintRule):
             if layout_path.exists():
                 with open(layout_path, encoding="utf-8") as f:
                     # Determine file format from extension
-                    if layout_path.suffix in [".yaml", ".yml"]:
-                        data = yaml.safe_load(f)
-                    else:
-                        data = json.load(f)
+                    data = yaml.safe_load(f) if layout_path.suffix in [".yaml", ".yml"] else json.load(f)
 
                     if "linter_rules" in data:
                         self.layout_rules = data["linter_rules"]
@@ -260,10 +257,7 @@ class FileOrganizationRule(ASTLintRule):
         if "deny" in matched_rule:
             for pattern in matched_rule["deny"]:
                 # For root directory patterns, check against filename only
-                if matched_path == ".":
-                    check_target = rel_path.name
-                else:
-                    check_target = path_str
+                check_target = rel_path.name if matched_path == "." else path_str
 
                 if re.search(pattern, check_target):
                     # Special message for debug/temp files in root
