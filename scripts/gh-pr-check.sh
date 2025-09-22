@@ -99,9 +99,9 @@ monitor_checks() {
     local checks_started=false
 
     while [ $elapsed -lt $MAX_WAIT_TIME ]; do
-        # Get check status
+        # Get check status using the correct API
         local checks
-        checks=$(gh pr checks "$pr_number" --json name,status,conclusion,startedAt 2>/dev/null || echo "[]")
+        checks=$(gh pr view "$pr_number" --json statusCheckRollup -q '.statusCheckRollup' 2>/dev/null || echo "[]")
         local check_count=$(echo "$checks" | jq length)
 
         if [ "$check_count" -gt 0 ]; then
@@ -112,18 +112,20 @@ monitor_checks() {
             printf "${BOLD}📊 Check Status (PR #${pr_number})${NC} - Updated: $(date +"%H:%M:%S")\n"
             printf "────────────────────────────────────────────────────────────────\n"
 
-            # Show each check
+            # Show each check (statusCheckRollup uses different field names)
             echo "$checks" | jq -r '.[] |
-                if .conclusion == "success" then "✅ " + .name + " - PASSED"
-                elif .conclusion == "failure" then "❌ " + .name + " - FAILED"
-                elif .status == "in_progress" then "🔄 " + .name + " - RUNNING"
-                elif .status == "queued" then "⏳ " + .name + " - QUEUED"
+                if .conclusion == "SUCCESS" then "✅ " + .name + " - PASSED"
+                elif .conclusion == "FAILURE" then "❌ " + .name + " - FAILED"
+                elif .conclusion == "CANCELLED" then "⚠️ " + .name + " - CANCELLED"
+                elif .status == "IN_PROGRESS" then "🔄 " + .name + " - RUNNING"
+                elif .status == "QUEUED" then "⏳ " + .name + " - QUEUED"
+                elif .status == "PENDING" then "⏳ " + .name + " - PENDING"
                 else "❓ " + .name + " - " + (.conclusion // .status // "UNKNOWN")
                 end'
 
-            # Check if all completed
-            local completed=$(echo "$checks" | jq '[.[] | select(.conclusion != null)] | length')
-            local failed=$(echo "$checks" | jq '[.[] | select(.conclusion == "failure")] | length')
+            # Check if all completed (non-empty conclusion means completed)
+            local completed=$(echo "$checks" | jq '[.[] | select(.conclusion != "" and .conclusion != null)] | length')
+            local failed=$(echo "$checks" | jq '[.[] | select(.conclusion == "FAILURE")] | length')
 
             printf "\n"
             printf "${BOLD}Summary:${NC} Total: $check_count | Completed: $completed | Failed: $failed\n"

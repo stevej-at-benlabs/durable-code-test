@@ -79,23 +79,27 @@ format_check_status() {
     conclusion=$(echo "$check_data" | jq -r .conclusion)
     name=$(echo "$check_data" | jq -r .name)
 
+    # statusCheckRollup uses uppercase values
     case "$conclusion" in
-        success)
+        SUCCESS)
             printf "${GREEN}✅ ${name} - PASSED${NC}\n"
             ;;
-        failure)
+        FAILURE)
             printf "${RED}❌ ${name} - FAILED${NC}\n"
             ;;
-        cancelled)
+        CANCELLED)
             printf "${YELLOW}⚠️  ${name} - CANCELLED${NC}\n"
             ;;
         null|"")
             case "$status" in
-                in_progress)
+                IN_PROGRESS)
                     printf "${BLUE}🔄 ${name} - RUNNING${NC}\n"
                     ;;
-                queued)
+                QUEUED)
                     printf "${YELLOW}⏳ ${name} - QUEUED${NC}\n"
+                    ;;
+                PENDING)
+                    printf "${YELLOW}⏳ ${name} - PENDING${NC}\n"
                     ;;
                 *)
                     printf "${MAGENTA}❓ ${name} - UNKNOWN${NC}\n"
@@ -111,7 +115,7 @@ format_check_status() {
 # Function to display checks and summary
 show_checks() {
     local checks
-    checks=$(gh pr checks "$PR_NUMBER" --json name,status,conclusion,startedAt,completedAt 2>/dev/null)
+    checks=$(gh pr view "$PR_NUMBER" --json statusCheckRollup -q '.statusCheckRollup' 2>/dev/null)
 
     if [ $? -ne 0 ] || [ "$(echo "$checks" | jq length)" -eq 0 ]; then
         printf "${YELLOW}⏳ Waiting for checks to start...${NC}\n"
@@ -128,13 +132,13 @@ show_checks() {
 
     printf "\n"
 
-    # Calculate summary
+    # Calculate summary (using uppercase values for statusCheckRollup)
     local total passed failed running queued
     total=$(echo "$checks" | jq length)
-    passed=$(echo "$checks" | jq '[.[] | select(.conclusion == "success")] | length')
-    failed=$(echo "$checks" | jq '[.[] | select(.conclusion == "failure")] | length')
-    running=$(echo "$checks" | jq '[.[] | select(.status == "in_progress")] | length')
-    queued=$(echo "$checks" | jq '[.[] | select(.status == "queued")] | length')
+    passed=$(echo "$checks" | jq '[.[] | select(.conclusion == "SUCCESS")] | length')
+    failed=$(echo "$checks" | jq '[.[] | select(.conclusion == "FAILURE")] | length')
+    running=$(echo "$checks" | jq '[.[] | select(.status == "IN_PROGRESS")] | length')
+    queued=$(echo "$checks" | jq '[.[] | select(.status == "QUEUED" or .status == "PENDING")] | length')
 
     printf "${BOLD}📊 Summary:${NC}\n"
     printf "  Total: %d | ${GREEN}Passed: %d${NC} | ${RED}Failed: %d${NC} | ${BLUE}Running: %d${NC} | ${YELLOW}Queued: %d${NC}\n" \
