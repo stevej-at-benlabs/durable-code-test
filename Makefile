@@ -8,7 +8,16 @@
 
 # Variables
 # Get current git branch name, sanitized for Docker container names
-BRANCH_NAME := $(shell git rev-parse --abbrev-ref HEAD 2>/dev/null | tr '/' '-' | tr '[:upper:]' '[:lower:]' || echo "main")
+# In CI, use GITHUB_HEAD_REF for PRs or GITHUB_REF_NAME for pushes
+ifdef GITHUB_ACTIONS
+  ifdef GITHUB_HEAD_REF
+    BRANCH_NAME := $(shell echo "$(GITHUB_HEAD_REF)" | tr '/' '-' | tr '[:upper:]' '[:lower:]')
+  else
+    BRANCH_NAME := $(shell echo "$(GITHUB_REF_NAME)" | tr '/' '-' | tr '[:upper:]' '[:lower:]')
+  endif
+else
+  BRANCH_NAME := $(shell git rev-parse --abbrev-ref HEAD 2>/dev/null | tr '/' '-' | tr '[:upper:]' '[:lower:]' || echo "main")
+endif
 export BRANCH_NAME
 
 # Calculate dynamic ports based on branch name
@@ -186,6 +195,20 @@ install-hooks: ## Install pre-commit hooks
 pre-commit: lint-all-staged ## Run pre-commit checks on staged files only
 	@echo "$(GREEN)✅ Ready to commit!$(NC)"
 
+# Local GitHub Actions simulation
+mock-push-local: ## Simulate GitHub Actions locally using act
+	@echo "$(CYAN)Running GitHub Actions locally with act...$(NC)"
+	@echo "$(YELLOW)This will run the Test Suite workflow locally$(NC)"
+	@act --workflows .github/workflows/test.yml --verbose
+
+mock-push-local-fast: ## Run act with faster settings (skip heavy containers)
+	@echo "$(CYAN)Running GitHub Actions locally (fast mode)...$(NC)"
+	@act --workflows .github/workflows/test.yml --platform ubuntu-latest=catthehacker/ubuntu:act-latest --verbose
+
+mock-push-local-debug: ## Run act in debug mode with shell access
+	@echo "$(CYAN)Running GitHub Actions locally in debug mode...$(NC)"
+	@echo "$(YELLOW)Use 'exit' to continue to next step$(NC)"
+	@act --workflows .github/workflows/test.yml --verbose --shell
 
 # Include comprehensive linting and testing targets
 -include Makefile.lint

@@ -205,23 +205,65 @@ test-playwright-build: ## Build Playwright test container
 
 test-playwright: dev-start test-playwright-build ## Run Playwright integration tests
 	@echo "$(CYAN)Running Playwright integration tests...$(NC)"
-	@docker run --rm --network durable-code-test_durable-network-dev \
-		-e PLAYWRIGHT_BROWSERS_PATH=/ms-playwright \
-		playwright-tests
+	@if [ "$(CI)" = "true" ]; then \
+		docker run --rm --network durable-code-test_durable-network-dev \
+			-e PLAYWRIGHT_BROWSERS_PATH=/ms-playwright \
+			-e BRANCH_NAME="$(BRANCH_NAME)" \
+			-e FRONTEND_PORT="$(FRONTEND_PORT)" \
+			-e BACKEND_PORT="$(BACKEND_PORT)" \
+			-e USE_HOST_NETWORK=false \
+			playwright-tests; \
+	else \
+		docker run --rm --network host \
+			-e PLAYWRIGHT_BROWSERS_PATH=/ms-playwright \
+			-e BRANCH_NAME="$(BRANCH_NAME)" \
+			-e FRONTEND_PORT="$(FRONTEND_PORT)" \
+			-e BACKEND_PORT="$(BACKEND_PORT)" \
+			-e USE_HOST_NETWORK=true \
+			playwright-tests; \
+	fi
 	@echo "$(GREEN)✓ Playwright tests complete$(NC)"
 
 test-playwright-oscilloscope: dev-start test-playwright-build ## Run oscilloscope Playwright tests
 	@echo "$(CYAN)Running oscilloscope integration tests...$(NC)"
-	@docker run --rm --network durable-code-test_durable-network-dev \
-		-e PLAYWRIGHT_BROWSERS_PATH=/ms-playwright \
-		playwright-tests pytest -v test_oscilloscope_playwright.py
+	@if [ "$(CI)" = "true" ]; then \
+		docker run --rm --network durable-code-test_durable-network-dev \
+			-e PLAYWRIGHT_BROWSERS_PATH=/ms-playwright \
+			-e BRANCH_NAME="$(BRANCH_NAME)" \
+			-e FRONTEND_PORT="$(FRONTEND_PORT)" \
+			-e BACKEND_PORT="$(BACKEND_PORT)" \
+			-e USE_HOST_NETWORK=false \
+			playwright-tests pytest -v test_oscilloscope_playwright.py; \
+	else \
+		docker run --rm --network host \
+			-e PLAYWRIGHT_BROWSERS_PATH=/ms-playwright \
+			-e BRANCH_NAME="$(BRANCH_NAME)" \
+			-e FRONTEND_PORT="$(FRONTEND_PORT)" \
+			-e BACKEND_PORT="$(BACKEND_PORT)" \
+			-e USE_HOST_NETWORK=true \
+			playwright-tests pytest -v test_oscilloscope_playwright.py; \
+	fi
 	@echo "$(GREEN)✓ Oscilloscope tests complete$(NC)"
 
 test-playwright-interactive: dev-start test-playwright-build ## Run Playwright tests interactively
 	@echo "$(CYAN)Starting interactive Playwright test session...$(NC)"
-	@docker run --rm -it --network durable-code-test_durable-network-dev \
-		-e PLAYWRIGHT_BROWSERS_PATH=/ms-playwright \
-		playwright-tests /bin/bash
+	@if [ "$(CI)" = "true" ]; then \
+		docker run --rm -it --network durable-code-test_durable-network-dev \
+			-e PLAYWRIGHT_BROWSERS_PATH=/ms-playwright \
+			-e BRANCH_NAME="$(BRANCH_NAME)" \
+			-e FRONTEND_PORT="$(FRONTEND_PORT)" \
+			-e BACKEND_PORT="$(BACKEND_PORT)" \
+			-e USE_HOST_NETWORK=false \
+			playwright-tests /bin/bash; \
+	else \
+		docker run --rm -it --network host \
+			-e PLAYWRIGHT_BROWSERS_PATH=/ms-playwright \
+			-e BRANCH_NAME="$(BRANCH_NAME)" \
+			-e FRONTEND_PORT="$(FRONTEND_PORT)" \
+			-e BACKEND_PORT="$(BACKEND_PORT)" \
+			-e USE_HOST_NETWORK=true \
+			playwright-tests /bin/bash; \
+	fi
 	@echo "$(GREEN)✓ Interactive session ended$(NC)"
 
 test-e2e: test-playwright ## Alias for Playwright tests (end-to-end)

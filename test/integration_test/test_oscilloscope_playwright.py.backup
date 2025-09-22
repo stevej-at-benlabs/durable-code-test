@@ -25,6 +25,7 @@ Implementation:
 
 import asyncio
 import json
+import os
 import time
 from typing import Any, AsyncGenerator, Dict, Optional
 
@@ -64,11 +65,28 @@ async def page(browser: Any) -> AsyncGenerator[Any, None]:
 class TestOscilloscopeIntegration:
     """Integration tests for oscilloscope functionality."""
 
+    @property
+    def frontend_url(self) -> str:
+        """Get the frontend URL based on environment variables."""
+        # Get container name and port from environment, with defaults for main branch
+        branch_name = os.getenv("BRANCH_NAME", "main")
+        frontend_port = os.getenv("FRONTEND_PORT", "5173")
+        use_host_network = os.getenv("USE_HOST_NETWORK", "false").lower() == "true"
+
+        if use_host_network:
+            # When using host network mode, use localhost with the external port
+            return f"http://localhost:{frontend_port}"
+        else:
+            # When using Docker network, use container name with internal port
+            container_base = "durable-code-frontend"
+            container_name = f"{container_base}-{branch_name}-dev"
+            return f"http://{container_name}:5173"
+
     @pytest.mark.asyncio
     async def test_oscilloscope_page_loads(self, page: Any) -> None:
         """Test that the oscilloscope page loads successfully."""
         # Navigate to the app
-        await page.goto("http://localhost:5173")
+        await page.goto(self.frontend_url)
 
         # Wait for the app to load
         await page.wait_for_selector("#root", timeout=10000)
@@ -105,12 +123,12 @@ class TestOscilloscopeIntegration:
                 except:
                     pass
 
-            ws.on("framereceived", lambda event: on_message(event.get("payload", "")))
+            ws.on("framereceived", lambda payload: on_message(payload if isinstance(payload, str) else ""))
 
         page.on("websocket", on_websocket)
 
         # Navigate to the app
-        await page.goto("http://localhost:5173")
+        await page.goto(self.frontend_url)
 
         # Wait for the Demo tab and click it
         await page.wait_for_selector('button:has-text("Demo")', timeout=10000)
@@ -126,7 +144,7 @@ class TestOscilloscopeIntegration:
     async def test_oscilloscope_controls(self, page: Any) -> None:
         """Test oscilloscope control interactions."""
         # Navigate to the Demo tab
-        await page.goto("http://localhost:5173")
+        await page.goto(self.frontend_url)
         await page.wait_for_selector('button:has-text("Demo")', timeout=10000)
         await page.click('button:has-text("Demo")')
 
@@ -163,7 +181,7 @@ class TestOscilloscopeIntegration:
     async def test_oscilloscope_data_streaming(self, page: Any) -> None:
         """Test that oscilloscope receives and displays streaming data."""
         # Navigate to Demo tab
-        await page.goto("http://localhost:5173")
+        await page.goto(self.frontend_url)
         await page.wait_for_selector('button:has-text("Demo")', timeout=10000)
         await page.click('button:has-text("Demo")')
 
@@ -193,7 +211,7 @@ class TestOscilloscopeIntegration:
     async def test_oscilloscope_disconnect_reconnect(self, page: Any) -> None:
         """Test disconnect and reconnect functionality."""
         # Navigate to Demo tab
-        await page.goto("http://localhost:5173")
+        await page.goto(self.frontend_url)
         await page.wait_for_selector('button:has-text("Demo")', timeout=10000)
         await page.click('button:has-text("Demo")')
 
@@ -227,7 +245,7 @@ class TestOscilloscopeIntegration:
         # This would need to be coordinated with Docker commands
 
         # For now, test that the UI handles errors gracefully
-        await page.goto("http://localhost:5173")
+        await page.goto(self.frontend_url)
         await page.wait_for_selector('button:has-text("Demo")', timeout=10000)
         await page.click('button:has-text("Demo")')
 

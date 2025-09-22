@@ -30,8 +30,7 @@ export default defineConfig({
   },
   server: {
     port: 5173,
-    // Enable SPA mode for client-side routing
-    open: true,
+    host: true, // Listen on all interfaces and accept connections from any hostname
     proxy: {
       // Proxy API requests to backend
       '/api': {

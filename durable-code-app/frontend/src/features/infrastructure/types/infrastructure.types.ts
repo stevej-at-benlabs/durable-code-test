@@ -15,7 +15,17 @@ export interface InfrastructureItem {
   icon: string;
   title: string;
   badge: 'Critical' | 'Important' | 'Optional' | 'Foundation' | 'Essential';
-  category: 'automation' | 'quality' | 'ai' | 'security' | 'development' | 'structure' | 'infrastructure' | 'documentation' | 'resilience' | 'testing';
+  category:
+    | 'automation'
+    | 'quality'
+    | 'ai'
+    | 'security'
+    | 'development'
+    | 'structure'
+    | 'infrastructure'
+    | 'documentation'
+    | 'resilience'
+    | 'testing';
   popup?: {
     problem: {
       title: string;

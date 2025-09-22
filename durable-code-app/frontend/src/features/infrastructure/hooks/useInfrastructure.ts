@@ -69,7 +69,10 @@ export function useInfrastructure(): UseInfrastructureReturn {
             file: '.ai/layout.yaml',
           },
           links: [
-            { text: 'View Full Layout Config', url: 'https://github.com/stevej-at-benlabs/durable-code-test/blob/main/.ai/layout.yaml' },
+            {
+              text: 'View Full Layout Config',
+              url: 'https://github.com/stevej-at-benlabs/durable-code-test/blob/main/.ai/layout.yaml',
+            },
           ],
         },
       },
@@ -83,8 +86,8 @@ export function useInfrastructure(): UseInfrastructureReturn {
           problem: {
             title: 'Standard Linters Miss Your Issues',
             points: [
-              'ESLint/Pylint don\'t know YOUR business logic',
-              'Can\'t enforce architectural decisions',
+              "ESLint/Pylint don't know YOUR business logic",
+              "Can't enforce architectural decisions",
               'Miss project-specific antipatterns',
               'No way to enforce team conventions',
               'AI repeats the same mistakes',
@@ -120,7 +123,10 @@ export function useInfrastructure(): UseInfrastructureReturn {
             file: 'tools/design_linters/rules/no_print.py',
           },
           links: [
-            { text: 'Explore Linting Framework', url: 'https://github.com/stevej-at-benlabs/durable-code-test/tree/main/tools/design_linters' },
+            {
+              text: 'Explore Linting Framework',
+              url: 'https://github.com/stevej-at-benlabs/durable-code-test/tree/main/tools/design_linters',
+            },
           ],
         },
       },
@@ -147,7 +153,7 @@ export function useInfrastructure(): UseInfrastructureReturn {
               'Tell AI: "Always use make test" - nothing else',
               'Single command that works identically everywhere',
               'Docker ensures same environment every time',
-              'AI can\'t introduce variation when target is fixed',
+              "AI can't introduce variation when target is fixed",
               'Predictable commands = predictable results',
             ],
           },
@@ -166,7 +172,10 @@ export function useInfrastructure(): UseInfrastructureReturn {
             file: 'Makefile.test',
           },
           links: [
-            { text: 'View All Make Targets', url: 'https://github.com/stevej-at-benlabs/durable-code-test/blob/main/Makefile' },
+            {
+              text: 'View All Make Targets',
+              url: 'https://github.com/stevej-at-benlabs/durable-code-test/blob/main/Makefile',
+            },
           ],
         },
       },
@@ -183,7 +192,7 @@ export function useInfrastructure(): UseInfrastructureReturn {
               'AI suggests "pip install package" without versions',
               'Uses latest syntax that breaks older systems',
               'Mixes modern and legacy API patterns',
-              'Assumes features that don\'t exist in your versions',
+              "Assumes features that don't exist in your versions",
               'Generated code works today, breaks tomorrow when packages update',
             ],
           },
@@ -191,8 +200,8 @@ export function useInfrastructure(): UseInfrastructureReturn {
             title: 'Force AI Into Your Exact Environment',
             points: [
               'AI reads your lock files and respects them',
-              'Can\'t suggest packages outside your dependencies',
-              'Generated code matches YOUR version\'s syntax',
+              "Can't suggest packages outside your dependencies",
+              "Generated code matches YOUR version's syntax",
               'Test AI changes in identical environment immediately',
               'When AI code works once, it works forever',
             ],
@@ -213,7 +222,10 @@ export function useInfrastructure(): UseInfrastructureReturn {
             file: 'docker-compose.yml',
           },
           links: [
-            { text: 'View Docker Configuration', url: 'https://github.com/stevej-at-benlabs/durable-code-test/blob/main/docker-compose.yml' },
+            {
+              text: 'View Docker Configuration',
+              url: 'https://github.com/stevej-at-benlabs/durable-code-test/blob/main/docker-compose.yml',
+            },
           ],
         },
       },
@@ -253,7 +265,7 @@ repos:
     hooks:
       - id: no-print-statements
         name: Block print/console.log
-        entry: 'print\(|console\.'
+        entry: 'print(|console.'
         language: pygrep
         types: [python, javascript, typescript]
 
@@ -265,7 +277,10 @@ repos:
             file: '.pre-commit-config.yaml',
           },
           links: [
-            { text: 'View Pre-commit Config', url: 'https://github.com/stevej-at-benlabs/durable-code-test/blob/main/.pre-commit-config.yaml' },
+            {
+              text: 'View Pre-commit Config',
+              url: 'https://github.com/stevej-at-benlabs/durable-code-test/blob/main/.pre-commit-config.yaml',
+            },
           ],
         },
       },
@@ -318,7 +333,10 @@ repos:
             file: '.ai/howto/debug-tests.md',
           },
           links: [
-            { text: 'Browse How-To Guides', url: 'https://github.com/stevej-at-benlabs/durable-code-test/tree/main/.ai/howto' },
+            {
+              text: 'Browse How-To Guides',
+              url: 'https://github.com/stevej-at-benlabs/durable-code-test/tree/main/.ai/howto',
+            },
           ],
         },
       },
@@ -366,7 +384,10 @@ repos:
             file: 'Every TypeScript/JavaScript file',
           },
           links: [
-            { text: 'File Header Standards', url: 'https://github.com/stevej-at-benlabs/durable-code-test/blob/main/.ai/docs/FILE_HEADER_STANDARDS.md' },
+            {
+              text: 'File Header Standards',
+              url: 'https://github.com/stevej-at-benlabs/durable-code-test/blob/main/.ai/docs/FILE_HEADER_STANDARDS.md',
+            },
           ],
         },
       },
@@ -381,8 +402,8 @@ repos:
             title: 'AI Gets Lost in Large Codebases',
             points: [
               'Wastes tokens reading irrelevant files',
-              'Can\'t find the right module quickly',
-              'Doesn\'t know where features live',
+              "Can't find the right module quickly",
+              "Doesn't know where features live",
               'Misses important configuration files',
               'Makes changes in wrong locations',
             ],
@@ -418,7 +439,10 @@ commands:
             file: '.ai/index.yaml',
           },
           links: [
-            { text: 'View Full Index', url: 'https://github.com/stevej-at-benlabs/durable-code-test/blob/main/.ai/index.yaml' },
+            {
+              text: 'View Full Index',
+              url: 'https://github.com/stevej-at-benlabs/durable-code-test/blob/main/.ai/index.yaml',
+            },
           ],
         },
       },
@@ -435,7 +459,7 @@ commands:
               'Only tests the success case',
               'Forgets edge cases and error conditions',
               'No validation for malicious input',
-              'Doesn\'t test integration between components',
+              "Doesn't test integration between components",
               'Changes break unrelated features silently',
             ],
           },
@@ -470,7 +494,10 @@ def test_input_validation(input, expected):
             file: 'tests/test_validation.py',
           },
           links: [
-            { text: 'Testing Infrastructure', url: 'https://github.com/stevej-at-benlabs/durable-code-test/blob/main/Makefile.test' },
+            {
+              text: 'Testing Infrastructure',
+              url: 'https://github.com/stevej-at-benlabs/durable-code-test/blob/main/Makefile.test',
+            },
           ],
         },
       },
@@ -508,7 +535,10 @@ def test_input_validation(input, expected):
             file: '.ai/templates/react-component.tsx.template',
           },
           links: [
-            { text: 'Browse Templates', url: 'https://github.com/stevej-at-benlabs/durable-code-test/tree/main/.ai/templates' },
+            {
+              text: 'Browse Templates',
+              url: 'https://github.com/stevej-at-benlabs/durable-code-test/tree/main/.ai/templates',
+            },
           ],
         },
       },
