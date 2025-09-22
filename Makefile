@@ -66,10 +66,10 @@ build: ## Build Docker images
 start: dev-start ## Start all containers (alias for dev-start)
 	@echo "$(GREEN)✓ Development containers started!$(NC)"
 
-stop: ## Stop all running containers
-	@echo "$(CYAN)Stopping containers...$(NC)"
-	@$(DOCKER_COMPOSE) down
-	@echo "$(GREEN)✓ Containers stopped!$(NC)"
+stop: ## Stop containers for current branch
+	@echo "$(CYAN)Stopping containers for branch: $(BRANCH_NAME)...$(NC)"
+	@$(DOCKER_COMPOSE_DEV) down
+	@echo "$(GREEN)✓ Containers for branch $(BRANCH_NAME) stopped!$(NC)"
 
 restart: stop start ## Restart all containers
 
