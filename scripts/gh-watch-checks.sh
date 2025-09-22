@@ -164,6 +164,7 @@ show_checks() {
 main() {
     echo -e "${CYAN}Starting GitHub Checks Dashboard...${NC}"
     echo -e "${YELLOW}Monitoring PR #${PR_NUMBER}${NC}"
+    echo -e "${YELLOW}⏱️  NOTE: GitHub checks may take up to 3 minutes to start${NC}"
     echo ""
 
     # Trap to restore cursor on exit

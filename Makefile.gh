@@ -35,7 +35,6 @@ gh-help: ## Show GitHub integration targets
 	@echo "$(GH_GREEN)Available GitHub targets:$(GH_NC)"
 	@echo ""
 	@echo "  $(GH_YELLOW)make gh-watch-checks$(GH_NC)  - Dashboard monitor for CI/CD checks"
-	@echo "  $(GH_YELLOW)make gh-pr-check$(GH_NC)      - Create PR and monitor (handles 3-min delay)"
 	@echo "  $(GH_YELLOW)make gh-pr-status$(GH_NC)     - Quick PR status overview"
 	@echo "  $(GH_YELLOW)make gh-pr-create$(GH_NC)     - Create PR with template"
 	@echo "  $(GH_YELLOW)make gh-pr-merge$(GH_NC)      - Auto-merge after checks pass"
@@ -50,15 +49,9 @@ gh-help: ## Show GitHub integration targets
 
 # Main dashboard-style check watcher
 gh-watch-checks: ## Watch GitHub checks with dashboard display
+	@echo "$(GH_YELLOW)⏱️  NOTE: GitHub checks may take up to 3 minutes to start$(GH_NC)"
 	@GH_CHECK_INTERVAL=$(GH_CHECK_INTERVAL) GH_BASE_BRANCH=$(GH_BASE_BRANCH) \
 		./scripts/gh-watch-checks.sh $(GH_PR_NUMBER)
-
-# Create PR and monitor checks with timeout handling
-gh-pr-check: ## Create PR and monitor checks (handles 3-minute startup delay)
-	@echo "$(GH_CYAN)Starting PR check operation...$(GH_NC)"
-	@echo "$(GH_YELLOW)⏱️  NOTE: GitHub checks may take up to 3 minutes to start$(GH_NC)"
-	@GH_CHECK_INTERVAL=$(GH_CHECK_INTERVAL) GH_BASE_BRANCH=$(GH_BASE_BRANCH) GH_MAX_WAIT=180 \
-		./scripts/gh-pr-check.sh
 
 # Quick PR status check
 gh-pr-status: ## Show quick PR status overview
