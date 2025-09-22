@@ -40,7 +40,16 @@ from typing import Any, AsyncGenerator
 import pytest
 import pytest_asyncio
 
-from playwright.async_api import Page, WebSocket, async_playwright
+# Conditional import to prevent import errors when playwright is not available
+try:
+    from playwright.async_api import Page, WebSocket, async_playwright
+    PLAYWRIGHT_AVAILABLE = True
+except ImportError:
+    PLAYWRIGHT_AVAILABLE = False
+    # When playwright is not available, create placeholders to prevent NameError
+    Page = Any  # type: ignore[misc,assignment]
+    WebSocket = Any  # type: ignore[misc,assignment]
+    async_playwright = None  # type: ignore[assignment]
 
 # Enable auto mode for async fixtures
 pytestmark = pytest.mark.asyncio
@@ -49,6 +58,8 @@ pytestmark = pytest.mark.asyncio
 @pytest_asyncio.fixture(scope="function")
 async def browser() -> AsyncGenerator[Any, None]:
     """Create a browser instance for testing."""
+    if not PLAYWRIGHT_AVAILABLE or async_playwright is None:
+        pytest.skip("Playwright not available")
     async with async_playwright() as p:
         browser = await p.chromium.launch(headless=True)
         yield browser
@@ -82,6 +93,7 @@ class TestOscilloscopeIntegration:
 
     @pytest.mark.asyncio
     @pytest.mark.integration
+    @pytest.mark.skipif(not PLAYWRIGHT_AVAILABLE, reason="Playwright not available")
     @pytest.mark.skipif(os.getenv("RUN_PLAYWRIGHT_TESTS") != "true", reason="Playwright tests require special setup")
     async def test_oscilloscope_page_loads(self, page: Any) -> None:
         """Test that the oscilloscope page loads successfully."""
@@ -107,6 +119,7 @@ class TestOscilloscopeIntegration:
 
     @pytest.mark.asyncio
     @pytest.mark.integration
+    @pytest.mark.skipif(not PLAYWRIGHT_AVAILABLE, reason="Playwright not available")
     @pytest.mark.skipif(os.getenv("RUN_PLAYWRIGHT_TESTS") != "true", reason="Playwright tests require special setup")
     async def test_websocket_connection(self, page: Any) -> None:
         """Test that WebSocket connection is established."""
@@ -144,6 +157,7 @@ class TestOscilloscopeIntegration:
 
     @pytest.mark.asyncio
     @pytest.mark.integration
+    @pytest.mark.skipif(not PLAYWRIGHT_AVAILABLE, reason="Playwright not available")
     @pytest.mark.skipif(os.getenv("RUN_PLAYWRIGHT_TESTS") != "true", reason="Playwright tests require special setup")
     async def test_oscilloscope_controls(self, page: Any) -> None:
         """Test oscilloscope control interactions."""
@@ -190,6 +204,7 @@ class TestOscilloscopeIntegration:
 
     @pytest.mark.asyncio
     @pytest.mark.integration
+    @pytest.mark.skipif(not PLAYWRIGHT_AVAILABLE, reason="Playwright not available")
     @pytest.mark.skipif(os.getenv("RUN_PLAYWRIGHT_TESTS") != "true", reason="Playwright tests require special setup")
     async def test_oscilloscope_data_streaming(self, page: Any) -> None:
         """Test that oscilloscope receives and displays streaming data."""
@@ -222,6 +237,7 @@ class TestOscilloscopeIntegration:
 
     @pytest.mark.asyncio
     @pytest.mark.integration
+    @pytest.mark.skipif(not PLAYWRIGHT_AVAILABLE, reason="Playwright not available")
     @pytest.mark.skipif(os.getenv("RUN_PLAYWRIGHT_TESTS") != "true", reason="Playwright tests require special setup")
     async def test_oscilloscope_disconnect_reconnect(self, page: Any) -> None:
         """Test disconnect and reconnect functionality."""
@@ -255,6 +271,7 @@ class TestOscilloscopeIntegration:
 
     @pytest.mark.asyncio
     @pytest.mark.integration
+    @pytest.mark.skipif(not PLAYWRIGHT_AVAILABLE, reason="Playwright not available")
     @pytest.mark.skipif(os.getenv("RUN_PLAYWRIGHT_TESTS") != "true", reason="Playwright tests require special setup")
     async def test_oscilloscope_error_handling(self, page: Any) -> None:
         """Test error handling when backend is unavailable."""

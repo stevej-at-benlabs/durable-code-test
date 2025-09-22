@@ -550,12 +550,43 @@ def test_input_validation(input, expected):
           'Structured exceptions, retry logic, circuit breakers - because AI forgets error handling, but production never forgives',
         badge: 'Critical',
         category: 'resilience',
-        link: 'https://github.com/stevej-at-benlabs/durable-code-test/blob/main/durable-code-app/backend/app/core/exceptions.py',
-        example: {
-          title: 'Retry with Exponential Backoff',
-          language: 'python',
-          code: `@with_retry(\n    max_attempts=3,\n    backoff_factor=2.0,\n    exceptions=(TimeoutError, ConnectionError)\n)\nasync def call_external_api(url: str):\n    """Auto-retry on transient failures"""\n    try:\n        response = await http_client.get(url, timeout=5)\n        return response.json()\n    except (TimeoutError, ConnectionError) as e:\n        logger.warning(f"Transient error: {e}")\n        raise  # Retry decorator handles this\n    except Exception as e:\n        logger.error(f"Permanent failure: {e}")\n        raise AppException(\n            message="External API unavailable",\n            code="API_ERROR",\n            status_code=503\n        )`,
-          file: 'app/core/retry.py',
+        popup: {
+          problem: {
+            title: 'AI Writes Happy Path Code',
+            points: [
+              'Generated code assumes everything will work',
+              'No handling for network failures, timeouts, or API errors',
+              'Catches broad exceptions that hide real problems',
+              'No retry logic for transient failures',
+              'Silent failures that corrupt data or lose user work',
+            ],
+          },
+          solution: {
+            title: 'Production-Grade Error Resilience',
+            points: [
+              'Structured exception hierarchy with specific error types',
+              'Automatic retry with exponential backoff for transient errors',
+              'Circuit breakers prevent cascading failures',
+              'Proper logging at every error boundary',
+              'Graceful degradation instead of complete failure',
+            ],
+          },
+          example: {
+            title: 'Retry with Exponential Backoff',
+            language: 'python',
+            code: `@with_retry(\n    max_attempts=3,\n    backoff_factor=2.0,\n    exceptions=(TimeoutError, ConnectionError)\n)\nasync def call_external_api(url: str):\n    """Auto-retry on transient failures"""\n    try:\n        response = await http_client.get(url, timeout=5)\n        return response.json()\n    except (TimeoutError, ConnectionError) as e:\n        logger.warning(f"Transient error: {e}")\n        raise  # Retry decorator handles this\n    except Exception as e:\n        logger.error(f"Permanent failure: {e}")\n        raise AppException(\n            message="External API unavailable",\n            code="API_ERROR",\n            status_code=503\n        )`,
+            file: 'app/core/retry.py',
+          },
+          links: [
+            {
+              text: 'Exception Hierarchy',
+              url: 'https://github.com/stevej-at-benlabs/durable-code-test/blob/main/durable-code-app/backend/app/core/exceptions.py',
+            },
+            {
+              text: 'Retry Implementation',
+              url: 'https://github.com/stevej-at-benlabs/durable-code-test/blob/main/durable-code-app/backend/app/core/retry.py',
+            },
+          ],
         },
       },
     ],
