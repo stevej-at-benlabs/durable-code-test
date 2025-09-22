@@ -100,12 +100,16 @@ def _create_retry_config(config: RetryConfig) -> dict[str, Any]:
             min=config.min_wait,
             max=config.max_wait,
         ),
-        "retry": retry_if_exception_type(config.exceptions) if config.exceptions else None,
+        "retry": (retry_if_exception_type(config.exceptions) if config.exceptions else None),
     }
 
 
 def _handle_retry_exception(
-    func_name: str, attempt: int, max_attempts: int, e: Exception, on_retry: Callable[[Any, Any], None] | None
+    func_name: str,
+    attempt: int,
+    max_attempts: int,
+    e: Exception,
+    on_retry: Callable[[Any, Any], None] | None,
 ) -> None:
     """Handle exception during retry."""
     if on_retry:
@@ -170,7 +174,9 @@ async def _execute_with_retry(
 
 
 def _create_async_retry_wrapper(
-    func: Callable[..., Coroutine[Any, Any, T]], config: RetryConfig, on_retry: Callable[[Any, Any], None] | None
+    func: Callable[..., Coroutine[Any, Any, T]],
+    config: RetryConfig,
+    on_retry: Callable[[Any, Any], None] | None,
 ) -> Callable[..., Coroutine[Any, Any, T]]:
     """Create async wrapper for retry logic."""
 

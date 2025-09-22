@@ -80,9 +80,17 @@ class OscilloscopeCommand(BaseModel):
     command: str = Field(..., description="Command type (start, stop, configure)")
     wave_type: WaveType | None = Field(WaveType.SINE, description="Type of waveform")
     frequency: float | None = Field(
-        DEFAULT_FREQUENCY, ge=MIN_FREQUENCY, le=MAX_FREQUENCY, description="Frequency in Hz"
+        DEFAULT_FREQUENCY,
+        ge=MIN_FREQUENCY,
+        le=MAX_FREQUENCY,
+        description="Frequency in Hz",
     )
-    amplitude: float | None = Field(DEFAULT_AMPLITUDE, ge=MIN_AMPLITUDE, le=MAX_AMPLITUDE, description="Wave amplitude")
+    amplitude: float | None = Field(
+        DEFAULT_AMPLITUDE,
+        ge=MIN_AMPLITUDE,
+        le=MAX_AMPLITUDE,
+        description="Wave amplitude",
+    )
     offset: float | None = Field(DEFAULT_OFFSET, ge=MIN_OFFSET, le=MAX_OFFSET, description="DC offset")
 
     @validator("command")
@@ -208,7 +216,9 @@ async def _handle_command(
 
 
 def _handle_start_command(
-    command: OscilloscopeCommand, generator: WaveformGenerator, streaming: bool  # pylint: disable=unused-argument
+    command: OscilloscopeCommand,
+    generator: WaveformGenerator,
+    streaming: bool,  # pylint: disable=unused-argument
 ) -> tuple[bool, str]:
     """Handle start command."""
     generator.configure(
@@ -221,7 +231,9 @@ def _handle_start_command(
 
 
 def _handle_stop_command(
-    command: OscilloscopeCommand, generator: WaveformGenerator, streaming: bool  # pylint: disable=unused-argument
+    command: OscilloscopeCommand,
+    generator: WaveformGenerator,
+    streaming: bool,  # pylint: disable=unused-argument
 ) -> tuple[bool, str]:
     """Handle stop command."""
     return False, "Stopped streaming"
@@ -401,8 +413,16 @@ async def get_oscilloscope_config(request: Request) -> dict[str, Any]:
         "sample_rate": SAMPLE_RATE,
         "buffer_size": BUFFER_SIZE,
         "supported_wave_types": [wave.value for wave in WaveType],
-        "frequency": {"min": MIN_FREQUENCY, "max": MAX_FREQUENCY, "default": DEFAULT_FREQUENCY},
-        "amplitude": {"min": MIN_AMPLITUDE, "max": MAX_AMPLITUDE, "default": DEFAULT_AMPLITUDE},
+        "frequency": {
+            "min": MIN_FREQUENCY,
+            "max": MAX_FREQUENCY,
+            "default": DEFAULT_FREQUENCY,
+        },
+        "amplitude": {
+            "min": MIN_AMPLITUDE,
+            "max": MAX_AMPLITUDE,
+            "default": DEFAULT_AMPLITUDE,
+        },
         "offset": {"min": MIN_OFFSET, "max": MAX_OFFSET, "default": DEFAULT_OFFSET},
     }
 

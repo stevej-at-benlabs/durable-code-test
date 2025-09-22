@@ -80,7 +80,10 @@ class FileHeaderRule(ASTLintRule):
             "min_header_lines": 5,
         },
         ".sh": {
-            "header_pattern": re.compile(r"^(#!/bin/(bash|sh)\n)?# Purpose:[\s\S]*?(?=\n[^#]|\n\n|\Z)", re.MULTILINE),
+            "header_pattern": re.compile(
+                r"^(#!/bin/(bash|sh)\n)?# Purpose:[\s\S]*?(?=\n[^#]|\n\n|\Z)",
+                re.MULTILINE,
+            ),
             "field_pattern": re.compile(r"^# (\w+):\s*(.+)$", re.MULTILINE),
             "is_code": True,
             "min_header_lines": 3,
@@ -186,7 +189,12 @@ class FileHeaderRule(ASTLintRule):
         file_ext = file_path.suffix
         if file_ext not in self.FILE_CONFIGS:
             # If check_all_files is enabled, report unsupported files
-            if self.check_all_files and file_ext not in [".json", ".txt", ".csv", ".xml"]:
+            if self.check_all_files and file_ext not in [
+                ".json",
+                ".txt",
+                ".csv",
+                ".xml",
+            ]:
                 logger.debug(f"Unsupported file type for header check: {file_ext}")
             return violations
 

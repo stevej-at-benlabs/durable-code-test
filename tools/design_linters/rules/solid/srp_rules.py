@@ -117,7 +117,10 @@ class TooManyResponsibilitiesRule(ASTLintRule):
         responsibility_analysis = self._analyze_class_responsibilities(node, config)
 
         return self._create_violation_if_too_many_groups(
-            node, context, responsibility_analysis["groups"], responsibility_analysis["max_groups"]
+            node,
+            context,
+            responsibility_analysis["groups"],
+            responsibility_analysis["max_groups"],
         )
 
     def _analyze_class_responsibilities(self, node: ast.ClassDef, config: dict) -> dict:
@@ -145,7 +148,11 @@ class TooManyResponsibilitiesRule(ASTLintRule):
         return cast(dict[str, list[str]], result)
 
     def _create_violation_if_too_many_groups(
-        self, node: ast.ClassDef, context: LintContext, responsibility_groups: dict, max_groups: int
+        self,
+        node: ast.ClassDef,
+        context: LintContext,
+        responsibility_groups: dict,
+        max_groups: int,
     ) -> list[LintViolation]:
         """Create violation if class has too many responsibility groups."""
         if len(responsibility_groups) <= max_groups:
@@ -164,7 +171,9 @@ class TooManyResponsibilitiesRule(ASTLintRule):
         ]
 
     def _group_methods_by_responsibility(
-        self, methods: list[ast.FunctionDef], responsibility_prefixes: dict[str, list[str]]
+        self,
+        methods: list[ast.FunctionDef],
+        responsibility_prefixes: dict[str, list[str]],
     ) -> dict[str, list[str]]:
         """Group methods by their likely responsibility based on naming."""
         groups = defaultdict(list)
@@ -195,7 +204,13 @@ class TooManyResponsibilitiesRule(ASTLintRule):
             return True
 
         # Interface/abstract base classes - these define contracts, not implementations
-        interface_patterns = ["Reporter", "Analyzer", "Registry", "Context", "Interface"]
+        interface_patterns = [
+            "Reporter",
+            "Analyzer",
+            "Registry",
+            "Context",
+            "Interface",
+        ]
         return any(pattern in class_name for pattern in interface_patterns)
 
 
@@ -340,7 +355,11 @@ class LowCohesionRule(ASTLintRule):
         return bool(methods and instance_vars)
 
     def _create_violation_if_low_cohesion(
-        self, node: ast.ClassDef, context: LintContext, cohesion_score: float, min_cohesion: float
+        self,
+        node: ast.ClassDef,
+        context: LintContext,
+        cohesion_score: float,
+        min_cohesion: float,
     ) -> list[LintViolation]:
         """Create violation if cohesion is below threshold."""
         if cohesion_score >= min_cohesion:
@@ -368,7 +387,13 @@ class LowCohesionRule(ASTLintRule):
             return True
 
         # Interface/abstract base classes - these define contracts, not implementations
-        interface_patterns = ["Reporter", "Analyzer", "Registry", "Context", "Interface"]
+        interface_patterns = [
+            "Reporter",
+            "Analyzer",
+            "Registry",
+            "Context",
+            "Interface",
+        ]
         return any(pattern in class_name for pattern in interface_patterns)
 
     # Expose methods expected by tests

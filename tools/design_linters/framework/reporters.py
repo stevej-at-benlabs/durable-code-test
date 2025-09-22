@@ -263,7 +263,7 @@ class SARIFReporter(LintReporter):
                     "tool": {
                         "driver": {
                             "name": "design-linters",
-                            "version": metadata.get("version", "1.0.0") if metadata else "1.0.0",
+                            "version": (metadata.get("version", "1.0.0") if metadata else "1.0.0"),
                             "informationUri": "https://github.com/your-org/design-linters",
                             "rules": self._generate_rule_definitions(violations),
                         }
@@ -302,7 +302,10 @@ class SARIFReporter(LintReporter):
                 {
                     "physicalLocation": {
                         "artifactLocation": {"uri": violation.file_path},
-                        "region": {"startLine": violation.line, "startColumn": violation.column},
+                        "region": {
+                            "startLine": violation.line,
+                            "startColumn": violation.column,
+                        },
                     }
                 }
             ],
@@ -310,7 +313,11 @@ class SARIFReporter(LintReporter):
 
     def _severity_to_sarif_level(self, severity: Severity) -> str:
         """Convert our severity to SARIF level."""
-        mapping = {Severity.ERROR: "error", Severity.WARNING: "warning", Severity.INFO: "note"}
+        mapping = {
+            Severity.ERROR: "error",
+            Severity.WARNING: "warning",
+            Severity.INFO: "note",
+        }
         return mapping.get(severity, "note")
 
 
@@ -341,7 +348,11 @@ class GitHubActionsReporter(LintReporter):
 
     def _severity_to_gh_type(self, severity: Severity) -> str:
         """Convert severity to GitHub Actions annotation type."""
-        mapping = {Severity.ERROR: "error", Severity.WARNING: "warning", Severity.INFO: "notice"}
+        mapping = {
+            Severity.ERROR: "error",
+            Severity.WARNING: "warning",
+            Severity.INFO: "notice",
+        }
         return mapping.get(severity, "notice")
 
 

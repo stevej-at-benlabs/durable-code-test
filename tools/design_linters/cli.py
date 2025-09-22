@@ -67,12 +67,20 @@ Examples:
             nargs="*",
             help="Files or directories to lint (default: current directory)",
         )
-        parser.add_argument("--recursive", "-r", action="store_true", help="Recursively lint directories")
+        parser.add_argument(
+            "--recursive",
+            "-r",
+            action="store_true",
+            help="Recursively lint directories",
+        )
 
     def _add_output_arguments(self, parser: argparse.ArgumentParser) -> None:
         """Add output-related arguments."""
         parser.add_argument(
-            "--format", choices=["text", "json", "sarif", "github"], default="text", help="Output format"
+            "--format",
+            choices=["text", "json", "sarif", "github"],
+            default="text",
+            help="Output format",
         )
         parser.add_argument("--output", "-o", help="Output file (default: stdout)")
         parser.add_argument("--no-color", action="store_true", help="Disable colored output")
@@ -96,7 +104,11 @@ Examples:
         """Add execution mode arguments."""
         parser.add_argument("--strict", action="store_true", help="Use strict checking mode")
         parser.add_argument("--legacy", help="Backward compatibility mode (srp, magic-numbers, etc.)")
-        parser.add_argument("--fail-on-error", action="store_true", help="Exit with non-zero on any errors")
+        parser.add_argument(
+            "--fail-on-error",
+            action="store_true",
+            help="Exit with non-zero on any errors",
+        )
         parser.add_argument("--config", help="Path to configuration file")
 
     def parse_arguments(self, args: list[str]) -> argparse.Namespace:
@@ -287,7 +299,10 @@ class OutputManager:
     """Handles output formatting and reporting."""
 
     def output_results(
-        self, violations: list[LintViolation], metadata: dict[str, Any], args: argparse.Namespace
+        self,
+        violations: list[LintViolation],
+        metadata: dict[str, Any],
+        args: argparse.Namespace,
     ) -> None:
         """Output linting results in the specified format."""
         reporters = ReporterFactory.get_standard_reporters()

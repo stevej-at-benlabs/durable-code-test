@@ -391,7 +391,13 @@ class LogLevelConsistencyRule(ASTLintRule):
         return bool(node.args and isinstance(node.args[0], ast.Constant) and isinstance(node.args[0].value, str))
 
     def _create_level_mismatch_violation(
-        self, node: ast.Call, context: LintContext, current_level: str, suggested_level: str, *, message: str
+        self,
+        node: ast.Call,
+        context: LintContext,
+        current_level: str,
+        suggested_level: str,
+        *,
+        message: str,
     ) -> list[LintViolation]:
         """Create violation for log level mismatch."""
         truncated_message = (

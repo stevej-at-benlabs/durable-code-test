@@ -1,19 +1,26 @@
 """Circuit breaker pattern implementation for preventing cascading failures.
 
-Purpose: Circuit breaker pattern implementation for preventing cascading failures in distributed systems.
+Purpose: Circuit breaker pattern implementation for preventing cascading
+    failures in distributed systems.
 Scope: Service resilience and fault isolation for external service dependencies
-Overview: This module implements the circuit breaker pattern to protect the application from
-    cascading failures when external services become unavailable or unresponsive. The circuit
-    breaker monitors the success and failure rates of service calls, automatically opening
-    when failure thresholds are exceeded, preventing further attempts that would likely fail.
-    It includes three states: CLOSED (normal operation), OPEN (failures exceeded threshold),
-    and HALF_OPEN (testing recovery). The implementation provides configurable thresholds,
-    timeout periods, and recovery testing intervals, ensuring system stability while allowing
-    for automatic recovery when services become available again.
-Dependencies: asyncio for async operations, loguru for logging, time for timeout tracking
+Overview: This module implements the circuit breaker pattern to protect the
+    application from cascading failures when external services become
+    unavailable or unresponsive. The circuit breaker monitors the success and
+    failure rates of service calls, automatically opening when failure
+    thresholds are exceeded, preventing further attempts that would likely
+    fail.
+    It includes three states: CLOSED (normal operation), OPEN (failures
+    exceeded threshold), and HALF_OPEN (testing recovery). The implementation
+    provides configurable thresholds, timeout periods, and recovery testing
+    intervals, ensuring system stability while allowing for automatic recovery
+    when services become available again.
+Dependencies: asyncio for async operations, loguru for logging, time for
+    timeout tracking
 Exports: CircuitBreaker class, CircuitState enum, circuit_breaker decorator
-Interfaces: CircuitBreaker.call() method, decorator interface for wrapping service calls
-Implementation: State machine pattern with automatic state transitions based on failure metrics
+Interfaces: CircuitBreaker.call() method, decorator interface for wrapping
+    service calls
+Implementation: State machine pattern with automatic state transitions based
+    on failure metrics
 """
 
 import asyncio
@@ -53,7 +60,13 @@ class CircuitBreakerState(Enum):
 class CircuitBreakerStateManager:
     """Manages state transitions for circuit breaker."""
 
-    def __init__(self, name: str, failure_threshold: int, success_threshold: int, timeout_duration: float) -> None:
+    def __init__(
+        self,
+        name: str,
+        failure_threshold: int,
+        success_threshold: int,
+        timeout_duration: float,
+    ) -> None:
         """Initialize state manager."""
         self.name = name
         self.failure_threshold = failure_threshold
@@ -206,7 +219,10 @@ class CircuitBreaker:
             if self.state_manager.state == CircuitBreakerState.OPEN:
                 raise ExternalServiceError(
                     f"Circuit breaker '{self.name}' is open",
-                    details={"circuit_breaker": self.name, "state": self.state_manager.state.value},
+                    details={
+                        "circuit_breaker": self.name,
+                        "state": self.state_manager.state.value,
+                    },
                 )
 
         # Attempt the call

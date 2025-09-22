@@ -11,9 +11,9 @@ Interfaces: Implements BaseRule interface from framework
 Implementation: AST-based analysis with configurable thresholds and clear violation reporting
 """
 
-from typing import Any
 import ast
 from pathlib import Path
+from typing import Any
 
 from ..framework.interfaces import BaseRule, LintViolation, Severity
 from ..utils.context_helpers import extract_context_lines

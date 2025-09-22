@@ -32,7 +32,8 @@ import pytest
 import pytest_asyncio
 
 try:
-    from playwright.async_api import Page, WebSocket, async_playwright  # type: ignore[import-not-found]
+    from playwright.async_api import (Page,  # type: ignore[import-not-found]
+                                      WebSocket, async_playwright)
 except ImportError:
     # For type checking when playwright is not installed
     Page = Any

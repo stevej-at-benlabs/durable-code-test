@@ -115,7 +115,13 @@ class MagicNumberContextAnalyzer:
 
         return any(
             math_indicator in str(context.file_path).lower()
-            for math_indicator in ["math", "geometry", "physics", "calculation", "formula"]
+            for math_indicator in [
+                "math",
+                "geometry",
+                "physics",
+                "calculation",
+                "formula",
+            ]
         )
 
     def _is_in_math_operation_context(self, context: LintContext) -> bool:

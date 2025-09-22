@@ -23,10 +23,21 @@ from typing import Any
 from ..framework.interfaces import LintContext
 
 
-def is_allowed_context(context: LintContext, config: dict[str, Any], default_patterns: list[str] | None = None) -> bool:
+def is_allowed_context(
+    context: LintContext,
+    config: dict[str, Any],
+    default_patterns: list[str] | None = None,
+) -> bool:
     """Check if output/logging is allowed in this context."""
     if default_patterns is None:
-        default_patterns = ["test_", "__main__", "debug_", "example_", "demo_", "script_"]
+        default_patterns = [
+            "test_",
+            "__main__",
+            "debug_",
+            "example_",
+            "demo_",
+            "script_",
+        ]
 
     allowed_patterns = config.get("allowed_patterns", default_patterns)
 
