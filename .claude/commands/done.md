@@ -30,7 +30,26 @@ git branch --show-current
 git diff --stat
 ```
 
-### 2. Code Quality Checks
+### 2. Update with Latest Main Branch
+Pull the latest changes from main branch to ensure current work is based on latest code:
+
+```bash
+# Stash any uncommitted changes if present
+git stash push -m "Temporary stash for /done command"
+
+# Fetch latest changes from remote
+git fetch origin
+
+# Merge latest main into current feature branch
+git merge origin/main
+
+# Pop stashed changes back if any were stashed
+git stash list | grep "Temporary stash for /done command" && git stash pop
+```
+
+**IMPORTANT**: If merge conflicts occur, resolve them manually before proceeding. This ensures your feature branch incorporates the latest main branch changes and reduces merge conflicts in the PR.
+
+### 3. Code Quality Checks
 Run comprehensive quality assurance before committing using established make targets:
 
 **CRITICAL: Always use project make targets. Do not deviate to individual tool calls.**
@@ -48,7 +67,7 @@ make security      # Security scanning
 
 **Never run individual npm/docker commands directly. Always use make targets.**
 
-### 3. Comprehensive Testing
+### 4. Comprehensive Testing
 Run all test suites with coverage requirements using make targets:
 
 **CRITICAL: Always use project make targets for testing. Do not run individual commands.**
@@ -71,7 +90,7 @@ make test-coverage    # Coverage reports
 - Frontend: Minimum 70% coverage required
 - Critical paths: 95% coverage required
 
-### 4. AI Documentation Update Opportunities
+### 5. AI Documentation Update Opportunities
 
 Before committing, analyze changes for AI documentation updates:
 
@@ -220,7 +239,7 @@ Would you like me to update any of these?
 # 3. Mention updates in commit message and PR description
 ```
 
-### 5. Build Verification
+### 6. Build Verification
 Ensure production builds work correctly:
 
 ```bash
@@ -234,7 +253,7 @@ cd durable-code-app/frontend && npm run build
 docker-compose build --no-cache
 ```
 
-### 6. Commit Changes
+### 7. Commit Changes
 Create meaningful commit with proper formatting:
 
 #### Commit Message Format
@@ -279,7 +298,7 @@ EOF
 )"
 ```
 
-### 7. Push and Create Pull Request
+### 8. Push and Create Pull Request
 Push changes and create PR with comprehensive details:
 
 #### Push to Remote
@@ -333,7 +352,7 @@ EOF
 )"
 ```
 
-### 8. CI/CD Verification - CRITICAL: USE 'make gh-watch-checks'
+### 9. CI/CD Verification - CRITICAL: USE 'make gh-watch-checks'
 
 **🚨 IMPORTANT: ALWAYS USE THE 'make gh-watch-checks' TARGET AFTER CREATING A PR 🚨**
 
@@ -408,7 +427,7 @@ gh run view $(gh run list --branch $(git branch --show-current) --json databaseI
 - ✅ Coverage requirements met
 - ✅ Performance benchmarks met
 
-### 9. Auto-Merge Decision (if 'with merge' specified)
+### 10. Auto-Merge Decision (if 'with merge' specified)
 If the `with merge` argument was provided, proceed with automatic merge:
 
 #### Pre-Merge Validation
@@ -474,7 +493,7 @@ git branch -d feature/branch-name
 git fetch --prune
 ```
 
-### 10. Handle Check Failures
+### 11. Handle Check Failures
 If any checks fail, address them systematically:
 
 #### Failed Build
@@ -543,6 +562,19 @@ git add . && git commit -m "style: Fix linting violations
 Co-Authored-By: Claude <noreply@anthropic.com>"
 ```
 
+### 12. Container Cleanup (Success Only)
+After all checks pass successfully and workflow completion, clean up containers for the current branch:
+
+```bash
+# Stop containers for the current branch only
+make stop
+
+# Verify containers have been stopped
+docker ps --filter "name=durable-code-*-$(git branch --show-current)-*" --format "table {{.Names}}\t{{.Status}}"
+```
+
+**IMPORTANT**: This step only runs when the entire `/done` workflow completes successfully. If any checks fail or the workflow is interrupted, containers remain running for debugging purposes.
+
 ## Error Handling
 
 ### Insufficient Test Coverage
@@ -601,16 +633,21 @@ The `/done` command is considered successful when:
    - ✅ All CI/CD checks passing
    - ✅ Ready for code review
 
+5. **Container Cleanup**
+   - ✅ Branch-specific containers stopped
+   - ✅ Resources freed for other branches
+   - ✅ Verification of cleanup completed
+
 ### For `/done with merge` (Auto-Merge Mode)
 All standard criteria PLUS:
 
-5. **Branch Protection Compliance**
+6. **Branch Protection Compliance**
    - ✅ Required status checks passing
    - ✅ Required reviews obtained (if configured)
    - ✅ No merge conflicts detected
    - ✅ Branch is up to date with base branch
 
-6. **Auto-Merge Execution**
+7. **Auto-Merge Execution**
    - ✅ PR automatically merged and squashed
    - ✅ Feature branch deleted
    - ✅ Local cleanup completed
@@ -625,45 +662,50 @@ All standard criteria PLUS:
 
 "🚀 Starting completion workflow for branch: feature/auth-system"
 ""
-"📋 Step 1/9: Pre-commit validation"
+"📋 Pre-commit validation"
 "✅ On feature branch: feature/auth-system"
 "✅ Working directory clean"
 "✅ Ready to proceed"
 ""
-"🔍 Step 2/9: Code quality checks"
+"🔀 Update with latest main"
+"✅ Fetched latest changes from origin"
+"✅ Merged origin/main into feature branch"
+"✅ No merge conflicts detected"
+""
+"🔍 Code quality checks"
 "✅ Backend linting passed"
 "✅ Frontend linting passed"
 "✅ Type checking passed"
 "✅ Security scan clean"
 "✅ SOLID principles compliant"
 ""
-"🧪 Step 3/9: Comprehensive testing"
+"🧪 Comprehensive testing"
 "✅ Backend tests: 247 passed, 95% coverage"
 "✅ Frontend tests: 89 passed, 78% coverage"
 "✅ Integration tests: 23 passed"
 "✅ All coverage requirements met"
 ""
-"🤖 Step 4/9: AI documentation analysis"
+"🤖 AI documentation analysis"
 "✅ Analyzed 12 changed files"
 "✅ Identified 3 documentation opportunities"
 "✅ User accepted updates for templates and features"
 "✅ Updated .ai/templates/react-hook.template"
 "✅ Updated .ai/features/web-application.md"
 ""
-"🏗️ Step 5/9: Build verification"
+"🏗️ Build verification"
 "✅ Backend compilation successful"
 "✅ Frontend production build successful"
 "✅ Docker images built successfully"
 ""
-"💾 Step 6/9: Committing changes"
+"💾 Committing changes"
 "✅ Staged 12 files"
 "✅ Created commit: feat(auth): Add user authentication system"
 ""
-"📤 Step 7/9: Push and create PR"
+"📤 Push and create PR"
 "✅ Pushed to origin/feature/auth-system"
 "✅ PR created: #42 - feat: Add user authentication system"
 ""
-"🔄 Step 8/9: CI/CD verification"
+"🔄 CI/CD verification"
 "🚨 CRITICAL: Using required make target to monitor PR checks"
 "🚀 Launching GitHub checks dashboard with: make gh-watch-checks"
 "⚠️ This is the REQUIRED method for confirming passing checks"
@@ -677,7 +719,11 @@ All standard criteria PLUS:
 "✅ Quality check passed (1m 32s)"
 "✅ Security check passed (45s)"
 ""
-"🎉 Step 9/9: Completion"
+"🧹 Container cleanup"
+"✅ Stopped containers for branch: feature/auth-system"
+"✅ Verified containers stopped successfully"
+""
+"🎉 Completion"
 "✅ All checks passed successfully"
 "✅ PR ready for review: https://github.com/user/repo/pull/42"
 "✅ Workflow completed successfully"
@@ -698,44 +744,44 @@ All standard criteria PLUS:
 
 "🚀 Starting completion workflow with auto-merge for branch: feature/auth-system"
 ""
-"📋 Step 1/10: Pre-commit validation"
+"📋 Pre-commit validation"
 "✅ On feature branch: feature/auth-system"
 "✅ Working directory clean"
 "✅ Ready to proceed"
 ""
-"🔍 Step 2/10: Code quality checks"
+"🔍 Code quality checks"
 "✅ Backend linting passed"
 "✅ Frontend linting passed"
 "✅ Type checking passed"
 "✅ Security scan clean"
 "✅ SOLID principles compliant"
 ""
-"🧪 Step 3/10: Comprehensive testing"
+"🧪 Comprehensive testing"
 "✅ Backend tests: 247 passed, 95% coverage"
 "✅ Frontend tests: 89 passed, 78% coverage"
 "✅ Integration tests: 23 passed"
 "✅ All coverage requirements met"
 ""
-"🤖 Step 4/10: AI documentation analysis"
+"🤖 AI documentation analysis"
 "✅ Analyzed 12 changed files"
 "✅ Identified 2 documentation opportunities"
 "✅ User accepted updates for new authentication patterns"
 "✅ Updated .ai/features/web-application.md"
 ""
-"🏗️ Step 5/10: Build verification"
+"🏗️ Build verification"
 "✅ Backend compilation successful"
 "✅ Frontend production build successful"
 "✅ Docker images built successfully"
 ""
-"💾 Step 6/10: Committing changes"
+"💾 Committing changes"
 "✅ Staged 12 files"
 "✅ Created commit: feat(auth): Add user authentication system"
 ""
-"📤 Step 7/10: Push and create PR"
+"📤 Push and create PR"
 "✅ Pushed to origin/feature/auth-system"
 "✅ PR created: #42 - feat: Add user authentication system"
 ""
-"🔄 Step 8/10: CI/CD verification"
+"🔄 CI/CD verification"
 "🚨 CRITICAL: Using required make target to monitor PR checks"
 "🚀 Executing: make gh-watch-checks"
 "⚠️ This is the MANDATORY method for confirming all checks pass"
@@ -750,18 +796,22 @@ All standard criteria PLUS:
 "✅ Security check passed (45s)"
 "✅ Dashboard indicates: All checks passed!"
 ""
-"🔍 Step 9/10: Auto-merge validation"
+"🔍 Auto-merge validation"
 "✅ All required checks passing"
 "✅ No merge conflicts detected"
 "✅ Branch protection rules satisfied"
 "✅ PR is mergeable"
 ""
-"🎯 Step 10/10: Auto-merge execution"
+"🎯 Auto-merge execution"
 "✅ PR automatically merged and squashed"
 "✅ Feature branch deleted from remote"
 "✅ Switched to main branch"
 "✅ Pulled latest changes"
 "✅ Local cleanup completed"
+""
+"🧹 Container cleanup"
+"✅ Stopped containers for branch: feature/auth-system"
+"✅ Verified containers stopped successfully"
 ""
 "🎉 Workflow completed successfully!"
 ""
@@ -784,7 +834,7 @@ All standard criteria PLUS:
 ""
 [... all steps 1-7 pass successfully ...]
 ""
-"🔍 Step 9/10: Auto-merge validation"
+"🔍 Auto-merge validation"
 "✅ All required checks passing"
 "✅ No merge conflicts detected"
 "❌ Required review not obtained"
