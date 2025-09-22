@@ -19,7 +19,7 @@ Implementation: AST-based detection of test skip patterns with configurable exce
 import ast
 from typing import Any
 
-from design_linters.framework.interfaces import ASTLintRule, LintContext, LintViolation, Severity
+from tools.design_linters.framework.interfaces import ASTLintRule, LintContext, LintViolation, Severity
 
 
 class NoSkippedTestsRule(ASTLintRule):
@@ -56,7 +56,7 @@ class NoSkippedTestsRule(ASTLintRule):
             return False
 
         # Check for decorator patterns
-        if isinstance(node, ast.FunctionDef) or isinstance(node, ast.ClassDef):
+        if isinstance(node, (ast.FunctionDef, ast.ClassDef)):
             return self._has_skip_decorator(node)
 
         # Check for skip function calls
@@ -64,6 +64,11 @@ class NoSkippedTestsRule(ASTLintRule):
             return self._is_skip_call(node)
 
         return False
+
+    def get_configuration(self, metadata: dict[str, Any]) -> dict[str, Any]:
+        """Get rule configuration from metadata."""
+        rules_config = metadata.get("rules", {})
+        return rules_config.get(self.rule_id, {})
 
     def check_node(self, node: ast.AST, context: LintContext) -> list[LintViolation]:
         """Check node for test skip patterns."""
@@ -112,11 +117,13 @@ class NoSkippedTestsRule(ASTLintRule):
         return False
 
     def _is_skip_call(self, node: ast.Call) -> bool:
-        """Check if node is a skip function call."""
+        """Check if node is a skip function call within test code (not decorators)."""
         if isinstance(node.func, ast.Attribute):
             # Check for pytest.skip() or similar
             func_str = ast.unparse(node.func) if hasattr(ast, "unparse") else ""
-            return "skip" in func_str.lower()
+            # Only match skip calls in test bodies, not decorator skip calls
+            if "skip" in func_str.lower() and "unittest.skip" not in func_str and "pytest.mark.skip" not in func_str:
+                return True
         elif isinstance(node.func, ast.Name):
             # Check for direct skip() calls
             return node.func.id == "skip"
@@ -203,9 +210,23 @@ class NoSkippedTestsRule(ASTLintRule):
     def _has_disable_comment(self, node: ast.AST, context: LintContext) -> bool:
         """Check if the node has a disable comment."""
         # Check for disable comments like: # design-lint: ignore[testing.no-skipped-tests]
-        if hasattr(context, "source_lines") and context.source_lines:
+        if context.file_content:
+            lines = context.file_content.splitlines()
+
+            # For decorated functions/classes, check decorator lines too
+            if isinstance(node, (ast.FunctionDef, ast.ClassDef)) and node.decorator_list:
+                for decorator in node.decorator_list:
+                    decorator_line_idx = decorator.lineno - 1
+                    if 0 <= decorator_line_idx < len(lines):
+                        line = lines[decorator_line_idx]
+                        if "design-lint: ignore" in line and (
+                            self.rule_id in line or "testing.no-skipped-tests" in line
+                        ):
+                            return True
+
+            # Check the node's own line
             line_idx = node.lineno - 1
-            if 0 <= line_idx < len(context.source_lines):
-                line = context.source_lines[line_idx]
+            if 0 <= line_idx < len(lines):
+                line = lines[line_idx]
                 return "design-lint: ignore" in line and (self.rule_id in line or "testing.no-skipped-tests" in line)
         return False

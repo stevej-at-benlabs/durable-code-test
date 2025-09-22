@@ -32,12 +32,12 @@ class TestNoSkippedTestsRule:
         self, file_path: str = "test_example.py", source_lines: list[str] | None = None
     ) -> LintContext:
         """Create a test context."""
-        return LintContext(
-            file_path=Path(file_path),
-            module_name="test_module",
-            source_lines=source_lines or [],
-            metadata={},
-        )
+        context = LintContext()
+        context.file_path = Path(file_path)
+        context.current_module = "test_module"
+        context.file_content = "\n".join(source_lines) if source_lines else ""
+        context.metadata = {}
+        return context
 
     def test_detects_pytest_mark_skip_decorator(self) -> None:
         """Test detection of @pytest.mark.skip decorator."""

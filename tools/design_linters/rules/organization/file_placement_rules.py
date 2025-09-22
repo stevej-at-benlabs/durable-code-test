@@ -247,10 +247,7 @@ class FileOrganizationRule(ASTLintRule):
         if "deny" in matched_rule:
             for pattern in matched_rule["deny"]:
                 # For root directory patterns, check against filename only
-                if matched_path == ".":
-                    check_target = rel_path.name
-                else:
-                    check_target = path_str
+                check_target = rel_path.name if matched_path == "." else path_str
 
                 if re.search(pattern, check_target):
                     # Special message for debug/temp files in root
