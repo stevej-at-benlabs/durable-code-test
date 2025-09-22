@@ -11,11 +11,18 @@
 BRANCH_NAME := $(shell git rev-parse --abbrev-ref HEAD 2>/dev/null | tr '/' '-' | tr '[:upper:]' '[:lower:]' || echo "main")
 export BRANCH_NAME
 
+# Calculate dynamic ports based on branch name
+# Note: We need to parse the export statements from the script
+FRONTEND_PORT := $(shell ./scripts/get-branch-ports.sh "$(BRANCH_NAME)" export 2>/dev/null | grep FRONTEND_PORT | cut -d= -f2 || echo "5173")
+BACKEND_PORT := $(shell ./scripts/get-branch-ports.sh "$(BRANCH_NAME)" export 2>/dev/null | grep BACKEND_PORT | cut -d= -f2 || echo "8000")
+export FRONTEND_PORT
+export BACKEND_PORT
+
 DOCKER_COMPOSE = docker compose
-DOCKER_COMPOSE_DEV = BRANCH_NAME=$(BRANCH_NAME) docker compose -f docker-compose.dev.yml
+DOCKER_COMPOSE_DEV = BRANCH_NAME=$(BRANCH_NAME) FRONTEND_PORT=$(FRONTEND_PORT) BACKEND_PORT=$(BACKEND_PORT) docker compose -f docker-compose.dev.yml
 FRONTEND_URL = http://localhost:3000
-FRONTEND_DEV_URL = http://localhost:5173
-BACKEND_URL = http://localhost:8000
+FRONTEND_DEV_URL = http://localhost:$(FRONTEND_PORT)
+BACKEND_URL = http://localhost:$(BACKEND_PORT)
 
 # Colors for output
 CYAN = \033[0;36m
@@ -129,6 +136,28 @@ dev-launch: dev-start ## Start dev environment and open browser
 status: ## Show status of all containers
 	@echo "$(CYAN)Container Status:$(NC)"
 	@docker ps --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}" | grep -E "durable-code|NAMES" || echo "$(YELLOW)No containers running$(NC)"
+
+port-status: ## Show port assignments for all branches
+	@echo "$(CYAN)╔════════════════════════════════════════════════════════════╗$(NC)"
+	@echo "$(CYAN)║                Port Assignments by Branch                  ║$(NC)"
+	@echo "$(CYAN)╚════════════════════════════════════════════════════════════╝$(NC)"
+	@echo ""
+	@echo "$(GREEN)Current Branch: $(BRANCH_NAME)$(NC)"
+	@./scripts/get-branch-ports.sh "$(BRANCH_NAME)" urls
+	@echo ""
+	@echo "$(CYAN)Running Containers:$(NC)"
+	@docker ps --format "table {{.Names}}\t{{.Ports}}" | grep -E "durable-code.*-dev|NAMES" || echo "$(YELLOW)No dev containers running$(NC)"
+	@echo ""
+	@echo "$(YELLOW)Tip: Each branch gets unique ports to avoid conflicts$(NC)"
+	@echo "$(YELLOW)Main/master/develop branches always use default ports (5173, 8000)$(NC)"
+
+branch-ports: ## Display URLs for current branch
+	@echo "$(CYAN)URLs for branch '$(BRANCH_NAME)':$(NC)"
+	@./scripts/get-branch-ports.sh "$(BRANCH_NAME)" urls
+
+show-ports: ## Show all active port mappings
+	@echo "$(CYAN)Active Port Mappings:$(NC)"
+	@docker ps --format "table {{.Names}}\t{{.Ports}}" | grep -E "0\.0\.0\.0|NAMES" || echo "$(YELLOW)No port mappings found$(NC)"
 
 clean: ## Remove all containers, networks, and volumes
 	@echo "$(RED)⚠️  Warning: This will remove all containers, networks, and volumes!$(NC)"

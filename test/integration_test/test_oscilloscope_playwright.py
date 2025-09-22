@@ -71,7 +71,7 @@ async def page(browser: Any) -> Any:
     await context.close()
 
 
-@pytest.mark.skip(reason="Playwright integration tests require special network setup")
+@pytest.mark.skip(reason="Playwright tests require Docker network setup - run manually with 'make test-playwright'")
 class TestOscilloscopeIntegration:
     """Integration tests for oscilloscope functionality."""
 
@@ -79,7 +79,7 @@ class TestOscilloscopeIntegration:
     async def test_oscilloscope_page_loads(self, page: Any) -> None:
         """Test that the oscilloscope page loads successfully."""
         # Navigate to the app - use container name for Docker network
-        await page.goto("http://durable-code-frontend-feat-no-skipped-tests-linter-dev:5173")
+        await page.goto("http://durable-code-frontend-feat-dynamic-branch-ports-dev:5570")
 
         # Wait for the app to load
         await page.wait_for_selector("#root", timeout=10000)
@@ -121,7 +121,7 @@ class TestOscilloscopeIntegration:
         page.on("websocket", on_websocket)
 
         # Navigate to the app
-        await page.goto("http://durable-code-frontend-feat-no-skipped-tests-linter-dev:5173")
+        await page.goto("http://durable-code-frontend-feat-dynamic-branch-ports-dev:5570")
 
         # Wait for the Demo tab and click it
         await page.wait_for_selector('button:has-text("Demo")', timeout=10000)
@@ -137,7 +137,7 @@ class TestOscilloscopeIntegration:
     async def test_oscilloscope_controls(self, page: Any) -> None:
         """Test oscilloscope control interactions."""
         # Navigate to the Demo tab
-        await page.goto("http://durable-code-frontend-feat-no-skipped-tests-linter-dev:5173")
+        await page.goto("http://durable-code-frontend-feat-dynamic-branch-ports-dev:5570")
         await page.wait_for_selector('button:has-text("Demo")', timeout=10000)
         await page.click('button:has-text("Demo")')
 
@@ -174,7 +174,7 @@ class TestOscilloscopeIntegration:
     async def test_oscilloscope_data_streaming(self, page: Any) -> None:
         """Test that oscilloscope receives and displays streaming data."""
         # Navigate to Demo tab
-        await page.goto("http://durable-code-frontend-feat-no-skipped-tests-linter-dev:5173")
+        await page.goto("http://durable-code-frontend-feat-dynamic-branch-ports-dev:5570")
         await page.wait_for_selector('button:has-text("Demo")', timeout=10000)
         await page.click('button:has-text("Demo")')
 
@@ -204,7 +204,7 @@ class TestOscilloscopeIntegration:
     async def test_oscilloscope_disconnect_reconnect(self, page: Any) -> None:
         """Test disconnect and reconnect functionality."""
         # Navigate to Demo tab
-        await page.goto("http://durable-code-frontend-feat-no-skipped-tests-linter-dev:5173")
+        await page.goto("http://durable-code-frontend-feat-dynamic-branch-ports-dev:5570")
         await page.wait_for_selector('button:has-text("Demo")', timeout=10000)
         await page.click('button:has-text("Demo")')
 
@@ -238,7 +238,7 @@ class TestOscilloscopeIntegration:
         # This would need to be coordinated with Docker commands
 
         # For now, test that the UI handles errors gracefully
-        await page.goto("http://durable-code-frontend-feat-no-skipped-tests-linter-dev:5173")
+        await page.goto("http://durable-code-frontend-feat-dynamic-branch-ports-dev:5570")
         await page.wait_for_selector('button:has-text("Demo")', timeout=10000)
         await page.click('button:has-text("Demo")')
 

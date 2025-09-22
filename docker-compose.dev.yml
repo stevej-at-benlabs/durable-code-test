@@ -10,7 +10,7 @@
 #     auto-restart unless explicitly stopped, ensuring development continuity.
 # Dependencies: Docker, Docker Compose, local source code directories
 # Exports: Development Docker services with hot reload capabilities
-# Interfaces: Backend on port 8000, Frontend on port 5173 (Vite dev server)
+# Interfaces: Backend on port ${BACKEND_PORT:-8000}, Frontend on port ${FRONTEND_PORT:-5173} (Vite dev server)
 # Implementation: Volume mounts for source code, development server configurations
 
 services:
@@ -20,7 +20,7 @@ services:
       dockerfile: Dockerfile.dev
     container_name: durable-code-backend-${BRANCH_NAME:-main}-dev
     ports:
-      - "8000:8000"
+      - "${BACKEND_PORT:-8000}:8000"
     environment:
       - ENV=development
     volumes:
@@ -39,7 +39,7 @@ services:
       dockerfile: Dockerfile.dev
     container_name: durable-code-frontend-${BRANCH_NAME:-main}-dev
     ports:
-      - "5173:5173"
+      - "${FRONTEND_PORT:-5173}:5173"
     depends_on:
       - backend-dev
     volumes:
