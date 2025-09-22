@@ -348,6 +348,10 @@ make gh-watch-checks
 # ⚠️ This is the ONLY approved method for monitoring PR checks
 # ⚠️ Wait for ALL checks to pass before considering the PR complete
 
+# ⏱️ IMPORTANT: GitHub checks may take up to 3 minutes to start
+# This is normal - checks are queued and will begin shortly
+# The dashboard will continue monitoring until checks complete
+
 # The dashboard provides:
 # - Real-time updates every 5 seconds
 # - Color-coded status indicators (green = pass, red = fail, yellow = pending)
@@ -663,9 +667,11 @@ All standard criteria PLUS:
 "🚨 CRITICAL: Using required make target to monitor PR checks"
 "🚀 Launching GitHub checks dashboard with: make gh-watch-checks"
 "⚠️ This is the REQUIRED method for confirming passing checks"
+"⏱️ NOTE: GitHub checks may take up to 3 minutes to start"
 ""
 "[Dashboard monitoring all PR checks in real-time]"
 "[WAITING for all checks to pass before proceeding...]"
+"[Checks may take up to 3 minutes to begin - this is normal]"
 "✅ Build check passed (2m 14s)"
 "✅ Test check passed (3m 45s)"
 "✅ Quality check passed (1m 32s)"
@@ -733,9 +739,11 @@ All standard criteria PLUS:
 "🚨 CRITICAL: Using required make target to monitor PR checks"
 "🚀 Executing: make gh-watch-checks"
 "⚠️ This is the MANDATORY method for confirming all checks pass"
+"⏱️ NOTE: GitHub checks may take up to 3 minutes to start"
 ""
 "[Dashboard actively monitoring all PR checks]"
 "[WAITING for confirmation that all checks have passed...]"
+"[Checks may take up to 3 minutes to begin - this is normal]"
 "✅ Build check passed (2m 14s)"
 "✅ Test check passed (3m 45s)"
 "✅ Quality check passed (1m 32s)"
