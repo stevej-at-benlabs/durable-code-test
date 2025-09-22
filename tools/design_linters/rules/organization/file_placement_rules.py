@@ -1,18 +1,18 @@
 #!/usr/bin/env python3
 """
 Purpose: File organization and placement linting rule for the design linter framework
-Scope: Organization category rule implementation with JSON-based layout configuration
+Scope: Organization category rule implementation with JSON/YAML-based layout configuration
 Overview: This module implements comprehensive file organization rules that ensure proper project
     structure and prevent common placement mistakes that can lead to maintenance issues. It detects
     files placed in incorrect directories such as debug scripts in root, test files outside test
     directories, frontend code mixed with backend, and configuration files in source directories.
-    The rule loads configuration from a JSON layout file that supports both AI-readable guidance
+    The rule loads configuration from a JSON or YAML layout file that supports both AI-readable guidance
     and machine-readable regex patterns for comprehensive file organization enforcement. It helps
     maintain clean separation of concerns, prevents accidental commits of temporary files, and
     ensures consistent project organization across team members. The implementation includes
     helpful suggestions for where files should be moved and can be configured to enforce
     organization standards specific to each project's architecture.
-Dependencies: Framework interfaces, pathlib for path analysis, json for config loading, re for regex
+Dependencies: Framework interfaces, pathlib for path analysis, json/yaml for config loading, re for regex
 Exports: FileOrganizationRule implementation
 Interfaces: Implements ASTLintRule interface from framework
 Implementation: JSON-driven path validation with regex pattern matching
@@ -23,6 +23,7 @@ import re
 from pathlib import Path
 from typing import Any
 
+import yaml
 from design_linters.framework.interfaces import ASTLintRule, LintContext, LintViolation, Severity
 from loguru import logger
 
@@ -37,7 +38,7 @@ class FileOrganizationRule(ASTLintRule):
         self.layout_rules = None
 
         # Load layout rules from JSON file if specified
-        layout_file = self.config.get("layout_rules_file", ".ai/layout.json")
+        layout_file = self.config.get("layout_rules_file", ".ai/layout.yaml")
         self._load_layout_rules(layout_file)
 
         # Fallback to default config if no JSON file found
@@ -46,7 +47,7 @@ class FileOrganizationRule(ASTLintRule):
             self._use_default_config()
 
     def _load_layout_rules(self, layout_file: str) -> None:
-        """Load layout rules from JSON file."""
+        """Load layout rules from JSON or YAML file."""
         try:
             layout_path = Path(layout_file)
             if not layout_path.is_absolute():
@@ -55,7 +56,9 @@ class FileOrganizationRule(ASTLintRule):
 
             if layout_path.exists():
                 with open(layout_path, encoding="utf-8") as f:
-                    data = json.load(f)
+                    # Determine file format from extension
+                    data = yaml.safe_load(f) if layout_path.suffix in [".yaml", ".yml"] else json.load(f)
+
                     if "linter_rules" in data:
                         self.layout_rules = data["linter_rules"]
                         logger.debug(f"Loaded layout rules from {layout_path}")
@@ -81,11 +84,18 @@ class FileOrganizationRule(ASTLintRule):
                         "^conftest\\.py$",
                         "^manage\\.py$",
                     ],
-                    "deny": ["^debug[_-].*\\.py$", "^tmp[_-].*\\.py$", "^temp[_-].*\\.py$"],
+                    "deny": [
+                        "^debug[_-].*\\.py$",
+                        "^tmp[_-].*\\.py$",
+                        "^temp[_-].*\\.py$",
+                    ],
                 }
             },
             "global_patterns": {
-                "test_files": {"patterns": ["test[_-].*\\.py$", ".*[_-]test\\.py$"], "must_be_in": ["^test/"]}
+                "test_files": {
+                    "patterns": ["test[_-].*\\.py$", ".*[_-]test\\.py$"],
+                    "must_be_in": ["^test/"],
+                }
             },
         }
 
@@ -247,10 +257,7 @@ class FileOrganizationRule(ASTLintRule):
         if "deny" in matched_rule:
             for pattern in matched_rule["deny"]:
                 # For root directory patterns, check against filename only
-                if matched_path == ".":
-                    check_target = rel_path.name
-                else:
-                    check_target = path_str
+                check_target = rel_path.name if matched_path == "." else path_str
 
                 if re.search(pattern, check_target):
                     # Special message for debug/temp files in root
@@ -319,4 +326,4 @@ class FileOrganizationRule(ASTLintRule):
                 return "Move to 'test/' directory"
             return "Move to appropriate module directory based on functionality"
         else:
-            return "Review project layout rules in .ai/layout.json for proper placement"
+            return "Review project layout rules in .ai/layout.yaml for proper placement"

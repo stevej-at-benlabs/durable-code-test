@@ -7,9 +7,9 @@ I'll answer your question about the Durable Code Test project using comprehensiv
 
 **CRITICAL: I will ALWAYS follow this exact order:**
 
-1. **FIRST - Read Project Index**: I MUST read `.ai/index.json` BEFORE doing anything else. This provides the navigation map for the entire project.
+1. **FIRST - Read Project Index**: I MUST read `.ai/index.yaml` BEFORE doing anything else. This provides the navigation map for the entire project.
 
-2. **SECOND - Check Layout Rules**: For any file placement questions, I'll consult `.ai/layout.json` which is the authoritative source for project structure and file organization rules.
+2. **SECOND - Check Layout Rules**: For any file placement questions, I'll consult `.ai/layout.yaml` which is the authoritative source for project structure and file organization rules.
 
 3. **THIRD - Use Index to Navigate**: Based on the index, I'll identify which specific files or sections are relevant to your question, then navigate to those specific locations.
 
@@ -29,7 +29,7 @@ I'll answer your question about the Durable Code Test project using comprehensiv
 6. **SIXTH - Examine Implementation**: ONLY after checking the index and layout, look at actual code files for accurate, current information
 7. **SEVENTH - Consider Templates**: Reference `.ai/templates/` for implementation patterns as directed by the index
 
-**Important**: I will NOT perform generic searches or grep operations before consulting the index. The `.ai/index.json` file is the authoritative navigation guide and MUST be consulted first. The `.ai/layout.json` file MUST be consulted for any file placement decisions.
+**Important**: I will NOT perform generic searches or grep operations before consulting the index. The `.ai/index.yaml` file is the authoritative navigation guide and MUST be consulted first. The `.ai/layout.yaml` file MUST be consulted for any file placement decisions.
 
 **Your Question**: $ARGUMENTS
 
