@@ -19,17 +19,12 @@ Implementation: JSON-driven path validation with regex pattern matching
 """
 
 import json
-import yaml
 import re
 from pathlib import Path
 from typing import Any
 
-from design_linters.framework.interfaces import (
-    ASTLintRule,
-    LintContext,
-    LintViolation,
-    Severity,
-)
+import yaml
+from design_linters.framework.interfaces import ASTLintRule, LintContext, LintViolation, Severity
 from loguru import logger
 
 
