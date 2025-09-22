@@ -151,9 +151,9 @@ port-status: ## Show port assignments for all branches
 	@echo "$(YELLOW)Tip: Each branch gets unique ports to avoid conflicts$(NC)"
 	@echo "$(YELLOW)Main/master/develop branches always use default ports (5173, 8000)$(NC)"
 
-branch-ports: ## Display ports for current branch
-	@echo "$(CYAN)Ports for branch '$(BRANCH_NAME)':$(NC)"
-	@./scripts/get-branch-ports.sh "$(BRANCH_NAME)" plain
+branch-ports: ## Display URLs for current branch
+	@echo "$(CYAN)URLs for branch '$(BRANCH_NAME)':$(NC)"
+	@./scripts/get-branch-ports.sh "$(BRANCH_NAME)" urls
 
 show-ports: ## Show all active port mappings
 	@echo "$(CYAN)Active Port Mappings:$(NC)"
