@@ -39,17 +39,17 @@ export default function HomePage(): ReactElement {
             <span className={styles.gradientText}>AI-Authored Excellence</span>
           </h1>
           <p className={styles.heroSubtitle}>
-            Proving that AI can create production-quality, scalable, and maintainable code
-            through intelligent architecture and automated quality assurance
+            Proving that AI can create production-quality, scalable, and maintainable
+            code through intelligent architecture and automated quality assurance
           </p>
           <div className={styles.heroInfoGrid}>
             <div className={styles.projectInfo}>
               <h3>Project Purpose</h3>
               <p>
-                This project serves a dual purpose: documenting best practices for AI-assisted
-                development while simultaneously demonstrating through its own implementation
-                that these practices enable AI to create production-quality, maintainable software
-                at enterprise scale.
+                This project serves a dual purpose: documenting best practices for
+                AI-assisted development while simultaneously demonstrating through its
+                own implementation that these practices enable AI to create
+                production-quality, maintainable software at enterprise scale.
               </p>
             </div>
             <div className={styles.projectScope}>
