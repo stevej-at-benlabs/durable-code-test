@@ -64,7 +64,7 @@ describe('App Component', () => {
       // More specific selectors for the main title elements
       expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument();
       expect(
-        screen.getByText(/A comprehensive framework for building maintainable/),
+        screen.getByText(/Proving that AI can create production-quality/),
       ).toBeInTheDocument();
     });
 
@@ -362,7 +362,7 @@ describe('App Component', () => {
       render(<AppWithRouter />);
 
       // Component should still render even if some data is missing
-      expect(screen.getByText('Durable Code')).toBeInTheDocument();
+      expect(screen.getByText('AI-Authored Excellence')).toBeInTheDocument();
     });
 
     it('handles navigation errors gracefully', async () => {
