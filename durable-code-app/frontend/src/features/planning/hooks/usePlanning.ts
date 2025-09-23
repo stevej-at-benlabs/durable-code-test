@@ -1,15 +1,22 @@
 /**
  * Purpose: Custom React hook for managing planning feature data and state
- * Scope: Planning documents, workflows, and resources management
- * Overview: Provides data and utilities for the planning feature components
+ * Scope: Planning documents, workflows, resources, and case study management
+ * Overview: Provides data and utilities for the planning feature components including
+ *     project case study tracking for AWS deployment implementation
  * Dependencies: React, planning types
  * Exports: usePlanning custom hook
- * Interfaces: Uses PlanningDocument, PlanningSection from types
- * Implementation: Returns planning documents organized by sections
+ * Interfaces: Uses PlanningDocument, PlanningSection, CaseStudyData from types
+ * Implementation: Returns planning documents organized by sections and case study data
  */
 
-import { useMemo } from 'react';
-import type { PlanningDocument, PlanningSection } from '../types/planning.types';
+import { useMemo, useState } from 'react';
+import type {
+  CaseStudyData,
+  CaseStudyStep,
+  PlanningDocument,
+  PlanningSection,
+  UsePlanningReturn,
+} from '../types/planning.types';
 
 const PLANNING_DOCUMENTS: PlanningDocument[] = [
   {
@@ -96,7 +103,313 @@ const PLANNING_DOCUMENTS: PlanningDocument[] = [
   },
 ];
 
-export function usePlanning() {
+const CASE_STUDY_STEPS: CaseStudyStep[] = [
+  {
+    id: 'step-1-planning',
+    stepNumber: 1,
+    title: 'Create the Plan',
+    icon: '📋',
+    subtitle: 'Comprehensive planning phase',
+    status: 'completed',
+    popup: {
+      overview: {
+        title: 'Planning Phase Overview',
+        points: [
+          'Established comprehensive documentation structure',
+          'Created 10-PR breakdown for incremental deployment',
+          'Defined clear success metrics and timelines',
+          'Built interactive architecture diagrams',
+          'Set up progress tracking system',
+        ],
+      },
+      documents: {
+        title: 'Planning Documents Created',
+        items: [
+          {
+            name: 'AI_CONTEXT.md',
+            description: 'Background and context for AI agents',
+            purpose: 'Ensures AI understands project goals and constraints',
+          },
+          {
+            name: 'PR_BREAKDOWN.md',
+            description: '10 incremental PRs with detailed steps',
+            purpose: 'Breaks complex deployment into manageable chunks',
+          },
+          {
+            name: 'PROGRESS_TRACKER.md',
+            description: 'Status tracking with checklists',
+            purpose: 'Monitors implementation progress and blockers',
+          },
+          {
+            name: 'deployment-flow.html',
+            description: 'Interactive deployment architecture diagram',
+            purpose: 'Visual guide for team understanding',
+          },
+        ],
+      },
+      implementation: {
+        title: 'How We Approached Planning',
+        points: [
+          'Started with cost constraints ($60/month budget)',
+          'Chose ECS Fargate for serverless container hosting',
+          'Designed for incremental implementation',
+          'Created documentation-first approach',
+          'Built in rollback strategies from day one',
+          'AI-assisted development with strict quality gates',
+          'Every AI-generated file passed all checks on first run',
+        ],
+      },
+      outcomes: {
+        title: 'Planning Phase Results',
+        points: [
+          '✅ Clear roadmap established',
+          '✅ Team alignment achieved',
+          '✅ Risk mitigation identified',
+          '✅ Cost estimates validated',
+          '✅ Timeline defined (21 days)',
+          '🏆 AI-generated code: 0 linting errors, 471 tests passing',
+          '🏆 100% compliance with SOLID principles and style guides',
+        ],
+      },
+      links: [
+        {
+          text: 'View Planning Documents',
+          url: '/planning/deployment/',
+        },
+      ],
+    },
+  },
+  {
+    id: 'step-2-terraform',
+    stepNumber: 2,
+    title: 'PR1: Terraform Foundation',
+    icon: '🏗️',
+    subtitle: 'Infrastructure as Code setup',
+    status: 'upcoming',
+    popup: {
+      overview: {
+        title: 'Terraform Foundation Setup',
+        points: [
+          'Configure AWS provider and backend',
+          'Set up S3 state management',
+          'Create VPC and networking',
+          'Define security groups',
+          'Establish tagging strategy',
+        ],
+      },
+      documents: {
+        title: 'Infrastructure Files',
+        items: [
+          {
+            name: 'main.tf',
+            description: 'Provider and backend configuration',
+            purpose: 'Core Terraform setup',
+          },
+          {
+            name: 'networking.tf',
+            description: 'VPC, subnets, and routing',
+            purpose: 'Network isolation and security',
+          },
+          {
+            name: 'variables.tf',
+            description: 'Input variables for flexibility',
+            purpose: 'Environment-specific configuration',
+          },
+        ],
+      },
+      implementation: {
+        title: 'Implementation Steps',
+        points: [
+          'Create S3 bucket for state storage',
+          'Configure DynamoDB for state locking',
+          'Define VPC with public/private subnets',
+          'Set up Internet and NAT gateways',
+          'Create initial security groups',
+        ],
+      },
+      outcomes: {
+        title: 'Expected Outcomes',
+        points: [
+          '🎯 Reproducible infrastructure',
+          '🎯 Version-controlled changes',
+          '🎯 Multi-environment support',
+          '🎯 Secure network foundation',
+          '🎯 Cost tracking via tags',
+        ],
+      },
+    },
+  },
+  {
+    id: 'step-3-ecr',
+    stepNumber: 3,
+    title: 'PR2: Container Registry',
+    icon: '📦',
+    subtitle: 'ECR repositories setup',
+    status: 'upcoming',
+    popup: {
+      overview: {
+        title: 'ECR Repository Configuration',
+        points: [
+          'Create repositories for frontend and backend',
+          'Enable vulnerability scanning',
+          'Set up lifecycle policies',
+          'Configure cross-region replication',
+          'Establish access policies',
+        ],
+      },
+      documents: {
+        title: 'Registry Configuration',
+        items: [
+          {
+            name: 'ecr.tf',
+            description: 'Repository definitions',
+            purpose: 'Container image storage',
+          },
+          {
+            name: 'lifecycle-policy.json',
+            description: 'Image retention rules',
+            purpose: 'Cost optimization',
+          },
+        ],
+      },
+      implementation: {
+        title: 'Key Decisions',
+        points: [
+          'Keep last 10 production images',
+          'Delete untagged after 7 days',
+          'Enable scan on push',
+          'Use immutable tags',
+          'Set up pull-through cache',
+        ],
+      },
+      outcomes: {
+        title: 'Benefits Achieved',
+        points: [
+          '🎯 Automated security scanning',
+          '🎯 Cost-controlled storage',
+          '🎯 Version history maintained',
+          '🎯 Fast image pulls',
+          '🎯 Disaster recovery ready',
+        ],
+      },
+    },
+  },
+  {
+    id: 'step-4-ecs',
+    stepNumber: 4,
+    title: 'PR3: ECS Fargate Setup',
+    icon: '🚀',
+    subtitle: 'Container orchestration',
+    status: 'upcoming',
+    popup: {
+      overview: {
+        title: 'ECS Cluster and Services',
+        points: [
+          'Create Fargate cluster',
+          'Define task definitions',
+          'Configure services',
+          'Set up service discovery',
+          'Enable Container Insights',
+        ],
+      },
+      documents: {
+        title: 'ECS Configuration',
+        items: [
+          {
+            name: 'ecs.tf',
+            description: 'Cluster and service definitions',
+            purpose: 'Container orchestration',
+          },
+          {
+            name: 'task-definitions/',
+            description: 'Container specifications',
+            purpose: 'Resource allocation and config',
+          },
+        ],
+      },
+      implementation: {
+        title: 'Service Configuration',
+        points: [
+          'Frontend: 256 CPU, 512 Memory',
+          'Backend: 512 CPU, 1024 Memory',
+          'Health checks every 30 seconds',
+          'Rolling deployments enabled',
+          'Auto-restart on failure',
+        ],
+      },
+      outcomes: {
+        title: 'Deployment Capabilities',
+        points: [
+          '🎯 Zero-downtime deployments',
+          '🎯 Automatic scaling ready',
+          '🎯 Health monitoring active',
+          '🎯 Log aggregation enabled',
+          '🎯 Cost-optimized sizing',
+        ],
+      },
+    },
+  },
+  {
+    id: 'step-5-cicd',
+    stepNumber: 5,
+    title: 'PR5: GitHub Actions CI/CD',
+    icon: '⚙️',
+    subtitle: 'Automated deployment pipeline',
+    status: 'upcoming',
+    popup: {
+      overview: {
+        title: 'CI/CD Pipeline Implementation',
+        points: [
+          'Configure GitHub OIDC provider',
+          'Create deployment workflows',
+          'Set up environment secrets',
+          'Implement approval gates',
+          'Add rollback mechanisms',
+        ],
+      },
+      documents: {
+        title: 'Pipeline Configuration',
+        items: [
+          {
+            name: '.github/workflows/deploy.yml',
+            description: 'Main deployment workflow',
+            purpose: 'Automated deployments',
+          },
+          {
+            name: 'iam.tf',
+            description: 'OIDC trust relationship',
+            purpose: 'Passwordless authentication',
+          },
+        ],
+      },
+      implementation: {
+        title: 'Pipeline Features',
+        points: [
+          'Trigger on push to main',
+          'Run tests in parallel',
+          'Build and push to ECR',
+          'Deploy to ECS',
+          'Smoke test validation',
+        ],
+      },
+      outcomes: {
+        title: 'Automation Benefits',
+        points: [
+          '🎯 10-minute deployments',
+          '🎯 No manual steps',
+          '🎯 Consistent process',
+          '🎯 Automatic rollback',
+          '🎯 Audit trail complete',
+        ],
+      },
+    },
+  },
+];
+
+export function usePlanning(): UsePlanningReturn {
+  const [loading] = useState(false);
+  const [error] = useState<Error | null>(null);
+
   const planningSection: PlanningSection = useMemo(
     () => ({
       title: 'Planning Documents',
@@ -108,8 +421,20 @@ export function usePlanning() {
     [],
   );
 
+  const caseStudy: CaseStudyData = useMemo(
+    () => ({
+      title: 'AWS Deployment Case Study',
+      subtitle:
+        'Follow our journey deploying this application to AWS ECS Fargate. Each step documents our planning, implementation, and outcomes.',
+      steps: CASE_STUDY_STEPS,
+    }),
+    [],
+  );
+
   return {
     planningSection,
-    documents: PLANNING_DOCUMENTS,
+    caseStudy,
+    loading,
+    error,
   };
 }
