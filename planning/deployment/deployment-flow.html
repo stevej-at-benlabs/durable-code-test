@@ -626,73 +626,95 @@
 
             <!-- Cost Estimation -->
             <div class="diagram-section">
-                <h2>Cost Breakdown Estimate</h2>
+                <h2>Cost Breakdown Estimate (With Auto-Shutdown Optimization)</h2>
                 <div class="description">
-                    Estimated monthly costs for running the application on AWS (us-west-2 region).
+                    Estimated monthly costs for running the application on AWS (us-west-2 region) with auto-shutdown scheduling.
+                    <strong style="color: green;">Target: &lt; $25/month with scheduling enabled</strong>
                 </div>
                 <table style="width: 100%; border-collapse: collapse;">
                     <thead>
                         <tr style="background: #edf2f7;">
                             <th style="padding: 12px; text-align: left; border: 1px solid #e2e8f0;">Service</th>
                             <th style="padding: 12px; text-align: left; border: 1px solid #e2e8f0;">Configuration</th>
-                            <th style="padding: 12px; text-align: right; border: 1px solid #e2e8f0;">Monthly Cost</th>
+                            <th style="padding: 12px; text-align: right; border: 1px solid #e2e8f0;">24/7 Cost</th>
+                            <th style="padding: 12px; text-align: right; border: 1px solid #e2e8f0;">With Scheduling</th>
                         </tr>
                     </thead>
                     <tbody>
                         <tr>
+                            <td style="padding: 12px; border: 1px solid #e2e8f0;">Domain Registration</td>
+                            <td style="padding: 12px; border: 1px solid #e2e8f0;">codewithai.dev (.dev domain)</td>
+                            <td style="padding: 12px; text-align: right; border: 1px solid #e2e8f0;">$1.25</td>
+                            <td style="padding: 12px; text-align: right; border: 1px solid #e2e8f0;">$1.25</td>
+                        </tr>
+                        <tr>
                             <td style="padding: 12px; border: 1px solid #e2e8f0;">ECS Fargate</td>
-                            <td style="padding: 12px; border: 1px solid #e2e8f0;">2 tasks (0.5 vCPU, 1GB RAM each)</td>
-                            <td style="padding: 12px; text-align: right; border: 1px solid #e2e8f0;">$18.40</td>
+                            <td style="padding: 12px; border: 1px solid #e2e8f0;">2 tasks (256 CPU, 512MB RAM each)</td>
+                            <td style="padding: 12px; text-align: right; border: 1px solid #e2e8f0;">$30.00</td>
+                            <td style="padding: 12px; text-align: right; border: 1px solid #e2e8f0; color: green; font-weight: bold;">$10.00</td>
                         </tr>
                         <tr>
                             <td style="padding: 12px; border: 1px solid #e2e8f0;">Application Load Balancer</td>
-                            <td style="padding: 12px; border: 1px solid #e2e8f0;">1 ALB + data transfer</td>
+                            <td style="padding: 12px; border: 1px solid #e2e8f0;">1 ALB (always on)</td>
+                            <td style="padding: 12px; text-align: right; border: 1px solid #e2e8f0;">$18.00</td>
                             <td style="padding: 12px; text-align: right; border: 1px solid #e2e8f0;">$18.00</td>
                         </tr>
                         <tr>
                             <td style="padding: 12px; border: 1px solid #e2e8f0;">ECR</td>
                             <td style="padding: 12px; border: 1px solid #e2e8f0;">10GB storage</td>
                             <td style="padding: 12px; text-align: right; border: 1px solid #e2e8f0;">$1.00</td>
+                            <td style="padding: 12px; text-align: right; border: 1px solid #e2e8f0;">$1.00</td>
                         </tr>
                         <tr>
-                            <td style="padding: 12px; border: 1px solid #e2e8f0;">CloudWatch</td>
-                            <td style="padding: 12px; border: 1px solid #e2e8f0;">Logs + basic metrics</td>
-                            <td style="padding: 12px; text-align: right; border: 1px solid #e2e8f0;">$5.00</td>
+                            <td style="padding: 12px; border: 1px solid #e2e8f0;">CloudWatch + Lambda</td>
+                            <td style="padding: 12px; border: 1px solid #e2e8f0;">Logs, metrics, scheduling</td>
+                            <td style="padding: 12px; text-align: right; border: 1px solid #e2e8f0;">$3.00</td>
+                            <td style="padding: 12px; text-align: right; border: 1px solid #e2e8f0;">$2.00</td>
                         </tr>
                         <tr>
                             <td style="padding: 12px; border: 1px solid #e2e8f0;">Route53</td>
                             <td style="padding: 12px; border: 1px solid #e2e8f0;">1 hosted zone</td>
-                            <td style="padding: 12px; text-align: right; border: 1px solid #e2e8f0;">$0.50</td>
+                            <td style="padding: 12px; text-align: right; border: 1px solid #e2e8f0;">$1.00</td>
+                            <td style="padding: 12px; text-align: right; border: 1px solid #e2e8f0;">$1.00</td>
                         </tr>
-                        <tr>
-                            <td style="padding: 12px; border: 1px solid #e2e8f0;">NAT Gateway</td>
-                            <td style="padding: 12px; border: 1px solid #e2e8f0;">2 gateways (HA)</td>
-                            <td style="padding: 12px; text-align: right; border: 1px solid #e2e8f0;">$90.00</td>
+                        <tr style="background: #ffebe9; font-weight: bold;">
+                            <td colspan="2" style="padding: 12px; border: 1px solid #e2e8f0;">Total (24/7 Operation - NO NAT)</td>
+                            <td style="padding: 12px; text-align: right; border: 1px solid #e2e8f0;">$54.25</td>
+                            <td style="padding: 12px; text-align: right; border: 1px solid #e2e8f0;">-</td>
                         </tr>
-                        <tr style="background: #f7fafc; font-weight: bold;">
-                            <td colspan="2" style="padding: 12px; border: 1px solid #e2e8f0;">Total (High Availability)</td>
-                            <td style="padding: 12px; text-align: right; border: 1px solid #e2e8f0;">$132.90</td>
+                        <tr style="background: #d4f8d4; font-weight: bold;">
+                            <td colspan="2" style="padding: 12px; border: 1px solid #e2e8f0;">Total (With Auto-Shutdown: 8PM-8AM + Weekends)</td>
+                            <td style="padding: 12px; text-align: right; border: 1px solid #e2e8f0;">-</td>
+                            <td style="padding: 12px; text-align: right; border: 1px solid #e2e8f0; color: green;">$33.25</td>
                         </tr>
-                        <tr style="background: #e6fffa; font-weight: bold;">
-                            <td colspan="2" style="padding: 12px; border: 1px solid #e2e8f0;">Total (Single NAT, Cost-Optimized)</td>
-                            <td style="padding: 12px; text-align: right; border: 1px solid #e2e8f0;">$87.90</td>
-                        </tr>
-                        <tr style="background: #f0fff4; font-weight: bold;">
-                            <td colspan="2" style="padding: 12px; border: 1px solid #e2e8f0;">Total (Dev Environment with Spot)</td>
-                            <td style="padding: 12px; text-align: right; border: 1px solid #e2e8f0;">~$45.00</td>
+                        <tr style="background: #c6f6d5; font-weight: bold;">
+                            <td colspan="2" style="padding: 12px; border: 1px solid #e2e8f0;">With Fargate Spot (Dev)</td>
+                            <td style="padding: 12px; text-align: right; border: 1px solid #e2e8f0;">-</td>
+                            <td style="padding: 12px; text-align: right; border: 1px solid #e2e8f0; color: green;">~$25.00</td>
                         </tr>
                     </tbody>
                 </table>
                 <div class="info-box" style="margin-top: 20px;">
-                    <strong>Cost Optimization Tips:</strong>
+                    <strong>🎯 Cost Optimization Strategy (PR8 Implementation):</strong>
                     <ul>
-                        <li>Use Fargate Spot for development/staging (70% savings)</li>
-                        <li>Single NAT Gateway for non-production (save $45/month)</li>
-                        <li>Consider removing NAT entirely and use VPC endpoints</li>
-                        <li>Implement auto-scaling to scale down during low traffic</li>
-                        <li>Use CloudFront for static assets to reduce ALB load</li>
-                        <li>Set up AWS Budget alerts at $50/month threshold</li>
+                        <li><strong style="color: green;">✅ Auto-Shutdown Scheduling (60-70% savings)</strong>
+                            <ul>
+                                <li>Stop ECS services 8 PM - 8 AM weekdays</li>
+                                <li>Full shutdown weekends (Friday 8 PM - Monday 8 AM)</li>
+                                <li>Lambda functions handle start/stop operations</li>
+                                <li>Override capability via tags for critical periods</li>
+                            </ul>
+                        </li>
+                        <li><strong>✅ Fargate Spot for Dev/Staging (70% cost reduction)</strong></li>
+                        <li><strong>✅ Remove NAT Gateway entirely (save $32/month)</strong> - Use VPC endpoints instead</li>
+                        <li><strong>✅ Right-size resources:</strong> Start with 256 CPU/512MB RAM</li>
+                        <li><strong>✅ Set AWS Budget alerts at $25, $40, $60 thresholds</strong></li>
+                        <li>Domain registration: ~$12-15/year for .dev domains</li>
+                        <li>Monitor actual usage with Cost Explorer weekly</li>
                     </ul>
+                    <div style="background: #d4f8d4; padding: 10px; border-radius: 5px; margin-top: 10px;">
+                        <strong>💰 Bottom Line:</strong> From $87.90 → $25.00/month (71% reduction!)
+                    </div>
                 </div>
             </div>
         </div>

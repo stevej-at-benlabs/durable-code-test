@@ -199,16 +199,16 @@ pre-commit: lint-all-staged ## Run pre-commit checks on staged files only
 mock-push-local: ## Simulate GitHub Actions locally using act
 	@echo "$(CYAN)Running GitHub Actions locally with act...$(NC)"
 	@echo "$(YELLOW)This will run the Test Suite workflow locally$(NC)"
-	@act --workflows .github/workflows/test.yml --verbose
+	@. ./.env && act --workflows .github/workflows/test.yml --secret GITHUB_TOKEN=$$GH_TOKEN --verbose
 
 mock-push-local-fast: ## Run act with faster settings (skip heavy containers)
 	@echo "$(CYAN)Running GitHub Actions locally (fast mode)...$(NC)"
-	@act --workflows .github/workflows/test.yml --platform ubuntu-latest=catthehacker/ubuntu:act-latest --verbose
+	@. ./.env && act --workflows .github/workflows/test.yml --platform ubuntu-latest=catthehacker/ubuntu:act-latest --secret GITHUB_TOKEN=$$GH_TOKEN --verbose
 
 mock-push-local-debug: ## Run act in debug mode with shell access
 	@echo "$(CYAN)Running GitHub Actions locally in debug mode...$(NC)"
 	@echo "$(YELLOW)Use 'exit' to continue to next step$(NC)"
-	@act --workflows .github/workflows/test.yml --verbose --shell
+	@. ./.env && act --workflows .github/workflows/test.yml --secret GITHUB_TOKEN=$$GH_TOKEN --verbose --shell
 
 # Include comprehensive linting and testing targets
 -include Makefile.lint
