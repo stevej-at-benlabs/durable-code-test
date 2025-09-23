@@ -89,7 +89,7 @@ Comprehensive YAML configuration supporting:
 - `make lint-fix`: Automated fixing where possible
 - `make lint-list-rules`: Display all available rules
 
-### Testing Infrastructure
+### Testing Repository
 
 **Location**: `test/unit_test/tools/design_linters/`
 

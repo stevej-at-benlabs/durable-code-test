@@ -1,16 +1,16 @@
 /**
- * Purpose: Type definitions for infrastructure feature components and data structures
- * Scope: Infrastructure tab feature with cards, folder structure, and make targets
- * Overview: Comprehensive TypeScript interfaces for infrastructure feature implementation.
- *     Defines types for infrastructure cards, folder structure items, make targets,
- *     and component props to ensure type safety across the infrastructure feature.
+ * Purpose: Type definitions for repository feature components and data structures
+ * Scope: Repository tab feature with cards, folder structure, and make targets
+ * Overview: Comprehensive TypeScript interfaces for repository feature implementation.
+ *     Defines types for repository cards, folder structure items, make targets,
+ *     and component props to ensure type safety across the repository feature.
  * Dependencies: None (pure TypeScript types)
- * Exports: InfrastructureItem, FolderItem, MakeTarget, and component prop interfaces
- * Props/Interfaces: Core data structures for infrastructure components
+ * Exports: RepositoryItem, FolderItem, MakeTarget, and component prop interfaces
+ * Props/Interfaces: Core data structures for repository components
  * State/Behavior: Type definitions only, no runtime behavior
  */
 
-export interface InfrastructureItem {
+export interface RepositoryItem {
   id: string;
   icon: string;
   title: string;
@@ -22,7 +22,7 @@ export interface InfrastructureItem {
     | 'security'
     | 'development'
     | 'structure'
-    | 'infrastructure'
+    | 'repository'
     | 'documentation'
     | 'resilience'
     | 'testing';
@@ -67,7 +67,7 @@ export interface MakeTarget {
   importance: 'critical' | 'important' | 'utility';
 }
 
-export interface InfrastructureStats {
+export interface RepositoryStats {
   makeTargets: number;
   linterCategories: number;
   codeTemplates: number;
@@ -84,13 +84,13 @@ export interface ActionLink {
 }
 
 // Component prop interfaces
-export interface InfrastructureTabProps {
+export interface RepositoryTabProps {
   className?: string;
   onError?: (error: Error) => void;
 }
 
-export interface InfrastructureCardProps {
-  item: InfrastructureItem;
+export interface RepositoryCardProps {
+  item: RepositoryItem;
   onClick?: (item: InfrastructureItem) => void;
   className?: string;
 }
@@ -106,7 +106,7 @@ export interface FolderStructureProps {
 }
 
 export interface StatsDisplayProps {
-  stats: InfrastructureStats;
+  stats: RepositoryStats;
   className?: string;
 }
 
@@ -118,18 +118,18 @@ export interface ActionLinksProps {
 }
 
 // Hook return types
-export interface UseInfrastructureReturn {
-  infrastructureItems: InfrastructureItem[];
+export interface UseRepositoryReturn {
+  repositoryItems: RepositoryItem[];
   folderStructure: FolderItem[];
   makeTargets: MakeTarget[];
-  stats: InfrastructureStats;
+  stats: RepositoryStats;
   actionLinks: ActionLink[];
   loading: boolean;
   error: Error | null;
 }
 
 // Utility types
-export type InfrastructureCategory = InfrastructureItem['category'];
-export type BadgeType = InfrastructureItem['badge'];
+export type RepositoryCategory = RepositoryItem['category'];
+export type BadgeType = RepositoryItem['badge'];
 export type LinkType = ActionLink['type'];
 export type FolderItemType = FolderItem['type'];

@@ -47,8 +47,8 @@ try:
 except ImportError:
     PLAYWRIGHT_AVAILABLE = False
     # When playwright is not available, create placeholders to prevent NameError
-    Page = Any  # type: ignore[misc,assignment]
-    WebSocket = Any  # type: ignore[misc,assignment]
+    Page = Any  # type: ignore[misc, assignment]
+    WebSocket = Any  # type: ignore[misc, assignment]
     async_playwright = None  # type: ignore[assignment]
 
 # Enable auto mode for async fixtures

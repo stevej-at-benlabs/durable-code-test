@@ -20,7 +20,15 @@ import { MinimalErrorBoundary } from '../../core/errors/MinimalErrorBoundary';
 
 export default function HomePage(): ReactElement {
   const { activeTab, handleTabChange } = useNavigation();
-  const ActiveTabComponent = tabs[activeTab].component;
+  const tabConfig = tabs[activeTab];
+
+  if (!tabConfig) {
+    console.error(`Tab configuration not found for: ${activeTab}`);
+    console.error('Available tabs:', Object.keys(tabs));
+    throw new Error(`Tab configuration not found for: ${activeTab}`);
+  }
+
+  const ActiveTabComponent = tabConfig.component;
 
   return (
     <div className={styles.app}>
@@ -66,8 +74,8 @@ export default function HomePage(): ReactElement {
 
         <section className={styles.tabContainer}>
           <div className={styles.tabHeader}>
-            <h2>{tabs[activeTab].title}</h2>
-            <p>{tabs[activeTab].description}</p>
+            <h2>{tabConfig.title}</h2>
+            <p>{tabConfig.description}</p>
           </div>
           <MinimalErrorBoundary>
             <Suspense fallback={<LoadingSpinner />}>

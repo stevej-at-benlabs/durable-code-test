@@ -11,9 +11,9 @@ import { lazy } from 'react';
 import type { TabContent, TabName } from '../features/navigation';
 
 // Lazy load components normally - error boundaries will be applied at render time
-const InfrastructureTab = lazy(() =>
-  import('../features/infrastructure').then((m) => ({
-    default: m.InfrastructureTab,
+const RepositoryTab = lazy(() =>
+  import('../features/repository').then((m) => ({
+    default: m.RepositoryTab,
   })),
 );
 
@@ -48,11 +48,12 @@ const DemoTab = lazy(() =>
 );
 
 export const tabs: Record<TabName, TabContent> = {
-  Infrastructure: {
-    title: 'Infrastructure',
+  Repository: {
+    title: 'Repository',
     icon: '🏗️',
-    description: 'Building AI-ready projects with proper structure and context',
-    component: InfrastructureTab,
+    description:
+      'Building AI-ready projects with proper repository structure and context',
+    component: RepositoryTab,
   },
   Planning: {
     title: 'Planning',

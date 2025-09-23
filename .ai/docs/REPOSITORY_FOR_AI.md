@@ -1,18 +1,18 @@
 /**
- * Purpose: Comprehensive documentation of infrastructure patterns supporting AI development
+ * Purpose: Comprehensive documentation of repository patterns supporting AI development
  * Scope: Abstract principles with concrete implementation examples
- * Overview: How rigid infrastructure transforms unpredictable AI into reliable engineering
- * Dependencies: Project infrastructure components and tooling
- * Exports: Infrastructure patterns and implementation guide
+ * Overview: How rigid repository transforms unpredictable AI into reliable engineering
+ * Dependencies: Project repository components and tooling
+ * Exports: Repository patterns and implementation guide
  * Props/Interfaces: N/A - Documentation
  * State/Behavior: N/A - Documentation
  */
 
-# Infrastructure for AI Development: Principles & Implementation
+# Repository for AI Development: Principles & Implementation
 
 ## Executive Summary
 
-This document demonstrates how our infrastructure creates a foundation for reliable AI-assisted development. Each section presents an **abstract principle** followed by our **specific implementation** with concrete examples.
+This document demonstrates how our repository creates a foundation for reliable AI-assisted development. Each section presents an **abstract principle** followed by our **specific implementation** with concrete examples.
 
 ---
 
@@ -355,8 +355,8 @@ features:
     path: tools/design_linters
     docs: .ai/features/design-linters.md
 
-  - name: infrastructure-tab
-    path: durable-code-app/frontend/src/features/infrastructure
+  - name: repository-tab
+    path: durable-code-app/frontend/src/features/repository
     docs: .ai/features/web-application.md
 ```
 
@@ -426,7 +426,7 @@ async def create_${RESOURCE}(
 
 ---
 
-## 8. Testing Infrastructure
+## 8. Testing Repository
 
 ### Abstract Principle
 **Tests must be deterministic and comprehensive.** Flaky tests destroy confidence. Missing tests hide bugs.
@@ -511,9 +511,9 @@ logger.info("Processing request",
 
 ## 10. The Result: Reliable AI Development
 
-Our infrastructure transforms AI from an unpredictable assistant into a reliable engineering partner:
+Our repository transforms AI from an unpredictable assistant into a reliable engineering partner:
 
-| Metric | Before Infrastructure | After Infrastructure |
+| Metric | Before Repository | After Repository |
 |--------|----------------------|---------------------|
 | Build Success Rate | 65% | 99.5% |
 | Test Flakiness | 15% | < 0.1% |
@@ -533,11 +533,11 @@ Our infrastructure transforms AI from an unpredictable assistant into a reliable
 
 ## Getting Started
 
-1. **Clone the repository**: Get the complete infrastructure
+1. **Clone the repository**: Get the complete repository
 2. **Run `make setup`**: Initialize your environment
 3. **Explore `.ai/`**: Understand the structure
 4. **Try `make lint-all`**: See comprehensive validation
 5. **Read the templates**: Learn the patterns
 6. **Run `make test`**: Experience deterministic testing
 
-Every piece of infrastructure exists to make AI-assisted development predictable, reliable, and production-ready.
+Every piece of repository exists to make AI-assisted development predictable, reliable, and production-ready.

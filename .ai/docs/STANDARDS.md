@@ -431,7 +431,7 @@ frontend/
 │   │   ├── common/          # Reusable components
 │   │   └── features/        # Feature-specific components
 │   ├── core/
-│   │   └── errors/          # Error boundary infrastructure
+│   │   └── errors/          # Error boundary repository
 │   │       ├── MinimalErrorBoundary.tsx
 │   │       ├── ErrorBoundary.tsx
 │   │       ├── ErrorBoundary.types.ts

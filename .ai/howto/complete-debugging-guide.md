@@ -1,17 +1,17 @@
 # Complete Debugging Guide
 
-A comprehensive guide for debugging both infrastructure and code issues in the durable-code-test project.
+A comprehensive guide for debugging both repository and code issues in the durable-code-test project.
 
 ## Overview
 
 This guide covers two main debugging scenarios:
 
-1. **Infrastructure Debugging**: Docker containers, services, networking, and environment issues
+1. **Repository Debugging**: Docker containers, services, networking, and environment issues
 2. **Code Debugging**: Design linter rules, test failures, and development workflow issues
 
 ---
 
-## Part I: Infrastructure Debugging
+## Part I: Repository Debugging
 
 ### Quick Debugging Commands
 
@@ -166,7 +166,7 @@ docker logs durable-code-test-db-1 --tail=50
 
 1. **Unit Tests**: Write tests to reproduce and verify fixes
 2. **Loguru Logging**: Use structured logging for investigation
-3. **Existing Test Infrastructure**: Leverage the comprehensive test suite
+3. **Existing Test Repository**: Leverage the comprehensive test suite
 
 ### Code Debugging Workflow
 
@@ -503,10 +503,10 @@ make dev
 1. **Write unit tests** to reproduce issues
 2. **Use Loguru logging** for investigation
 3. **Follow TDD cycle**: Red → Green → Refactor
-4. **Run tests through proper infrastructure** (make targets, docker)
+4. **Run tests through proper repository** (make targets, docker)
 5. **Document findings in test names and comments**
 6. **Use systematic debugging approach**
-7. **Check infrastructure before diving into code**
+7. **Check repository before diving into code**
 
 ### ❌ DON'T
 - Create temporary files for debugging

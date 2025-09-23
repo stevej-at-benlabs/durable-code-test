@@ -1,4 +1,4 @@
-"""Core infrastructure modules for the backend application."""
+"""Core repository modules for the backend application."""
 
 from .exceptions import (
     AppExceptionError,

@@ -19,7 +19,7 @@ export function useNavigation() {
     const urlParams = new URLSearchParams(window.location.search);
     const returnTab = urlParams.get('return');
     const validTabs: TabName[] = [
-      'Infrastructure',
+      'Repository',
       'Planning',
       'Building',
       'Quality Assurance',
@@ -33,7 +33,7 @@ export function useNavigation() {
     if (returnTab && validTabs.includes(returnTab as TabName)) {
       return returnTab as TabName;
     }
-    return 'Infrastructure';
+    return 'Repository';
   };
 
   useEffect(() => {
@@ -45,7 +45,7 @@ export function useNavigation() {
     const handlePopState = () => {
       const hash = window.location.hash.replace('#', '');
       const validTabs: TabName[] = [
-        'Infrastructure',
+        'Repository',
         'Planning',
         'Building',
         'Quality Assurance',
@@ -55,7 +55,7 @@ export function useNavigation() {
       if (validTabs.includes(hash as TabName)) {
         setActiveTab(hash as TabName);
       } else {
-        setActiveTab('Infrastructure');
+        setActiveTab('Repository');
       }
     };
 

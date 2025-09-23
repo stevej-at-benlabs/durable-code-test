@@ -41,7 +41,7 @@ All templates use `{{PLACEHOLDER}}` variables that must be replaced with project
 
 **Purpose**: Add new tabs to the web application
 **Location**: Place in `durable-code-app/frontend/src/components/tabs/`
-**Example**: `durable-code-app/frontend/src/components/tabs/InfrastructureTab.tsx`
+**Example**: `durable-code-app/frontend/src/components/tabs/RepositoryTab.tsx`
 
 **Integration Steps**:
 1. Create component using template

@@ -1,46 +1,46 @@
 /**
- * Purpose: Infrastructure tab component showcasing AI-ready project setup and architecture
- * Scope: Feature-based React component for displaying infrastructure best practices
- * Overview: Modern React component demonstrating infrastructure setup for AI-assisted development
+ * Purpose: Repository tab component showcasing AI-ready project setup and architecture
+ * Scope: Feature-based React component for displaying repository best practices
+ * Overview: Modern React component demonstrating repository setup for AI-assisted development
  *     including project organization, tooling configuration, CI/CD setup, and development
  *     environment preparation. Modularized with proper separation of concerns, CSS modules,
  *     and comprehensive error handling following established patterns.
- * Dependencies: React, infrastructure hooks, common components, CSS modules
- * Exports: InfrastructureTab component (default export), InfrastructureTabProps interface
+ * Dependencies: React, repository hooks, common components, CSS modules
+ * Exports: RepositoryTab component (default export), RepositoryTabProps interface
  * Props/Interfaces: Optional className and error handling callback
- * State/Behavior: Fetches infrastructure data via hook, displays modular content sections
+ * State/Behavior: Fetches repository data via hook, displays modular content sections
  */
 
 import { useCallback, useMemo, useState } from 'react';
 import type { ReactElement } from 'react';
 import { ErrorMessage, LoadingSpinner } from '../../../../components/common';
-import { useInfrastructure } from '../../hooks/useInfrastructure';
+import { useRepository } from '../../hooks/useRepository';
 import type {
   FolderItem,
-  InfrastructureItem,
-  InfrastructureTabProps,
-} from '../../types/infrastructure.types';
-import styles from './InfrastructureTab.module.css';
+  RepositoryItem,
+  RepositoryTabProps,
+} from '../../types/repository.types';
+import styles from './RepositoryTab.module.css';
 
 /**
- * InfrastructureTab component
+ * RepositoryTab component
  *
  * @param props - Component props
- * @returns Rendered infrastructure tab component
+ * @returns Rendered repository tab component
  */
-export function InfrastructureTab({
+export function RepositoryTab({
   className = '',
   onError,
-}: InfrastructureTabProps): ReactElement {
+}: RepositoryTabProps): ReactElement {
   const {
-    infrastructureItems,
+    repositoryItems,
     folderStructure: _folderStructure,
     makeTargets,
     stats,
     actionLinks,
     loading,
     error,
-  } = useInfrastructure();
+  } = useRepository();
 
   // State for clicked popup
   const [selectedItem, setSelectedItem] = useState<string | null>(null);
@@ -48,9 +48,9 @@ export function InfrastructureTab({
   // Component classes
   const componentClasses = useMemo(() => {
     return [
-      styles.infrastructureTab,
+      styles.repositoryTab,
       'tab-content',
-      'infrastructure-content',
+      'repository-content',
       className,
       loading && styles.loading,
       error && styles.error,
@@ -60,7 +60,7 @@ export function InfrastructureTab({
   }, [className, loading, error]);
 
   // Event handlers
-  const handleItemClick = useCallback((item: InfrastructureItem) => {
+  const handleItemClick = useCallback((item: RepositoryItem) => {
     if (item.popup) {
       setSelectedItem(item.id);
     }
@@ -72,13 +72,13 @@ export function InfrastructureTab({
   }
 
   // Render helpers
-  const renderInfrastructureGrid = useCallback(() => {
+  const renderRepositoryGrid = useCallback(() => {
     return (
-      <div className={styles.infrastructureGrid}>
-        {infrastructureItems.map((item) => (
+      <div className={styles.repositoryGrid}>
+        {repositoryItems.map((item) => (
           <div
             key={item.id}
-            className={`${styles.infrastructureCard} feature-card`}
+            className={`${styles.repositoryCard} feature-card`}
             onClick={() => handleItemClick(item)}
             role="button"
             tabIndex={0}
@@ -97,7 +97,7 @@ export function InfrastructureTab({
         ))}
       </div>
     );
-  }, [infrastructureItems, handleItemClick]);
+  }, [repositoryItems, handleItemClick]);
 
   const renderFolderStructure = useCallback(
     (
@@ -348,7 +348,7 @@ export function InfrastructureTab({
       <div className={styles.actionSection}>
         <h4 className="dark-title-on-light">
           <span className="section-icon">🚀</span>
-          Try the Infrastructure
+          Try the Repository
         </h4>
         <div className={styles.actionLinks}>
           {actionLinks.map((link) => (
@@ -369,17 +369,17 @@ export function InfrastructureTab({
   }, [actionLinks]);
 
   // Find selected item for popup
-  const selectedInfraItem = useMemo(() => {
+  const selectedRepoItem = useMemo(() => {
     if (!selectedItem) return null;
-    return infrastructureItems.find((item) => item.id === selectedItem);
-  }, [selectedItem, infrastructureItems]);
+    return repositoryItems.find((item) => item.id === selectedItem);
+  }, [selectedItem, repositoryItems]);
 
   // Loading state
   if (loading) {
     return (
       <div className={componentClasses}>
         <LoadingSpinner className={styles.loadingSpinner} />
-        <p>Loading infrastructure data...</p>
+        <p>Loading repository data...</p>
       </div>
     );
   }
@@ -390,7 +390,7 @@ export function InfrastructureTab({
       <div className={componentClasses}>
         <ErrorMessage
           message={error.message}
-          title="Error loading infrastructure"
+          title="Error loading repository"
           variant="error"
           onDismiss={() => window.location.reload()}
           className={styles.errorMessage}
@@ -403,36 +403,36 @@ export function InfrastructureTab({
   return (
     <div className={componentClasses}>
       {/* Hero section */}
-      <div className={styles.infrastructureHero}>
+      <div className={styles.repositoryHero}>
         <h3 className="hero-title">
           <span className={styles.titleIcon}>🏗️</span>
-          Why Rigid Infrastructure Matters for AI Development
+          Why Rigid Repository Structure Matters for AI Development
         </h3>
         <p className="subtitle">
           AI coding assistants are powerful but unpredictable. Without strict repository
           controls, they create inconsistent code, violate conventions, and introduce
           subtle bugs that compound over time. The solution isn't to restrict AI, but to
-          create <strong>rigid infrastructure</strong> that channels its creativity
-          productively. When every file has a defined location, every operation runs
-          identically, and every violation gets caught automatically, AI becomes a
-          reliable engineering partner instead of a source of technical debt. The
-          patterns below show how to build this foundation.
+          create <strong>rigid repository structure</strong> that channels its
+          creativity productively. When every file has a defined location, every
+          operation runs identically, and every violation gets caught automatically, AI
+          becomes a reliable engineering partner instead of a source of technical debt.
+          The patterns below show how to build this foundation.
         </p>
       </div>
 
-      {/* Infrastructure grid */}
-      {renderInfrastructureGrid()}
+      {/* Repository grid */}
+      {renderRepositoryGrid()}
 
       {/* Popup rendered at component level */}
-      {selectedInfraItem && selectedInfraItem.popup && (
+      {selectedRepoItem && selectedRepoItem.popup && (
         <>
           <div className={styles.popupBackdrop} onClick={() => setSelectedItem(null)} />
           <div className={styles.structuredPopup}>
             {/* Document Header */}
             <div className={styles.documentHeader}>
               <h2 className={styles.documentTitle}>
-                <span className={styles.documentIcon}>{selectedInfraItem.icon}</span>
-                {selectedInfraItem.title}
+                <span className={styles.documentIcon}>{selectedRepoItem.icon}</span>
+                {selectedRepoItem.title}
               </h2>
               <button
                 className={styles.closeButton}
@@ -451,9 +451,9 @@ export function InfrastructureTab({
                   The Problem
                 </h3>
                 <div className={styles.sectionContent}>
-                  <h4>{selectedInfraItem.popup.problem.title}</h4>
+                  <h4>{selectedRepoItem.popup.problem.title}</h4>
                   <ul className={styles.pointsList}>
-                    {selectedInfraItem.popup.problem.points.map((point, index) => (
+                    {selectedRepoItem.popup.problem.points.map((point, index) => (
                       <li key={index}>{point}</li>
                     ))}
                   </ul>
@@ -467,9 +467,9 @@ export function InfrastructureTab({
                   Our Solution
                 </h3>
                 <div className={styles.sectionContent}>
-                  <h4>{selectedInfraItem.popup.solution.title}</h4>
+                  <h4>{selectedRepoItem.popup.solution.title}</h4>
                   <ul className={styles.pointsList}>
-                    {selectedInfraItem.popup.solution.points.map((point, index) => (
+                    {selectedRepoItem.popup.solution.points.map((point, index) => (
                       <li key={index}>{point}</li>
                     ))}
                   </ul>
@@ -484,28 +484,28 @@ export function InfrastructureTab({
                 </h3>
                 <div className={styles.exampleHeader}>
                   <span className={styles.exampleTitle}>
-                    {selectedInfraItem.popup.example.title}
+                    {selectedRepoItem.popup.example.title}
                   </span>
-                  {selectedInfraItem.popup.example.file && (
+                  {selectedRepoItem.popup.example.file && (
                     <span className={styles.exampleFile}>
-                      {selectedInfraItem.popup.example.file}
+                      {selectedRepoItem.popup.example.file}
                     </span>
                   )}
                 </div>
                 <pre className={styles.codeBlock}>
                   <code
-                    className={`language-${selectedInfraItem.popup.example.language}`}
+                    className={`language-${selectedRepoItem.popup.example.language}`}
                   >
-                    {selectedInfraItem.popup.example.code}
+                    {selectedRepoItem.popup.example.code}
                   </code>
                 </pre>
               </div>
             </div>
 
             {/* Links Section - Outside scrollable area */}
-            {selectedInfraItem.popup.links && (
+            {selectedRepoItem.popup.links && (
               <div className={styles.popupLinks}>
-                {selectedInfraItem.popup.links.map((link, index) => (
+                {selectedRepoItem.popup.links.map((link, index) => (
                   <a
                     key={index}
                     href={link.url}
@@ -525,4 +525,4 @@ export function InfrastructureTab({
   );
 }
 
-export default InfrastructureTab;
+export default RepositoryTab;

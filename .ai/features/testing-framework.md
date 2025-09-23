@@ -2,7 +2,7 @@
 
 ## Overview
 
-Comprehensive testing infrastructure providing multi-layered quality assurance through unit tests, integration tests, performance validation, and automated quality gates. The framework emphasizes thorough coverage, reliable execution, and continuous quality monitoring.
+Comprehensive testing repository providing multi-layered quality assurance through unit tests, integration tests, performance validation, and automated quality gates. The framework emphasizes thorough coverage, reliable execution, and continuous quality monitoring.
 
 ## Test Architecture
 

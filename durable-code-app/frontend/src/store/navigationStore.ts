@@ -2,7 +2,7 @@ import { create } from 'zustand';
 import { devtools } from 'zustand/middleware';
 
 export type TabName =
-  | 'Infrastructure'
+  | 'Repository'
   | 'Planning'
   | 'Building'
   | 'Quality Assurance'
@@ -19,7 +19,7 @@ interface NavigationState {
 export const useNavigationStore = create<NavigationState>()(
   devtools(
     (set, get) => ({
-      activeTab: 'Infrastructure',
+      activeTab: 'Repository',
       tabHistory: [],
       setActiveTab: (tab) => {
         const { tabHistory } = get();
@@ -34,7 +34,7 @@ export const useNavigationStore = create<NavigationState>()(
         if (tabHistory.length > 1) {
           const newHistory = [...tabHistory];
           newHistory.pop();
-          const previousTab = newHistory[newHistory.length - 1] || 'Infrastructure';
+          const previousTab = newHistory[newHistory.length - 1] || 'Repository';
           set({
             activeTab: previousTab,
             tabHistory: newHistory,

@@ -36,7 +36,7 @@ A modern full-stack web application demonstrating AI-ready development practices
 
 Six main tabs representing different aspects of AI-ready development:
 
-1. **Infrastructure**: Development environment and tooling setup (feature-based: `src/features/infrastructure/`)
+1. **Repository**: Development environment and tooling setup (feature-based: `src/features/repository/`)
 2. **PlanningTab.tsx**: Project planning and architectural decisions
 3. **BuildingTab.tsx**: Implementation strategies and coding practices
 4. **QualityAssuranceTab.tsx**: Testing, validation, and quality processes
@@ -45,7 +45,7 @@ Six main tabs representing different aspects of AI-ready development:
 
 #### Architecture Patterns
 
-**Feature-Based Architecture**: Complex tabs like Infrastructure are organized as features with:
+**Feature-Based Architecture**: Complex tabs like Repository are organized as features with:
 - `components/` - React components with proper separation of concerns
 - `hooks/` - Custom React hooks for state management and data fetching
 - `types/` - TypeScript interfaces and type definitions
@@ -364,16 +364,16 @@ curl http://localhost:8000/health
 
 **Example Feature Structure**:
 ```
-src/features/infrastructure/
+src/features/repository/
 ├── components/
-│   └── InfrastructureTab/
-│       ├── InfrastructureTab.tsx
-│       ├── InfrastructureTab.module.css
+│   └── RepositoryTab/
+│       ├── RepositoryTab.tsx
+│       ├── RepositoryTab.module.css
 │       └── index.ts
 ├── hooks/
-│   └── useInfrastructure.ts
+│   └── useRepository.ts
 ├── types/
-│   └── infrastructure.types.ts
+│   └── repository.types.ts
 └── index.ts
 ```
 

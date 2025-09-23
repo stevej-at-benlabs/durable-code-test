@@ -77,7 +77,7 @@ useEffect(() => {
 }, [drawFunction]); // Triggered by actual data updates
 ```
 
-## Performance Monitoring Infrastructure
+## Performance Monitoring Repository
 
 ### PerformanceMonitor Pattern
 Use singleton pattern for application-wide performance tracking:

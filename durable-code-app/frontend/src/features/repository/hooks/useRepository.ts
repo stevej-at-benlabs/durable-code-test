@@ -1,12 +1,12 @@
 /**
- * Purpose: Custom hook for managing infrastructure feature data and state
- * Scope: Infrastructure tab data provider with error handling and loading states
- * Overview: React hook that provides all infrastructure-related data including
- *     infrastructure items, folder structure, make targets, stats, and action links.
- *     Handles loading states and error management for the infrastructure feature.
- * Dependencies: React (useState, useEffect, useMemo), infrastructure types
- * Exports: useInfrastructure hook function
- * Props/Interfaces: No parameters, returns UseInfrastructureReturn interface
+ * Purpose: Custom hook for managing repository feature data and state
+ * Scope: Repository tab data provider with error handling and loading states
+ * Overview: React hook that provides all repository-related data including
+ *     repository items, folder structure, make targets, stats, and action links.
+ *     Handles loading states and error management for the repository feature.
+ * Dependencies: React (useState, useEffect, useMemo), repository types
+ * Exports: useRepository hook function
+ * Props/Interfaces: No parameters, returns UseRepositoryReturn interface
  * State/Behavior: Manages loading state, error state, and static data provision
  */
 
@@ -14,19 +14,19 @@ import { useEffect, useMemo, useState } from 'react';
 import type {
   ActionLink,
   FolderItem,
-  InfrastructureItem,
-  InfrastructureStats,
   MakeTarget,
-  UseInfrastructureReturn,
-} from '../types/infrastructure.types';
+  RepositoryItem,
+  RepositoryStats,
+  UseRepositoryReturn,
+} from '../types/repository.types';
 
-export function useInfrastructure(): UseInfrastructureReturn {
+export function useRepository(): UseRepositoryReturn {
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<Error | null>(null);
 
-  // Infrastructure items data
-  const infrastructureItems = useMemo(
-    (): InfrastructureItem[] => [
+  // Repository items data
+  const repositoryItems = useMemo(
+    (): RepositoryItem[] => [
       {
         id: 'project-layout',
         icon: '📐',
@@ -906,7 +906,7 @@ def test_input_validation(input, expected):
 
   // Stats data
   const stats = useMemo(
-    (): InfrastructureStats => ({
+    (): RepositoryStats => ({
       makeTargets: 40,
       linterCategories: 5,
       codeTemplates: 6,
@@ -977,7 +977,7 @@ def test_input_validation(input, expected):
   }, []);
 
   return {
-    infrastructureItems,
+    repositoryItems,
     folderStructure,
     makeTargets,
     stats,

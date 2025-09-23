@@ -1,11 +1,11 @@
 /**
- * Purpose: CSS module styles for InfrastructureTab component
- * Scope: Infrastructure tab styling with consistent visual hierarchy
- * Overview: Modern CSS module implementing the existing infrastructure tab styles
+ * Purpose: CSS module styles for RepositoryTab component
+ * Scope: Repository tab styling with consistent visual hierarchy
+ * Overview: Modern CSS module implementing the existing repository tab styles
  *     with proper modularization, responsive design, and accessibility features.
  */
 
-.infrastructureTab {
+.repositoryTab {
   width: 100%;
   padding: 2rem;
   max-width: 1400px;
@@ -13,7 +13,7 @@
   min-height: 100vh;
 }
 
-.infrastructureTab.loading {
+.repositoryTab.loading {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -21,12 +21,12 @@
   min-height: 400px;
 }
 
-.infrastructureTab.error {
+.repositoryTab.error {
   padding: 2rem;
 }
 
 /* Hero section */
-.infrastructureHero {
+.repositoryHero {
   text-align: center;
   margin-bottom: 3rem;
   padding: 2rem;
@@ -40,7 +40,7 @@
   overflow: hidden;
 }
 
-.infrastructureHero::before {
+.repositoryHero::before {
   content: '';
   position: absolute;
   top: 0;
@@ -71,14 +71,14 @@
 /* Removed highlights section - no longer needed */
 
 /* Infrastructure grid */
-.infrastructureGrid {
+.repositoryGrid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
   gap: 1.5rem;
   margin-bottom: 3rem;
 }
 
-.infrastructureCard {
+.repositoryCard {
   padding: 2rem;
   background: linear-gradient(135deg, #1e1e1e 0%, #2a2a2a 100%);
   border: 1px solid rgba(34, 193, 195, 0.2);
@@ -92,18 +92,18 @@
   justify-content: center;
 }
 
-.infrastructureCard:hover {
+.repositoryCard:hover {
   transform: translateY(-4px);
   border-color: rgba(34, 193, 195, 0.4);
   box-shadow: 0 10px 30px rgba(34, 193, 195, 0.2);
   z-index: 10;
 }
 
-.infrastructureCard:active {
+.repositoryCard:active {
   transform: translateY(-2px) scale(1.01);
 }
 
-.infrastructureCard:focus {
+.repositoryCard:focus {
   outline: 2px solid var(--primary-color, #2563eb);
   outline-offset: 2px;
 }
@@ -137,7 +137,7 @@
   transition: opacity 0.2s;
 }
 
-.infrastructureCard:hover .clickHint {
+.repositoryCard:hover .clickHint {
   opacity: 1;
 }
 
@@ -649,7 +649,7 @@
 
 /* Responsive design */
 @media (max-width: 768px) {
-  .infrastructureTab {
+  .repositoryTab {
     padding: 1rem;
   }
 
@@ -667,7 +667,7 @@
     font-size: 1rem;
   }
 
-  .infrastructureGrid {
+  .repositoryGrid {
     grid-template-columns: 1fr;
     gap: 1rem;
   }

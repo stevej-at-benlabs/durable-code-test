@@ -6,7 +6,7 @@ This guide shows how to implement React error boundaries using the 3-tier archit
 ## Prerequisites
 - React application with TypeScript
 - Understanding of React component lifecycle
-- Access to `src/core/errors/` infrastructure
+- Access to `src/core/errors/` repository
 
 ## Quick Start
 

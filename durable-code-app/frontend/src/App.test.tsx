@@ -71,7 +71,7 @@ describe('App Component', () => {
     it('renders all tab buttons', () => {
       render(<AppWithRouter />);
 
-      expect(screen.getByRole('tab', { name: /Infrastructure/i })).toBeInTheDocument();
+      expect(screen.getByRole('tab', { name: /Repository/i })).toBeInTheDocument();
       expect(screen.getByRole('tab', { name: /Planning/i })).toBeInTheDocument();
       expect(screen.getByRole('tab', { name: /Building/i })).toBeInTheDocument();
       expect(
@@ -93,10 +93,10 @@ describe('App Component', () => {
     it('renders tab content properly', async () => {
       render(<AppWithRouter />);
 
-      // Should show Infrastructure tab content by default (after lazy loading)
+      // Should show Repository tab content by default (after lazy loading)
       await waitFor(() => {
         expect(
-          screen.getByText('Why Rigid Infrastructure Matters for AI Development'),
+          screen.getByText('Why Rigid Repository Structure Matters for AI Development'),
         ).toBeInTheDocument();
       });
       await waitFor(() => {
@@ -106,13 +106,13 @@ describe('App Component', () => {
   });
 
   describe('Tab Navigation', () => {
-    it('displays Infrastructure tab content by default', async () => {
+    it('displays Repository tab content by default', async () => {
       render(<AppWithRouter />);
 
-      // Should show Infrastructure tab content (after lazy loading)
+      // Should show Repository tab content (after lazy loading)
       await waitFor(() => {
         expect(
-          screen.getByText('Why Rigid Infrastructure Matters for AI Development'),
+          screen.getByText('Why Rigid Repository Structure Matters for AI Development'),
         ).toBeInTheDocument();
       });
       await waitFor(() => {
@@ -167,11 +167,11 @@ describe('App Component', () => {
       });
       expect(screen.queryByText('AI-Powered Code Generation')).not.toBeInTheDocument();
 
-      // Back to Infrastructure
-      await user.click(screen.getByRole('tab', { name: /Infrastructure/i }));
+      // Back to Repository
+      await user.click(screen.getByRole('tab', { name: /Repository/i }));
       await waitFor(() => {
         expect(
-          screen.getByText('Why Rigid Infrastructure Matters for AI Development'),
+          screen.getByText('Why Rigid Repository Structure Matters for AI Development'),
         ).toBeInTheDocument();
       });
       expect(screen.queryByText('Bulletproof Code Quality')).not.toBeInTheDocument();
@@ -179,19 +179,17 @@ describe('App Component', () => {
   });
 
   describe('Link Validation and Navigation', () => {
-    it('has working external links in Infrastructure tab', async () => {
+    it('has working external links in Repository tab', async () => {
       const user = userEvent.setup();
       render(<AppWithRouter />);
 
-      // Wait for Infrastructure tab to be available
+      // Wait for Repository tab to be available
       await waitFor(() => {
-        expect(
-          screen.getByRole('tab', { name: /Infrastructure/i }),
-        ).toBeInTheDocument();
+        expect(screen.getByRole('tab', { name: /Repository/i })).toBeInTheDocument();
       });
 
-      // Click Infrastructure tab to load its content
-      const infrastructureTab = screen.getByRole('tab', { name: /Infrastructure/i });
+      // Click Repository tab to load its content
+      const infrastructureTab = screen.getByRole('tab', { name: /Repository/i });
       await user.click(infrastructureTab);
 
       // Wait for content to load and check for any GitHub links
@@ -333,8 +331,8 @@ describe('App Component', () => {
       const user = userEvent.setup();
       render(<AppWithRouter />);
 
-      // Switch to Infrastructure tab first to ensure we have links
-      const infrastructureTab = screen.getByRole('tab', { name: /Infrastructure/i });
+      // Switch to Repository tab first to ensure we have links
+      const infrastructureTab = screen.getByRole('tab', { name: /Repository/i });
       await user.click(infrastructureTab);
 
       // Get all links
@@ -346,7 +344,7 @@ describe('App Component', () => {
         return href && !href.startsWith('http') && !href.startsWith('mailto:');
       });
 
-      // Should have internal links (at least 0, since Infrastructure has external GitHub links)
+      // Should have internal links (at least 0, since Repository has external GitHub links)
       expect(internalLinks.length).toBeGreaterThanOrEqual(0);
 
       // All internal links should be valid
@@ -401,10 +399,10 @@ describe('App Component', () => {
       vi.clearAllMocks();
     });
 
-    it('defaults to Infrastructure tab when no hash is present', () => {
+    it('defaults to Repository tab when no hash is present', () => {
       render(<AppWithRouter />);
 
-      const infrastructureTab = screen.getByRole('tab', { name: /Infrastructure/i });
+      const infrastructureTab = screen.getByRole('tab', { name: /Repository/i });
       expect(infrastructureTab.className).toMatch(/active/);
     });
 
@@ -436,12 +434,12 @@ describe('App Component', () => {
       expect(qualityTab.className).toMatch(/active/);
     });
 
-    it('falls back to Infrastructure for invalid hash', () => {
+    it('falls back to Repository for invalid hash', () => {
       mockLocation.hash = '#InvalidTab';
 
       render(<AppWithRouter />);
 
-      const infrastructureTab = screen.getByRole('tab', { name: /Infrastructure/i });
+      const infrastructureTab = screen.getByRole('tab', { name: /Repository/i });
       expect(infrastructureTab.className).toMatch(/active/);
     });
 
@@ -547,12 +545,12 @@ describe('App Component', () => {
       // Collect all links from all tabs
       const allLinks: string[] = [];
 
-      // Infrastructure tab (default) - wait for lazy loading
-      const infrastructureTab = screen.getByRole('tab', { name: /Infrastructure/i });
+      // Repository tab (default) - wait for lazy loading
+      const infrastructureTab = screen.getByRole('tab', { name: /Repository/i });
       await user.click(infrastructureTab);
       await waitFor(() => {
         expect(
-          screen.getByText('Why Rigid Infrastructure Matters for AI Development'),
+          screen.getByText('Why Rigid Repository Structure Matters for AI Development'),
         ).toBeInTheDocument();
       });
       const infrastructureLinks = screen.getAllByRole('link');

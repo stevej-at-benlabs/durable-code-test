@@ -57,7 +57,7 @@ templates:
     location: "durable-code-app/frontend/src/components/tabs/ or features/[feature-name]/"
     example_files:
       - "durable-code-app/frontend/src/components/tabs/PlanningTab.tsx"
-      - "durable-code-app/frontend/src/features/infrastructure/"
+      - "durable-code-app/frontend/src/features/repository/"
 
   fastapi-endpoint.py.template:
     purpose: "Production-ready API endpoints with validation"
@@ -77,17 +77,17 @@ templates:
   react-feature.tsx.template:
     purpose: "Feature-based React components with full architecture"
     location: "durable-code-app/frontend/src/features/[feature-name]/components/"
-    example_files: ["durable-code-app/frontend/src/features/infrastructure/"]
+    example_files: ["durable-code-app/frontend/src/features/repository/"]
 
   react-feature-hook.ts.template:
     purpose: "Custom React hooks for feature data management"
     location: "durable-code-app/frontend/src/features/[feature-name]/hooks/"
-    example_files: ["durable-code-app/frontend/src/features/infrastructure/hooks/useInfrastructure.ts"]
+    example_files: ["durable-code-app/frontend/src/features/repository/hooks/useRepository.ts"]
 
   react-feature-types.ts.template:
     purpose: "TypeScript interfaces for feature domain modeling"
     location: "durable-code-app/frontend/src/features/[feature-name]/types/"
-    example_files: ["durable-code-app/frontend/src/features/infrastructure/types/infrastructure.types.ts"]
+    example_files: ["durable-code-app/frontend/src/features/repository/types/repository.types.ts"]
 
   react-websocket-service.ts.template:
     purpose: "WebSocket service class for React with reconnection and event handling"
@@ -298,7 +298,7 @@ file_structure:
   durable-code-app/: "Full-stack web application"
   durable-code-app/frontend/src/features/: "Feature-based architecture for complex components"
   durable-code-app/frontend/src/components/: "Simple reusable components and basic tabs"
-  durable-code-app/frontend/src/core/errors/: "Error boundary infrastructure and global error handling"
+  durable-code-app/frontend/src/core/errors/: "Error boundary repository and global error handling"
   durable-code-app/frontend/scripts/: "Page content verification and testing tools"
   test/: "Comprehensive test suites"
   .ai/: "AI agent documentation and templates"
