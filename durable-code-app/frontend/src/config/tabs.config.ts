@@ -50,38 +50,38 @@ const DemoTab = lazy(() =>
 export const tabs: Record<TabName, TabContent> = {
   Repository: {
     title: 'Repository',
-    icon: '🏗️',
+    icon: '',
     description:
       'Building AI-ready projects with proper repository structure and context',
     component: RepositoryTab,
   },
   Planning: {
     title: 'Planning',
-    icon: '📋',
+    icon: '',
     description: 'Strategic planning and documentation for AI-assisted development',
     component: PlanningTab,
   },
   Building: {
     title: 'Building',
-    icon: '🔨',
+    icon: '',
     description: 'Tools and commands for AI-assisted code generation',
     component: BuildingTab,
   },
   'Quality Assurance': {
     title: 'Quality Assurance',
-    icon: '🛡️',
+    icon: '',
     description: 'Automated testing, linting, and CI/CD for code quality',
     component: QualityAssuranceTab,
   },
   Maintenance: {
     title: 'Maintenance',
-    icon: '🔧',
+    icon: '',
     description: 'Ongoing maintenance and evolution strategies',
     component: MaintenanceTab,
   },
   Demo: {
     title: 'Demo',
-    icon: '◉',
+    icon: '',
     description: 'Real-time oscilloscope demonstration with WebSocket streaming',
     component: DemoTab,
   },
