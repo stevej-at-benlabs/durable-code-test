@@ -20,6 +20,9 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        if: ${{ !env.ACT }}
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -33,8 +36,13 @@ jobs:
 
       - name: Install Docker Compose
         run: |
-          sudo apt-get update
-          sudo apt-get install -y docker-compose
+          if ! command -v docker-compose &> /dev/null; then
+            sudo apt-get update
+            sudo apt-get install -y docker-compose
+          else
+            echo "Docker Compose already installed"
+            docker-compose --version
+          fi
 
       - name: Run comprehensive test suite
         run: make test-all
